@@ -1,0 +1,96 @@
+-- InterviewMind v2 — Supabase Schema
+-- Run this in the Supabase SQL editor (Project > SQL Editor > New Query)
+-- Run in this exact order.
+
+-- ============================================================
+-- 1. Extensions
+-- ============================================================
+CREATE EXTENSION IF NOT EXISTS vector;
+
+
+-- ============================================================
+-- 2. sessions — one row per recruiter conversation
+-- ============================================================
+CREATE TABLE sessions (
+  id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  recruiter_name TEXT,
+  company      TEXT,
+  role         TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  messages     JSONB       NOT NULL DEFAULT '[]',   -- Anthropic message array [{role, content}]
+  transcript   TEXT                                 -- optional cached export
+);
+
+CREATE INDEX idx_sessions_created_at ON sessions(created_at DESC);
+
+
+-- ============================================================
+-- 3. memory — semantic memory store with pgvector embeddings
+-- ============================================================
+CREATE TABLE memory (
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id     UUID        NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  recruiter_name TEXT,
+  company        TEXT,
+  content        TEXT        NOT NULL,
+  type           TEXT        NOT NULL CHECK (type IN (
+                               'user_message',
+                               'assistant_response',
+                               'recruiter_info',
+                               'conversation_pattern'
+                             )),
+  embedding      vector(1536),           -- OpenAI text-embedding-3-small
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX idx_memory_session_id ON memory(session_id);
+CREATE INDEX idx_memory_type       ON memory(type);
+
+-- IVFFlat index for fast approximate nearest-neighbour search.
+-- Requires at least one row before it can be created.
+-- If you get an error here, run it again after inserting the first session.
+CREATE INDEX idx_memory_embedding  ON memory USING ivfflat (embedding vector_cosine_ops)
+  WITH (lists = 100);
+
+
+-- ============================================================
+-- 4. search_memory() — semantic similarity search
+-- ============================================================
+CREATE OR REPLACE FUNCTION search_memory(
+  p_session_id      UUID,
+  p_query_embedding vector(1536),
+  p_limit           INT DEFAULT 5
+)
+RETURNS TABLE (
+  id         UUID,
+  content    TEXT,
+  type       TEXT,
+  similarity FLOAT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  RETURN QUERY
+  SELECT
+    memory.id,
+    memory.content,
+    memory.type,
+    (1 - (memory.embedding <=> p_query_embedding))::FLOAT AS similarity
+  FROM memory
+  WHERE memory.session_id = p_session_id
+    AND memory.embedding  IS NOT NULL
+  ORDER BY memory.embedding <=> p_query_embedding
+  LIMIT p_limit;
+END;
+$$;
+
+
+-- ============================================================
+-- 5. Row Level Security (optional — app uses service role key)
+-- ============================================================
+-- The API routes use SUPABASE_SERVICE_KEY which bypasses RLS.
+-- Enable RLS only if you later add user authentication.
+
+-- ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+-- ALTER TABLE memory   ENABLE ROW LEVEL SECURITY;
