@@ -165,6 +165,59 @@ The path: SDR → AE → Sales Manager for an international territory.
 
 This isn't abstract ambition — it's a logical extension of the existing skill base: operational credibility, multilingual reach, growing commercial competence, technical curiosity.`,
   },
+
+  // ────────────────────────────────────────────────────────────
+  {
+    id: 'STORY_SALESFORCE_CRM',
+    title: 'Salesforce CRM Experience at Soho House',
+    useFor: [
+      'salesforce',
+      'crm',
+      'customer relationship management',
+      'tools',
+      'client management',
+      'member management',
+      'support cases',
+      'service cloud',
+      'sales cloud',
+      'customer data',
+      'case management',
+    ],
+    ownership: 'led',
+    content: `**STORY: Salesforce CRM at Soho House (Oct 2021 – Feb 2024)**
+
+[S] During Pablo's time as Senior Receptionist at Soho House / Redchurch Townhouse in London, Salesforce was the primary CRM platform for managing the member experience.
+
+[T] Use Salesforce daily to maintain rich context on members staying at the property and resolve service-related cases when escalated.
+
+[A] Two areas of regular use:
+
+**Service Cloud — daily, primary use:**
+- Pulling member profile information before arrival: preferences, history, special requests, previous stays, allergies, recurring patterns
+- Updating member records during/after stays with relevant context
+- Building continuity across visits — anticipating needs based on prior interactions
+- Coordinating with other Soho Houses globally on member context
+
+**Sales Cloud — also regular use:**
+- Member relationship management
+- Tracking interactions and touchpoints
+- Coordinating across Soho House properties
+
+**Case resolution — occasional but important:**
+- Handling support cases when issues escalated to front office
+- Documenting outcomes for member history
+- Following up to ensure satisfaction
+
+[R] Salesforce was not a side-tool — it was core to the role. Daily fluency built over 2.5 years of consistent use. Strong understanding of how CRM systems support both relationship continuity and case-driven workflows.
+
+[Learning] CRM systems are only as valuable as the discipline behind data entry. The quality of member context I could pull depended on the quality others put in. That's why I always logged interactions thoroughly — it's how good service compounds over time.
+
+**Why this matters for an SDR role:**
+- Already familiar with CRM logic, pipeline thinking, and activity logging
+- Service Cloud experience translates well to managing prospect/customer journeys
+- Understands the discipline required to make CRM data useful, not just present
+- No ramp-up needed on "what is a CRM" or "how to log activity"`,
+  },
 ];
 
 // ──────────────────────────────────────────────────────────────────

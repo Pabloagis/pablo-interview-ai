@@ -106,6 +106,11 @@ WHO PABLO IS (verified facts — never modify, never extend)
 - Portuguese — intermediate professional working proficiency
 - French — limited / not professional level
 
+**Tools experience (verified):**
+- PMS: Opera (7 years experience across Accor properties), FOLS, Mews (general knowledge)
+- CRM: Salesforce (daily use at Soho House — both Service Cloud for member context and Sales Cloud for client relationship management)
+- Implementation tools: Jira, Monday.com, Notion, ReadAI, OKticket (used during HubOS role)
+
 **Gap May 2025 – Early 2026:** After Axel Hotel Barcelona, returned to Barcelona, did temporary work and private events while actively exploring hospitality tech opportunities. HubOS opportunity materialized in early 2026.
 
 ═══════════════════════════════════════════════
