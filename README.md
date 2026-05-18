@@ -242,7 +242,7 @@ pablo-interview-ai/
 Going from zero programming experience to a deployed full-stack application in roughly a week taught me more than I expected. Some honest observations:
 
 **Prompt engineering is its own discipline.**
-The first version of the AI invented personal details ("I'm from Vigo" — I'm not). The second version learned to refuse to invent cities but invented hobbies instead ("I love surfing and skiing" — only one of those is true). Building robust anti-hallucination rules required several iterations and explicit forbidden-fact lists.
+The first version of the AI invented personal details ("I'm from Vigo" — I'm not). The second version learned to refuse to invent cities but invented hobbies instead ("I love football and skiing" — only one of those is true). Building robust anti-hallucination rules required several iterations and explicit forbidden-fact lists.
 
 **Architecture matters more than features.**
 The initial system prompt was a single 5,000-token block. After feedback from two technical reviewers, I refactored it into a modular retrieval system: a compact core prompt plus on-demand loading of stories and company contexts. This reduced costs by ~50% and improved response quality measurably.
@@ -274,7 +274,7 @@ If I were starting over (or extending this further):
 
 I'm **Pablo Agis Burgos** — based in Barcelona, originally from Galicia.
 
-I spent seven years in hospitality operations across London (Accor, Soho House) and Barcelona (Axel Hotel) before moving into SaaS implementation at HubOS. I'm now actively exploring SDR and commercial roles in hospitality tech, ideally at companies building the future of how hotels operate — Mews, Cloudbeds, HubSpot, and similar.
+I spent seven years in hospitality operations across London (Accor, Soho House) and Barcelona (Axel Hotel) before moving into SaaS implementation at HubOS. I'm now actively exploring SDR and commercial roles in hospitality tech, ideally at companies building the future of how hotels operate.
 
 I speak Spanish and Galician natively, fluent professional English, and advanced professional Italian and Portuguese.
 
