@@ -8,6 +8,7 @@ import Header from './Header';
 import MessageBubble from './MessageBubble';
 import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
+import EndInterviewButton from './EndInterviewButton';
 
 interface ChatPanelProps {
   sessionId: string;
@@ -20,6 +21,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [inputText, setInputText] = useState('');
   const [context, setContext] = useState<RecruiterContext>({});
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
+  const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -48,6 +50,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const dismissToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
+  }, []);
+
+  const handleInterviewEnded = useCallback((emailSent: boolean) => {
+    setInterviewEnded({ emailSent });
   }, []);
 
   const sendMessage = async () => {
@@ -164,6 +170,45 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     window.open(`/api/transcript?sessionId=${sessionId}`, '_blank');
   };
 
+  // Success / ended screen — replaces entire chat UI
+  if (interviewEnded !== null) {
+    return (
+      <div className="flex flex-col h-screen bg-gray-50 items-center justify-center px-4">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-md w-full text-center">
+          {interviewEnded.emailSent ? (
+            <>
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">All done!</h2>
+              <p className="text-gray-500 text-sm leading-relaxed mb-1">
+                Check your inbox — we&apos;ve sent everything to
+              </p>
+              {context.email && (
+                <p className="text-blue-600 font-medium text-sm mb-6">{context.email}</p>
+              )}
+              <p className="text-gray-400 text-sm italic">
+                Looking forward to hearing from you. — Pablo
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-blue-600 font-bold text-2xl">P</span>
+              </div>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Interview ended.</h2>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                Thanks for chatting! — Pablo
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       <Header recruiterName={context.recruiterName} company={context.company} />
@@ -253,6 +298,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       </div>
 
       <Toast toasts={toasts} onDismiss={dismissToast} />
+
+      <EndInterviewButton
+        sessionId={sessionId}
+        messages={messages}
+        context={context}
+        onInterviewEnded={handleInterviewEnded}
+      />
     </div>
   );
 }

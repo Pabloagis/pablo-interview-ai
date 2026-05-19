@@ -58,6 +58,7 @@ export default function IntakeScreen() {
           email: email.trim(),
           company: company.trim() || undefined,
           role: role.trim() || undefined,
+          consentToEmail,
         })
       );
 
@@ -90,23 +91,10 @@ export default function IntakeScreen() {
         {/* About card */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
           <p className="text-gray-600 text-sm leading-relaxed">
-            You&apos;re about to talk to an AI that represents{' '}
-            <strong className="text-gray-800">Pablo Agis Burgos</strong> — a hospitality + SaaS
-            professional with 7 years of hotel ops and 4 months of SaaS implementation at HubOS.
-            Ask him anything you&apos;d ask in a real interview.
+            AI-powered interview simulation trained on{' '}
+            <strong className="text-gray-800">Pablo Agis Burgos&apos;</strong> real hospitality
+            and SaaS background. Ask anything you&apos;d ask a real candidate.
           </p>
-          <div className="mt-4 flex flex-wrap gap-2">
-            {['Opera PMS · 7 yrs', 'HubOS SaaS', 'London 6 yrs', 'EN · ES · IT · PT', 'Barcelona'].map(
-              (tag) => (
-                <span
-                  key={tag}
-                  className="text-xs bg-blue-50 text-blue-600 px-2.5 py-1 rounded-full font-medium"
-                >
-                  {tag}
-                </span>
-              )
-            )}
-          </div>
         </div>
 
         {/* Intake form */}
