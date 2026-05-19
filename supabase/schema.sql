@@ -94,3 +94,16 @@ $$;
 
 -- ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
 -- ALTER TABLE memory   ENABLE ROW LEVEL SECURITY;
+
+
+-- ============================================================
+-- 6. Migrations — run these in Supabase SQL Editor
+-- ============================================================
+
+-- Added: email capture + GDPR consent (2026-05-19)
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email TEXT;
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS consent_to_email BOOLEAN NOT NULL DEFAULT FALSE;
+
+-- Added: email send tracking (2026-05-19)
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_sent_at TIMESTAMPTZ;
+

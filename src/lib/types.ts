@@ -19,6 +19,7 @@ export interface RecruiterContext {
   company?: string;
   role?: string;
   email?: string;
+  consentToEmail?: boolean;
   tone?: 'formal' | 'warm' | 'technical' | 'commercial';
 }
 
@@ -32,6 +33,8 @@ export interface SessionCreateRequest {
   recruiterName?: string;
   company?: string;
   role?: string;
+  email?: string;
+  consentToEmail?: boolean;
 }
 
 export interface SessionCreateResponse {

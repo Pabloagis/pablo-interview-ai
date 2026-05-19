@@ -4,24 +4,35 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function IntakeScreen() {
   const router = useRouter();
   const [recruiterName, setRecruiterName] = useState('');
+  const [email, setEmail] = useState('');
+  const [emailTouched, setEmailTouched] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+  const [consentToEmail, setConsentToEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const isEmailValid = EMAIL_REGEX.test(email.trim());
+  const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
+  const isSubmitDisabled = isLoading || !isEmailValid || !consentToEmail;
+
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     setError('');
+    setIsLoading(true);
 
     try {
-      const body: SessionCreateRequest = {
+      const body: SessionCreateRequest & { email: string; consentToEmail: boolean } = {
         recruiterName: recruiterName.trim() || undefined,
         company: company.trim() || undefined,
         role: role.trim() || undefined,
+        email: email.trim(),
+        consentToEmail,
       };
 
       const response = await fetch('/api/session', {
@@ -31,14 +42,24 @@ export default function IntakeScreen() {
       });
 
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        throw new Error(body.error || 'Failed to create session');
+        const data = await response.json().catch(() => ({}));
+        setError(data.error || 'Something went wrong. Please try again.');
+        setIsLoading(false);
+        return;
       }
 
       const { sessionId } = await response.json();
 
-      // Persist context so the interview page can read it without another DB call
-      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(body));
+      // Persist context so ChatPanel can read it without another DB call
+      sessionStorage.setItem(
+        `session_${sessionId}`,
+        JSON.stringify({
+          recruiterName: recruiterName.trim() || undefined,
+          email: email.trim(),
+          company: company.trim() || undefined,
+          role: role.trim() || undefined,
+        })
+      );
 
       router.push(`/interview/${sessionId}`);
     } catch (err) {
@@ -50,6 +71,9 @@ export default function IntakeScreen() {
 
   const inputClass =
     'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors bg-white';
+
+  const inputErrorClass =
+    'w-full px-3 py-2.5 rounded-xl border border-red-300 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-colors bg-white';
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12">
@@ -107,6 +131,30 @@ export default function IntakeScreen() {
                 autoComplete="given-name"
               />
             </div>
+
+            <div>
+              <label className="block text-xs text-gray-500 mb-1">
+                Your email <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                placeholder="sarah@company.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setError('');
+                }}
+                onBlur={() => setEmailTouched(true)}
+                className={showEmailError ? inputErrorClass : inputClass}
+                maxLength={254}
+                autoComplete="email"
+                required
+              />
+              {showEmailError && (
+                <p className="mt-1 text-xs text-red-500">Please enter a valid email address</p>
+              )}
+            </div>
+
             <div>
               <label className="block text-xs text-gray-500 mb-1">Company</label>
               <input
@@ -132,18 +180,33 @@ export default function IntakeScreen() {
             </div>
           </div>
 
+          {/* GDPR consent */}
+          <div className="mb-5">
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={consentToEmail}
+                onChange={(e) => setConsentToEmail(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-500 accent-blue-500 flex-shrink-0"
+              />
+              <span className="text-xs text-gray-600 leading-relaxed">
+                I&apos;d like to receive an email with Pablo&apos;s interview summary and materials
+              </span>
+            </label>
+          </div>
+
           {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isSubmitDisabled}
             className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
           >
             {isLoading ? 'Starting…' : 'Start Interview'}
           </button>
 
           <p className="text-xs text-gray-400 text-center mt-3">
-            All fields optional · No account needed
+            Name, company &amp; role optional · <span className="text-red-400">*</span> Email required
           </p>
         </form>
       </div>

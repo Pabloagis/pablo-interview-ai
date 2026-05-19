@@ -20,7 +20,7 @@ using his real stories, real voice, real professional positioning.
 2. Interview tool — lets recruiters experience Pablo's communication style directly
 
 **Target audience:** 20–30 tech/SaaS recruiters
-**Launch target:** May 18, 2026
+**Launched:** May 2026
 **Budget:** $20–30 API tokens total
 
 ---
@@ -33,12 +33,14 @@ using his real stories, real voice, real professional positioning.
 | Styling | Tailwind CSS | Fast, professional |
 | Backend | Next.js API Routes (serverless) | No separate server |
 | Database | Supabase PostgreSQL | Free tier, pgvector support |
-| Memory | MCP Memory + pgvector + OpenAI embeddings | Semantic search |
-| AI | claude-sonnet-4-20250514 (fallback: claude-haiku-4-5-20251001) | Quality responses |
+| Memory | pgvector + OpenAI embeddings | Semantic search per session |
+| AI | claude-sonnet-4-6 (fallback: claude-haiku-4-5-20251001) | Quality responses |
 | Streaming | SSE (Server-Sent Events) | Word-by-word streaming |
+| Email | nodemailer + Gmail SMTP | Post-interview follow-up with CV |
 | Deployment | Vercel | One-click deploy, 99.9% uptime |
 
-**Why NOT Node.js proxy:** Recruiters need a shareable link, not localhost:3000.
+**Dev server note:** Use `npm start` (production build) or `npm run dev -- --turbopack`.
+Plain `npm run dev` has a Webpack bug in Next.js 15 that causes ENOENT/manifest errors.
 
 ---
 
@@ -49,9 +51,21 @@ using his real stories, real voice, real professional positioning.
 3. **Memory is non-blocking** — errors in memory must NEVER break the chat
 4. **API keys are server-side only** — never expose to frontend/browser
 5. **All stories use STAR format** — Situation, Task/Thinking, Action, Result
-6. **No assumed programming knowledge** — keep code clear and well-commented
-7. **Graceful degradation** — if memory fails, chat still works
-8. **30-second timeout** on all Claude API calls with AbortController
+6. **Graceful degradation** — if memory fails, chat still works
+7. **30-second timeout** on all Claude API calls with AbortController
+8. **Story ownership is sacred** — never upgrade Pablo's role in a story (participated ≠ led)
+
+---
+
+## INTAKE FORM (ACCESS REQUIREMENTS)
+
+The intake form at `/` requires:
+- **Email** — any valid format, required (used for post-interview follow-up)
+- **GDPR consent checkbox** — must be checked to enable the Start Interview button
+- Name, company, role — optional context fields
+
+Email + consent are stored in `sessions.email` and `sessions.consent_to_email`.
+The `/api/send-application` endpoint checks `consent_to_email` before sending any email.
 
 ---
 
@@ -62,19 +76,26 @@ using his real stories, real voice, real professional positioning.
 > customer-facing commercial and strategic SaaS roles."
 
 ### Work History (All Verified — Use Exact Dates)
-- **HubOS** — Software Implementation Specialist (Jan 2026 – Apr 2026, 4 months)
+- **HubOS** — Software Implementation Specialist (Early 2026, a few months)
 - **Axel Hotel Barcelona** — Front Office Manager (Mar 2025 – May 2025, 3 months)
-- **Soho House London** — Senior Receptionist (Oct 2021 – Feb 2024, 2.5 years)
-- **Novotel Tower Bridge / Accor** — Duty Manager → Team Leader (Nov 2019 – Jul 2021)
+- **Gap** — May 2025 to Early 2026: returned to Barcelona, temporary work + private events while exploring hospitality tech roles
+- **Soho House / Redchurch Townhouse London** — Senior Receptionist (Oct 2021 – Feb 2024, 2.5 years)
+- **Novotel Tower Bridge / Accor** — Hotel Team Leader & Duty Manager (Nov 2019 – Jul 2021)
 - **Ibis City Shoreditch / Accor** — Front Office Team Member (Nov 2018 – Nov 2019)
 - **Current status:** Job searching (May 2026), based in Barcelona
 
 ### Languages (All Verified)
 - Spanish — Native
 - Galician — Native
-- English — Fluent
-- Italian — Professional/Advanced
-- Portuguese — Professional/Advanced
+- English — Fluent (6 years living and working in London)
+- Italian — Advanced professional working proficiency
+- Portuguese — Intermediate professional working proficiency
+- French — Limited / not professional level
+
+### Tools Experience (All Verified)
+- **PMS:** Opera (7 years across Accor properties), FOLS, Mews (general knowledge)
+- **CRM:** Salesforce (daily use at Soho House — Service Cloud for member context, Sales Cloud for relationship management)
+- **Implementation tools:** Jira, Monday.com, Notion, (used at HubOS)
 
 ### Cognitive Style (How Pablo Actually Thinks)
 Natural reasoning pattern:
@@ -88,14 +109,12 @@ Thinking style: Systems-oriented, curious, exploratory, meta-aware, collaborativ
 ### Authentic Voice Patterns (Use These Naturally)
 - "From my experience..."
 - "What I've noticed is..."
-- "Honestly..."
-- "I think the biggest thing is..."
 - "The way I see it..."
-- "That's actually an interesting question because..."
-- "I'm not running away from operations. I'm running toward commercial impact."
-- "The real challenge is how teams actually use systems day to day."
+- "Looking back..."
+- "I'm not running away from operations — I'm leveraging it toward commercial impact."
 - "Implementation success isn't the go-live date. It's when staff actually use the system."
-- "The best tech in the world fails if people don't use it."
+- "Operational problems that look like system issues are often training and process gaps."
+- "It's easier for a domain expert to learn coding than for a developer to become a domain expert in hospitality."
 
 ### Confidence Style
 - Calm and grounded (not loud or performative)
@@ -113,58 +132,21 @@ Thinking style: Systems-oriented, curious, exploratory, meta-aware, collaborativ
 
 ---
 
-## THE 5 PROVEN STORIES (STAR FORMAT — USE EXACTLY)
+## STORIES — OWNERSHIP LEVELS (CRITICAL)
 
-### Story 1: Vienna AI Project
-**Use for:** Innovation, problem-solving, AI/tech questions
+Stories live in `src/lib/stories-knowledge.ts`. The authoritative version is always that file.
+CLAUDE.md summarises ownership levels — never upgrade them.
 
-**[S]** While managing front office at a luxury property in Vienna, I noticed the team was manually aggregating guest feedback from email, calls, and forms into a spreadsheet every morning — it took 45 minutes and we often missed urgent issues.
+| Story ID | Topic | Ownership |
+|----------|-------|-----------|
+| STORY_VIENNA_AI | AI feedback aggregation at Gran Hotel Vienna (HubOS project) | **participated** |
+| STORY_FOLS_MIGRATION | FOLS PMS migration at Accor London | **participated** (NOT led — went through it as operational team member) |
+| STORY_HUBOS_ONBOARDING | HubOS end-to-end client implementations | **led** |
+| STORY_CAREER_PROGRESSION | Why commercial — career arc narrative | narrative |
+| STORY_FUTURE_VISION | Where Pablo sees himself in 4 years | narrative |
+| STORY_SALESFORCE_CRM | Salesforce daily use at Soho House (Service Cloud + Sales Cloud) | **led** |
 
-**[T]** I started thinking about whether we could reduce the manual work and catch issues faster.
-
-**[A]** I started exploring whether simple AI categorization tools could help. I tested one approach with our feedback process and trained the team to review the output for accuracy and edge cases.
-
-**[R]** Reduced manual aggregation time from 45 minutes to 5 minutes (90% reduction). Caught issues 2–3 hours earlier. Team freed up for higher-value work.
-
-**Learning:** AI isn't magic — it's about solving real operational problems with the right tool and training people to use it.
-
----
-
-### Story 2: FOLS PMS Migration (Accor 2019)
-**Use for:** Implementation, change management, PMS experience, adoption
-
-**[S]** In 2019, our Accor property was migrating from legacy PMS to FOLS across 200+ rooms. Previous system had been in place 8 years, staff resistant. 3-week timeline.
-
-**[T]** During the transition I became heavily involved in helping operational teams adapt to new workflows. Knew smooth migration meant real understanding, not just compliance.
-
-**[A]** Mapped which roles needed which functionality. Created role-specific job aids for housekeeping, front office, revenue team. Scheduled daily 15-minute hands-on sessions. Tracked common errors, created quick-fix guides.
-
-**[R]** Zero major incidents on switchover day. 95% smooth adoption within week one (vs. typical 2–3 week ramp). Next property used our job aids as template.
-
-**Learning:** Implementation success = understanding each user group's actual workflow + making learning role-specific.
-
----
-
-### Story 3: Career Progression
-**Use for:** Motivation, career narrative, "why commercial/sales"
-
-Hotel ops (understanding customer pain) → SaaS implementation at HubOS (understanding product + adoption) → Commercial/strategic roles (driving growth with credibility on both sides).
-
-Commercial motivation developed naturally through implementation work — seeing how software adoption, operational improvement, and business outcomes are interconnected.
-
----
-
-### Story 4: Retreat Center Evaluation
-**Use for:** Product thinking, consultative approach, value drivers
-
-Evaluated a retreat center's technology needs against available hotel software. Identified true value drivers — not feature lists, but actual operational pain points. Shows product thinking + operational grounding combined.
-
----
-
-### Story 5: HubOS Onboarding (Jan–Apr 2026)
-**Use for:** Recent SaaS experience, implementation, client success
-
-End-to-end client onboarding at HubOS: configuration, training, UAT, go-live. Worked directly with hotel clients driving real adoption. Most recent SaaS implementation experience.
+**FOLS rule:** If recruiter asks "tell me about a time YOU implemented a system" → use VIENNA AI or HUBOS (not FOLS). FOLS is only for questions about going *through* a migration as a user/operational participant.
 
 ---
 
@@ -172,6 +154,7 @@ End-to-end client onboarding at HubOS: configuration, training, UAT, go-live. Wo
 
 ### Can Discuss Confidently
 - PMS ecosystems: Opera (7 years), FOLS, Mews, Protel, Ulyses Cloud
+- CRM: Salesforce (Service Cloud + Sales Cloud, 2.5 years daily use)
 - OTA distribution (Booking.com, Expedia, Airbnb)
 - Channel management + rate/availability sync
 - API integration — business-level understanding (NOT code-level)
@@ -183,7 +166,7 @@ End-to-end client onboarding at HubOS: configuration, training, UAT, go-live. Wo
 - Deep API coding or technical architecture
 - Complex data modeling
 - RPA or advanced automation
-- Financial modeling / RevPAR optimization
+- Financial modeling / optimization
 
 **Technical framing:** "Strong operational and business understanding of hospitality tech ecosystems, while still early in deep technical architecture expertise."
 
@@ -198,90 +181,104 @@ End-to-end client onboarding at HubOS: configuration, training, UAT, go-live. Wo
 | Technical | Asks about systems, integrations | Deeper detail, business-framed |
 | Commercial | Growth, targets, pipeline | Frame everything as business outcomes |
 
-**Conversational style:** Build on interviewer comments. Explore underlying dynamics. Ask thoughtful follow-ups. Co-construct conversations — not transactional Q&A.
-
 ---
 
-## API ROUTES (4 ENDPOINTS)
+## API ROUTES (5 ENDPOINTS)
 
 ### POST /api/chat
-Main endpoint. Flow: store message → search memory (pgvector) → build enriched prompt → stream Claude response (SSE) → store response.
-Returns: SSE stream (text/event-stream).
+Main endpoint. Flow: load session messages → generate embedding → search memory (pgvector) → retrieve stories + company knowledge → detect tone → build system prompt → stream Claude response (SSE) → persist messages + store memory.
+Returns: SSE stream (`text/event-stream`). Events: `{ type: 'content', text }` | `{ type: 'done' }` | `{ type: 'error', message }`.
 
 ### POST /api/session
-Creates new session in Supabase. Returns: sessionId, createdAt, recruiter info.
+Creates new session in Supabase. Validates email format. Saves recruiter_name, company, role, email, consent_to_email.
+Returns: `{ sessionId, createdAt }`.
 
 ### GET /api/transcript
-Exports conversation as markdown. Query param: ?sessionId=uuid
+Exports conversation as markdown file download. Builds from `messages` JSONB (not `transcript` TEXT — that column is unused).
+Query param: `?sessionId=uuid`
+
+### POST /api/send-application
+Sends follow-up email to recruiter with CV attached. Checks `consent_to_email` (403 if false). Builds transcript from `messages` JSONB. Updates `email_sent_at` on success.
+Body: `{ sessionId }`.
 
 ### (internal) Memory search
-Used only inside /api/chat. Never exposed directly to frontend.
+Runs inside `/api/chat` via Supabase RPC `search_memory()`. Never exposed directly.
 
 ---
 
 ## DATABASE SCHEMA
 
-### sessions table
+### sessions table (current — including migrations)
 ```sql
 CREATE TABLE sessions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  recruiter_name TEXT,
-  company TEXT,
-  role TEXT,
-  created_at TIMESTAMP DEFAULT NOW(),
-  messages JSONB DEFAULT '[]',
-  transcript TEXT
+  id                UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  recruiter_name    TEXT,
+  company           TEXT,
+  role              TEXT,
+  email             TEXT,                              -- added 2026-05-19
+  consent_to_email  BOOLEAN     NOT NULL DEFAULT FALSE, -- added 2026-05-19
+  email_sent_at     TIMESTAMPTZ,                       -- added 2026-05-19
+  created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  messages          JSONB       NOT NULL DEFAULT '[]', -- [{role, content}] Anthropic format
+  transcript        TEXT                               -- unused / reserved
 );
 ```
 
-### memory table (pgvector)
+### memory table
 ```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-
 CREATE TABLE memory (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  session_id UUID NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id     UUID        NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
   recruiter_name TEXT,
-  company TEXT,
-  content TEXT NOT NULL,
-  type TEXT NOT NULL,
-  embedding vector(1536),
-  created_at TIMESTAMP DEFAULT NOW()
+  company        TEXT,
+  content        TEXT        NOT NULL,
+  type           TEXT        NOT NULL CHECK (type IN (
+                               'user_message', 'assistant_response',
+                               'recruiter_info', 'conversation_pattern'
+                             )),
+  embedding      vector(1536),  -- OpenAI text-embedding-3-small
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
-CREATE INDEX idx_memory_session_id ON memory(session_id);
-CREATE INDEX idx_memory_embedding ON memory USING ivfflat (embedding);
-
-CREATE OR REPLACE FUNCTION search_memory(
-  p_session_id UUID,
-  p_query_embedding vector(1536),
-  p_limit INT DEFAULT 5
-)
-RETURNS TABLE (id UUID, content TEXT, type TEXT, similarity FLOAT) AS $$
-BEGIN
-  RETURN QUERY
-  SELECT memory.id, memory.content, memory.type,
-    (1 - (memory.embedding <=> p_query_embedding))::FLOAT AS similarity
-  FROM memory
-  WHERE memory.session_id = p_session_id
-  AND memory.embedding IS NOT NULL
-  ORDER BY memory.embedding <=> p_query_embedding
-  LIMIT p_limit;
-END;
-$$ LANGUAGE plpgsql;
 ```
+
+**Important:** The `transcript` TEXT column exists but is **not used**. The transcript is always built dynamically from `messages` JSONB when needed (see `/api/transcript` and `/api/send-application`).
 
 ---
 
 ## ENVIRONMENT VARIABLES
 
 ```env
+# AI
 ANTHROPIC_API_KEY=sk-ant-...
+
+# Embeddings (memory search)
 OPENAI_API_KEY=sk-...
+
+# Database
 NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 SUPABASE_SERVICE_KEY=eyJ...
+
+# Email (post-interview follow-up)
+GMAIL_USER=pabloagisburgos@gmail.com
+GMAIL_APP_PASSWORD=...   # Google App Password (16 chars)
+
+# Legacy / unused in current flow
+ACCESS_CODE=...          # Was used for access control — replaced by email+GDPR
 ```
+
+---
+
+## EMAIL SYSTEM
+
+- **Provider:** Gmail SMTP via nodemailer
+- **From:** `"Pablo Agis Burgos" <GMAIL_USER>`
+- **Trigger:** Manual (frontend not yet wired) — call `POST /api/send-application` with `{ sessionId }`
+- **Content:** HTML email with CV attached (`public/assets/Pablo_Agis_Burgos_CV.pdf`), transcript from `messages`, LinkedIn + email CTAs
+- **Gate:** Only sends if `consent_to_email = true` on session
+- **Tracking:** `email_sent_at` timestamp written on success
+- **Implementation:** `src/lib/mailer.ts` — `sendApplicationEmail({ to, name, role, company, transcript? })`
 
 ---
 
@@ -291,7 +288,7 @@ SUPABASE_SERVICE_KEY=eyJ...
 |-------|------|-------------------|
 | Invalid API key | 401 | "Configuration error. Please contact Pablo." |
 | Rate limited | 429 | "Claude is busy. Please try again in a moment." |
-| Timeout (30s) | TIMEOUT | "Taking longer than expected. Please try again." |
+| Timeout (30s) | AbortError | "Taking longer than expected. Please try again." |
 | Memory failure | — | Silent — chat continues without memory |
 | Stream error | 500 | "Something went wrong. Please try again." |
 
@@ -301,26 +298,50 @@ SUPABASE_SERVICE_KEY=eyJ...
 
 | Item | Value |
 |------|-------|
-| AI Model | claude-sonnet-4-20250514 |
-| Embedding Model | text-embedding-3-small |
+| AI Model | `claude-sonnet-4-6` |
+| Fallback Model | `claude-haiku-4-5-20251001` |
+| Embedding Model | `text-embedding-3-small` |
+| Embedding dimensions | 1536 |
 | Max tokens | 1000 |
 | Stream timeout | 30 seconds |
 | Memory results | 5 per query |
-| Embedding dimensions | 1536 |
+| Max message length | 2000 chars |
 | Live URL | https://pablo-interview.vercel.app |
+| CV path | `public/assets/Pablo_Agis_Burgos_CV.pdf` |
+
+---
+
+## KEY FILES
+
+| File | Purpose |
+|------|---------|
+| `src/lib/prompts.ts` | Core system prompt + `buildSystemPrompt()` |
+| `src/lib/stories-knowledge.ts` | All 6 STAR stories with ownership levels |
+| `src/lib/companies-knowledge.ts` | Company-specific context for retrieval |
+| `src/lib/retrieval.ts` | Intent detection — loads relevant stories + company |
+| `src/lib/constants.ts` | All tunable values (models, timeouts, limits) |
+| `src/lib/mailer.ts` | Email sending via Gmail SMTP |
+| `src/lib/utils.ts` | Email validation helpers + personal domain blocklist |
+| `src/app/api/chat/route.ts` | Main streaming endpoint |
+| `src/app/api/session/route.ts` | Session creation |
+| `src/app/api/send-application/route.ts` | Post-interview email trigger |
+| `src/components/IntakeScreen.tsx` | Entry form (email + GDPR required) |
+| `src/components/ChatPanel.tsx` | Interview UI + SSE consumer |
+| `supabase/schema.sql` | Full DB schema including migrations |
 
 ---
 
 ## WHEN IN DOUBT
 
 - **Pablo's voice:** Grounded, curious, operationally specific. Not corporate, not a pitch.
-- **Stories:** Always STAR. Always measurable. Honest about ownership level.
+- **Stories:** Always STAR. Always honest about ownership level. Never upgrade participation to leadership.
 - **Tech:** Confident on business/ops. Honest about coding limits.
 - **Commercial:** Evolving naturally — not "transitioning desperately."
 - **Memory:** Non-blocking always. Chat > Memory if they conflict.
 - **API keys:** Never leave the server. Ever.
+- **Transcript:** Always from `messages` JSONB. The `transcript` TEXT column is unused.
 
 ---
 
-*All professional data verified by Pablo Agis Burgos — May 11, 2026.*
-*Do not modify without explicit instruction.*
+*All professional data verified by Pablo Agis Burgos — May 2026.*
+*Update this file whenever the codebase changes — it is the source of truth for Claude Code sessions.*

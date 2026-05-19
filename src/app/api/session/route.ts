@@ -1,13 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { SessionCreateRequest, SessionCreateResponse } from '@/lib/types';
+import { isValidEmail } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
     const body: SessionCreateRequest = await request.json();
-    const { recruiterName, company, role } = body;
+    const { recruiterName, company, role, email, consentToEmail } = body;
+
+    if (!email || !isValidEmail(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address' },
+        { status: 400 }
+      );
+    }
 
     const supabase = createServerSupabaseClient();
 
@@ -17,6 +25,8 @@ export async function POST(request: NextRequest) {
         recruiter_name: recruiterName || null,
         company: company || null,
         role: role || null,
+        email: email,
+        consent_to_email: consentToEmail ?? false,
         messages: [],
       })
       .select('id, created_at')

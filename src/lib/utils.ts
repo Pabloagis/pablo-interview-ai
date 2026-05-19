@@ -21,3 +21,30 @@ export function parseSSELine(line: string): object | null {
     return null;
   }
 }
+
+// List of personal email domains to block
+export const PERSONAL_EMAIL_DOMAINS = [
+  'gmail.com', 'googlemail.com',
+  'hotmail.com', 'hotmail.es', 'hotmail.co.uk', 'hotmail.fr', 'hotmail.it',
+  'outlook.com', 'outlook.es', 'outlook.co.uk', 'live.com', 'live.es',
+  'yahoo.com', 'yahoo.es', 'yahoo.co.uk', 'yahoo.fr', 'yahoo.it', 'ymail.com',
+  'icloud.com', 'me.com', 'mac.com',
+  'protonmail.com', 'proton.me',
+  'aol.com', 'aim.com',
+  'mail.com', 'gmx.com', 'gmx.es', 'gmx.de',
+  'zoho.com', 'fastmail.com',
+  'tutanota.com', 'tuta.io',
+  'pm.me',
+  'msn.com',
+];
+
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export function isPersonalEmail(email: string): boolean {
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return false;
+  return PERSONAL_EMAIL_DOMAINS.includes(domain);
+}
