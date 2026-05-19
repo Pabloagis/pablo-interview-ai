@@ -17,7 +17,21 @@ import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
+const MEMORY_TIMEOUT_MS = 5000;
+
 type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
+
+function withMemoryTimeout<T>(promise: Promise<T>): Promise<T | null> {
+  return Promise.race([
+    promise,
+    new Promise<null>((resolve) =>
+      setTimeout(() => {
+        console.error('[Memory] timeout after 5s - continuing without');
+        resolve(null);
+      }, MEMORY_TIMEOUT_MS)
+    ),
+  ]);
+}
 
 function getOpenAIClient(): OpenAI {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -48,11 +62,15 @@ async function searchMemory(
   embedding: number[]
 ): Promise<MemorySearchResult[]> {
   try {
-    const { data, error } = await supabase.rpc('search_memory', {
-      p_session_id: sessionId,
-      p_query_embedding: embedding,
-      p_limit: MEMORY_SEARCH_LIMIT,
-    });
+    const result = await withMemoryTimeout(
+      supabase.rpc('search_memory', {
+        p_session_id: sessionId,
+        p_query_embedding: embedding,
+        p_limit: MEMORY_SEARCH_LIMIT,
+      }).then((r) => r)
+    );
+    if (!result) return [];
+    const { data, error } = result;
     if (error) {
       console.error('Memory search failed (non-critical):', error);
       return [];
@@ -74,19 +92,21 @@ function storeMemory(
   company?: string,
   embedding?: number[] | null
 ): void {
-  supabase
-    .from('memory')
-    .insert({
-      session_id: sessionId,
-      recruiter_name: recruiterName || null,
-      company: company || null,
-      content,
-      type,
-      embedding: embedding || null,
-    })
-    .then(({ error }) => {
-      if (error) console.error('Memory store failed (non-critical):', error);
-    });
+  withMemoryTimeout(
+    supabase
+      .from('memory')
+      .insert({
+        session_id: sessionId,
+        recruiter_name: recruiterName || null,
+        company: company || null,
+        content,
+        type,
+        embedding: embedding || null,
+      })
+      .then((r) => r)
+  ).then((result) => {
+    if (result?.error) console.error('Memory store failed (non-critical):', result.error);
+  });
 }
 
 export async function POST(request: NextRequest) {

@@ -9,7 +9,7 @@
 [![Anthropic](https://img.shields.io/badge/Anthropic-Claude%20Sonnet%204.6-D97757)](https://www.anthropic.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-deployed-black?logo=vercel)](https://vercel.com/)
 
-🔗 **[Live Demo →](https://pablo-interview.vercel.app)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
+🔗 **[Live Demo →](https://pablo-interview-ai.vercel.app)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
 
 ---
 

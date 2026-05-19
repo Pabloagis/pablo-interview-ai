@@ -78,7 +78,7 @@ export default function EndInterviewButton({
           className={[
             'px-5 py-3 rounded-full text-sm font-semibold text-white transition-all duration-200',
             isActive
-              ? 'bg-red-500 hover:bg-red-600 shadow-md hover:shadow-lg'
+              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg'
               : 'bg-slate-400 opacity-75 cursor-not-allowed',
           ].join(' ')}
         >
@@ -88,7 +88,7 @@ export default function EndInterviewButton({
         {/* Tooltip — only while button is inactive */}
         {!isActive && (
           <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
-            Keep chatting — button activates after 3 questions
+            Keep chatting — You can finish after min. 3 questions
           </div>
         )}
       </div>
