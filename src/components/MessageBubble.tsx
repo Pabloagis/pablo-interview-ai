@@ -16,7 +16,7 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         </div>
       )}
 
-      <div className={`max-w-[72%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+      <div className={`max-w-[70%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
         <div
           className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
             isUser
@@ -31,6 +31,11 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
         </span>
       </div>
 
+      {isUser && (
+        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm ml-2.5 mt-0.5 flex-shrink-0">
+          R
+        </div>
+      )}
     </div>
   );
 }
