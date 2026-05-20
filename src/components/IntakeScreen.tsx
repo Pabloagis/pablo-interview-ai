@@ -88,13 +88,19 @@ export default function IntakeScreen() {
           <p className="text-gray-500 mt-2 text-sm">Interview his AI. Then interview him.</p>
         </div>
 
-        {/* About card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
-          <p className="text-gray-600 text-sm leading-relaxed">
-            An interactive AI version of{' '}
-            <strong className="text-gray-800">Pablo Agis Burgos</strong> — hospitality tech
-            professional. Ask what you&apos;d ask any candidate: his background, decisions,
-            projects, how he thinks.
+        {/* Vision statement */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-4 space-y-4">
+          <p className="text-gray-800 font-semibold text-sm leading-relaxed">
+            Bienvenido a la siguiente generación del CV:{' '}
+            <span className="text-blue-500">una identidad profesional viva, inteligente y dinámica.</span>
+          </p>
+          <p className="text-gray-500 text-sm leading-relaxed">
+            Un nuevo estándar donde la inteligencia artificial, el storytelling y la autenticidad
+            transforman un currículum estático en una experiencia que conecta, demuestra y evoluciona contigo.
+          </p>
+          <p className="text-gray-400 text-sm leading-relaxed">
+            Porque el futuro profesional ya no se resume en un PDF.{' '}
+            <span className="text-gray-600 font-medium">Se construye en tiempo real.</span>
           </p>
         </div>
 
