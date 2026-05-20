@@ -4,7 +4,7 @@ import { CLAUDE_FALLBACK_MODEL } from '@/lib/constants';
 
 const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
 const FROM_ADDRESS = 'Pablo Agis Burgos <onboarding@resend.dev>';
-const BASE_URL = 'https://pablo-interview.vercel.app';
+const BASE_URL = 'https://pablo-interview-ai.vercel.app';
 
 function getResendClient(): Resend {
   const key = process.env.RESEND_API_KEY;
