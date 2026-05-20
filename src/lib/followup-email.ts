@@ -282,9 +282,9 @@ function generateEmailHTML(
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                 <tr>
                   <td width="34%" style="padding-right:8px; vertical-align:top;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#152847; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <span style="display:block; font-size:13px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:11px; color:#64748b; font-family:Arial,sans-serif; margin-top:2px;">Book via Calendly · Google Meet</span>
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
+                      <span style="display:block; font-size:13px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                      <span style="display:block; font-size:11px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">Book via Calendly · Google Meet</span>
                     </a>
                   </td>
                   <td width="33%" style="padding-right:8px; vertical-align:top;">
