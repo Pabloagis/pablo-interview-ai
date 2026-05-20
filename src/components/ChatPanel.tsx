@@ -268,9 +268,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 Ask me what you&apos;d ask any candidate — background, decisions, projects, how I think.
               </p>
               <p className="text-xs text-gray-300 text-center px-4 mb-6">
-                When you&apos;re done, click{' '}
+                When you&apos;re finished, click{' '}
                 <span className="text-green-500 font-medium">End Interview</span>{' '}
-                (top right) to receive my CV and materials by email.
+                (top right) — don&apos;t just close the tab.
               </p>
               <div className="text-center space-y-1">
                 <p className="text-xs text-gray-300">

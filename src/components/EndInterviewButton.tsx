@@ -87,7 +87,7 @@ export default function EndInterviewButton({
         {/* Tooltip — desktop only (mobile has no hover), opens downward */}
         <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
           {isActive
-            ? "Finish the interview — Pablo will send you his CV by email"
+            ? "Click here to properly finish the interview"
             : "Keep chatting — available after min. 3 questions"}
         </div>
       </div>
