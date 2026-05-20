@@ -6,12 +6,10 @@ const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'InterviewMind — Talk to Pablo',
-  description:
-    'An AI interview simulator. Talk to Pablo Agis Burgos — hospitality + SaaS professional with 7 years of hotel ops and hands-on SaaS implementation experience.',
+  description: 'An AI interview simulator trained on Pablo Agis Burgos real hospitality and SaaS background.',
   openGraph: {
     title: 'InterviewMind — Pablo Agis Burgos',
-    description:
-      'Ask anything you\'d ask in a real interview. Pablo has 7 years of hospitality ops + SaaS implementation experience at HubOS.',
+    description: 'Ask anything you would ask in a real interview.',
     type: 'website',
   },
 };
