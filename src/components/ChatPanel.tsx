@@ -210,7 +210,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex flex-col bg-gray-50" style={{position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, width: '100%', maxWidth: '100%', overflowX: 'hidden'}}>
+    <div className="flex flex-col bg-gray-50" style={{position: 'fixed', inset: 0, overflowX: 'hidden'}}>
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
