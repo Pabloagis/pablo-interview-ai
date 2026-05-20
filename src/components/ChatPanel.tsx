@@ -43,10 +43,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingText]);
 
-  useEffect(() => {
-    console.log('inner', window.innerWidth, 'client', document.documentElement.clientWidth, 'scroll', document.documentElement.scrollWidth);
-  }, [messages.length]);
-
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
     setToasts((prev) => [...prev, { id, message, type }]);
