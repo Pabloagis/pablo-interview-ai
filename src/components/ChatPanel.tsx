@@ -15,6 +15,17 @@ interface Topic {
   question: string;
 }
 
+const THINKING_PHRASES = [
+  'Thinking…',
+  'Recalling project experience…',
+  'Analyzing previous implementation…',
+  'Pulling from memory…',
+  'Connecting the dots…',
+  'Considering the context…',
+  'Looking back at the work history…',
+  'Preparing a thoughtful answer…',
+];
+
 const TOPIC_POOL: Topic[] = [
   { label: 'Recent role',         question: 'Tell me about your most recent role' },
   { label: 'Career path',         question: 'Walk me through your career path' },
@@ -47,11 +58,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
   const [suggestions, setSuggestions] = useState<Topic[]>(() => pickRandom(TOPIC_POOL, 5));
+  const [thinkingPhrase, setThinkingPhrase] = useState('');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
+  const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -63,6 +76,22 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       // ignore
     }
   }, [sessionId]);
+
+  // Rotate thinking phrases while waiting for first streaming content
+  useEffect(() => {
+    if (!isStreaming) {
+      if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current);
+      setThinkingPhrase('');
+      return;
+    }
+    let i = 0;
+    setThinkingPhrase(THINKING_PHRASES[0]);
+    thinkingIntervalRef.current = setInterval(() => {
+      i = (i + 1) % THINKING_PHRASES.length;
+      setThinkingPhrase(THINKING_PHRASES[i]);
+    }, 1800);
+    return () => { if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current); };
+  }, [isStreaming]);
 
   // Scroll management: follow bottom normally; when streaming starts, anchor to top of response
   useEffect(() => {
@@ -301,7 +330,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {isStreaming && (
             <>
               <div ref={streamingTopRef} />
-              <StreamingResponse text={streamingText} />
+              <StreamingResponse text={streamingText} thinkingPhrase={thinkingPhrase} />
             </>
           )}
 
