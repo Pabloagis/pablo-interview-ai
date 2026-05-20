@@ -210,7 +210,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full overflow-x-hidden bg-gray-50">
+    <div className="flex flex-col h-dvh w-full overflow-x-hidden bg-gray-50">
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
@@ -226,7 +226,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
       {/* Message list */}
       <div className="flex-1 min-w-0 overflow-y-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto overflow-hidden">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="text-center py-16">
@@ -252,7 +252,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       </div>
 
       {/* Input area */}
-      <div className="bg-white border-t border-gray-200 px-4 py-3 flex-shrink-0">
+      <div className="bg-white border-t border-gray-200 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex-shrink-0">
         <div className="max-w-2xl mx-auto">
           <div className="flex gap-2 items-end">
             <div className="flex-1 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
@@ -290,18 +290,27 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <span className="text-xs text-gray-300">
               {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
             </span>
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <button
                 onClick={handleDownloadTranscript}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                aria-label="Download transcript"
+                className="text-gray-400 hover:text-gray-600 transition-colors"
               >
-                Download transcript
+                {/* Download icon — label on desktop, icon-only on mobile */}
+                <span className="hidden sm:inline text-xs">Download transcript</span>
+                <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
               </button>
               <button
                 onClick={handleReset}
-                className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+                aria-label="Reset conversation"
+                className="text-gray-400 hover:text-red-500 transition-colors"
               >
-                Reset
+                <span className="hidden sm:inline text-xs">Reset</span>
+                <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
               </button>
             </div>
           </div>
