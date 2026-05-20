@@ -210,7 +210,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div style={{display:'flex', flexDirection:'column', height:'100dvh', width:'100vw', maxWidth:'100vw', overflowX:'hidden', overflowY:'hidden', backgroundColor:'#f9fafb'}}>
+    <div className="fixed inset-0 flex flex-col bg-gray-50 overflow-hidden">
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
@@ -225,8 +225,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       />
 
       {/* Message list */}
-      <div className="flex-1 min-w-0 overflow-y-auto px-4 py-6">
-        <div className="max-w-2xl mx-auto overflow-x-hidden w-full">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="text-center py-16">
@@ -248,14 +247,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {isStreaming && <StreamingResponse text={streamingText} />}
 
           <div ref={messagesEndRef} />
-        </div>
       </div>
 
       {/* Input area */}
-      <div className="bg-white border-t border-gray-200 px-3 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex-shrink-0">
-        <div className="max-w-2xl mx-auto">
-          <div className="flex items-end gap-2 w-full min-w-0 overflow-hidden">
-            <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors overflow-hidden">
+      <div className="border-t bg-white p-3 shrink-0">
+          <div className="flex items-end gap-2 min-w-0">
+            <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
               <textarea
                 ref={textareaRef}
                 value={inputText}
@@ -264,7 +261,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 placeholder="Ask Pablo anything…"
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 min-w-0 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
+                className="flex-1 min-w-0 resize-none bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
                 style={{ maxHeight: '120px' }}
               />
             </div>
@@ -273,7 +270,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               onClick={sendMessage}
               disabled={!inputText.trim() || isStreaming}
               aria-label="Send message"
-              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0 flex-grow-0"
+              className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -314,7 +311,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               </button>
             </div>
           </div>
-        </div>
       </div>
 
       <Toast toasts={toasts} onDismiss={dismissToast} />
