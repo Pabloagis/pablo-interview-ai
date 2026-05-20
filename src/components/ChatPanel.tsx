@@ -264,22 +264,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 <span className="text-blue-600 font-bold text-2xl">P</span>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Hi, I&apos;m Pablo.</h2>
-              <p className="text-gray-400 text-sm leading-relaxed text-center px-4 mb-4">
+              <p className="text-gray-400 text-sm leading-relaxed text-center px-4">
                 Ask me what you&apos;d ask any candidate — background, decisions, projects, how I think.
               </p>
-              <p className="text-xs text-gray-300 text-center px-4 mb-6">
-                When you&apos;re finished, click{' '}
-                <span className="text-green-500 font-medium">End Interview</span>{' '}
-                (top right) — don&apos;t just close the tab.
-              </p>
-              <div className="text-center space-y-1">
-                <p className="text-xs text-gray-300">
-                  ↓ Tap a suggested question to start, or type your own below
-                </p>
-                <p className="text-xs text-gray-300">
-                  Press <span className="font-medium">Enter</span> or the arrow button to send
-                </p>
-              </div>
             </div>
           )}
 
