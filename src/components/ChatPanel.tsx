@@ -264,24 +264,32 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="px-6 w-full min-w-0 overflow-hidden py-14 max-w-sm mx-auto">
-              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
-                <span className="text-blue-600 font-bold text-xl">P</span>
+            <div className="flex flex-col items-center px-6 py-14 w-full">
+              <div className="w-14 h-14 rounded-full border-2 border-blue-200 bg-blue-50 flex items-center justify-center mb-5">
+                <span className="text-blue-500 font-bold text-xl">P</span>
               </div>
-              <div className="text-center space-y-4">
-                <p className="text-gray-800 font-semibold text-base leading-snug">
-                  Bienvenido a la siguiente generación del CV:{' '}
-                  <span className="text-blue-500">una identidad profesional viva, inteligente y dinámica.</span>
-                </p>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Un nuevo estándar donde la inteligencia artificial, el storytelling y la autenticidad
-                  transforman un currículum estático en una experiencia que conecta, demuestra y evoluciona contigo.
-                </p>
-                <p className="text-gray-400 text-sm leading-relaxed">
-                  Porque el futuro profesional ya no se resume en un PDF.
-                  <br />
-                  <span className="text-gray-600 font-medium">Se construye en tiempo real.</span>
-                </p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I&apos;m Pablo Agis.</h1>
+              <p className="text-gray-400 text-sm text-center leading-relaxed mb-8 max-w-xs">
+                SaaS implementation specialist with a decade in high-end hospitality. Ask me anything.
+              </p>
+              <div className="w-10 h-px bg-gray-200 mb-6" />
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Try asking</p>
+              <div className="w-full max-w-sm space-y-2">
+                {[
+                  'What was your role at HubOS?',
+                  'Tell me about a difficult client situation',
+                  'Why the move from hospitality into tech?',
+                ].map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => sendMessage(q)}
+                    disabled={isStreaming}
+                    className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-left hover:border-blue-300 hover:bg-blue-50 transition-all group"
+                  >
+                    <span className="text-sm text-gray-700 group-hover:text-blue-700">{q}</span>
+                    <span className="text-gray-300 group-hover:text-blue-400 ml-3 shrink-0">↗</span>
+                  </button>
+                ))}
               </div>
             </div>
           )}
