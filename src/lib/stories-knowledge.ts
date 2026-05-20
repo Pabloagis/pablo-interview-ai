@@ -31,9 +31,9 @@ export const STORIES: Story[] = [
     ownership: 'participated',
     content: `**STORY: Vienna AI Feedback Project**
 
-Context: During Pablo's time at HubOS as Implementation Specialist, he participated in the onboarding of Gran Hotel Vienna — a property transitioning from IHG to Eurostars brand, implementing the HubOS platform. This is the implementation project where Pablo had the most active involvement.
+Context: During Pablo's time at HubOS as Implementation Specialist, he participated in the onboarding and implementation of Gran Hotel Vienna — a property transitioning from IHG to Eurostars brand, implementing the HubOS platform. This is the implementation project where Pablo had the most active involvement.
 
-[S] While working on the Gran Hotel Vienna implementation, the front office team was manually aggregating guest feedback from email, calls, and forms into a spreadsheet every morning. The process was slow and urgent issues were sometimes missed.
+[S] While working on the Gran Hotel Vienna during an implementation, the front office team was manually aggregating guest feedback from email, calls, and forms into a spreadsheet every morning. The process was slow and urgent issues were sometimes missed.
 
 [T] Reduce manual work and help the team identify urgent issues faster.
 
@@ -106,7 +106,7 @@ Pablo's role as Software Implementation Specialist:
 - Created documentation for implementation and training
 - Provided live installation support
 
-Tools used: Jira, Monday.com, Notion, Excel, Google Meet, Calendar.
+Tools used: Jira, Monday.com, Excel, Google Meet, Calendar.
 
 [Result] Real adoption (not just compliance). Worked across multiple property types. Built strong client relationships.
 
@@ -131,13 +131,13 @@ Tools used: Jira, Monday.com, Notion, Excel, Google Meet, Calendar.
 
 The progression: Hotel operations (understanding customer pain) → SaaS implementation at HubOS (understanding product and adoption) → Commercial roles (driving growth with credibility on both sides).
 
-Key framing: "I'm not running away from operations — I'm leveraging it toward commercial impact."
+Key framing: "I'm not running away from operations — I'm leveraging it toward business impact."
 
-The natural arc: 7 years in operations gave Pablo deep understanding of what hoteliers actually struggle with day to day — OTA pressure, PMS adoption gaps, the difference between what a system promises and what happens on the floor at 7am during a busy check-in.
+The natural arc: 7 years in operations gave Pablo deep understanding of what hoteliers actually struggle with day to day — PMS adoption gaps, the difference between what a system promises and what happens on the floor during pick times.
 
 At HubOS, Pablo saw the other side — how technology addresses those problems. What he genuinely enjoyed most wasn't the configuration or technical setup. It was the consultative conversations: understanding a client's specific situation, finding the real pain, helping them see how the product could change their day-to-day.
 
-Most SDRs in hospitality tech are either ex-hotel people who understand the pain but struggle with the commercial side, or pure sales people who know the pitch but can't speak a hotelier's language. Pablo sits in the rare middle ground — credibility on both sides.
+Pablo sits in the rare middle ground between hospitality and technology— credibility on both sides.
 
 [LinkedIn framing] "Building on my foundation in hospitality, I've gained hands-on experience with SaaS solutions, particularly through PMS and operational tools. I'm now looking to combine this technical understanding with a growing focus on sales, helping the industry adopt solutions that drive efficiency and measurable business impact."`,
   },
@@ -208,9 +208,9 @@ This isn't abstract ambition — it's a logical extension of the existing skill 
 - Documenting outcomes for member history
 - Following up to ensure satisfaction
 
-[R] Salesforce was not a side-tool — it was core to the role. Daily fluency built over 2.5 years of consistent use. Strong understanding of how CRM systems support both relationship continuity and case-driven workflows.
+[R] Daily fluency built over 2.5 years of consistent use. Strong understanding of how CRM systems support both relationship continuity and case-driven workflows.
 
-[Learning] CRM systems are only as valuable as the discipline behind data entry. The quality of member context I could pull depended on the quality others put in. That's why I always logged interactions thoroughly — it's how good service compounds over time.
+[Learning] CRM systems are only as valuable as the discipline behind data entry and the culture of using the data to drive personalized service.
 
 **Why this matters for an SDR role:**
 - Already familiar with CRM logic, pipeline thinking, and activity logging

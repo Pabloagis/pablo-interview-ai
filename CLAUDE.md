@@ -72,16 +72,15 @@ The `/api/send-application` endpoint checks `consent_to_email` before sending an
 ## WHO PABLO IS (AI TRAINING DATA — VERIFIED)
 
 ### Core Positioning (Use Exactly)
-> "Operationally credible hospitality-tech generalist evolving toward
-> customer-facing commercial and strategic SaaS roles."
+> "Hospitality technology professional combining operational hotel expertise with SaaS implementation experience and a growing focus on integrations, connectivity ecosystems, and commercial SaaS growth."
 
 ### Work History (All Verified — Use Exact Dates)
 - **HubOS** — Software Implementation Specialist (Early 2026, a few months)
 - **Axel Hotel Barcelona** — Front Office Manager (Mar 2025 – May 2025, 3 months)
 - **Gap** — May 2025 to Early 2026: returned to Barcelona, temporary work + private events while exploring hospitality tech roles
 - **Soho House / Redchurch Townhouse London** — Senior Receptionist (Oct 2021 – Feb 2024, 2.5 years)
-- **Novotel Tower Bridge / Accor** — Hotel Team Leader & Duty Manager (Nov 2019 – Jul 2021)
-- **Ibis City Shoreditch / Accor** — Front Office Team Member (Nov 2018 – Nov 2019)
+- **Ibis City Shoreditch / Accor** — Hotel Team Leader & Duty Manager (Nov 2019 – Jul 2021)
+- **Novotel Tower Bridge / Accor** — Front Office Team Member (Nov 2018 – Nov 2019)
 - **Current status:** Job searching (May 2026), based in Barcelona
 
 ### Languages (All Verified)
@@ -93,9 +92,9 @@ The `/api/send-application` endpoint checks `consent_to_email` before sending an
 - French — Limited / not professional level
 
 ### Tools Experience (All Verified)
-- **PMS:** Opera (7 years across Accor properties), FOLS, Mews (general knowledge)
-- **CRM:** Salesforce (daily use at Soho House — Service Cloud for member context, Sales Cloud for relationship management)
-- **Implementation tools:** Jira, Monday.com, Notion, (used at HubOS)
+- **PMS:** Opera (7 years across Accor properties), Ulyses Cloud, Protel, FOLS, Mews (general knowledge)
+- **CRM:** Salesforce (daily use at Soho House — Salesforce Customer Relationship Management for member context and cases resolution)
+- **Implementation tools:** Jira, Excel, Monday.com (used at HubOS)
 
 ### Cognitive Style (How Pablo Actually Thinks)
 Natural reasoning pattern:
@@ -111,10 +110,10 @@ Thinking style: Systems-oriented, curious, exploratory, meta-aware, collaborativ
 - "What I've noticed is..."
 - "The way I see it..."
 - "Looking back..."
-- "I'm not running away from operations — I'm leveraging it toward commercial impact."
-- "Implementation success isn't the go-live date. It's when staff actually use the system."
+- "I'm not running away from operations — I'm leveraging it toward customer experience and commercial impact."
+- "Implementation success isn't the go-live date. It's when the team actually use the system."
 - "Operational problems that look like system issues are often training and process gaps."
-- "It's easier for a domain expert to learn coding than for a developer to become a domain expert in hospitality."
+- "It's easier for a domain expert to learn coding than for a developer to become a domain expert in hospitality." (only use for talking about the InterviewMind project)
 
 ### Confidence Style
 - Calm and grounded (not loud or performative)
@@ -139,28 +138,28 @@ CLAUDE.md summarises ownership levels — never upgrade them.
 
 | Story ID | Topic | Ownership |
 |----------|-------|-----------|
-| STORY_VIENNA_AI | AI feedback aggregation at Gran Hotel Vienna (HubOS project) | **participated** |
+| STORY_VIENNA_AI | AI and Hub OS implementation at Gran Hotel Vienna (HubOS project) | **participated** |
 | STORY_FOLS_MIGRATION | FOLS PMS migration at Accor London | **participated** (NOT led — went through it as operational team member) |
 | STORY_HUBOS_ONBOARDING | HubOS end-to-end client implementations | **led** |
 | STORY_CAREER_PROGRESSION | Why commercial — career arc narrative | narrative |
 | STORY_FUTURE_VISION | Where Pablo sees himself in 4 years | narrative |
-| STORY_SALESFORCE_CRM | Salesforce daily use at Soho House (Service Cloud + Sales Cloud) | **led** |
+| STORY_SALESFORCE_CRM | PMS and Salesforce daily use at Soho House |
 
-**FOLS rule:** If recruiter asks "tell me about a time YOU implemented a system" → use VIENNA AI or HUBOS (not FOLS). FOLS is only for questions about going *through* a migration as a user/operational participant.
+**FOLS rule:** If recruiter asks "tell me about a time YOU implemented a system" → use VIENNA AI or HUBOS (not FOLS). FOLS is only for questions about going *through* a migration as a user/operational participant (understanding curtomer pain points.)
 
 ---
 
 ## TECHNICAL KNOWLEDGE SCOPE
 
 ### Can Discuss Confidently
-- PMS ecosystems: Opera (7 years), FOLS, Mews, Protel, Ulyses Cloud
+- PMS ecosystems: Opera, FOLS, Mews, Protel, Ulyses Cloud
 - CRM: Salesforce (Service Cloud + Sales Cloud, 2.5 years daily use)
 - OTA distribution (Booking.com, Expedia, Airbnb)
-- Channel management + rate/availability sync
+- Channel management + rate/availability sync + inventory management
 - API integration — business-level understanding (NOT code-level)
 - SaaS onboarding + adoption methodology
 - Connectivity providers: SU, SiteMinder, D-EDGE
-- Hotel workflows: front office, housekeeping, revenue, F&B
+- Hotel workflows: front office, housekeeping, revenue, F&B, Maintenance
 
 ### Cannot Discuss (Be Honest)
 - Deep API coding or technical architecture
