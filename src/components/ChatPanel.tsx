@@ -264,14 +264,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="px-4 w-full min-w-0 overflow-hidden py-16">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-blue-600 font-bold text-2xl">P</span>
+            <div className="px-6 w-full min-w-0 overflow-hidden py-14 max-w-sm mx-auto">
+              <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-8">
+                <span className="text-blue-600 font-bold text-xl">P</span>
               </div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Hi, I&apos;m Pablo.</h2>
-              <p className="text-gray-400 text-sm leading-relaxed text-center px-4">
-                Ask me what you&apos;d ask any candidate — background, decisions, projects, how I think.
-              </p>
+              <div className="text-center space-y-4">
+                <p className="text-gray-800 font-semibold text-base leading-snug">
+                  Bienvenido a la siguiente generación del CV:{' '}
+                  <span className="text-blue-500">una identidad profesional viva, inteligente y dinámica.</span>
+                </p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Un nuevo estándar donde la inteligencia artificial, el storytelling y la autenticidad
+                  transforman un currículum estático en una experiencia que conecta, demuestra y evoluciona contigo.
+                </p>
+                <p className="text-gray-400 text-sm leading-relaxed">
+                  Porque el futuro profesional ya no se resume en un PDF.
+                  <br />
+                  <span className="text-gray-600 font-medium">Se construye en tiempo real.</span>
+                </p>
+              </div>
             </div>
           )}
 
