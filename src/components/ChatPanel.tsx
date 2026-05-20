@@ -346,6 +346,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       />
 
+      {/* Topics sub-header — persists throughout conversation */}
+      {suggestions.length > 0 && (
+        <div className="border-b bg-white px-3 py-2 shrink-0">
+          <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+            {suggestions.map((topic) => (
+              <button
+                key={topic.label}
+                onClick={() => handleSuggestedQuestion(topic)}
+                disabled={isStreaming}
+                className="flex items-center gap-1 shrink-0 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md px-2.5 py-1 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-40 transition-all"
+              >
+                {topic.label}
+                <span className="text-gray-400 text-[10px]">→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message list */}
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
@@ -401,27 +420,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shrink-0" />
               {t.playingIndicator}
             </button>
-          )}
-          {/* Suggested topics */}
-          {suggestions.length > 0 && (
-            <div className="mb-2.5">
-              <p className="text-[10px] font-medium text-gray-300 uppercase tracking-widest mb-1.5 px-0.5">
-                {t.topicsLabel}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {suggestions.map((topic) => (
-                  <button
-                    key={topic.label}
-                    onClick={() => handleSuggestedQuestion(topic)}
-                    disabled={isStreaming}
-                    className="flex items-center gap-1 text-xs text-gray-500 bg-white border border-gray-200 rounded-md px-2.5 py-1 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-40 transition-all"
-                  >
-                    {topic.label}
-                    <span className="text-gray-300 text-[10px]">→</span>
-                  </button>
-                ))}
-              </div>
-            </div>
           )}
           <div className="flex items-end gap-2 min-w-0">
             <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">

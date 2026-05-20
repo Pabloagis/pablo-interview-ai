@@ -76,10 +76,10 @@ export default function EndInterviewButton({
           onClick={openModal}
           disabled={!isActive}
           className={[
-            'min-h-[36px] px-2 py-1.5 sm:py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 whitespace-nowrap',
+            'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white transition-all duration-200 whitespace-nowrap',
             isActive
-              ? 'bg-green-500 hover:bg-green-600 shadow-sm hover:shadow-md'
-              : 'bg-slate-300 opacity-60 cursor-not-allowed',
+              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg ring-2 ring-green-300 ring-offset-1'
+              : 'bg-slate-300 opacity-50 cursor-not-allowed',
           ].join(' ')}
         >
           <span className="sm:hidden">{t.endButtonShort}</span>
