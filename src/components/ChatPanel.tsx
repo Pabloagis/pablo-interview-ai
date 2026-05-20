@@ -210,7 +210,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-dvh w-full overflow-x-hidden bg-gray-50">
+    <div className="flex flex-col h-dvh w-full max-w-full overflow-x-hidden bg-gray-50">
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
@@ -254,8 +254,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       {/* Input area */}
       <div className="bg-white border-t border-gray-200 px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] flex-shrink-0">
         <div className="max-w-2xl mx-auto">
-          <div className="flex gap-2 items-end">
-            <div className="flex-1 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
+          <div className="flex gap-2 items-end w-full min-w-0">
+            <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
               <textarea
                 ref={textareaRef}
                 value={inputText}
@@ -264,7 +264,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 placeholder="Ask Pablo anything…"
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
+                className="flex-1 min-w-0 bg-transparent resize-none text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
                 style={{ maxHeight: '120px' }}
               />
             </div>
@@ -273,7 +273,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               onClick={sendMessage}
               disabled={!inputText.trim() || isStreaming}
               aria-label="Send message"
-              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0"
+              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors flex-shrink-0 flex-grow-0"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
