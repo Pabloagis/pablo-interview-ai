@@ -74,7 +74,7 @@ export default function EndInterviewButton({
           onClick={openModal}
           disabled={!isActive}
           className={[
-            'min-h-[36px] px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 whitespace-nowrap',
+            'min-h-[36px] px-2 py-1.5 sm:py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 whitespace-nowrap',
             isActive
               ? 'bg-green-500 hover:bg-green-600 shadow-sm hover:shadow-md'
               : 'bg-slate-300 opacity-60 cursor-not-allowed',
