@@ -56,8 +56,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setInterviewEnded({ emailSent });
   }, []);
 
-  const sendMessage = async () => {
-    const trimmed = inputText.trim();
+  const sendMessage = async (overrideText?: string) => {
+    const trimmed = (overrideText ?? inputText).trim();
     if (!trimmed || isStreaming) return;
 
     const userMessage: Message = {
@@ -228,15 +228,31 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="px-4 w-full min-w-0 overflow-hidden py-16">
+            <div className="px-4 w-full min-w-0 overflow-hidden py-12">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-blue-600 font-bold text-2xl">P</span>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Hi, I&apos;m Pablo.</h2>
-              <p className="text-gray-400 text-sm leading-relaxed text-center px-4">
-                Ask me about my experience, career goals, or anything you&apos;d want to know in a
-                real interview.
+              <p className="text-gray-400 text-sm leading-relaxed text-center px-4 mb-6">
+                Ask me what you&apos;d ask any candidate — background, decisions, projects, how I think.
               </p>
+              <div className="flex flex-wrap gap-2 justify-center px-2 max-w-sm mx-auto">
+                {[
+                  'Tell me about your most recent role',
+                  'Why are you moving into hospitality tech?',
+                  'What PMS systems have you worked with?',
+                  'Walk me through an implementation you led',
+                  'What kind of role are you looking for?',
+                ].map((q) => (
+                  <button
+                    key={q}
+                    onClick={() => sendMessage(q)}
+                    className="text-xs text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1.5 hover:border-blue-400 hover:text-blue-600 transition-colors text-left"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -267,7 +283,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </div>
 
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage()}
               disabled={!inputText.trim() || isStreaming}
               aria-label="Send message"
               className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors"

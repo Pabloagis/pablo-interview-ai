@@ -85,15 +85,16 @@ export default function IntakeScreen() {
             <span className="text-white font-bold text-xl">IM</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800">InterviewMind</h1>
-          <p className="text-gray-500 mt-2 text-sm">A real conversation with Pablo Agis Burgos</p>
+          <p className="text-gray-500 mt-2 text-sm">Interview his AI. Then interview him.</p>
         </div>
 
         {/* About card */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
           <p className="text-gray-600 text-sm leading-relaxed">
-            AI-powered interview simulation trained on{' '}
-            <strong className="text-gray-800">Pablo Agis Burgos&apos;</strong> real hospitality
-            and SaaS background. Ask anything you&apos;d ask a real candidate.
+            An interactive AI version of{' '}
+            <strong className="text-gray-800">Pablo Agis Burgos</strong> — hospitality tech
+            professional. Ask what you&apos;d ask any candidate: his background, decisions,
+            projects, how he thinks.
           </p>
         </div>
 
@@ -103,7 +104,7 @@ export default function IntakeScreen() {
           className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
         >
           <p className="text-sm font-medium text-gray-700 mb-4">
-            Optional: introduce yourself to Pablo
+            Introduce yourself — Pablo will personalise the conversation
           </p>
 
           <div className="space-y-3 mb-5">
