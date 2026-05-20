@@ -62,6 +62,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const [listenMode, setListenMode] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -217,7 +218,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             setMessages((prev) => [...prev, assistantMessage]);
             setStreamingText('');
             setIsStreaming(false);
-            if (voiceTriggeredRef.current) {
+            if (voiceTriggeredRef.current || listenMode) {
               voiceTriggeredRef.current = false;
               playResponse(accumulated);
             }
@@ -520,7 +521,18 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <span className="text-xs text-gray-300">
               {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
             </span>
-            <div className="flex gap-3">
+            <div className="flex gap-3 items-center">
+              {/* Listen mode toggle */}
+              <button
+                onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
+                aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
+                title={listenMode ? 'Listen mode on — click to disable' : 'Listen mode off — click to hear all responses'}
+                className={listenMode ? 'text-blue-500 hover:text-blue-600 transition-colors' : 'text-gray-400 hover:text-gray-600 transition-colors'}
+              >
+                <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
+                </svg>
+              </button>
               <button
                 onClick={handleDownloadTranscript}
                 aria-label="Download transcript"
