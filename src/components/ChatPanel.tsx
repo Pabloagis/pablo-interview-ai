@@ -261,7 +261,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 placeholder="Ask Pablo anything…"
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 min-w-0 resize-none bg-transparent text-sm text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
+                className="flex-1 min-w-0 resize-none bg-transparent text-base text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
                 style={{ maxHeight: '120px' }}
               />
             </div>
