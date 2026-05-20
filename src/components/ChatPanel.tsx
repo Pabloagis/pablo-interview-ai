@@ -44,6 +44,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [suggestions, setSuggestions] = useState<string[]>(() => pickRandom(QUESTION_POOL, 5));
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const streamingTopRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
 
@@ -58,10 +59,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [sessionId]);
 
-  // Keep the message list scrolled to bottom
+  // Scroll management: follow bottom normally; when streaming starts, anchor to top of response
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingText]);
+    if (isStreaming) {
+      streamingTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, isStreaming]);
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
@@ -269,7 +274,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <MessageBubble key={msg.id} message={msg} />
           ))}
 
-          {isStreaming && <StreamingResponse text={streamingText} />}
+          {isStreaming && (
+            <>
+              <div ref={streamingTopRef} />
+              <StreamingResponse text={streamingText} />
+            </>
+          )}
 
           <div ref={messagesEndRef} />
       </div>
