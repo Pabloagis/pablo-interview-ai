@@ -384,7 +384,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I&apos;m Pablo Agis.</h1>
               <p className="text-gray-400 text-sm text-center leading-relaxed mb-8 max-w-xs">
-                SaaS implementation specialist with a decade in high-end hospitality. Ask me anything.
+                Ask me anything!
               </p>
               <div className="w-10 h-px bg-gray-200 mb-6" />
               <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Try asking</p>
