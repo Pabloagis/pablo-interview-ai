@@ -2,35 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  width: 100%;
-  max-width: 100vw;
-  overflow-x: clip;
-  position: relative;
-}
-
 html {
+  overflow-x: clip;
   scroll-behavior: smooth;
 }
 
-@supports (-webkit-touch-callout: none) {
-  .h-screen { height: -webkit-fill-available; }
+body {
+  overflow-x: clip;
+  min-height: 100%;
 }
 
-/* Subtle custom scrollbar — desktop only */
 @media (min-width: 640px) {
-  ::-webkit-scrollbar {
-    width: 5px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: #e5e7eb;
-    border-radius: 9999px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: #d1d5db;
-  }
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 9999px; }
+  ::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
 }
