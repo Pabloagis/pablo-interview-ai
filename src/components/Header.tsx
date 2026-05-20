@@ -8,7 +8,7 @@ interface HeaderProps {
 
 export default function Header({ recruiterName, company, action }: HeaderProps) {
   return (
-    <header className="bg-white border-b border-gray-200 px-3 py-3 flex items-center justify-between flex-shrink-0 w-full max-w-full overflow-hidden min-h-[48px]">
+    <header style={{display:'flex', alignItems:'center', justifyContent:'space-between', flexShrink:0, width:'100%', maxWidth:'100%', overflowX:'hidden', padding:'12px 12px', borderBottom:'1px solid #e5e7eb', backgroundColor:'white', minHeight:'48px', boxSizing:'border-box'}}>
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
           <span className="text-white font-bold text-xs">IM</span>
