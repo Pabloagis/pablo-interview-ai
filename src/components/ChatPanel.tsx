@@ -59,12 +59,19 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
   const [suggestions, setSuggestions] = useState<Topic[]>(() => pickRandom(TOPIC_POOL, 5));
   const [thinkingPhrase, setThinkingPhrase] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fetchAbortRef = useRef<AbortController | null>(null);
   const thinkingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const voiceTriggeredRef = useRef(false);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -113,6 +120,36 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const handleInterviewEnded = useCallback((emailSent: boolean) => {
     setInterviewEnded({ emailSent });
+  }, []);
+
+  const playResponse = useCallback(async (text: string) => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current = null;
+    }
+    setIsPlayingAudio(true);
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) throw new Error('TTS failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      currentAudioRef.current = audio;
+      audio.onended = () => { URL.revokeObjectURL(url); setIsPlayingAudio(false); currentAudioRef.current = null; };
+      audio.onerror = () => { setIsPlayingAudio(false); currentAudioRef.current = null; };
+      await audio.play();
+    } catch {
+      setIsPlayingAudio(false);
+    }
+  }, []);
+
+  const stopAudio = useCallback(() => {
+    if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null; }
+    setIsPlayingAudio(false);
   }, []);
 
   const sendMessage = async (overrideText?: string) => {
@@ -180,6 +217,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             setMessages((prev) => [...prev, assistantMessage]);
             setStreamingText('');
             setIsStreaming(false);
+            if (voiceTriggeredRef.current) {
+              voiceTriggeredRef.current = false;
+              playResponse(accumulated);
+            }
           } else if (event.type === 'error' && event.message) {
             addToast(event.message);
             setStreamingText('');
@@ -230,6 +271,49 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setSuggestions(pickRandom(TOPIC_POOL, 5));
     addToast('Conversation reset. Starting fresh.', 'info');
   };
+
+  const startRecording = async () => {
+    if (isStreaming || isTranscribing) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = recorder;
+
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        setIsTranscribing(true);
+        try {
+          const formData = new FormData();
+          formData.append('audio', blob, 'recording.webm');
+          const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (data.text?.trim()) {
+            voiceTriggeredRef.current = true;
+            sendMessage(data.text.trim());
+          }
+        } catch {
+          addToast('Could not transcribe. Please try again.');
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      addToast('Microphone access denied. Please allow microphone access.');
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
+
+  const toggleRecording = () => { if (isRecording) { stopRecording(); } else { startRecording(); } };
 
   const handleDownloadTranscript = () => {
     window.open(`/api/transcript?sessionId=${sessionId}`, '_blank');
@@ -339,6 +423,16 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
       {/* Input area */}
       <div className="border-t bg-white p-3 shrink-0">
+          {/* Playing indicator */}
+          {isPlayingAudio && (
+            <button
+              onClick={stopAudio}
+              className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-full px-3 py-1.5 mb-2 hover:bg-blue-100 transition-colors"
+            >
+              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shrink-0" />
+              Pablo is speaking — tap to stop
+            </button>
+          )}
           {/* Suggested topics */}
           {suggestions.length > 0 && (
             <div className="mb-2.5">
@@ -374,6 +468,36 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 style={{ maxHeight: '120px' }}
               />
             </div>
+
+            {/* Mic button */}
+            <button
+              onClick={toggleRecording}
+              disabled={isStreaming || isTranscribing || isPlayingAudio}
+              aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
+              className={[
+                'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all',
+                isRecording
+                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                  : isTranscribing
+                  ? 'bg-gray-100 cursor-not-allowed'
+                  : 'bg-gray-100 hover:bg-gray-200',
+              ].join(' ')}
+            >
+              {isRecording ? (
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                </svg>
+              ) : isTranscribing ? (
+                <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              )}
+            </button>
 
             <button
               onClick={() => sendMessage()}
