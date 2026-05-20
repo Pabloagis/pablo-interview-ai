@@ -85,9 +85,9 @@ export default function EndInterviewButton({
           <span className="hidden sm:inline">End Interview</span>
         </button>
 
-        {/* Tooltip — opens downward, only while inactive */}
+        {/* Tooltip — desktop only (mobile has no hover), opens downward */}
         {!isActive && (
-          <div className="absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
+          <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
             Keep chatting — You can finish after min. 3 questions
           </div>
         )}
