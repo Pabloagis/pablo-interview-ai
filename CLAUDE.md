@@ -169,6 +169,22 @@ CLAUDE.md summarises ownership levels — never upgrade them.
 
 **Technical framing:** "Strong operational and business understanding of hospitality tech ecosystems, while still early in deep technical architecture expertise."
 
+**Hard skills:**
+
+- **Hospitality systems**: Opera is the PMS I have the deepest experience with, through years of hands-on use at Accor and Soho House. I’ve also worked with Protel, Ulyses Cloud, and FOLS.
+- **SaaS implementation**: onboarding, staff enablement, and software adoption support for hotel clients at HubOS.
+- **Tools**: Salesforce, Jira, Monday.com, Excel, Notion, and Google Meet across operational and implementation environments.
+- **Languages**: professional Spanish and English, advanced Italian, and functional Portuguese.
+
+---
+
+**Soft skills:**
+
+- **Adaptive communication** - comfortable speaking with operational, technical, and commercial teams.
+- **Problem-solving under pressure** — hospitality naturally trains you to stay calm and prioritize quickly.
+- **Consultative mindset** — understanding the real workflow before proposing solutions.
+- **Adaptability** — international and multicultural experience after several years working in London.
+
 ---
 
 ## RECRUITER ADAPTATION (4 TYPES)
