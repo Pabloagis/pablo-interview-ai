@@ -10,22 +10,27 @@ import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
 
-const QUESTION_POOL = [
-  'Tell me about your most recent role',
-  'Why are you moving into hospitality tech?',
-  'What PMS systems have you worked with?',
-  'Walk me through an implementation you led',
-  'What kind of role are you looking for?',
-  "What's your experience with SaaS onboarding?",
-  'How do you handle a difficult client or stakeholder?',
-  'What does success look like in your next role?',
-  "Tell me about a time things didn't go to plan",
-  'How do you communicate with non-technical teams?',
-  'Why did you leave your last role?',
-  "What's your strongest professional skill?",
+interface Topic {
+  label: string;
+  question: string;
+}
+
+const TOPIC_POOL: Topic[] = [
+  { label: 'Recent role',         question: 'Tell me about your most recent role' },
+  { label: 'Career path',         question: 'Walk me through your career path' },
+  { label: 'Why hospitality tech',question: 'Why are you moving into hospitality tech?' },
+  { label: 'Tech stack',          question: 'What PMS systems and tools have you worked with?' },
+  { label: 'Implementation',      question: 'Walk me through an implementation you led' },
+  { label: 'Career goals',        question: 'What kind of role are you looking for?' },
+  { label: 'SaaS experience',     question: "What's your experience with SaaS onboarding?" },
+  { label: 'Difficult situations', question: "Tell me about a time things didn't go to plan" },
+  { label: 'Working style',       question: 'How do you work with non-technical teams?' },
+  { label: 'Leaving reason',      question: 'Why did you leave your last role?' },
+  { label: 'Strengths',           question: "What's your strongest professional skill?" },
+  { label: 'Languages & markets', question: 'What markets can you cover with your language skills?' },
 ];
 
-function pickRandom(pool: string[], n: number): string[] {
+function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
 }
 
@@ -41,7 +46,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [context, setContext] = useState<RecruiterContext>({});
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
-  const [suggestions, setSuggestions] = useState<string[]>(() => pickRandom(QUESTION_POOL, 5));
+  const [suggestions, setSuggestions] = useState<Topic[]>(() => pickRandom(TOPIC_POOL, 5));
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -182,9 +187,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
 
-  const handleSuggestedQuestion = (question: string) => {
-    setSuggestions((prev) => prev.filter((q) => q !== question));
-    sendMessage(question);
+  const handleSuggestedQuestion = (topic: Topic) => {
+    setSuggestions((prev) => prev.filter((t) => t.label !== topic.label));
+    sendMessage(topic.question);
   };
 
   const handleReset = () => {
@@ -193,7 +198,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setStreamingText('');
     setIsStreaming(false);
     setInputText('');
-    setSuggestions(pickRandom(QUESTION_POOL, 5));
+    setSuggestions(pickRandom(TOPIC_POOL, 5));
     addToast('Conversation reset. Starting fresh.', 'info');
   };
 
@@ -286,19 +291,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
       {/* Input area */}
       <div className="border-t bg-white p-3 shrink-0">
-          {/* Suggested questions */}
+          {/* Suggested topics */}
           {suggestions.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mb-2">
-              {suggestions.map((q) => (
-                <button
-                  key={q}
-                  onClick={() => handleSuggestedQuestion(q)}
-                  disabled={isStreaming}
-                  className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-full px-3 py-1 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 transition-colors"
-                >
-                  {q}
-                </button>
-              ))}
+            <div className="mb-2.5">
+              <p className="text-[10px] font-medium text-gray-300 uppercase tracking-widest mb-1.5 px-0.5">
+                Topics
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {suggestions.map((topic) => (
+                  <button
+                    key={topic.label}
+                    onClick={() => handleSuggestedQuestion(topic)}
+                    disabled={isStreaming}
+                    className="flex items-center gap-1 text-xs text-gray-500 bg-white border border-gray-200 rounded-md px-2.5 py-1 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-40 transition-all"
+                  >
+                    {topic.label}
+                    <span className="text-gray-300 text-[10px]">→</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
           <div className="flex items-end gap-2 min-w-0">
