@@ -70,12 +70,12 @@ export default function EndInterviewButton({
   return (
     <>
       {/* Inline trigger — positioned by parent (Header) */}
-      <div className="relative group">
+      <div className="relative group flex-shrink-0">
         <button
           onClick={openModal}
           disabled={!isActive}
           className={[
-            'min-h-[36px] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition-all duration-200',
+            'min-h-[36px] px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 whitespace-nowrap',
             isActive
               ? 'bg-green-500 hover:bg-green-600 shadow-sm hover:shadow-md'
               : 'bg-slate-300 opacity-60 cursor-not-allowed',
