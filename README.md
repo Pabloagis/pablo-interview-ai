@@ -9,7 +9,7 @@
 [![Anthropic](https://img.shields.io/badge/Anthropic-Claude%20Sonnet%204.6-D97757)](https://www.anthropic.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-deployed-black?logo=vercel)](https://vercel.com/)
 
-🔗 **[Live Demo →](https://pablo-interview-ai.vercel.app)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
+🔗 **[Live Demo →](https://pablo-interview.vercel.app)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
 
 ---
 
@@ -17,7 +17,9 @@
 
 **InterviewMind v2** is a production-grade web application that simulates an interview conversation with me — Pablo Agis Burgos, a hospitality-tech professional transitioning into commercial SaaS roles.
 
-Recruiters land on a simple intake form, enter their name and company, and immediately start a live conversation with an AI assistant that knows my background deeply — my work history, my stories, my voice, and my limits (it never invents facts).
+Recruiters land on a simple intake form, enter their details, and immediately start a live conversation with an AI assistant that knows my background deeply — my work history, my stories, my voice, and my limits (it never invents facts).
+
+After the interview, if the recruiter consented, the system automatically sends them a follow-up email with my CV attached and a transcript of the conversation.
 
 But this isn't just a chatbot. It's a **portfolio piece** that demonstrates:
 
@@ -25,6 +27,7 @@ But this isn't just a chatbot. It's a **portfolio piece** that demonstrates:
 - ⚡ **Real-time SSE streaming** — text appears word-by-word, just like ChatGPT
 - 🗄️ **Vector-based semantic memory** — every conversation builds context using pgvector + OpenAI embeddings
 - 🏗️ **Modular architecture** — smart retrieval loads only relevant knowledge per query (token-efficient)
+- 📧 **Automated post-interview email** — CV delivery via Gmail SMTP with GDPR-gated consent
 - 🚀 **Full-stack execution** — Next.js 15 App Router + TypeScript + Supabase + Vercel
 
 ---
@@ -41,16 +44,19 @@ It also lets me demonstrate something most candidates can't: that I can ship a r
 
 ## ✨ Key Features
 
-### 1. Authentic conversational AI
+### 1. Intake form with GDPR consent
+Recruiters fill a short form before the interview starts. Email address and GDPR consent are required — the consent checkbox gates the "Start Interview" button and is stored server-side. The system only sends follow-up emails to recruiters who explicitly opt in.
+
+### 2. Authentic conversational AI
 The system prompt is heavily engineered to represent me accurately — my real work history, real stories (STAR-formatted), real limitations. It refuses to invent personal details (a common LLM failure mode) and acknowledges what it doesn't know.
 
-### 2. Streaming responses (SSE)
+### 3. Streaming responses (SSE)
 Built using Server-Sent Events for word-by-word streaming. No spinner-and-wait — responses appear in real time, exactly like modern AI products.
 
-### 3. Semantic memory across the conversation
+### 4. Semantic memory across the conversation
 Every message is embedded using OpenAI's `text-embedding-3-small` and stored in Supabase with `pgvector`. When a new message arrives, the system retrieves the most contextually relevant prior turns to inform the response.
 
-### 4. Modular knowledge retrieval
+### 5. Modular knowledge retrieval
 Rather than stuffing everything into one massive prompt (expensive, slow, lower quality), the system loads only relevant context per query:
 - Recruiter mentions Mews → loads deep Mews context
 - Recruiter asks about implementation → loads the Vienna story
@@ -58,8 +64,11 @@ Rather than stuffing everything into one massive prompt (expensive, slow, lower 
 
 This reduced token usage by ~50% per request.
 
-### 5. Conversation transcript
-After each session, the conversation is saved and can be exported as Markdown for the recruiter's records.
+### 6. Post-interview email with CV
+After the session, the system can send the recruiter a follow-up email (HTML, with CV attached) including the full conversation transcript. The endpoint checks GDPR consent before sending — if it wasn't granted, it returns 403.
+
+### 7. Conversation transcript export
+Each session can be exported as a Markdown file via a dedicated API endpoint, built dynamically from the stored message history.
 
 ---
 
@@ -107,6 +116,7 @@ After each session, the conversation is saved and can be exported as Markdown fo
 | **Memory non-blocking** | If embedding/memory fails, the chat still works. Graceful degradation. |
 | **Modular knowledge over monolithic prompt** | ~50% token reduction. Better response quality. Easier to maintain. |
 | **Anti-confabulation rules in prompt** | Prevents the AI from inventing personal details — a critical safety requirement. |
+| **GDPR-gated email** | Consent is stored server-side on session creation and checked before any email is sent. |
 | **No prompt secrets exposed** | All API calls are server-side. Frontend never sees keys. |
 
 ---
@@ -123,6 +133,7 @@ After each session, the conversation is saved and can be exported as Markdown fo
 - Next.js API Routes (serverless)
 - Server-Sent Events for streaming
 - AbortController for graceful timeouts
+- nodemailer + Gmail SMTP for post-interview email delivery
 
 **AI & Memory**
 - [Anthropic Claude Sonnet 4.6](https://www.anthropic.com/) — conversational AI
@@ -176,6 +187,10 @@ OPENAI_API_KEY=sk-proj-...
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJh...
 SUPABASE_SERVICE_KEY=eyJh...
+
+# Email (post-interview follow-up)
+GMAIL_USER=you@gmail.com
+GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx   # Google App Password (16 chars)
 ```
 
 ### 4. Set up Supabase schema
@@ -189,7 +204,11 @@ In Supabase SQL Editor, run the schema in `supabase/schema.sql`:
 ### 5. Run the dev server
 
 ```bash
-npm run dev
+# Recommended — avoids a Webpack manifest bug in Next.js 15
+npm run dev -- --turbopack
+
+# Or run the production build locally
+npm start
 ```
 
 Visit [http://localhost:3000](http://localhost:3000).
@@ -203,37 +222,55 @@ pablo-interview-ai/
 ├── src/
 │   ├── app/
 │   │   ├── api/
-│   │   │   ├── chat/route.ts          # Main streaming endpoint
-│   │   │   ├── session/route.ts       # Session creation
-│   │   │   └── transcript/route.ts    # Export transcript
-│   │   ├── interview/[sessionId]/     # Per-session chat page
+│   │   │   ├── chat/route.ts              # Main streaming endpoint
+│   │   │   ├── session/route.ts           # Session creation
+│   │   │   ├── transcript/route.ts        # Export transcript as Markdown
+│   │   │   └── send-application/route.ts  # Post-interview email with CV
+│   │   ├── interview/[sessionId]/         # Per-session chat page
 │   │   ├── layout.tsx
-│   │   └── page.tsx                   # Intake screen
+│   │   └── page.tsx                       # Intake screen
 │   ├── components/
-│   │   ├── ChatPanel.tsx              # Chat UI with SSE handling
-│   │   ├── IntakeScreen.tsx           # Recruiter intake form
+│   │   ├── ChatPanel.tsx                  # Chat UI with SSE handling
+│   │   ├── IntakeScreen.tsx               # Recruiter intake form (email + GDPR required)
 │   │   ├── MessageBubble.tsx
-│   │   ├── StreamingResponse.tsx      # Real-time text rendering
+│   │   ├── StreamingResponse.tsx          # Real-time text rendering
 │   │   ├── Header.tsx
 │   │   └── Toast.tsx
 │   ├── lib/
-│   │   ├── prompts.ts                 # Core system prompt
-│   │   ├── stories-knowledge.ts       # STAR stories (retrieval)
-│   │   ├── companies-knowledge.ts     # Target companies context
-│   │   ├── retrieval.ts               # Smart context loader
-│   │   ├── anthropic.ts               # Claude API client
-│   │   ├── supabase.ts                # Database client
+│   │   ├── prompts.ts                     # Core system prompt
+│   │   ├── stories-knowledge.ts           # STAR stories (retrieval)
+│   │   ├── companies-knowledge.ts         # Target companies context
+│   │   ├── retrieval.ts                   # Smart context loader
+│   │   ├── mailer.ts                      # Email sending via Gmail SMTP
+│   │   ├── anthropic.ts                   # Claude API client
+│   │   ├── supabase.ts                    # Database client
 │   │   ├── types.ts
 │   │   ├── constants.ts
 │   │   └── utils.ts
 │   └── context/
 │       └── SessionContext.tsx
+├── public/
+│   └── assets/
+│       └── Pablo_Agis_Burgos_CV.pdf       # Attached in follow-up emails
 ├── supabase/
-│   └── schema.sql                     # Database schema
-├── CLAUDE.md                          # AI assistant context
+│   └── schema.sql                         # Database schema
+├── CLAUDE.md                              # AI assistant context
 ├── .env.local.example
 └── package.json
 ```
+
+---
+
+## 📧 Email System
+
+After the interview session, `POST /api/send-application` sends a follow-up email to the recruiter:
+
+- **Attachment:** CV as PDF
+- **Body:** HTML email with transcript, LinkedIn link, and contact CTA
+- **Gate:** Only sends if the recruiter checked the GDPR consent box during intake — returns `403` otherwise
+- **Tracking:** `email_sent_at` timestamp is written to the session on success
+
+The email uses Gmail SMTP via nodemailer. To set it up, generate a [Google App Password](https://myaccount.google.com/apppasswords) and add `GMAIL_USER` and `GMAIL_APP_PASSWORD` to your `.env.local`.
 
 ---
 
