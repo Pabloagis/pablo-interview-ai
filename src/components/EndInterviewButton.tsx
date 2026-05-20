@@ -39,7 +39,6 @@ export default function EndInterviewButton({
     if (isSending) return;
     setErrorMsg(null);
 
-    // No consent — end without sending
     if (!context.consentToEmail) {
       setModalOpen(false);
       onInterviewEnded(false);
@@ -70,25 +69,25 @@ export default function EndInterviewButton({
 
   return (
     <>
-      {/* Floating button */}
-      <div className="fixed top-3 right-3 z-50 group">
+      {/* Inline trigger — positioned by parent (Header) */}
+      <div className="relative group">
         <button
           onClick={openModal}
           disabled={!isActive}
           className={[
-            'rounded-lg text-sm font-semibold text-white transition-all duration-200 min-h-[44px]',
+            'min-h-[36px] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-semibold text-white transition-all duration-200',
             isActive
-              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg px-3 py-1.5 sm:px-5 sm:py-2.5'
-              : 'bg-slate-400 opacity-75 cursor-not-allowed px-3 py-1.5 sm:px-5 sm:py-2.5',
+              ? 'bg-green-500 hover:bg-green-600 shadow-sm hover:shadow-md'
+              : 'bg-slate-300 opacity-60 cursor-not-allowed',
           ].join(' ')}
         >
           <span className="sm:hidden">End</span>
           <span className="hidden sm:inline">End Interview</span>
         </button>
 
-        {/* Tooltip — only while button is inactive */}
+        {/* Tooltip — opens downward, only while inactive */}
         {!isActive && (
-          <div className="absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+          <div className="absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
             Keep chatting — You can finish after min. 3 questions
           </div>
         )}
@@ -129,22 +128,9 @@ export default function EndInterviewButton({
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-75"
               >
                 {isSending && (
-                  <svg
-                    className="animate-spin h-4 w-4 shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12" cy="12" r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
+                  <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 )}
                 {isSending ? 'Sending…' : 'Yes, send everything'}
