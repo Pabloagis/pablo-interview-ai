@@ -13,6 +13,10 @@ html {
   scroll-behavior: smooth;
 }
 
+@supports (-webkit-touch-callout: none) {
+  .h-screen { height: -webkit-fill-available; }
+}
+
 /* Subtle custom scrollbar — desktop only */
 @media (min-width: 640px) {
   ::-webkit-scrollbar {

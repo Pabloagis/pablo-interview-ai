@@ -20,7 +20,6 @@ export default function EndInterviewButton({
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  console.log('[EndInterviewButton] rendered, messages:', messages.length);
   const isActive = messages.filter((m) => m.role === 'user').length >= 3;
 
   const openModal = () => {

@@ -173,7 +173,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   // Success / ended screen — replaces entire chat UI
   if (interviewEnded !== null) {
     return (
-      <div className="flex flex-col h-screen bg-gray-50 items-center justify-center px-4">
+      <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center px-4">
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-md w-full text-center">
           {interviewEnded.emailSent ? (
             <>
@@ -210,7 +210,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div className="flex flex-col h-dvh w-full max-w-full overflow-x-hidden bg-gray-50">
+    <div className="flex flex-col h-screen w-full max-w-full overflow-x-hidden bg-gray-50">
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
