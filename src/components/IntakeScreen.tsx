@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
+import LanguageSwitcher from './LanguageSwitcher';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -79,7 +80,10 @@ export default function IntakeScreen() {
     'w-full px-3 py-2.5 rounded-xl border border-red-300 text-base text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-colors bg-white';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12 w-full overflow-x-hidden">
+    <div className="relative min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12 w-full overflow-x-hidden">
+      <div className="absolute top-3 right-3">
+        <LanguageSwitcher />
+      </div>
       <div className="w-full max-w-md">
         {/* Logo + title */}
         <div className="text-center mb-8">
