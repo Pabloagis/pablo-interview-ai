@@ -202,7 +202,7 @@ function generateEmailHTML(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pablo Agis Burgos — InterviewMind Follow-Up</title>
 </head>
-<body style="margin:0; padding:0; background-color:#f8fafc; font-family: Georgia, 'Times New Roman', serif;">
+<body style="margin:0; padding:0; background-color:#f8fafc; font-family: Arial, Helvetica, sans-serif;">
 
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc; padding: 32px 16px;">
     <tr>
@@ -213,10 +213,10 @@ function generateEmailHTML(
           <tr>
             <td style="background:#0f172a; padding:36px 40px 28px; text-align:center;">
               <p style="margin:0 0 20px; font-size:11px; letter-spacing:0.15em; color:#475569; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
-              <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #3b82f6; margin:0 auto 16px; display:block; object-fit:cover;" />
-              <h1 style="margin:0 0 6px; font-size:22px; font-weight:400; color:#f1f5f9; font-family:Georgia,serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
+              <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #3b82f6; margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
+              <h1 style="margin:0 0 6px; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
               <p style="margin:0 0 10px; font-size:13px; color:#64748b; font-family:Arial,sans-serif;">SaaS Implementation &amp; Customer Success Professional</p>
-              <p style="margin:0; font-size:11px; color:#334155; background:#1e293b; display:inline-block; padding:4px 14px; border-radius:20px; font-family:Arial,sans-serif;">${contextLine}</p>
+              <p style="margin:0; font-size:11px; color:#cbd5e1; background:#1e293b; display:inline-block; padding:4px 14px; border-radius:20px; font-family:Arial,sans-serif;">${contextLine}</p>
             </td>
           </tr>
 
@@ -237,7 +237,7 @@ function generateEmailHTML(
                 <tr>
                   <td style="padding:16px 18px;">
                     <p style="margin:0 0 8px; font-size:10px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">Executive summary</p>
-                    <p style="margin:0; font-size:13px; line-height:1.75; color:#475569; font-family:Georgia,serif;">${executive_summary}</p>
+                    <p style="margin:0; font-size:13px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${executive_summary}</p>
                   </td>
                 </tr>
               </table>
@@ -309,7 +309,7 @@ function generateEmailHTML(
           <tr>
             <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px 40px; text-align:center;">
               <p style="margin:0 0 8px; font-size:14px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">Thanks again for your time and consideration!</p>
-              <a href="${BASE_URL}" style="font-size:12px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">pablo-interview.vercel.app</a>
+              <a href="${BASE_URL}" style="font-size:12px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">pablo-interview-ai.vercel.app</a>
             </td>
           </tr>
 
