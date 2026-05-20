@@ -63,11 +63,11 @@ async function searchMemory(
 ): Promise<MemorySearchResult[]> {
   try {
     const result = await withMemoryTimeout(
-      supabase.rpc('search_memory', {
+      Promise.resolve(supabase.rpc('search_memory', {
         p_session_id: sessionId,
         p_query_embedding: embedding,
         p_limit: MEMORY_SEARCH_LIMIT,
-      }).then((r) => r)
+      }))
     );
     if (!result) return [];
     const { data, error } = result;
@@ -93,7 +93,7 @@ function storeMemory(
   embedding?: number[] | null
 ): void {
   withMemoryTimeout(
-    supabase
+    Promise.resolve(supabase
       .from('memory')
       .insert({
         session_id: sessionId,
@@ -102,8 +102,7 @@ function storeMemory(
         content,
         type,
         embedding: embedding || null,
-      })
-      .then((r) => r)
+      }))
   ).then((result) => {
     if (result?.error) console.error('Memory store failed (non-critical):', result.error);
   });
