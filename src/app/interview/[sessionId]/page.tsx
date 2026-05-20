@@ -7,5 +7,9 @@ interface Props {
 
 export default async function InterviewPage({ params }: Props) {
   const { sessionId } = await params;
-  return <ChatPanel sessionId={sessionId} />;
+  return (
+    <div style={{width: '100vw', overflowX: 'hidden'}}>
+      <ChatPanel sessionId={sessionId} />
+    </div>
+  );
 }
