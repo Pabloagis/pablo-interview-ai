@@ -71,23 +71,24 @@ export default function EndInterviewButton({
   return (
     <>
       {/* Floating button */}
-      <div className="fixed bottom-6 right-6 z-50 group">
+      <div className="fixed top-3 right-3 z-50 group">
         <button
           onClick={openModal}
           disabled={!isActive}
           className={[
-            'px-5 py-3 rounded-full text-sm font-semibold text-white transition-all duration-200',
+            'rounded-lg text-sm font-semibold text-white transition-all duration-200 min-h-[44px]',
             isActive
-              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg'
-              : 'bg-slate-400 opacity-75 cursor-not-allowed',
+              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg px-3 py-1.5 sm:px-5 sm:py-2.5'
+              : 'bg-slate-400 opacity-75 cursor-not-allowed px-3 py-1.5 sm:px-5 sm:py-2.5',
           ].join(' ')}
         >
-          End Interview
+          <span className="sm:hidden">End</span>
+          <span className="hidden sm:inline">End Interview</span>
         </button>
 
         {/* Tooltip — only while button is inactive */}
         {!isActive && (
-          <div className="absolute bottom-full right-0 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
+          <div className="absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none">
             Keep chatting — You can finish after min. 3 questions
           </div>
         )}
