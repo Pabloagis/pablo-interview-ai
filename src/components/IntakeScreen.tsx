@@ -91,16 +91,16 @@ export default function IntakeScreen() {
         {/* Vision statement */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-4 space-y-4">
           <p className="text-gray-800 font-semibold text-sm leading-relaxed">
-            Bienvenido a la siguiente generación del CV:{' '}
-            <span className="text-blue-500">una identidad profesional viva, inteligente y dinámica.</span>
+            Welcome to the next generation of the CV:{' '}
+            <span className="text-blue-500">a living, intelligent, and dynamic professional identity.</span>
           </p>
           <p className="text-gray-500 text-sm leading-relaxed">
-            Un nuevo estándar donde la inteligencia artificial, el storytelling y la autenticidad
-            transforman un currículum estático en una experiencia que conecta, demuestra y evoluciona contigo.
+            A new standard where artificial intelligence, storytelling and authenticity
+            transform a static résumé into an experience that connects, demonstrates, and evolves with you.
           </p>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Porque el futuro profesional ya no se resume en un PDF.{' '}
-            <span className="text-gray-600 font-medium">Se construye en tiempo real.</span>
+            Because your professional future can no longer be summed up in a PDF.{' '}
+            <span className="text-gray-600 font-medium">It&apos;s built in real time.</span>
           </p>
         </div>
 
