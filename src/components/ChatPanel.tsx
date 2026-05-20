@@ -43,6 +43,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, streamingText]);
 
+  useEffect(() => {
+    console.log('inner', window.innerWidth, 'client', document.documentElement.clientWidth, 'scroll', document.documentElement.scrollWidth);
+  }, [messages.length]);
+
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
     setToasts((prev) => [...prev, { id, message, type }]);
@@ -225,15 +229,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       />
 
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden px-4 py-6">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="text-center py-16">
+            <div className="px-4 w-full min-w-0 overflow-hidden py-16">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-blue-600 font-bold text-2xl">P</span>
               </div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Hi, I&apos;m Pablo.</h2>
-              <p className="text-gray-400 text-sm max-w-xs mx-auto leading-relaxed">
+              <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Hi, I&apos;m Pablo.</h2>
+              <p className="text-gray-400 text-sm leading-relaxed text-center px-4">
                 Ask me about my experience, career goals, or anything you&apos;d want to know in a
                 real interview.
               </p>
