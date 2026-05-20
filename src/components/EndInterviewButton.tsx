@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Message, RecruiterContext } from '@/lib/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface EndInterviewButtonProps {
   sessionId: string;
@@ -16,6 +17,7 @@ export default function EndInterviewButton({
   context,
   onInterviewEnded,
 }: EndInterviewButtonProps) {
+  const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -61,7 +63,7 @@ export default function EndInterviewButton({
       onInterviewEnded(true);
     } catch (err) {
       console.error('[EndInterview] send-followup failed:', err);
-      setErrorMsg('Something went wrong. Please try again.');
+      setErrorMsg(t.endModalError);
       setIsSending(false);
     }
   };
@@ -80,15 +82,13 @@ export default function EndInterviewButton({
               : 'bg-slate-300 opacity-60 cursor-not-allowed',
           ].join(' ')}
         >
-          <span className="sm:hidden">End</span>
-          <span className="hidden sm:inline">End Interview</span>
+          <span className="sm:hidden">{t.endButtonShort}</span>
+          <span className="hidden sm:inline">{t.endButtonFull}</span>
         </button>
 
         {/* Tooltip — desktop only (mobile has no hover), opens downward */}
         <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
-          {isActive
-            ? "Click here to properly finish the interview"
-            : "Keep chatting — available after min. 3 questions"}
+          {isActive ? t.endTooltipActive : t.endTooltipInactive}
         </div>
       </div>
 
@@ -102,11 +102,9 @@ export default function EndInterviewButton({
             className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-gray-900 mb-2">End this interview?</h2>
+            <h2 className="text-lg font-bold text-gray-900 mb-2">{t.endModalTitle}</h2>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              {context.consentToEmail
-                ? "We'll send you Pablo's CV, LinkedIn profile and conversation transcript to your email."
-                : 'The interview will be closed. Thanks for chatting with Pablo.'}
+              {context.consentToEmail ? t.endModalWithConsent : t.endModalWithoutConsent}
             </p>
 
             {errorMsg && (
@@ -119,7 +117,7 @@ export default function EndInterviewButton({
                 disabled={isSending}
                 className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
               >
-                Cancel
+                {t.endModalCancel}
               </button>
               <button
                 onClick={handleConfirm}
@@ -132,7 +130,7 @@ export default function EndInterviewButton({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 )}
-                {isSending ? 'Sending…' : 'Yes, send everything'}
+                {isSending ? t.endModalSending : t.endModalConfirm}
               </button>
             </div>
           </div>

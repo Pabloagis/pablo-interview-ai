@@ -260,12 +260,19 @@ WHEN IN DOUBT
 // Called by src/app/api/chat/route.ts.
 // ──────────────────────────────────────────────────────────────────
 
+const LANG_NAMES: Record<string, string> = {
+  en: 'English',
+  es: 'Spanish',
+  it: 'Italian',
+  pt: 'Portuguese',
+};
+
 export function buildSystemPrompt(
   context: RecruiterContext,
   relevantMemories: MemorySearchResult[] = [],
   retrievedKnowledge: string = ''
 ): string {
-  const { recruiterName, company, role, tone = 'warm' } = context;
+  const { recruiterName, company, role, tone = 'warm', language } = context;
 
   const contextSection = `
 ═══════════════════════════════════════════════
@@ -294,7 +301,16 @@ RELEVANT KNOWLEDGE FOR THIS QUESTION
 ${retrievedKnowledge}`
     : '';
 
-  return CORE_SYSTEM_PROMPT + contextSection + memorySection + knowledgeSection;
+  const langName = language ? LANG_NAMES[language] : null;
+  const languageSection = langName && language !== 'en'
+    ? `
+═══════════════════════════════════════════════
+LANGUAGE
+═══════════════════════════════════════════════
+Respond exclusively in ${langName}. Every message — greetings, answers, follow-ups — must be in ${langName}, regardless of what language the recruiter writes in.`
+    : '';
+
+  return CORE_SYSTEM_PROMPT + contextSection + memorySection + knowledgeSection + languageSection;
 }
 
 function getToneInstructions(tone: string): string {

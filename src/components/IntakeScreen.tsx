@@ -3,11 +3,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
+import { useLanguage } from '@/context/LanguageContext';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function IntakeScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [recruiterName, setRecruiterName] = useState('');
   const [email, setEmail] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
@@ -85,33 +87,30 @@ export default function IntakeScreen() {
             <span className="text-white font-bold text-xl">IM</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800">InterviewMind</h1>
-          <p className="text-gray-500 mt-2 text-sm">Interview his AI. Then interview him.</p>
+          <p className="text-gray-500 mt-2 text-sm">{t.tagline}</p>
         </div>
 
         {/* Vision statement */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-4 space-y-4">
           <p className="text-gray-800 font-semibold text-sm leading-relaxed">
-            Welcome to the next generation of the CV:{' '}
-            <span className="text-blue-500">a living, intelligent, and dynamic professional identity.</span>
+            {t.visionTitle}{' '}
+            <span className="text-blue-500">{t.visionHighlight}</span>
           </p>
-          <p className="text-gray-500 text-sm leading-relaxed">
-            A new standard where artificial intelligence, storytelling and authenticity
-            transform a static résumé into an experience that connects, demonstrates, and evolves with you.
-          </p>
+          <p className="text-gray-500 text-sm leading-relaxed">{t.visionP2}</p>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Because your professional future can no longer be summed up in a PDF.{' '}
-            <span className="text-gray-600 font-medium">It&apos;s built in real time.</span>
+            {t.visionP3}{' '}
+            <span className="text-gray-600 font-medium">{t.visionP3Emphasis}</span>
           </p>
         </div>
 
         {/* How it works */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">How it works</p>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t.howItWorksTitle}</p>
           <div className="space-y-3">
             {[
-              { n: '1', text: 'Introduce yourself below (optional)' },
-              { n: '2', text: 'Ask Pablo anything you\'d ask in a real interview' },
-              { n: '3', text: <>When you&apos;re finished, click <span className="text-green-600 font-semibold">End Interview</span> — don&apos;t just close the tab</> },
+              { n: '1', text: t.step1 },
+              { n: '2', text: t.step2 },
+              { n: '3', text: <>{t.step3Label} <span className="text-green-600 font-semibold">{t.step3Action}</span> {t.step3Rest}</> },
             ].map(({ n, text }) => (
               <div key={n} className="flex items-start gap-3">
                 <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{n}</span>
@@ -126,16 +125,14 @@ export default function IntakeScreen() {
           onSubmit={handleStart}
           className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
         >
-          <p className="text-sm font-medium text-gray-700 mb-4">
-            Introduce yourself — Pablo will personalise the conversation
-          </p>
+          <p className="text-sm font-medium text-gray-700 mb-4">{t.formTitle}</p>
 
           <div className="space-y-3 mb-5">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Your name</label>
+              <label className="block text-xs text-gray-500 mb-1">{t.labelName}</label>
               <input
                 type="text"
-                placeholder="e.g. Alice"
+                placeholder={t.placeholderName}
                 value={recruiterName}
                 onChange={(e) => setRecruiterName(e.target.value)}
                 className={inputClass}
@@ -146,11 +143,11 @@ export default function IntakeScreen() {
 
             <div>
               <label className="block text-xs text-gray-500 mb-1">
-                Your email <span className="text-red-500">*</span>
+                {t.labelEmail} <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
-                placeholder="sarah@company.com"
+                placeholder={t.placeholderEmail}
                 value={email}
                 onChange={(e) => {
                   setEmail(e.target.value);
@@ -163,15 +160,15 @@ export default function IntakeScreen() {
                 required
               />
               {showEmailError && (
-                <p className="mt-1 text-xs text-red-500">Please enter a valid email address</p>
+                <p className="mt-1 text-xs text-red-500">{t.emailError}</p>
               )}
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Company</label>
+              <label className="block text-xs text-gray-500 mb-1">{t.labelCompany}</label>
               <input
                 type="text"
-                placeholder="e.g. Mews, Apaleo, HubOS"
+                placeholder={t.placeholderCompany}
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className={inputClass}
@@ -180,10 +177,10 @@ export default function IntakeScreen() {
               />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Role you&apos;re filling</label>
+              <label className="block text-xs text-gray-500 mb-1">{t.labelRole}</label>
               <input
                 type="text"
-                placeholder="e.g. SDR, Account Executive, CSM"
+                placeholder={t.placeholderRole}
                 value={role}
                 onChange={(e) => setRole(e.target.value)}
                 className={inputClass}
@@ -201,9 +198,7 @@ export default function IntakeScreen() {
                 onChange={(e) => setConsentToEmail(e.target.checked)}
                 className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-500 accent-blue-500 flex-shrink-0"
               />
-              <span className="text-xs text-gray-600 leading-relaxed">
-                I&apos;d like to receive an email with Pablo&apos;s interview summary and materials
-              </span>
+              <span className="text-xs text-gray-600 leading-relaxed">{t.consentText}</span>
             </label>
           </div>
 
@@ -214,12 +209,10 @@ export default function IntakeScreen() {
             disabled={isSubmitDisabled}
             className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
           >
-            {isLoading ? 'Starting…' : 'Start Interview'}
+            {isLoading ? t.buttonStarting : t.buttonStart}
           </button>
 
-          <p className="text-xs text-gray-400 text-center mt-3">
-            Name, company &amp; role optional · <span className="text-red-400">*</span> Email required
-          </p>
+          <p className="text-xs text-gray-400 text-center mt-3">{t.footerNote}</p>
         </form>
       </div>
     </div>

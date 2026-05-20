@@ -1,5 +1,7 @@
 'use client';
 
+import LanguageSwitcher from './LanguageSwitcher';
+
 interface HeaderProps {
   recruiterName?: string;
   company?: string;
@@ -25,6 +27,8 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
           {company && <span>{company}</span>}
         </div>
       )}
+
+      <LanguageSwitcher />
 
       <div className="shrink-0">
         {action}

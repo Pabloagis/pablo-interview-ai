@@ -9,37 +9,9 @@ import MessageBubble from './MessageBubble';
 import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
+import { useLanguage } from '@/context/LanguageContext';
 
-interface Topic {
-  label: string;
-  question: string;
-}
-
-const THINKING_PHRASES = [
-  'Thinking…',
-  'Recalling project experience…',
-  'Analyzing previous implementation…',
-  'Pulling from memory…',
-  'Connecting the dots…',
-  'Considering the context…',
-  'Looking back at the work history…',
-  'Preparing a thoughtful answer…',
-];
-
-const TOPIC_POOL: Topic[] = [
-  { label: 'Recent role',         question: 'Tell me about your most recent role' },
-  { label: 'Career path',         question: 'Walk me through your career path' },
-  { label: 'Why hospitality tech',question: 'Why are you moving into hospitality tech?' },
-  { label: 'Tech stack',          question: 'What PMS systems and tools have you worked with?' },
-  { label: 'Implementation',      question: 'Walk me through an implementation you led' },
-  { label: 'Career goals',        question: 'What kind of role are you looking for?' },
-  { label: 'SaaS experience',     question: "What's your experience with SaaS onboarding?" },
-  { label: 'Difficult situations', question: "Tell me about a time things didn't go to plan" },
-  { label: 'Working style',       question: 'How do you work with non-technical teams?' },
-  { label: 'Leaving reason',      question: 'Why did you leave your last role?' },
-  { label: 'Strengths',           question: "What's your strongest professional skill?" },
-  { label: 'Languages & markets', question: 'What markets can you cover with your language skills?' },
-];
+import type { Topic } from '@/context/LanguageContext';
 
 function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
@@ -50,6 +22,7 @@ interface ChatPanelProps {
 }
 
 export default function ChatPanel({ sessionId }: ChatPanelProps) {
+  const { lang, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
@@ -57,7 +30,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [context, setContext] = useState<RecruiterContext>({});
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
-  const [suggestions, setSuggestions] = useState<Topic[]>(() => pickRandom(TOPIC_POOL, 5));
+  const [suggestions, setSuggestions] = useState<Topic[]>([]);
   const [thinkingPhrase, setThinkingPhrase] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -85,6 +58,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [sessionId]);
 
+  // Reset suggestions when language changes
+  useEffect(() => {
+    setSuggestions(pickRandom(t.topics, 5));
+  }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Rotate thinking phrases while waiting for first streaming content
   useEffect(() => {
     if (!isStreaming) {
@@ -93,13 +71,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       return;
     }
     let i = 0;
-    setThinkingPhrase(THINKING_PHRASES[0]);
+    setThinkingPhrase(t.thinking[0]);
     thinkingIntervalRef.current = setInterval(() => {
-      i = (i + 1) % THINKING_PHRASES.length;
-      setThinkingPhrase(THINKING_PHRASES[i]);
+      i = (i + 1) % t.thinking.length;
+      setThinkingPhrase(t.thinking[i]);
     }, 1800);
     return () => { if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current); };
-  }, [isStreaming]);
+  }, [isStreaming]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll management: follow bottom normally; when streaming starts, anchor to top of response
   useEffect(() => {
@@ -182,7 +160,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, sessionId, context }),
+        body: JSON.stringify({ message: trimmed, sessionId, context: { ...context, language: lang } }),
         signal: fetchAbortRef.current.signal,
       });
 
@@ -234,7 +212,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         // User-triggered cancel — clean up silently
       } else {
         console.error('Send message error:', error);
-        addToast('Connection issue. Please try again.');
+        addToast(t.connectionIssue);
       }
       setStreamingText('');
       setIsStreaming(false);
@@ -259,7 +237,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   };
 
   const handleSuggestedQuestion = (topic: Topic) => {
-    setSuggestions((prev) => prev.filter((t) => t.label !== topic.label));
+    setSuggestions((prev) => prev.filter((s) => s.label !== topic.label));
     sendMessage(topic.question);
   };
 
@@ -269,8 +247,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setStreamingText('');
     setIsStreaming(false);
     setInputText('');
-    setSuggestions(pickRandom(TOPIC_POOL, 5));
-    addToast('Conversation reset. Starting fresh.', 'info');
+    setSuggestions(pickRandom(t.topics, 5));
+    addToast(t.conversationReset, 'info');
   };
 
   const startRecording = async () => {
@@ -296,7 +274,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             sendMessage(data.text.trim());
           }
         } catch {
-          addToast('Could not transcribe. Please try again.');
+          addToast(t.transcribeFailed);
         } finally {
           setIsTranscribing(false);
         }
@@ -305,7 +283,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       recorder.start();
       setIsRecording(true);
     } catch {
-      addToast('Microphone access denied. Please allow microphone access.');
+      addToast(t.microphoneDenied);
     }
   };
 
@@ -332,26 +310,20 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">All done!</h2>
-              <p className="text-gray-500 text-sm leading-relaxed mb-1">
-                Check your inbox — we&apos;ve sent everything to
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">{t.allDoneTitle}</h2>
+              <p className="text-gray-500 text-sm leading-relaxed mb-1">{t.allDoneMsg}</p>
               {context.email && (
                 <p className="text-blue-600 font-medium text-sm mb-6">{context.email}</p>
               )}
-              <p className="text-gray-400 text-sm italic">
-                Looking forward to hearing from you. — Pablo
-              </p>
+              <p className="text-gray-400 text-sm italic">{t.allDoneSignature}</p>
             </>
           ) : (
             <>
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-blue-600 font-bold text-2xl">P</span>
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">Interview ended.</h2>
-              <p className="text-gray-500 text-sm leading-relaxed">
-                Thanks for chatting! — Pablo
-              </p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">{t.interviewEndedTitle}</h2>
+              <p className="text-gray-500 text-sm leading-relaxed">{t.interviewEndedMsg}</p>
             </>
           )}
         </div>
@@ -382,18 +354,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200 mb-5">
                 <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">Hi, I&apos;m Pablo Agis.</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">{t.emptyGreeting}</h1>
               <p className="text-gray-400 text-sm text-center leading-relaxed mb-8 max-w-xs">
-                Ask me anything!
+                {t.emptySubtitle}
               </p>
               <div className="w-10 h-px bg-gray-200 mb-6" />
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">Try asking</p>
+              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">{t.tryAsking}</p>
               <div className="w-full max-w-sm space-y-2">
-                {[
-                  'What was your role at HubOS?',
-                  'Tell me about a difficult client situation',
-                  'Why the move from hospitality into tech?',
-                ].map((q) => (
+                {[t.q1, t.q2, t.q3].map((q) => (
                   <button
                     key={q}
                     onClick={() => sendMessage(q)}
@@ -431,14 +399,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-full px-3 py-1.5 mb-2 hover:bg-blue-100 transition-colors"
             >
               <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shrink-0" />
-              Pablo is speaking — tap to stop
+              {t.playingIndicator}
             </button>
           )}
           {/* Suggested topics */}
           {suggestions.length > 0 && (
             <div className="mb-2.5">
               <p className="text-[10px] font-medium text-gray-300 uppercase tracking-widest mb-1.5 px-0.5">
-                Topics
+                {t.topicsLabel}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {suggestions.map((topic) => (
@@ -462,7 +430,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 value={inputText}
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask Pablo anything…"
+                placeholder={t.inputPlaceholder}
                 rows={1}
                 disabled={isStreaming}
                 className="flex-1 min-w-0 resize-none bg-transparent text-base text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
@@ -539,7 +507,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 className="text-gray-400 hover:text-gray-600 transition-colors"
               >
                 {/* Download icon — label on desktop, icon-only on mobile */}
-                <span className="hidden sm:inline text-xs">Download transcript</span>
+                <span className="hidden sm:inline text-xs">{t.downloadTranscript}</span>
                 <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
@@ -549,7 +517,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 aria-label="Reset conversation"
                 className="text-gray-400 hover:text-red-500 transition-colors"
               >
-                <span className="hidden sm:inline text-xs">Reset</span>
+                <span className="hidden sm:inline text-xs">{t.reset}</span>
                 <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>

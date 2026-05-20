@@ -21,6 +21,7 @@ export interface RecruiterContext {
   email?: string;
   consentToEmail?: boolean;
   tone?: 'formal' | 'warm' | 'technical' | 'commercial';
+  language?: 'en' | 'es' | 'it' | 'pt';
 }
 
 export interface ChatRequest {
