@@ -98,6 +98,23 @@ export default function IntakeScreen() {
           </p>
         </div>
 
+        {/* How it works */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">How it works</p>
+          <div className="space-y-3">
+            {[
+              { n: '1', text: 'Introduce yourself below (optional)' },
+              { n: '2', text: 'Ask Pablo anything you\'d ask in a real interview' },
+              { n: '3', text: <>Click <span className="text-green-600 font-semibold">End Interview</span> when done — Pablo will email you his CV and materials</> },
+            ].map(({ n, text }) => (
+              <div key={n} className="flex items-start gap-3">
+                <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{n}</span>
+                <p className="text-sm text-gray-600 leading-snug">{text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* Intake form */}
         <form
           onSubmit={handleStart}
