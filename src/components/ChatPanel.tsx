@@ -10,6 +10,25 @@ import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
 
+const QUESTION_POOL = [
+  'Tell me about your most recent role',
+  'Why are you moving into hospitality tech?',
+  'What PMS systems have you worked with?',
+  'Walk me through an implementation you led',
+  'What kind of role are you looking for?',
+  "What's your experience with SaaS onboarding?",
+  'How do you handle a difficult client or stakeholder?',
+  'What does success look like in your next role?',
+  "Tell me about a time things didn't go to plan",
+  'How do you communicate with non-technical teams?',
+  'Why did you leave your last role?',
+  "What's your strongest professional skill?",
+];
+
+function pickRandom(pool: string[], n: number): string[] {
+  return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
+}
+
 interface ChatPanelProps {
   sessionId: string;
 }
@@ -22,6 +41,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [context, setContext] = useState<RecruiterContext>({});
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
+  const [suggestions, setSuggestions] = useState<string[]>(() => pickRandom(QUESTION_POOL, 5));
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -157,12 +177,18 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
 
+  const handleSuggestedQuestion = (question: string) => {
+    setSuggestions((prev) => prev.filter((q) => q !== question));
+    sendMessage(question);
+  };
+
   const handleReset = () => {
     fetchAbortRef.current?.abort();
     setMessages([]);
     setStreamingText('');
     setIsStreaming(false);
     setInputText('');
+    setSuggestions(pickRandom(QUESTION_POOL, 5));
     addToast('Conversation reset. Starting fresh.', 'info');
   };
 
@@ -228,31 +254,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="px-4 w-full min-w-0 overflow-hidden py-12">
+            <div className="px-4 w-full min-w-0 overflow-hidden py-16">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-blue-600 font-bold text-2xl">P</span>
               </div>
               <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">Hi, I&apos;m Pablo.</h2>
-              <p className="text-gray-400 text-sm leading-relaxed text-center px-4 mb-6">
+              <p className="text-gray-400 text-sm leading-relaxed text-center px-4">
                 Ask me what you&apos;d ask any candidate — background, decisions, projects, how I think.
               </p>
-              <div className="flex flex-wrap gap-2 justify-center px-2 max-w-sm mx-auto">
-                {[
-                  'Tell me about your most recent role',
-                  'Why are you moving into hospitality tech?',
-                  'What PMS systems have you worked with?',
-                  'Walk me through an implementation you led',
-                  'What kind of role are you looking for?',
-                ].map((q) => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="text-xs text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1.5 hover:border-blue-400 hover:text-blue-600 transition-colors text-left"
-                  >
-                    {q}
-                  </button>
-                ))}
-              </div>
             </div>
           )}
 
@@ -267,6 +276,21 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
       {/* Input area */}
       <div className="border-t bg-white p-3 shrink-0">
+          {/* Suggested questions */}
+          {suggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {suggestions.map((q) => (
+                <button
+                  key={q}
+                  onClick={() => handleSuggestedQuestion(q)}
+                  disabled={isStreaming}
+                  className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-full px-3 py-1 hover:border-blue-400 hover:text-blue-600 disabled:opacity-40 transition-colors"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex items-end gap-2 min-w-0">
             <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
               <textarea
