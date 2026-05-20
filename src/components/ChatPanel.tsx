@@ -225,7 +225,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       />
 
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto px-4 py-6">
+      <div className="flex-1 min-w-0 overflow-y-auto px-4 py-6">
         <div className="max-w-2xl mx-auto">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
