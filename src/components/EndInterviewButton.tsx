@@ -46,7 +46,7 @@ export default function EndInterviewButton({
 
     setIsSending(true);
     try {
-      const res = await fetch('/api/send-application', {
+      const res = await fetch('/api/send-followup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId }),
@@ -60,7 +60,7 @@ export default function EndInterviewButton({
       setModalOpen(false);
       onInterviewEnded(true);
     } catch (err) {
-      console.error('[EndInterview] send-application failed:', err);
+      console.error('[EndInterview] send-followup failed:', err);
       setErrorMsg('Something went wrong. Please try again.');
       setIsSending(false);
     }
