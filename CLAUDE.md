@@ -9,7 +9,7 @@
 **InterviewMind v2** is a production-ready AI interview simulator that represents
 Pablo Agis Burgos in real-time conversations with recruiters.
 
-Recruiters visit `https://pablo-interview-ai.vercel.app`, fill a short intake form,
+Recruiters visit `https://interviewmind.one`, fill a short intake form,
 and have a live conversation with an AI that responds authentically as Pablo —
 using his real stories, real voice, real professional positioning.
 
@@ -321,7 +321,7 @@ ACCESS_CODE=...          # Was used for access control — replaced by email+GDP
 | Stream timeout | 30 seconds |
 | Memory results | 5 per query |
 | Max message length | 2000 chars |
-| Live URL | https://pablo-interview-ai.vercel.app |
+| Live URL | https://interviewmind.one |
 | CV path | `public/assets/Pablo_Agis_Burgos_CV.pdf` |
 
 ---

@@ -4,7 +4,7 @@ import { CLAUDE_FALLBACK_MODEL } from '@/lib/constants';
 
 const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
-const BASE_URL = 'https://pablo-interview-ai.vercel.app';
+const BASE_URL = 'https://interviewmind.one';
 
 function getResendClient(): Resend {
   const key = process.env.RESEND_API_KEY;
@@ -309,7 +309,7 @@ function generateEmailHTML(
           <tr>
             <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px 40px; text-align:center;">
               <p style="margin:0 0 8px; font-size:14px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">Thanks again for your time and consideration!</p>
-              <a href="${BASE_URL}" style="font-size:12px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">pablo-interview-ai.vercel.app</a>
+              <a href="${BASE_URL}" style="font-size:12px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">interviewmind.one</a>
             </td>
           </tr>
 
