@@ -107,3 +107,6 @@ ALTER TABLE sessions ADD COLUMN IF NOT EXISTS consent_to_email BOOLEAN NOT NULL 
 -- Added: email send tracking (2026-05-19)
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_sent_at TIMESTAMPTZ;
 
+-- Added: email preview HTML storage (2026-05-21)
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_html TEXT;
+

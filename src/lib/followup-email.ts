@@ -212,7 +212,8 @@ function formatTranscriptHTML(messages: RawMessage[], recruiterName?: string | n
 function generateEmailHTML(
   analysis: ConversationAnalysis,
   recruiterName?: string | null,
-  messages?: RawMessage[] | null
+  messages?: RawMessage[] | null,
+  previewUrl?: string
 ): string {
   const {
     language,
@@ -293,6 +294,12 @@ function generateEmailHTML(
 </head>
 <body style="margin:0; padding:0; background-color:#f8fafc; font-family: Arial, Helvetica, sans-serif;">
 
+  ${previewUrl ? `<p style="text-align:center; margin-bottom:12px;">
+    <a href="${previewUrl}" style="font-size:11px; color:#94a3b8; text-decoration:none; letter-spacing:0.04em;">
+      Having trouble viewing this email? Open in browser →
+    </a>
+  </p>` : ''}
+
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc; padding: 32px 16px;">
     <tr>
       <td align="center">
@@ -301,9 +308,11 @@ function generateEmailHTML(
           <!-- HEADER -->
           <tr>
             <td style="background:#0f172a; padding:36px 40px 28px; text-align:center;">
+              ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
               <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:#475569; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
               <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #3b82f6; margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
               <h1 style="margin:0; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
+              ${previewUrl ? `<p style="font-size:11px; color:#334155; margin-top:12px;">↗ Click to open interactive version</p></a>` : ''}
             </td>
           </tr>
 
@@ -330,7 +339,7 @@ function generateEmailHTML(
                     </a>
                   </td>
                   <td width="33%" style="padding-right:6px; vertical-align:top;">
-                    <a href="https://linkedin.com/in/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
+                    <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
                       <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
                       <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
                       <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['linkedinSub']}</span>
@@ -349,10 +358,10 @@ function generateEmailHTML(
               <!-- Section: Executive Summary -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['executiveSummary']}</span></td>
-                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
                     </tr></table>
                   </td>
                 </tr>
@@ -366,10 +375,10 @@ function generateEmailHTML(
               <!-- Section: Core Experience -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['coreExperience']}</span></td>
-                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
                     </tr></table>
                   </td>
                 </tr>
@@ -383,10 +392,10 @@ function generateEmailHTML(
               <!-- Section: Conversation Insights -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['conversationInsights']}</span></td>
-                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
                     </tr></table>
                   </td>
                 </tr>
@@ -409,10 +418,10 @@ function generateEmailHTML(
               <!-- Section: Recruiter Takeaways -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['recruiterTakeaways']}</span></td>
-                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
                     </tr></table>
                   </td>
                 </tr>
@@ -436,10 +445,10 @@ function generateEmailHTML(
               <!-- Section: Full Transcript -->
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                  <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</span></td>
-                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
                     </tr></table>
                   </td>
                 </tr>
@@ -480,6 +489,7 @@ export interface SendFollowUpEmailParams {
   recruiterName?: string | null;
   jobTitle?: string | null;
   companyName?: string | null;
+  sessionId?: string | null;
 }
 
 export async function sendFollowUpEmail({
@@ -489,9 +499,11 @@ export async function sendFollowUpEmail({
   recruiterName,
   jobTitle,
   companyName,
-}: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined }> {
+  sessionId,
+}: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
-  const html = generateEmailHTML(analysis, recruiterName, messages);
+  const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
+  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl);
   const resend = getResendClient();
 
   const result = await resend.emails.send({
@@ -507,5 +519,5 @@ export async function sendFollowUpEmail({
   }
 
   console.log(`[followup-email] Sent to ${to}, id: ${result.data?.id}`);
-  return { emailId: result.data?.id };
+  return { emailId: result.data?.id, html };
 }

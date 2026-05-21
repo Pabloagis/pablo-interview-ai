@@ -50,18 +50,19 @@ export async function POST(request: NextRequest) {
 
     console.log(`[send-followup] Sending to ${session.email} for session ${sessionId}`);
 
-    const { emailId } = await sendFollowUpEmail({
+    const { emailId, html } = await sendFollowUpEmail({
       to: session.email,
       transcript,
       messages: messages ?? [],
       recruiterName: session.recruiter_name || null,
       jobTitle: session.role || null,
       companyName: session.company || null,
+      sessionId,
     });
 
     await supabase
       .from('sessions')
-      .update({ email_sent_at: new Date().toISOString() })
+      .update({ email_sent_at: new Date().toISOString(), email_html: html })
       .eq('id', sessionId);
 
     console.log(`[send-followup] Done. emailId: ${emailId}`);
