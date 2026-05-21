@@ -319,102 +319,132 @@ function generateEmailHTML(
                 <p style="margin:0; font-size:15px; color:#475569; font-family:Arial,sans-serif;">— Pablo</p>
               </div>
 
-              <!-- Executive Summary -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+              <!-- CTAs — 3 equal columns -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                 <tr>
-                  <td style="padding:16px 18px;">
-                    <p style="margin:0 0 8px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['executiveSummary']}</p>
-                    <p style="margin:0; font-size:15px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${executive_summary}</p>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Core Experience Chips -->
-              <p style="margin:0 0 10px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['coreExperience']}</p>
-              <table cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                <tr>${chipsHTML}</tr>
-              </table>
-
-              <!-- Conversation Insights -->
-              <p style="margin:0 0 12px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['conversationInsights']}</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0;">
-                    <p style="margin:0 0 10px; font-size:12px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['communicationStyle']}</p>
-                    <ul style="margin:0; padding:0; list-style:none;">${commStyleHTML}</ul>
-                  </td>
-                  <td width="50%" style="padding:14px 16px; vertical-align:top;">
-                    <p style="margin:0 0 10px; font-size:12px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['topicsDiscussed']}</p>
-                    <ul style="margin:0; padding:0; list-style:none;">${topicsHTML}</ul>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Recruiter Takeaways -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0; background:#f0fdf4;">
-                    <p style="margin:0 0 10px; font-size:12px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#166534; font-family:Arial,sans-serif;">${ui['strongMatch']}</p>
-                    <table cellpadding="0" cellspacing="0">${strengthsHTML}</table>
-                  </td>
-                  <td width="50%" style="padding:14px 16px; vertical-align:top; background:#eff6ff;">
-                    <p style="margin:0 0 10px; font-size:12px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#1d4ed8; font-family:Arial,sans-serif;">${ui['growthAreas']}</p>
-                    <table cellpadding="0" cellspacing="0">${growthHTML}</table>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- CTAs -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                <tr>
-                  <td width="34%" style="padding-right:8px; vertical-align:top;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <table cellpadding="0" cellspacing="0"><tr>
-                        <td style="padding-right:10px; vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-google-meet.svg" width="28" height="28" alt="Google Meet" style="display:block; border-radius:6px;" />
-                        </td>
-                        <td>
-                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['scheduleSub']}</span>
-                        </td>
-                      </tr></table>
+                  <td width="33%" style="padding-right:6px; vertical-align:top;">
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
+                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['scheduleSub']}</span>
                     </a>
                   </td>
-                  <td width="33%" style="padding-right:8px; vertical-align:top;">
-                    <a href="https://linkedin.com/in/pablo-agis-burgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <table cellpadding="0" cellspacing="0"><tr>
-                        <td style="padding-right:10px; vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-linkedin.svg" width="28" height="28" alt="LinkedIn" style="display:block; border-radius:6px;" />
-                        </td>
-                        <td>
-                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['linkedinSub']}</span>
-                        </td>
-                      </tr></table>
+                  <td width="33%" style="padding-right:6px; vertical-align:top;">
+                    <a href="https://linkedin.com/in/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
+                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
+                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['linkedinSub']}</span>
                     </a>
                   </td>
                   <td width="33%" style="vertical-align:top;">
-                    <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <table cellpadding="0" cellspacing="0"><tr>
-                        <td style="padding-right:10px; vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-pdf.svg" width="28" height="28" alt="PDF" style="display:block; border-radius:6px;" />
-                        </td>
-                        <td>
-                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
-                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['cvSub']}</span>
-                        </td>
-                      </tr></table>
+                    <a href="${BASE_URL}/cv.pdf" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-pdf.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
+                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
+                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['cvSub']}</span>
                     </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Section: Executive Summary -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['executiveSummary']}</span></td>
+                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 18px; background:#ffffff;">
+                    <p style="margin:0; font-size:14px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${executive_summary}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Section: Core Experience -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['coreExperience']}</span></td>
+                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 16px; background:#ffffff;">
+                    <table cellpadding="0" cellspacing="0"><tr>${chipsHTML}</tr></table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Section: Conversation Insights -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['conversationInsights']}</span></td>
+                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#ffffff;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0;">
+                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['communicationStyle']}</p>
+                        <ul style="margin:0; padding:0; list-style:none;">${commStyleHTML}</ul>
+                      </td>
+                      <td width="50%" style="padding:14px 16px; vertical-align:top;">
+                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['topicsDiscussed']}</p>
+                        <ul style="margin:0; padding:0; list-style:none;">${topicsHTML}</ul>
+                      </td>
+                    </tr></table>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Section: Recruiter Takeaways -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['recruiterTakeaways']}</span></td>
+                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background:#ffffff;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0; background:#f0fdf4;">
+                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#166534; font-family:Arial,sans-serif;">${ui['strongMatch']}</p>
+                        <table cellpadding="0" cellspacing="0">${strengthsHTML}</table>
+                      </td>
+                      <td width="50%" style="padding:14px 16px; vertical-align:top; background:#eff6ff;">
+                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#1d4ed8; font-family:Arial,sans-serif;">${ui['growthAreas']}</p>
+                        <table cellpadding="0" cellspacing="0">${growthHTML}</table>
+                      </td>
+                    </tr></table>
                   </td>
                 </tr>
               </table>
 
               ${messages && messages.length > 0 ? `
-              <!-- Transcript -->
-              <p style="margin:0 0 12px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</p>
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+              <!-- Section: Full Transcript -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
-                  <td style="padding:16px 18px; background:#f8fafc;">
+                  <td style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0;">
+                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</span></td>
+                      <td align="right"><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:16px 18px; background:#ffffff;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       ${formatTranscriptHTML(messages, recruiterName)}
                     </table>
