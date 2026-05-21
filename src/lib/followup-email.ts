@@ -33,6 +33,7 @@ const UI: Record<string, Record<string, string>> = {
     bodySummary: 'Below is a summary of what we discussed, along with my CV and professional links.',
     bodySignoff: "I'd love to stay in touch!",
     footerText: 'Thanks again for your time and consideration!',
+    transcriptTitle: 'Conversation transcript',
   },
   es: {
     greeting: 'Hola',
@@ -53,6 +54,7 @@ const UI: Record<string, Record<string, string>> = {
     bodySummary: 'A continuación encontrarás un resumen de nuestra conversación, junto con mi CV y mis datos de contacto.',
     bodySignoff: '¡Me encantaría mantener el contacto!',
     footerText: '¡Muchas gracias por tu tiempo y consideración!',
+    transcriptTitle: 'Transcripción de la conversación',
   },
 };
 
@@ -182,11 +184,36 @@ function getFallbackAnalysis(
   };
 }
 
+function formatTranscriptHTML(transcript: string): string {
+  return transcript
+    .split('\n\n')
+    .filter((l) => l.trim())
+    .map((line) => {
+      const isPablo = line.startsWith('Pablo:');
+      const label = isPablo ? 'Pablo' : 'Recruiter';
+      const content = line.replace(/^(Pablo|Recruiter):\s*/, '');
+      const labelColor = isPablo ? '#2563eb' : '#64748b';
+      return `
+        <tr>
+          <td style="padding:10px 0 4px;">
+            <span style="font-size:11px; font-weight:bold; color:${labelColor}; text-transform:uppercase; letter-spacing:0.07em; font-family:Arial,sans-serif;">${label}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:0 0 2px; border-bottom:1px solid #f1f5f9;">
+            <span style="font-size:14px; color:#374151; line-height:1.65; font-family:Arial,sans-serif;">${content}</span>
+          </td>
+        </tr>`;
+    })
+    .join('');
+}
+
 function generateEmailHTML(
   analysis: ConversationAnalysis,
   recruiterName?: string | null,
   jobTitle?: string | null,
-  companyName?: string | null
+  companyName?: string | null,
+  transcript?: string | null
 ): string {
   const {
     language,
@@ -350,24 +377,64 @@ function generateEmailHTML(
                 <tr>
                   <td width="34%" style="padding-right:8px; vertical-align:top;">
                     <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['scheduleSub']}</span>
+                      <table cellpadding="0" cellspacing="0"><tr>
+                        <td style="padding-right:10px; vertical-align:middle;">
+                          <div style="width:28px; height:28px; background:#00897b; border-radius:6px; text-align:center; line-height:28px;">
+                            <span style="font-size:15px; color:#ffffff; font-family:Arial,sans-serif;">&#128249;</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['scheduleSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
                   <td width="33%" style="padding-right:8px; vertical-align:top;">
                     <a href="https://linkedin.com/in/pablo-agis-burgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                      <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['linkedinSub']}</span>
+                      <table cellpadding="0" cellspacing="0"><tr>
+                        <td style="padding-right:10px; vertical-align:middle;">
+                          <div style="width:28px; height:28px; background:#0077b5; border-radius:6px; text-align:center; line-height:28px;">
+                            <span style="font-size:13px; font-weight:900; color:#ffffff; font-family:Arial,sans-serif;">in</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
+                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['linkedinSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
                   <td width="33%" style="vertical-align:top;">
                     <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
-                      <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
-                      <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['cvSub']}</span>
+                      <table cellpadding="0" cellspacing="0"><tr>
+                        <td style="padding-right:10px; vertical-align:middle;">
+                          <div style="width:28px; height:28px; background:#dc2626; border-radius:6px; text-align:center; line-height:28px;">
+                            <span style="font-size:11px; font-weight:900; color:#ffffff; font-family:Arial,sans-serif;">PDF</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
+                          <span style="display:block; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif; margin-top:2px;">${ui['cvSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
                 </tr>
               </table>
+
+              ${transcript ? `
+              <!-- Transcript -->
+              <p style="margin:0 0 12px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                <tr>
+                  <td style="padding:16px 18px; background:#f8fafc;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      ${formatTranscriptHTML(transcript)}
+                    </table>
+                  </td>
+                </tr>
+              </table>` : ''}
 
             </td>
           </tr>
@@ -406,7 +473,7 @@ export async function sendFollowUpEmail({
   companyName,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
-  const html = generateEmailHTML(analysis, recruiterName, jobTitle, companyName);
+  const html = generateEmailHTML(analysis, recruiterName, jobTitle, companyName, transcript);
   const resend = getResendClient();
 
   const result = await resend.emails.send({
