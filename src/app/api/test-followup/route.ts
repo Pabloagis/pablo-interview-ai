@@ -27,9 +27,18 @@ Recruiter: Great, that's really helpful. We'll be in touch.`;
 
 export async function POST() {
   try {
+    const messages = SAMPLE_TRANSCRIPT
+      .split('\n\n')
+      .filter((l) => l.trim())
+      .map((line) => ({
+        role: line.startsWith('Pablo:') ? 'assistant' : 'user',
+        content: line.replace(/^(Pablo|Recruiter):\s*/, ''),
+      }));
+
     const { emailId } = await sendFollowUpEmail({
       to: 'pabloagisburgos@gmail.com',
       transcript: SAMPLE_TRANSCRIPT,
+      messages,
       jobTitle: 'Customer Success Manager',
       companyName: 'TravelTech SaaS',
     });

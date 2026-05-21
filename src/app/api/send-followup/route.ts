@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
     const { emailId } = await sendFollowUpEmail({
       to: session.email,
       transcript,
+      messages: messages ?? [],
       recruiterName: session.recruiter_name || null,
       jobTitle: session.role || null,
       companyName: session.company || null,

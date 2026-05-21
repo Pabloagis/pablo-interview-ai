@@ -184,15 +184,15 @@ function getFallbackAnalysis(
   };
 }
 
-function formatTranscriptHTML(transcript: string): string {
-  return transcript
-    .split('\n\n')
-    .filter((l) => l.trim())
-    .map((line) => {
-      const isPablo = line.startsWith('Pablo:');
+type RawMessage = { role: string; content: string };
+
+function formatTranscriptHTML(messages: RawMessage[]): string {
+  return messages
+    .map((msg) => {
+      const isPablo = msg.role === 'assistant';
       const label = isPablo ? 'Pablo' : 'Recruiter';
-      const content = line.replace(/^(Pablo|Recruiter):\s*/, '');
       const labelColor = isPablo ? '#2563eb' : '#64748b';
+      const content = msg.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return `
         <tr>
           <td style="padding:10px 0 4px;">
@@ -213,7 +213,7 @@ function generateEmailHTML(
   recruiterName?: string | null,
   jobTitle?: string | null,
   companyName?: string | null,
-  transcript?: string | null
+  messages?: RawMessage[] | null
 ): string {
   const {
     language,
@@ -423,14 +423,14 @@ function generateEmailHTML(
                 </tr>
               </table>
 
-              ${transcript ? `
+              ${messages && messages.length > 0 ? `
               <!-- Transcript -->
               <p style="margin:0 0 12px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
                   <td style="padding:16px 18px; background:#f8fafc;">
                     <table width="100%" cellpadding="0" cellspacing="0">
-                      ${formatTranscriptHTML(transcript)}
+                      ${formatTranscriptHTML(messages)}
                     </table>
                   </td>
                 </tr>
@@ -460,6 +460,7 @@ function generateEmailHTML(
 export interface SendFollowUpEmailParams {
   to: string;
   transcript: string;
+  messages: RawMessage[];
   recruiterName?: string | null;
   jobTitle?: string | null;
   companyName?: string | null;
@@ -468,12 +469,13 @@ export interface SendFollowUpEmailParams {
 export async function sendFollowUpEmail({
   to,
   transcript,
+  messages,
   recruiterName,
   jobTitle,
   companyName,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
-  const html = generateEmailHTML(analysis, recruiterName, jobTitle, companyName, transcript);
+  const html = generateEmailHTML(analysis, recruiterName, jobTitle, companyName, messages);
   const resend = getResendClient();
 
   const result = await resend.emails.send({
