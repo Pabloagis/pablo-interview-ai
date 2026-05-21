@@ -238,12 +238,8 @@ function generateEmailHTML(
 
   const chipsHTML = core_experience_chips
     .map(
-      (chip) => `
-      <td style="padding: 4px;">
-        <span style="display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:7px 13px; font-size:14px; color:#475569; white-space:nowrap;">
-          ${chip}
-        </span>
-      </td>`
+      (chip) =>
+        `<span style="display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:6px 12px; font-size:13px; color:#475569; margin:3px 4px 3px 0; white-space:nowrap;">${chip}</span>`
     )
     .join('');
 
@@ -303,7 +299,7 @@ function generateEmailHTML(
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc; padding: 32px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+        <table cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
 
           <!-- HEADER -->
           <tr>
@@ -311,7 +307,7 @@ function generateEmailHTML(
                 style="background-image:url('${BASE_URL}/assets/header-bg.jpg'); background-size:cover; background-position:center top; background-color:#0f172a;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:rgba(10,18,35,0.48); padding:36px 40px 28px; text-align:center;">
+                  <td style="background-color:rgba(10,18,35,0.48); padding:32px 24px 24px; text-align:center;">
                     ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
                     <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:rgba(255,255,255,0.72); font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
                     <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
@@ -325,7 +321,7 @@ function generateEmailHTML(
 
           <!-- BODY -->
           <tr>
-            <td style="padding:32px 40px;">
+            <td style="padding:28px 24px;">
 
               <p style="margin:0 0 16px; font-size:21px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${greeting}</p>
               <div style="border-left:3px solid #dbeafe; padding-left:18px; margin-bottom:28px;">
@@ -413,7 +409,7 @@ function generateEmailHTML(
                 </tr>
                 <tr>
                   <td style="padding:14px 16px; background:#ffffff;">
-                    <table cellpadding="0" cellspacing="0"><tr>${chipsHTML}</tr></table>
+                    <div style="line-height:1.8;">${chipsHTML}</div>
                   </td>
                 </tr>
               </table>
@@ -495,7 +491,7 @@ function generateEmailHTML(
 
           <!-- FOOTER -->
           <tr>
-            <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px 40px; text-align:center;">
+            <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px; text-align:center;">
               <p style="margin:0 0 8px; font-size:15px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['footerText']}</p>
               <a href="${BASE_URL}" style="font-size:13px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">interviewmind.one</a>
             </td>
