@@ -302,13 +302,11 @@ ${retrievedKnowledge}`
     : '';
 
   const langName = language ? LANG_NAMES[language] : null;
-  const languageSection = langName && language !== 'en'
-    ? `
+  const languageSection = `
 ═══════════════════════════════════════════════
 LANGUAGE
 ═══════════════════════════════════════════════
-Respond exclusively in ${langName}. Every message — greetings, answers, follow-ups — must be in ${langName}, regardless of what language the recruiter writes in.`
-    : '';
+Always respond in the same language the recruiter uses in their message. Detect the language of each message and match it exactly — if they write in Spanish, respond in Spanish; English → English; Italian → Italian; Portuguese → Portuguese. This takes absolute priority over everything else.${langName && language !== 'en' ? ` Default to ${langName} if the message language is ambiguous.` : ''}`;
 
   return CORE_SYSTEM_PROMPT + contextSection + memorySection + knowledgeSection + languageSection;
 }
