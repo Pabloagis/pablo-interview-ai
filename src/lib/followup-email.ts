@@ -3,7 +3,7 @@ import { getAnthropicClient } from '@/lib/anthropic';
 import { CLAUDE_FALLBACK_MODEL } from '@/lib/constants';
 
 const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
-const FROM_ADDRESS = 'Pablo Agis Burgos <onboarding@resend.dev>';
+const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
 const BASE_URL = 'https://pablo-interview-ai.vercel.app';
 
 function getResendClient(): Resend {
