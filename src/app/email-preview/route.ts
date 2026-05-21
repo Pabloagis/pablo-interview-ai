@@ -5,16 +5,6 @@ export const dynamic = 'force-dynamic';
 
 const BROWSER_OVERRIDES = `
 <style>
-  /* Stack CTAs into a single column */
-  [data-cta-table], [data-cta-table] tbody { display: block !important; }
-  [data-cta-table] tr { display: block !important; }
-  [data-cta-table] tr td {
-    display: block !important;
-    width: 100% !important;
-    padding-right: 0 !important;
-    padding-bottom: 8px !important;
-    box-sizing: border-box !important;
-  }
   [data-accordion-header] { cursor: pointer; }
 </style>
 <script>

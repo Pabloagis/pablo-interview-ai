@@ -335,28 +335,50 @@ function generateEmailHTML(
                 <p style="margin:0; font-size:15px; color:#475569; font-family:Arial,sans-serif;">— Pablo</p>
               </div>
 
-              <!-- CTAs — 3 equal columns -->
+              <!-- CTAs — single column, sunset palette -->
               <table data-cta-table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                 <tr>
-                  <td width="33%" style="padding-right:6px; vertical-align:top;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-google-meet.png" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
-                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['scheduleSub']}</span>
+                  <td style="padding-bottom:8px;">
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#9e3b26; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-google-meet.png" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        </td>
+                        <td style="vertical-align:middle; padding-left:4px;">
+                          <span style="display:block; font-size:15px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                          <span style="display:block; font-size:12px; color:rgba(255,255,255,0.62); font-family:Arial,sans-serif; margin-top:3px;">${ui['scheduleSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
-                  <td width="33%" style="padding-right:6px; vertical-align:top;">
-                    <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
-                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['linkedinSub']}</span>
+                </tr>
+                <tr>
+                  <td style="padding-bottom:8px;">
+                    <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#7c3420; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        </td>
+                        <td style="vertical-align:middle; padding-left:4px;">
+                          <span style="display:block; font-size:15px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
+                          <span style="display:block; font-size:12px; color:rgba(255,255,255,0.62); font-family:Arial,sans-serif; margin-top:3px;">${ui['linkedinSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
-                  <td width="33%" style="vertical-align:top;">
-                    <a href="${BASE_URL}/cv.pdf" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-pdf.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
-                      <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
-                      <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['cvSub']}</span>
+                </tr>
+                <tr>
+                  <td>
+                    <a href="${BASE_URL}/cv.pdf" style="display:block; background:#2e5f7a; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-pdf.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        </td>
+                        <td style="vertical-align:middle; padding-left:4px;">
+                          <span style="display:block; font-size:15px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
+                          <span style="display:block; font-size:12px; color:rgba(255,255,255,0.62); font-family:Arial,sans-serif; margin-top:3px;">${ui['cvSub']}</span>
+                        </td>
+                      </tr></table>
                     </a>
                   </td>
                 </tr>
