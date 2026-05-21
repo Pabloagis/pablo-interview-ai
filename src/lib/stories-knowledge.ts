@@ -27,6 +27,21 @@ export const STORIES: Story[] = [
       'initiative',
       'technology',
       'automation',
+      // "things not going as planned" — EN + ES
+      'something went wrong',
+      'didn\'t go as planned',
+      'went wrong',
+      'challenge',
+      'obstacle',
+      'setback',
+      'unexpected',
+      'no salió',
+      'algo salió',
+      'salió según',
+      'cuéntame cuando',
+      'no fue según',
+      'improvise',
+      'adapt quickly',
     ],
     ownership: 'participated',
     content: `**STORY: Vienna AI Feedback Project**
@@ -56,6 +71,11 @@ Context: During Pablo's time at HubOS as Implementation Specialist, he participa
       'adapting',
       'pms switch',
       'system change',
+      // behavioral / "things didn't go as planned" overlap
+      'resistance',
+      'pushback',
+      'adoption',
+      'didn\'t work out',
     ],
     ownership: 'participated',
     content: `**STORY: FOLS PMS Migration — IMPORTANT: Pablo was a participant, NOT the lead**
