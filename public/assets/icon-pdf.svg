@@ -1,7 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <rect width="40" height="40" rx="6" fill="#E53935"/>
-  <path fill="#fff" d="M12 28V12h11l5 5v11H12z"/>
-  <path fill="#E53935" d="M23 12l5 5h-5V12z"/>
-  <path fill="#E53935" d="M23 17h4v1h-4z"/>
-  <text x="20" y="26" font-family="Arial, sans-serif" font-size="7.5" font-weight="bold" fill="#E53935" text-anchor="middle">PDF</text>
+  <path d="M7 3 L26 3 L33 10 L33 37 L7 37 Z"
+        fill="none" stroke="#ffffff" stroke-width="2"
+        stroke-linejoin="round"/>
+  <path d="M26 3 L26 10 L33 10"
+        fill="none" stroke="#ffffff" stroke-width="2"
+        stroke-linejoin="round"/>
+  <rect x="5" y="13" width="24" height="10" rx="1.5" fill="#E53935"/>
+  <text x="17" y="21.5"
+        font-family="Arial,sans-serif" font-size="8"
+        font-weight="bold" fill="#ffffff"
+        text-anchor="middle">PDF</text>
+  <line x1="20" y1="26" x2="20" y2="33"
+        stroke="#ffffff" stroke-width="2"
+        stroke-linecap="round"/>
+  <polyline points="16,30 20,34 24,30"
+            fill="none" stroke="#ffffff"
+            stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round"/>
 </svg>
