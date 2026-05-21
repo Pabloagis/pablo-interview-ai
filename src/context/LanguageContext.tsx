@@ -212,7 +212,7 @@ const ES: Translations = {
   interviewEndedTitle: 'Entrevista finalizada.',
   interviewEndedMsg: '¡Gracias por la conversación! — Pablo',
   allDoneTitle: '¡Todo listo!',
-  allDoneMsg: 'Revisa tu bandeja de entrada — te hemos enviado todo a',
+  allDoneMsg: 'Revisa tu bandeja de entrada, te hemos enviado todo a',
   allDoneSignature: 'Espero saber de ti pronto. — Pablo',
   conversationReset: 'Conversación reiniciada.',
   connectionIssue: 'Error de conexión. Por favor inténtalo de nuevo.',
