@@ -84,7 +84,7 @@ async function analyzeConversation(
 You are generating a follow-up email on behalf of Pablo Agis Burgos after a recruiter interview.
 
 Pablo's background:
-- 7+ years in luxury hospitality operations (Soho House London, Axel Hotel Barcelona, Accor)
+- Hospitality operations background (Soho House London, Axel Hotel Barcelona, Accor)
 - Software Implementation Specialist at HubOS (Early 2026, a few months)
 - Core skills: B2B client relationships, onboarding, multilingual communication (EN/ES/GL/IT/PT)
 - Positioning: Operationally credible hospitality-tech specialist moving into SaaS implementation and commercial roles
