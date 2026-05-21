@@ -329,7 +329,7 @@ function generateEmailHTML(
               </div>
 
               <!-- CTAs — 3 equal columns -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+              <table data-cta-table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                 <tr>
                   <td width="33%" style="padding-right:6px; vertical-align:top;">
                     <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">

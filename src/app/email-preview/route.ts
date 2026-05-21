@@ -3,21 +3,39 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
-const ACCORDION_SCRIPT = `
+const BROWSER_OVERRIDES = `
+<style>
+  /* Stack CTAs into a single column */
+  [data-cta-table], [data-cta-table] tbody { display: block !important; }
+  [data-cta-table] tr { display: block !important; }
+  [data-cta-table] tr td {
+    display: block !important;
+    width: 100% !important;
+    padding-right: 0 !important;
+    padding-bottom: 8px !important;
+    box-sizing: border-box !important;
+  }
+  [data-accordion-header] { cursor: pointer; }
+</style>
 <script>
 (function () {
+  // Sections start collapsed; no visual change to header on toggle
   document.querySelectorAll('[data-accordion-header]').forEach(function (td) {
-    td.style.cursor = 'pointer';
     var row = td.closest('tr');
     var contentRow = row ? row.nextElementSibling : null;
-    var chevron = td.querySelector('[data-chevron]');
     if (!contentRow) return;
+    contentRow.style.display = 'none';
     td.addEventListener('click', function () {
-      var isOpen = contentRow.style.display !== 'none';
-      contentRow.style.display = isOpen ? 'none' : '';
-      if (chevron) chevron.innerHTML = isOpen ? '&#9654;' : '&#9660;';
+      contentRow.style.display = contentRow.style.display === 'none' ? '' : 'none';
     });
   });
+
+  // Override schedule CTA label
+  var calLink = document.querySelector('a[href*="calendly"]');
+  if (calLink) {
+    var spans = calLink.querySelectorAll('span');
+    if (spans[0]) spans[0].textContent = 'Book a call with Pablo';
+  }
 })();
 </script>
 `;
@@ -43,7 +61,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const html = data.email_html.replace('</body>', ACCORDION_SCRIPT + '\n</body>');
+  const html = data.email_html.replace('</body>', BROWSER_OVERRIDES + '\n</body>');
 
   return new NextResponse(html, {
     headers: { 'Content-Type': 'text/html; charset=utf-8' },
