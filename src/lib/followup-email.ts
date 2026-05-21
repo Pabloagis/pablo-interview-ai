@@ -340,7 +340,7 @@ function generateEmailHTML(
                 <tr>
                   <td width="33%" style="padding-right:6px; vertical-align:top;">
                     <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#0f172a; text-decoration:none; border-radius:10px; padding:18px 12px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
+                      <img src="${BASE_URL}/assets/icon-google-meet.png" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
                       <span style="display:block; font-size:14px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
                       <span style="display:block; font-size:12px; color:#64748b; font-family:Arial,sans-serif; margin-top:5px;">${ui['scheduleSub']}</span>
                     </a>
