@@ -186,11 +186,12 @@ function getFallbackAnalysis(
 
 type RawMessage = { role: string; content: string };
 
-function formatTranscriptHTML(messages: RawMessage[]): string {
+function formatTranscriptHTML(messages: RawMessage[], recruiterName?: string | null): string {
+  const recruiterLabel = recruiterName?.trim() || 'Recruiter';
   return messages
     .map((msg) => {
       const isPablo = msg.role === 'assistant';
-      const label = isPablo ? 'Pablo' : 'Recruiter';
+      const label = isPablo ? 'Pablo' : recruiterLabel;
       const labelColor = isPablo ? '#2563eb' : '#64748b';
       const content = msg.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return `
@@ -430,7 +431,7 @@ function generateEmailHTML(
                 <tr>
                   <td style="padding:16px 18px; background:#f8fafc;">
                     <table width="100%" cellpadding="0" cellspacing="0">
-                      ${formatTranscriptHTML(messages)}
+                      ${formatTranscriptHTML(messages, recruiterName)}
                     </table>
                   </td>
                 </tr>
