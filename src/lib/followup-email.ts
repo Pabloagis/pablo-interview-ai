@@ -309,8 +309,7 @@ function generateEmailHTML(
             <td style="background:#0f172a; padding:36px 40px 28px; text-align:center;">
               <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:#475569; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
               <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #3b82f6; margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
-              <h1 style="margin:0 0 6px; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
-              <p style="margin:0 0 10px; font-size:14px; color:#64748b; font-family:Arial,sans-serif;">SaaS Implementation &amp; Customer Success Professional</p>
+              <h1 style="margin:0 0 10px; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
               <p style="margin:0; font-size:12px; color:#cbd5e1; background:#1e293b; display:inline-block; padding:4px 14px; border-radius:20px; font-family:Arial,sans-serif;">${contextLine}</p>
             </td>
           </tr>
