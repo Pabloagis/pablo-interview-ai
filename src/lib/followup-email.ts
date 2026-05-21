@@ -107,7 +107,7 @@ Return ONLY a valid JSON object with this exact structure. No markdown, no pream
 
 {
   "language": "ISO 639-1 code of the conversation language, e.g. 'en' or 'es'",
-  "opening_line": "Warm, specific 1-sentence intro in first person referencing the actual role/company. Max 25 words.",
+  "opening_line": "Warm, specific 1-sentence intro in first person referencing the actual role/company. Max 25 words. Do NOT include the recruiter's name — the greeting above already uses it.",
   "core_experience_chips": [
     "Exactly 4 short phrases (3–5 words max) covering key experience topics from the conversation."
   ],
