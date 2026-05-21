@@ -91,7 +91,6 @@ export default function IntakeScreen() {
             <span className="text-white font-bold text-xl">IM</span>
           </div>
           <h1 className="text-3xl font-bold text-gray-800">InterviewMind</h1>
-          <p className="text-gray-500 mt-2 text-sm">{t.tagline}</p>
         </div>
 
         {/* Vision statement */}
