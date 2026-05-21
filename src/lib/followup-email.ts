@@ -359,7 +359,6 @@ function generateEmailHTML(
               </table>
 
               <!-- Recruiter Takeaways -->
-              <p style="margin:0 0 12px; font-size:12px; font-weight:bold; letter-spacing:0.1em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['recruiterTakeaways']}</p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
                 <tr>
                   <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0; background:#f0fdf4;">
