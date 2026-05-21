@@ -378,9 +378,7 @@ function generateEmailHTML(
                     <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
                       <table cellpadding="0" cellspacing="0"><tr>
                         <td style="padding-right:10px; vertical-align:middle;">
-                          <div style="width:28px; height:28px; background:#00897b; border-radius:6px; text-align:center; line-height:28px;">
-                            <span style="font-size:15px; color:#ffffff; font-family:Arial,sans-serif;">&#128249;</span>
-                          </div>
+                          <img src="${BASE_URL}/assets/icon-google-meet.svg" width="28" height="28" alt="Google Meet" style="display:block; border-radius:6px;" />
                         </td>
                         <td>
                           <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
@@ -393,9 +391,7 @@ function generateEmailHTML(
                     <a href="https://linkedin.com/in/pablo-agis-burgos" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
                       <table cellpadding="0" cellspacing="0"><tr>
                         <td style="padding-right:10px; vertical-align:middle;">
-                          <div style="width:28px; height:28px; background:#0077b5; border-radius:6px; text-align:center; line-height:28px;">
-                            <span style="font-size:13px; font-weight:900; color:#ffffff; font-family:Arial,sans-serif;">in</span>
-                          </div>
+                          <img src="${BASE_URL}/assets/icon-linkedin.svg" width="28" height="28" alt="LinkedIn" style="display:block; border-radius:6px;" />
                         </td>
                         <td>
                           <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
@@ -408,9 +404,7 @@ function generateEmailHTML(
                     <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#ffffff; border:1px solid #e2e8f0; text-decoration:none; border-radius:10px; padding:14px 12px;">
                       <table cellpadding="0" cellspacing="0"><tr>
                         <td style="padding-right:10px; vertical-align:middle;">
-                          <div style="width:28px; height:28px; background:#dc2626; border-radius:6px; text-align:center; line-height:28px;">
-                            <span style="font-size:11px; font-weight:900; color:#ffffff; font-family:Arial,sans-serif;">PDF</span>
-                          </div>
+                          <img src="${BASE_URL}/assets/icon-pdf.svg" width="28" height="28" alt="PDF" style="display:block; border-radius:6px;" />
                         </td>
                         <td>
                           <span style="display:block; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
