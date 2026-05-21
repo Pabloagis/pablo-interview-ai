@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { sendFollowUpEmail } from '@/lib/followup-email';
+import { createServerSupabaseClient } from '@/lib/supabase';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,15 +36,40 @@ export async function POST() {
         content: line.replace(/^(Pablo|Recruiter):\s*/, ''),
       }));
 
-    const { emailId } = await sendFollowUpEmail({
+    // Create a real session so the preview URL resolves correctly
+    const supabase = createServerSupabaseClient();
+    const { data: session, error: sessionError } = await supabase
+      .from('sessions')
+      .insert({
+        recruiter_name: 'Sarah',
+        company: 'TravelTech SaaS',
+        role: 'Customer Success Manager',
+        email: 'pabloagisburgos@gmail.com',
+        consent_to_email: true,
+        messages,
+      })
+      .select('id')
+      .single();
+
+    if (sessionError || !session) {
+      throw new Error(`Failed to create test session: ${sessionError?.message}`);
+    }
+
+    const { emailId, html } = await sendFollowUpEmail({
       to: 'pabloagisburgos@gmail.com',
       transcript: SAMPLE_TRANSCRIPT,
       messages,
       jobTitle: 'Customer Success Manager',
       companyName: 'TravelTech SaaS',
+      sessionId: session.id,
     });
 
-    return NextResponse.json({ success: true, emailId });
+    await supabase
+      .from('sessions')
+      .update({ email_sent_at: new Date().toISOString(), email_html: html })
+      .eq('id', session.id);
+
+    return NextResponse.json({ success: true, emailId, previewId: session.id });
   } catch (error) {
     console.error('[test-followup] Error:', error);
     const message = error instanceof Error ? error.message : String(error);
