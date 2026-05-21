@@ -125,7 +125,7 @@ Return ONLY a valid JSON object with this exact structure. No markdown, no pream
   ],
   "executive_summary": "2–3 sentences in first person summarising my seniority signal, communication quality, and fit for the role.",
   "suggested_subject_line": "Email subject line specific to role and company. Max 10 words.",
-  "next_step_cta": "Short action phrase for the primary CTA button. Specific, not generic."
+  "next_step_cta": "Short action phrase for the primary CTA button. Keep it open-ended — no specific timeframes like 'next week'. E.g. 'Let's connect' or 'Schedule a call'."
 }
 `;
 
@@ -212,8 +212,6 @@ function formatTranscriptHTML(messages: RawMessage[], recruiterName?: string | n
 function generateEmailHTML(
   analysis: ConversationAnalysis,
   recruiterName?: string | null,
-  jobTitle?: string | null,
-  companyName?: string | null,
   messages?: RawMessage[] | null
 ): string {
   const {
@@ -284,10 +282,6 @@ function generateEmailHTML(
     )
     .join('');
 
-  const contextLine =
-    jobTitle && companyName
-      ? `${jobTitle} · ${companyName}`
-      : jobTitle || companyName || 'Exploratory conversation';
 
   return `
 <!DOCTYPE html>
@@ -309,8 +303,7 @@ function generateEmailHTML(
             <td style="background:#0f172a; padding:36px 40px 28px; text-align:center;">
               <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:#475569; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
               <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #3b82f6; margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
-              <h1 style="margin:0 0 10px; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
-              <p style="margin:0; font-size:12px; color:#cbd5e1; background:#1e293b; display:inline-block; padding:4px 14px; border-radius:20px; font-family:Arial,sans-serif;">${contextLine}</p>
+              <h1 style="margin:0; font-size:22px; font-weight:600; color:#f1f5f9; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
             </td>
           </tr>
 
@@ -468,7 +461,7 @@ export async function sendFollowUpEmail({
   companyName,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
-  const html = generateEmailHTML(analysis, recruiterName, jobTitle, companyName, messages);
+  const html = generateEmailHTML(analysis, recruiterName, messages);
   const resend = getResendClient();
 
   const result = await resend.emails.send({
