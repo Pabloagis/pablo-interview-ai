@@ -18,7 +18,6 @@ export default function IntakeScreen() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
-  const [consentToEmail, setConsentToEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -26,8 +25,7 @@ export default function IntakeScreen() {
   const showNameError = nameTouched && !isNameValid;
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
-  const isSubmitDisabled =
-    isLoading || !isNameValid || !isEmailValid || !consentToEmail;
+  const isSubmitDisabled = isLoading || !isNameValid || !isEmailValid;
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,7 +38,7 @@ export default function IntakeScreen() {
         company: company.trim() || undefined,
         role: role.trim() || undefined,
         email: email.trim(),
-        consentToEmail,
+        consentToEmail: true,
       };
 
       const response = await fetch('/api/session', {
@@ -65,7 +63,7 @@ export default function IntakeScreen() {
           email: email.trim(),
           company: company.trim() || undefined,
           role: role.trim() || undefined,
-          consentToEmail,
+          consentToEmail: true,
         })
       );
 
@@ -220,20 +218,7 @@ export default function IntakeScreen() {
           </div>
         </div>
 
-        {/* ── GDPR ── */}
-        <div className={`${card} mb-3`}>
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={consentToEmail}
-              onChange={(e) => setConsentToEmail(e.target.checked)}
-              className="mt-0.5 h-[17px] w-[17px] rounded border-gray-300 accent-blue-500 flex-shrink-0"
-            />
-            <span className="text-[12.5px] text-gray-500 leading-relaxed">{t.gdprText}</span>
-          </label>
-        </div>
-
-        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
+        {error &&<p className="text-red-500 text-sm mb-3">{error}</p>}
 
         {/* ── Start button ── */}
         <button
