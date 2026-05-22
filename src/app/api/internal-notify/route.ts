@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
       recruiterName: session.recruiter_name || null,
       jobTitle: session.role || null,
       companyName: session.company || null,
+      sessionId,
       recruiterEmail: session.email || null,
       bcc: [],
     });

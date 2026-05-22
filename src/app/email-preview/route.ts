@@ -15,7 +15,9 @@ const BROWSER_OVERRIDES = `
     var contentRow = row ? row.nextElementSibling : null;
     if (!contentRow) return;
     contentRow.style.display = 'none';
-    td.addEventListener('click', function () {
+    td.addEventListener('click', function (e) {
+      var target = e.target;
+      if (target && (target as Element).closest('[data-chevron]')) e.preventDefault();
       contentRow.style.display = contentRow.style.display === 'none' ? '' : 'none';
     });
   });

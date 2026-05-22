@@ -290,6 +290,9 @@ function generateEmailHTML(
     )
     .join('');
 
+  const chevronHTML: string = previewUrl
+    ? `<a href="${previewUrl}" style="text-decoration:none; display:inline-block;" data-chevron><span style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></a>`
+    : `<span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span>`;
 
   return `
 <!DOCTYPE html>
@@ -421,11 +424,11 @@ function generateEmailHTML(
                   <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['executiveSummary']}</span></td>
-                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right">${chevronHTML}</td>
                     </tr></table>
                   </td>
                 </tr>
-                <tr>
+                <tr style="display:none;">
                   <td style="padding:16px 18px; background:#ffffff;">
                     <p style="margin:0; font-size:14px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${executive_summary}</p>
                   </td>
@@ -438,11 +441,11 @@ function generateEmailHTML(
                   <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['coreExperience']}</span></td>
-                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right">${chevronHTML}</td>
                     </tr></table>
                   </td>
                 </tr>
-                <tr>
+                <tr style="display:none;">
                   <td style="padding:14px 16px; background:#ffffff;">
                     <div style="line-height:1.8;">${chipsHTML}</div>
                   </td>
@@ -455,11 +458,11 @@ function generateEmailHTML(
                   <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['conversationInsights']}</span></td>
-                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right">${chevronHTML}</td>
                     </tr></table>
                   </td>
                 </tr>
-                <tr>
+                <tr style="display:none;">
                   <td style="background:#ffffff;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0;">
@@ -481,11 +484,11 @@ function generateEmailHTML(
                   <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['recruiterTakeaways']}</span></td>
-                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right">${chevronHTML}</td>
                     </tr></table>
                   </td>
                 </tr>
-                <tr>
+                <tr style="display:none;">
                   <td style="background:#ffffff;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0; background:#f0fdf4;">
@@ -508,11 +511,11 @@ function generateEmailHTML(
                   <td data-accordion-header style="background:#f8fafc; padding:12px 16px; border-bottom:1px solid #e2e8f0; cursor:pointer;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</span></td>
-                      <td align="right"><span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span></td>
+                      <td align="right">${chevronHTML}</td>
                     </tr></table>
                   </td>
                 </tr>
-                <tr>
+                <tr style="display:none;">
                   <td style="padding:16px 18px; background:#ffffff;">
                     <table width="100%" cellpadding="0" cellspacing="0">
                       ${formatTranscriptHTML(messages, recruiterName)}
