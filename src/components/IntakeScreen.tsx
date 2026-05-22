@@ -231,7 +231,7 @@ export default function IntakeScreen() {
             isSubmitDisabled
               ? 'bg-[#dde5f5] text-[#8aa5d8] cursor-not-allowed'
               : isFullyFilled
-              ? 'bg-gradient-to-br from-[#1a8c4e] to-[#146b3c] text-white hover:opacity-90 active:opacity-80 cursor-pointer'
+              ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/50 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
               : 'bg-[#6aaa88] text-white hover:opacity-90 active:opacity-80 cursor-pointer',
           ].join(' ')}
         >
