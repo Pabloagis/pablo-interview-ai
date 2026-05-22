@@ -78,8 +78,8 @@ export default function EndInterviewButton({
           className={[
             'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white transition-all duration-200 whitespace-nowrap',
             isActive
-              ? 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg ring-2 ring-green-300 ring-offset-1'
-              : 'bg-slate-300 opacity-50 cursor-not-allowed',
+              ? 'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30 hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99]'
+              : 'bg-[#4d8f6e] opacity-80 cursor-not-allowed',
           ].join(' ')}
         >
           {/* Mobile: lightbulb icon */}
