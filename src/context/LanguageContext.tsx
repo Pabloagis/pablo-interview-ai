@@ -94,6 +94,42 @@ export type Translations = {
   endModalConfirm: string;
   endModalSending: string;
   endModalError: string;
+  // Footer
+  footerPrivacy: string;
+  footerContact: string;
+  footerPrivateNote: string;
+  // PrivacyModal — UI chrome
+  privacyTitle: string;
+  privacyLastUpdated: string;
+  privacyClose: string;
+  privacyIntro: string;
+  privacyCollectTitle: string;
+  privacyCollectItems: string[];
+  privacyCollectNote: string;
+  privacyUsedTitle: string;
+  privacyUsedItems: string[];
+  privacyUsedNote: string;
+  privacyServicesTitle: string;
+  privacyServicesIntro: string;
+  privacyServiceRoles: string[];
+  privacyServicesNote: string;
+  privacyGaOptout: string;
+  privacyStorageTitle: string;
+  privacyStorageP1: string;
+  privacyStorageP2Pre: string;
+  privacyStorageP2Post: string;
+  privacyRightsTitle: string;
+  privacyRightsIntro: string;
+  privacyRightsHaveRight: string;
+  privacyRightsItems: string[];
+  privacyRightsNote: string;
+  privacyContactTitle: string;
+  privacyContactP: string;
+  // ChatPanel extras
+  endReminderPrefix: string;
+  endReminderSuffix: string;
+  listenModeOn: string;
+  listenModeOff: string;
 };
 
 const EN: Translations = {
@@ -187,6 +223,60 @@ const EN: Translations = {
   endModalConfirm: 'Yes, send everything',
   endModalSending: 'Sending…',
   endModalError: 'Something went wrong. Please try again.',
+  footerPrivacy: 'Privacy',
+  footerContact: 'Contact',
+  footerPrivateNote: 'All conversations remain private and are never shared externally.',
+  privacyTitle: 'Privacy Policy',
+  privacyLastUpdated: 'Last updated: May 2026',
+  privacyClose: 'Got it',
+  privacyIntro: "InterviewMind is an AI-powered professional profile built and operated by Pablo Agis Burgos, Barcelona, Spain. It lets recruiters explore Pablo's background through a live conversation. Here's exactly what happens with your data — no legalese.",
+  privacyCollectTitle: 'What we collect',
+  privacyCollectItems: [
+    'Your name, email, company, and role — entered in the intake form',
+    'The full transcript of your conversation',
+    'Session metadata: timestamps and session ID',
+  ],
+  privacyCollectNote: 'Company and role are optional. Email is required to start the session.',
+  privacyUsedTitle: "How it's used",
+  privacyUsedItems: [
+    'Personalise AI responses in real time based on your context',
+    'Send Pablo an automated notification so he knows someone is chatting',
+    "Send you a follow-up email with Pablo's CV if requested at the end",
+    'Help Pablo prepare for live interviews and improve the experience over time',
+  ],
+  privacyUsedNote: 'Your data is never sold or shared for commercial purposes.',
+  privacyServicesTitle: 'AI & third-party services',
+  privacyServicesIntro: 'To work, InterviewMind shares conversation data with these trusted providers:',
+  privacyServiceRoles: [
+    'Generates all AI responses',
+    'Powers conversation memory',
+    'Stores sessions and transcripts',
+    'Hosts the platform',
+    'Anonymous usage analytics',
+    'Sends follow-up emails',
+  ],
+  privacyServicesNote: "Each service processes only what's needed to operate the platform. You can opt out of Google Analytics via the ",
+  privacyGaOptout: 'browser add-on',
+  privacyStorageTitle: 'Data storage & retention',
+  privacyStorageP1: "Conversations are stored securely in Supabase. Data is retained until you request deletion — there's no automatic expiry.",
+  privacyStorageP2Pre: 'To delete your session data, email',
+  privacyStorageP2Post: 'with the address you used to start the session.',
+  privacyRightsTitle: 'Your rights (GDPR)',
+  privacyRightsIntro: 'This platform operates from Spain and is subject to GDPR. Processing is based on legitimate interest (Art. 6(1)(f)) — helping Pablo present his professional profile to recruiters.',
+  privacyRightsHaveRight: 'You have the right to:',
+  privacyRightsItems: [
+    'Access the data stored from your session',
+    'Correct inaccurate information',
+    'Delete your conversation data',
+    'Object to processing based on legitimate interest',
+  ],
+  privacyRightsNote: 'You can also lodge a complaint with the Spanish data protection authority:',
+  privacyContactTitle: 'Contact',
+  privacyContactP: 'For any privacy-related questions, reach out directly:',
+  endReminderPrefix: 'Click',
+  endReminderSuffix: 'when done',
+  listenModeOn: 'Listen mode on — click to disable',
+  listenModeOff: 'Listen mode off — click to hear all responses',
 };
 
 const ES: Translations = {
@@ -280,6 +370,60 @@ const ES: Translations = {
   endModalConfirm: 'Sí, enviar todo',
   endModalSending: 'Enviando…',
   endModalError: 'Algo salió mal. Por favor inténtalo de nuevo.',
+  footerPrivacy: 'Privacidad',
+  footerContact: 'Contacto',
+  footerPrivateNote: 'Todas las conversaciones son privadas y nunca se comparten externamente.',
+  privacyTitle: 'Política de privacidad',
+  privacyLastUpdated: 'Última actualización: mayo 2026',
+  privacyClose: 'Entendido',
+  privacyIntro: 'InterviewMind es un perfil profesional impulsado por IA, creado y operado por Pablo Agis Burgos, Barcelona, España. Permite a los reclutadores explorar el perfil de Pablo a través de una conversación en vivo. Aquí tienes exactamente lo que ocurre con tus datos — sin tecnicismos.',
+  privacyCollectTitle: 'Qué recopilamos',
+  privacyCollectItems: [
+    'Tu nombre, email, empresa y rol — introducidos en el formulario',
+    'La transcripción completa de tu conversación',
+    'Metadatos de sesión: marcas de tiempo e ID de sesión',
+  ],
+  privacyCollectNote: 'La empresa y el rol son opcionales. El email es obligatorio para iniciar la sesión.',
+  privacyUsedTitle: 'Cómo se usa',
+  privacyUsedItems: [
+    'Personalizar las respuestas de la IA en tiempo real según tu contexto',
+    'Enviar a Pablo una notificación automática para que sepa que alguien está chateando',
+    "Enviarte un email de seguimiento con el CV de Pablo si lo solicitas al final",
+    'Ayudar a Pablo a preparar entrevistas en vivo y mejorar la experiencia con el tiempo',
+  ],
+  privacyUsedNote: 'Tus datos nunca se venden ni se comparten con fines comerciales.',
+  privacyServicesTitle: 'Servicios de IA y terceros',
+  privacyServicesIntro: 'Para funcionar, InterviewMind comparte datos de conversación con estos proveedores de confianza:',
+  privacyServiceRoles: [
+    'Genera todas las respuestas de IA',
+    'Potencia la memoria de conversación',
+    'Almacena sesiones y transcripciones',
+    'Aloja la plataforma',
+    'Analítica anónima de uso',
+    'Envía emails de seguimiento',
+  ],
+  privacyServicesNote: 'Cada servicio procesa solo lo necesario para operar la plataforma. Puedes desactivar Google Analytics mediante el ',
+  privacyGaOptout: 'complemento del navegador',
+  privacyStorageTitle: 'Almacenamiento y retención de datos',
+  privacyStorageP1: "Las conversaciones se almacenan de forma segura en Supabase. Los datos se conservan hasta que solicites su eliminación — no hay caducidad automática.",
+  privacyStorageP2Pre: 'Para eliminar los datos de tu sesión, envía un email a',
+  privacyStorageP2Post: 'indicando la dirección con la que iniciaste la sesión.',
+  privacyRightsTitle: 'Tus derechos (RGPD)',
+  privacyRightsIntro: 'Esta plataforma opera desde España y está sujeta al RGPD. El tratamiento se basa en el interés legítimo (Art. 6(1)(f)) — ayudar a Pablo a presentar su perfil profesional a los reclutadores.',
+  privacyRightsHaveRight: 'Tienes derecho a:',
+  privacyRightsItems: [
+    'Acceder a los datos almacenados de tu sesión',
+    'Corregir información inexacta',
+    'Eliminar los datos de tu conversación',
+    'Oponerte al tratamiento basado en interés legítimo',
+  ],
+  privacyRightsNote: 'También puedes presentar una reclamación ante la autoridad española de protección de datos:',
+  privacyContactTitle: 'Contacto',
+  privacyContactP: 'Para cualquier consulta relacionada con la privacidad, contacta directamente:',
+  endReminderPrefix: 'Haz clic en',
+  endReminderSuffix: 'cuando termines',
+  listenModeOn: 'Modo escucha activado — haz clic para desactivar',
+  listenModeOff: 'Modo escucha desactivado — haz clic para escuchar todas las respuestas',
 };
 
 const IT: Translations = {
@@ -373,6 +517,60 @@ const IT: Translations = {
   endModalConfirm: 'Sì, invia tutto',
   endModalSending: 'Invio…',
   endModalError: 'Qualcosa è andato storto. Per favore riprova.',
+  footerPrivacy: 'Privacy',
+  footerContact: 'Contatto',
+  footerPrivateNote: 'Tutte le conversazioni rimangono private e non vengono mai condivise esternamente.',
+  privacyTitle: 'Informativa sulla privacy',
+  privacyLastUpdated: 'Ultimo aggiornamento: maggio 2026',
+  privacyClose: 'Capito',
+  privacyIntro: "InterviewMind è un profilo professionale basato sull'IA, creato e gestito da Pablo Agis Burgos, Barcellona, Spagna. Permette ai recruiter di esplorare il profilo di Pablo attraverso una conversazione dal vivo. Ecco esattamente cosa succede con i tuoi dati — senza tecnicismi.",
+  privacyCollectTitle: 'Cosa raccogliamo',
+  privacyCollectItems: [
+    'Il tuo nome, email, azienda e ruolo — inseriti nel modulo',
+    'La trascrizione completa della tua conversazione',
+    'Metadati di sessione: timestamp e ID sessione',
+  ],
+  privacyCollectNote: "Azienda e ruolo sono facoltativi. L'email è obbligatoria per avviare la sessione.",
+  privacyUsedTitle: 'Come vengono utilizzati',
+  privacyUsedItems: [
+    "Personalizzare le risposte dell'IA in tempo reale in base al tuo contesto",
+    'Inviare a Pablo una notifica automatica in modo che sappia che qualcuno sta chattando',
+    "Inviarti un'email di follow-up con il CV di Pablo se richiesto alla fine",
+    "Aiutare Pablo a prepararsi per colloqui dal vivo e migliorare l'esperienza nel tempo",
+  ],
+  privacyUsedNote: 'I tuoi dati non vengono mai venduti né condivisi per scopi commerciali.',
+  privacyServicesTitle: 'Servizi AI e di terze parti',
+  privacyServicesIntro: 'Per funzionare, InterviewMind condivide i dati della conversazione con questi fornitori attendibili:',
+  privacyServiceRoles: [
+    'Genera tutte le risposte AI',
+    'Alimenta la memoria della conversazione',
+    'Archivia sessioni e trascrizioni',
+    'Ospita la piattaforma',
+    'Analisi anonima degli utilizzi',
+    'Invia email di follow-up',
+  ],
+  privacyServicesNote: 'Ogni servizio elabora solo ciò che è necessario per far funzionare la piattaforma. Puoi disattivare Google Analytics tramite il ',
+  privacyGaOptout: 'componente aggiuntivo del browser',
+  privacyStorageTitle: 'Archiviazione e conservazione dei dati',
+  privacyStorageP1: "Le conversazioni vengono archiviate in modo sicuro su Supabase. I dati vengono conservati fino a quando non ne richiedi la cancellazione — non c'è scadenza automatica.",
+  privacyStorageP2Pre: "Per eliminare i dati della tua sessione, invia un'email a",
+  privacyStorageP2Post: "indicando l'indirizzo utilizzato per avviare la sessione.",
+  privacyRightsTitle: 'I tuoi diritti (GDPR)',
+  privacyRightsIntro: "Questa piattaforma opera dalla Spagna ed è soggetta al GDPR. Il trattamento si basa sull'interesse legittimo (Art. 6(1)(f)) — aiutare Pablo a presentare il suo profilo professionale ai recruiter.",
+  privacyRightsHaveRight: 'Hai il diritto di:',
+  privacyRightsItems: [
+    'Accedere ai dati archiviati dalla tua sessione',
+    'Correggere informazioni inesatte',
+    'Eliminare i dati della tua conversazione',
+    "Opporsi al trattamento basato sull'interesse legittimo",
+  ],
+  privacyRightsNote: "Puoi anche presentare un reclamo all'autorità spagnola per la protezione dei dati:",
+  privacyContactTitle: 'Contatto',
+  privacyContactP: 'Per qualsiasi domanda relativa alla privacy, contatta direttamente:',
+  endReminderPrefix: 'Clicca su',
+  endReminderSuffix: 'quando hai finito',
+  listenModeOn: 'Modalità ascolto attiva — clicca per disattivare',
+  listenModeOff: 'Modalità ascolto disattiva — clicca per ascoltare tutte le risposte',
 };
 
 const PT: Translations = {
@@ -466,6 +664,60 @@ const PT: Translations = {
   endModalConfirm: 'Sim, enviar tudo',
   endModalSending: 'A enviar…',
   endModalError: 'Algo correu mal. Por favor tente novamente.',
+  footerPrivacy: 'Privacidade',
+  footerContact: 'Contacto',
+  footerPrivateNote: 'Todas as conversas são privadas e nunca partilhadas externamente.',
+  privacyTitle: 'Política de Privacidade',
+  privacyLastUpdated: 'Última atualização: maio de 2026',
+  privacyClose: 'Percebido',
+  privacyIntro: 'InterviewMind é um perfil profissional impulsionado por IA, criado e operado por Pablo Agis Burgos, Barcelona, Espanha. Permite que os recrutadores explorem o perfil de Pablo através de uma conversa em direto. Eis exatamente o que acontece com os seus dados — sem tecnicismos.',
+  privacyCollectTitle: 'O que recolhemos',
+  privacyCollectItems: [
+    'O seu nome, email, empresa e cargo — introduzidos no formulário',
+    'A transcrição completa da sua conversa',
+    'Metadados de sessão: timestamps e ID de sessão',
+  ],
+  privacyCollectNote: 'Empresa e cargo são opcionais. O email é obrigatório para iniciar a sessão.',
+  privacyUsedTitle: 'Como são utilizados',
+  privacyUsedItems: [
+    'Personalizar as respostas da IA em tempo real com base no seu contexto',
+    'Enviar a Pablo uma notificação automática para que saiba que alguém está a conversar',
+    'Enviar-lhe um email de acompanhamento com o CV do Pablo, se solicitado no final',
+    'Ajudar Pablo a preparar-se para entrevistas ao vivo e melhorar a experiência ao longo do tempo',
+  ],
+  privacyUsedNote: 'Os seus dados nunca são vendidos nem partilhados para fins comerciais.',
+  privacyServicesTitle: 'Serviços de IA e de terceiros',
+  privacyServicesIntro: 'Para funcionar, o InterviewMind partilha dados de conversa com estes fornecedores de confiança:',
+  privacyServiceRoles: [
+    'Gera todas as respostas de IA',
+    'Alimenta a memória da conversa',
+    'Armazena sessões e transcrições',
+    'Aloja a plataforma',
+    'Análise anónima de utilização',
+    'Envia emails de acompanhamento',
+  ],
+  privacyServicesNote: 'Cada serviço processa apenas o necessário para operar a plataforma. Pode desativar o Google Analytics através do ',
+  privacyGaOptout: 'add-on do navegador',
+  privacyStorageTitle: 'Armazenamento e retenção de dados',
+  privacyStorageP1: "As conversas são armazenadas de forma segura no Supabase. Os dados são retidos até que solicite a sua eliminação — não há expiração automática.",
+  privacyStorageP2Pre: 'Para eliminar os dados da sua sessão, envie um email para',
+  privacyStorageP2Post: 'indicando o endereço utilizado para iniciar a sessão.',
+  privacyRightsTitle: 'Os seus direitos (RGPD)',
+  privacyRightsIntro: 'Esta plataforma opera a partir de Espanha e está sujeita ao RGPD. O tratamento baseia-se no interesse legítimo (Art. 6(1)(f)) — ajudar Pablo a apresentar o seu perfil profissional aos recrutadores.',
+  privacyRightsHaveRight: 'Tem o direito de:',
+  privacyRightsItems: [
+    'Aceder aos dados armazenados da sua sessão',
+    'Corrigir informações incorretas',
+    'Eliminar os dados da sua conversa',
+    'Opor-se ao tratamento baseado em interesse legítimo',
+  ],
+  privacyRightsNote: 'Pode também apresentar uma reclamação junto da autoridade espanhola de proteção de dados:',
+  privacyContactTitle: 'Contacto',
+  privacyContactP: 'Para qualquer questão relacionada com a privacidade, contacte diretamente:',
+  endReminderPrefix: 'Clique em',
+  endReminderSuffix: 'quando terminar',
+  listenModeOn: 'Modo de escuta ativo — clique para desativar',
+  listenModeOff: 'Modo de escuta inativo — clique para ouvir todas as respostas',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

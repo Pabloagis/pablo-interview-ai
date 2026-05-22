@@ -538,7 +538,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           )}
 
           {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} />
+            <MessageBubble key={msg.id} message={msg} recruiterName={context.recruiterName} />
           ))}
 
           {isStreaming && (
