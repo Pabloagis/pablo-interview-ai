@@ -25,7 +25,9 @@ export default function IntakeScreen() {
   const showNameError = nameTouched && !isNameValid;
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
-  const isSubmitDisabled = isLoading || !isNameValid || !isEmailValid;
+  const isNameEmailReady = isNameValid && isEmailValid;
+  const isFullyFilled = isNameEmailReady && company.trim().length > 0 && role.trim().length > 0;
+  const isSubmitDisabled = isLoading || !isNameEmailReady;
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,7 +226,14 @@ export default function IntakeScreen() {
         <button
           type="submit"
           disabled={isSubmitDisabled}
-          className="w-full bg-gradient-to-br from-[#1a8c4e] to-[#146b3c] hover:opacity-90 active:opacity-80 disabled:from-[#dde5f5] disabled:to-[#dde5f5] disabled:text-[#8aa5d8] text-white font-bold py-3.5 px-4 rounded-xl transition-all text-[15px] cursor-pointer disabled:cursor-not-allowed"
+          className={[
+            'w-full font-bold py-3.5 px-4 rounded-xl transition-all text-[15px]',
+            isSubmitDisabled
+              ? 'bg-[#dde5f5] text-[#8aa5d8] cursor-not-allowed'
+              : isFullyFilled
+              ? 'bg-gradient-to-br from-[#1a8c4e] to-[#146b3c] text-white hover:opacity-90 active:opacity-80 cursor-pointer'
+              : 'bg-[#6aaa88] text-white hover:opacity-90 active:opacity-80 cursor-pointer',
+          ].join(' ')}
         >
           {isLoading ? t.buttonStarting : t.buttonStart}
         </button>
