@@ -363,14 +363,14 @@ function generateEmailHTML(
                   <td style="padding-bottom:10px;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td width="50%" style="padding-right:5px; vertical-align:top;">
-                        <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#EEF2FF; border:1px solid #C7D2FE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
+                        <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
                           <img src="${BASE_URL}/assets/icon-linkedin.svg" width="38" height="38" alt="" style="display:block; margin:0 auto 12px; border-radius:8px;" />
-                          <span style="display:block; font-size:13px; font-weight:700; color:#3730A3; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#6366F1; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['linkedinSub']}</span>
+                          <span style="display:block; font-size:13px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
+                          <span style="display:block; font-size:11px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['linkedinSub']}</span>
                         </a>
                       </td>
                       <td width="50%" style="padding-left:5px; vertical-align:top;">
-                        <a href="${BASE_URL}/cv.pdf" style="display:block; background:#EFF6FF; border:1px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
+                        <a href="${BASE_URL}/cv.pdf" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
                           <img src="${BASE_URL}/assets/icon-pdf.svg" width="38" height="38" alt="" style="display:block; margin:0 auto 12px; border-radius:8px;" />
                           <span style="display:block; font-size:13px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
                           <span style="display:block; font-size:11px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['cvSub']}</span>
