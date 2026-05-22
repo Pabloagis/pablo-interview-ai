@@ -508,7 +508,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       )}
 
       {/* Message list */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-4">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-14 w-full">
