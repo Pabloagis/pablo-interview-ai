@@ -50,8 +50,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const voiceTriggeredRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reminderPersistentRef = useRef(false);
   const sendAutoIntroRef = useRef<() => Promise<void>>();
   const sendCheckInRef = useRef<() => Promise<void>>();
+  const dismissPersistentReminderRef = useRef<() => void>();
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -94,18 +96,17 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages, isStreaming]);
 
-  const showReminder = () => {
-    if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
-    setReminderState('visible');
-    reminderDismissRef.current = setTimeout(() => {
-      setReminderState('fading');
-      setTimeout(() => setReminderState('hidden'), 350);
-    }, 4000);
-  };
-
-  // Show on page load
+  // Page-load reminder: auto-dismisses after 4s
   useEffect(() => {
-    const timer = setTimeout(showReminder, 600);
+    const timer = setTimeout(() => {
+      if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
+      reminderPersistentRef.current = false;
+      setReminderState('visible');
+      reminderDismissRef.current = setTimeout(() => {
+        setReminderState('fading');
+        setTimeout(() => setReminderState('hidden'), 350);
+      }, 4000);
+    }, 600);
     return () => {
       clearTimeout(timer);
       if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
@@ -116,16 +117,26 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     if (messages.length > 0) lastActivityRef.current = Date.now();
   }, [messages]);
 
-  // Repeat on inactivity
+  // Inactivity reminder: stays until the user interacts
   useEffect(() => {
     const interval = setInterval(() => {
       if (Date.now() - lastActivityRef.current >= 90_000) {
         lastActivityRef.current = Date.now();
-        showReminder();
+        if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
+        reminderPersistentRef.current = true;
+        setReminderState('visible');
       }
     }, 10_000);
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Dismiss the persistent inactivity reminder on any user action
+  dismissPersistentReminderRef.current = () => {
+    if (!reminderPersistentRef.current) return;
+    reminderPersistentRef.current = false;
+    setReminderState('fading');
+    setTimeout(() => setReminderState('hidden'), 350);
+  };
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
@@ -267,6 +278,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const sendMessage = async (overrideText?: string) => {
     const trimmed = (overrideText ?? inputText).trim();
     if (!trimmed || isStreaming) return;
+    dismissPersistentReminderRef.current?.();
 
     const userMessage: Message = {
       id: generateId(),
@@ -370,6 +382,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   };
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    dismissPersistentReminderRef.current?.();
     setInputText(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
 
     // Auto-grow up to ~5 lines
@@ -634,7 +647,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <button
                 onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
                 aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
-                title={listenMode ? 'Listen mode on — click to disable' : 'Listen mode off — click to hear all responses'}
+                title={listenMode ? t.listenModeOn : t.listenModeOff}
                 className={listenMode ? 'text-blue-500 hover:text-blue-600 transition-colors' : 'text-gray-400 hover:text-gray-600 transition-colors'}
               >
                 <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
@@ -672,7 +685,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           <div className={`animate-slide-down relative bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-2.5 text-[13px] text-gray-600 whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}>
             {/* Arrow pointing up toward the End Interview button */}
             <div className="absolute -top-[5px] right-4 w-2.5 h-2.5 bg-white border-l border-t border-gray-200 rotate-45" />
-            Click <strong className="text-green-700 font-semibold">End interview</strong> when done
+            {t.endReminderPrefix} <strong className="text-green-700 font-semibold">{t.endButtonFull}</strong> {t.endReminderSuffix}
           </div>
         </div>
       )}
