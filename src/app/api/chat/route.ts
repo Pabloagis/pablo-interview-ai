@@ -14,7 +14,6 @@ import {
   EMBEDDING_DIMENSIONS,
 } from '@/lib/constants';
 import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
-const INTERNAL_NOTIFY_URL = 'https://interviewmind.one/api/internal-notify';
 
 export const dynamic = 'force-dynamic';
 
@@ -226,16 +225,6 @@ export async function POST(request: NextRequest) {
             .then(({ error }) => {
               if (error) console.error('Session update failed (non-critical):', error);
             });
-
-          // Silent notification to Pablo after 3rd assistant message
-          const assistantCount = updatedMessages.filter((m) => m.role === 'assistant').length;
-          if (assistantCount === 3) {
-            fetch(INTERNAL_NOTIFY_URL, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ sessionId }),
-            }).catch((err) => console.error('[chat] Notify fetch failed (non-critical):', err));
-          }
 
           // Store both messages in memory with embeddings — fully non-blocking
           storeMemory(

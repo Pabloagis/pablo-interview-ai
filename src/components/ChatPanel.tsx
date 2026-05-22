@@ -201,6 +201,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               voiceTriggeredRef.current = false;
               playResponse(accumulated);
             }
+            // Silent notification after 3rd assistant response
+            const prevAssistantCount = messages.filter((m) => m.role === 'assistant').length;
+            if (prevAssistantCount + 1 === 3) {
+              fetch('/api/internal-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId }),
+              }).catch(() => {});
+            }
           } else if (event.type === 'error' && event.message) {
             addToast(event.message);
             setStreamingText('');
