@@ -14,6 +14,7 @@ import {
   EMBEDDING_DIMENSIONS,
 } from '@/lib/constants';
 import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
+import { sendFollowUpEmail } from '@/lib/followup-email';
 
 export const dynamic = 'force-dynamic';
 
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
         // Load conversation history from session
         const { data: session, error: sessionError } = await supabase
           .from('sessions')
-          .select('messages, recruiter_name, company')
+          .select('messages, recruiter_name, company, role')
           .eq('id', sessionId)
           .single();
 
@@ -225,6 +226,23 @@ export async function POST(request: NextRequest) {
             .then(({ error }) => {
               if (error) console.error('Session update failed (non-critical):', error);
             });
+
+          // Silent notification to Pablo after 3rd assistant message
+          const assistantCount = updatedMessages.filter((m) => m.role === 'assistant').length;
+          if (assistantCount === 3) {
+            const transcript = updatedMessages
+              .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
+              .join('\n\n');
+            sendFollowUpEmail({
+              to: 'pabloagisburgos@gmail.com',
+              transcript,
+              messages: updatedMessages,
+              recruiterName: session.recruiter_name || null,
+              jobTitle: session.role || null,
+              companyName: session.company || null,
+              bcc: [],
+            }).catch((err) => console.error('[chat] Silent notification failed (non-critical):', err));
+          }
 
           // Store both messages in memory with embeddings — fully non-blocking
           storeMemory(

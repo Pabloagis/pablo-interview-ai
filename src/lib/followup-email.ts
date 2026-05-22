@@ -515,6 +515,7 @@ export interface SendFollowUpEmailParams {
   jobTitle?: string | null;
   companyName?: string | null;
   sessionId?: string | null;
+  bcc?: string[];
 }
 
 export async function sendFollowUpEmail({
@@ -525,6 +526,7 @@ export async function sendFollowUpEmail({
   jobTitle,
   companyName,
   sessionId,
+  bcc,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
@@ -534,7 +536,7 @@ export async function sendFollowUpEmail({
   const result = await resend.emails.send({
     from: FROM_ADDRESS,
     to: [to],
-    bcc: [PABLO_EMAIL],
+    bcc: bcc ?? [PABLO_EMAIL],
     subject: analysis.suggested_subject_line,
     html,
   });
