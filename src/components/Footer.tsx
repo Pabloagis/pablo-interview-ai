@@ -72,7 +72,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         <p className="text-[11.5px] text-gray-400 mb-4">
           Barcelona, Spain
         </p>
-        <p className="text-[11px] text-gray-300 mb-8">
+        <p className="text-[11px] text-gray-400 mb-8">
           All conversations remain private and are never shared externally.
         </p>
 
