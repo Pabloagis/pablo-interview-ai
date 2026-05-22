@@ -309,85 +309,107 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setStreamingText('');
     setIsStreaming(true);
 
-    // Reset textarea height
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Cancel any in-flight request
     fetchAbortRef.current?.abort();
     fetchAbortRef.current = new AbortController();
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, sessionId, context: { ...context, language: lang } }),
-        signal: fetchAbortRef.current.signal,
-      });
+    const MAX_RETRIES = 2;
+    let lastErrorMessage = '';
 
-      if (!response.ok || !response.body) {
-        throw new Error(`HTTP ${response.status}`);
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        await new Promise((r) => setTimeout(r, 3000));
+        if (fetchAbortRef.current.signal.aborted) return;
+        setStreamingText('');
       }
 
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = '';
+      let shouldRetry = false;
 
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: trimmed, sessionId, context: { ...context, language: lang } }),
+          signal: fetchAbortRef.current.signal,
+        });
 
-        const chunk = decoder.decode(value, { stream: true });
+        if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
 
-        // SSE can arrive in partial chunks — process line by line
-        for (const line of chunk.split('\n')) {
-          const event = parseSSELine(line) as { type: string; text?: string; message?: string } | null;
-          if (!event) continue;
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulated = '';
 
-          if (event.type === 'content' && event.text) {
-            accumulated += event.text;
-            setStreamingText(accumulated);
-          } else if (event.type === 'done') {
-            const assistantMessage: Message = {
-              id: generateId(),
-              role: 'assistant',
-              content: accumulated,
-              createdAt: new Date().toISOString(),
-            };
-            setMessages((prev) => [...prev, assistantMessage]);
-            setStreamingText('');
-            setIsStreaming(false);
-            if (voiceTriggeredRef.current || listenMode) {
-              voiceTriggeredRef.current = false;
-              playResponse(accumulated);
+        readLoop: while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+            const event = parseSSELine(line) as { type: string; text?: string; message?: string } | null;
+            if (!event) continue;
+
+            if (event.type === 'content' && event.text) {
+              accumulated += event.text;
+              setStreamingText(accumulated);
+            } else if (event.type === 'done') {
+              const assistantMessage: Message = {
+                id: generateId(),
+                role: 'assistant',
+                content: accumulated,
+                createdAt: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, assistantMessage]);
+              setStreamingText('');
+              setIsStreaming(false);
+              if (voiceTriggeredRef.current || listenMode) {
+                voiceTriggeredRef.current = false;
+                playResponse(accumulated);
+              }
+              // Silent notification after 3rd assistant response
+              const prevAssistantCount = messages.filter((m) => m.role === 'assistant').length;
+              if (prevAssistantCount + 1 === 3) {
+                fetch('/api/internal-notify', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ sessionId }),
+                }).catch(() => {});
+              }
+              return;
+            } else if (event.type === 'error' && event.message) {
+              lastErrorMessage = event.message;
+              if (event.message.includes('busy') && attempt < MAX_RETRIES) {
+                shouldRetry = true;
+              } else {
+                addToast(event.message);
+                setStreamingText('');
+                setIsStreaming(false);
+                return;
+              }
+              break readLoop;
             }
-            // Silent notification after 3rd assistant response
-            const prevAssistantCount = messages.filter((m) => m.role === 'assistant').length;
-            if (prevAssistantCount + 1 === 3) {
-              fetch('/api/internal-notify', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ sessionId }),
-              }).catch(() => {});
-            }
-          } else if (event.type === 'error' && event.message) {
-            addToast(event.message);
-            setStreamingText('');
-            setIsStreaming(false);
           }
         }
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') {
+          // User-triggered cancel — clean up silently
+        } else {
+          console.error('Send message error:', error);
+          addToast(t.connectionIssue);
+        }
+        setStreamingText('');
+        setIsStreaming(false);
+        return;
       }
-    } catch (error) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        // User-triggered cancel — clean up silently
-      } else {
-        console.error('Send message error:', error);
-        addToast(t.connectionIssue);
-      }
-      setStreamingText('');
-      setIsStreaming(false);
+
+      if (!shouldRetry) return;
     }
+
+    // All retries exhausted
+    addToast(lastErrorMessage || t.connectionIssue);
+    setStreamingText('');
+    setIsStreaming(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
