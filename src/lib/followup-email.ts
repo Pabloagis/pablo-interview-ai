@@ -408,10 +408,10 @@ function generateEmailHTML(
                 <!-- TERTIARY: Refer to a colleague -->
                 <tr>
                   <td>
-                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#F5F3FF; border:1px solid #DDD6FE; text-decoration:none; border-radius:14px; padding:20px 16px; text-align:center;">
+                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 16px; text-align:center;">
                       <img src="${BASE_URL}/assets/icon-recommend.svg" width="44" height="44" alt="" style="display:block; margin:0 auto 12px; border-radius:10px;" />
-                      <span style="display:block; font-size:13px; font-weight:700; color:#5B21B6; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
-                      <span style="display:block; font-size:11px; color:#7C3AED; font-family:Arial,sans-serif; margin-top:5px;">${ui['recommendSub']}</span>
+                      <span style="display:block; font-size:16px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
+                      <span style="display:block; font-size:12px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px;">${ui['recommendSub']}</span>
                     </a>
                   </td>
                 </tr>
