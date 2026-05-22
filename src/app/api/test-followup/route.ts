@@ -69,7 +69,7 @@ export async function POST() {
       .update({ email_sent_at: new Date().toISOString(), email_html: html })
       .eq('id', session.id);
 
-    return NextResponse.json({ success: true, emailId, previewId: session.id, v: 'minimal-icons-1' });
+    return NextResponse.json({ success: true, emailId, previewId: session.id, v: 'pastel-1' });
   } catch (error) {
     console.error('[test-followup] Error:', error);
     const message = error instanceof Error ? error.message : String(error);
