@@ -11,10 +11,10 @@ export default function Footer({ variant = 'full' }: FooterProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const links = (
-    <div className="flex items-center justify-center gap-4 text-[12px] font-medium text-gray-600">
+    <div className="flex items-center justify-center gap-4 text-[12px] font-medium text-blue-500">
       <button
         onClick={() => setPrivacyOpen(true)}
-        className="hover:text-gray-700 transition-colors"
+        className="hover:text-blue-700 transition-colors"
       >
         Privacy
       </button>
@@ -23,14 +23,14 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         href="https://www.linkedin.com/in/pablo-agis-burgos"
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-gray-700 transition-colors"
+        className="hover:text-blue-700 transition-colors"
       >
         LinkedIn
       </a>
       <span className="text-gray-300">·</span>
       <a
         href="mailto:pabloagisburgos@gmail.com"
-        className="hover:text-gray-700 transition-colors"
+        className="hover:text-blue-700 transition-colors"
       >
         Contact
       </a>
@@ -58,21 +58,21 @@ export default function Footer({ variant = 'full' }: FooterProps) {
 
   return (
     <>
-      <footer className="w-full max-w-[440px] mx-auto text-center px-4 pt-10 pb-12">
+      <footer className="w-full max-w-[440px] mx-auto text-center px-4 pt-8 pb-10">
         {/* Top rule */}
-        <div className="w-8 h-px bg-gray-200 mx-auto mb-8" />
+        <div className="w-8 h-px bg-gray-200 mx-auto mb-5" />
 
         {/* Brand */}
-        <p className="text-[13px] font-semibold text-gray-500 tracking-tight mb-1">
+        <p className="text-[13px] font-semibold text-gray-500 tracking-tight mb-0.5">
           InterviewMind
         </p>
         <p className="text-[11.5px] text-gray-400 mb-0.5">
           Built and owned by Pablo Agis Burgos
         </p>
-        <p className="text-[11.5px] text-gray-400 mb-4">
+        <p className="text-[11.5px] text-gray-400 mb-2.5">
           Barcelona, Spain
         </p>
-        <p className="text-[11px] text-gray-500 mb-8">
+        <p className="text-[11px] text-gray-500 mb-4">
           All conversations remain private and are never shared externally.
         </p>
 
