@@ -108,7 +108,7 @@ export default function IntakeScreen() {
         <div className={`${card} mb-3 text-center`}>
           <p className="text-sm font-bold text-gray-900 leading-snug mb-3">{t.visionTitle}</p>
           <p className="text-[13.5px] text-gray-500 leading-relaxed mb-3">{t.visionBody}</p>
-          <p className="text-[14px] font-semibold text-gray-600 italic leading-snug pt-3 border-t border-[#f0ede8]">
+          <p className="text-[14px] font-semibold text-[#2d6cdf] italic leading-snug pt-3 border-t border-[#f0ede8]">
             {t.visionClosing}
           </p>
         </div>
