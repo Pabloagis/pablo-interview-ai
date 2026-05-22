@@ -95,8 +95,8 @@ export default function IntakeScreen() {
 
         {/* ── Header ── */}
         <div className="flex flex-col items-center gap-3 mb-7 text-center">
-          <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-[#2d6cdf] to-[#1a4fa8] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
-            P
+          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0">
+            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
           </div>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
             Hi, I&apos;m Pablo Agis.
