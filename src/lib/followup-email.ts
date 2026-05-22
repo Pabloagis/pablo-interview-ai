@@ -324,7 +324,7 @@ function generateEmailHTML(
                   <td style="background-color:rgba(10,18,35,0.12); padding:32px 24px 24px; text-align:center;">
                     ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
                     <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:rgba(255,255,255,0.72); font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
-                    <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
+                    <img data-pablo-avatar src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
                     <h1 style="margin:0; font-size:22px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; letter-spacing:-0.01em; text-shadow:0 1px 4px rgba(0,0,0,0.5);">Pablo Agis Burgos</h1>
                     ${previewUrl ? `<p style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:12px;">↗ Click to open interactive version</p></a>` : ''}
                   </td>
