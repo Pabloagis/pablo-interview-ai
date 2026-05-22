@@ -37,6 +37,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [listenMode, setListenMode] = useState(false);
+  const [showEndReminder, setShowEndReminder] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -47,6 +48,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const audioChunksRef = useRef<Blob[]>([]);
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const voiceTriggeredRef = useRef(false);
+  const lastActivityRef = useRef<number>(Date.now());
+  const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const reminderShownOnceRef = useRef(false);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -88,6 +92,37 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, isStreaming]);
+
+  // Show reminder once after first assistant message, then repeat on inactivity
+  useEffect(() => {
+    if (interviewEnded) return;
+    const hasAssistantMsg = messages.some(m => m.role === 'assistant');
+    if (hasAssistantMsg && !reminderShownOnceRef.current) {
+      reminderShownOnceRef.current = true;
+      const timer = setTimeout(() => {
+        setShowEndReminder(true);
+        reminderDismissRef.current = setTimeout(() => setShowEndReminder(false), 3500);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [messages, interviewEnded]);
+
+  useEffect(() => {
+    if (messages.length > 0) lastActivityRef.current = Date.now();
+  }, [messages]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (!reminderShownOnceRef.current) return;
+      if (Date.now() - lastActivityRef.current >= 90_000) {
+        lastActivityRef.current = Date.now();
+        if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
+        setShowEndReminder(true);
+        reminderDismissRef.current = setTimeout(() => setShowEndReminder(false), 3500);
+      }
+    }, 10_000);
+    return () => clearInterval(interval);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
@@ -533,6 +568,17 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </div>
           </div>
       </div>
+
+      {/* End interview reminder pill */}
+      {showEndReminder && !interviewEnded && (
+        <div className="fixed top-14 left-0 right-0 flex justify-center z-40 pointer-events-none">
+          <div className="animate-slide-down bg-white border border-gray-200 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-1.5 text-[13px] text-gray-600 whitespace-nowrap">
+            When done, click{' '}
+            <strong className="text-green-700 font-semibold">End interview</strong>
+            {' '}— don't just close the tab
+          </div>
+        </div>
+      )}
 
       <Footer variant="compact" />
       <Toast toasts={toasts} onDismiss={dismissToast} />
