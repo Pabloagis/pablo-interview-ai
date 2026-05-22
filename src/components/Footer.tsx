@@ -11,7 +11,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const links = (
-    <div className="flex items-center justify-center gap-4 text-[11px] text-gray-500">
+    <div className="flex items-center justify-center gap-4 text-[12px] font-medium text-gray-600">
       <button
         onClick={() => setPrivacyOpen(true)}
         className="hover:text-gray-700 transition-colors"
