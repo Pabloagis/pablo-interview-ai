@@ -286,6 +286,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   // Check-in message after 1m27s of inactivity (only when conversation has started)
   sendCheckInRef.current = async () => {
     if (messages.length === 0 || isStreaming || interviewEnded) return;
+    if (messages[messages.length - 1]?.role === 'assistant') return;
     setStreamingText('');
     setIsStreaming(true);
     fetchAbortRef.current?.abort();
