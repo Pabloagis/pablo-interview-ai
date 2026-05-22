@@ -60,7 +60,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
 
   return (
     <>
-      <footer className="w-full max-w-[440px] mx-auto text-center px-4 pt-8 pb-10">
+      <footer className="w-full max-w-[440px] sm:max-w-[580px] lg:max-w-[680px] mx-auto text-center px-4 pt-8 pb-10">
         {/* Top rule */}
         <div className="w-8 h-px bg-gray-200 mx-auto mb-5" />
 

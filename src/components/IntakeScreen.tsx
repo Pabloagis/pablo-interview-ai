@@ -91,7 +91,7 @@ export default function IntakeScreen() {
         <LanguageSwitcher />
       </div>
 
-      <form onSubmit={handleStart} className="w-full max-w-[440px]">
+      <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[580px] lg:max-w-[680px]">
 
         {/* ── Header ── */}
         <div className="flex flex-col items-center gap-3 mb-7 text-center">
