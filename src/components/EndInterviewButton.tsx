@@ -9,6 +9,7 @@ interface EndInterviewButtonProps {
   messages: Message[];
   context: RecruiterContext;
   onInterviewEnded: (emailSent: boolean) => void;
+  suppressTooltip?: boolean;
 }
 
 export default function EndInterviewButton({
@@ -16,6 +17,7 @@ export default function EndInterviewButton({
   messages,
   context,
   onInterviewEnded,
+  suppressTooltip = false,
 }: EndInterviewButtonProps) {
   const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
@@ -90,10 +92,12 @@ export default function EndInterviewButton({
           <span className="hidden sm:inline">Insights</span>
         </button>
 
-        {/* Tooltip — desktop only (mobile has no hover), opens downward */}
-        <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
-          {isActive ? t.endTooltipActive : t.endTooltipInactive}
-        </div>
+        {/* Tooltip — desktop only, hidden while the reminder banner is visible */}
+        {!suppressTooltip && (
+          <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
+            {isActive ? t.endTooltipActive : t.endTooltipInactive}
+          </div>
+        )}
       </div>
 
       {/* Confirmation modal */}

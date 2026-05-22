@@ -626,6 +626,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             messages={messages}
             context={context}
             onInterviewEnded={handleInterviewEnded}
+            suppressTooltip={reminderState !== 'hidden'}
           />
         }
       />
