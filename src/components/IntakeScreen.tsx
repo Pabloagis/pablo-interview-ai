@@ -231,8 +231,8 @@ export default function IntakeScreen() {
             isSubmitDisabled
               ? 'bg-[#dde5f5] text-[#8aa5d8] cursor-not-allowed'
               : isFullyFilled
-              ? 'bg-gradient-to-r from-emerald-500 to-green-500 text-white shadow-lg shadow-emerald-500/40 hover:shadow-xl hover:shadow-emerald-500/50 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
-              : 'bg-[#6aaa88] text-white hover:opacity-90 active:opacity-80 cursor-pointer',
+              ? 'bg-gradient-to-r from-[#059669] to-[#15803d] text-white shadow-lg shadow-emerald-700/30 hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
+              : 'bg-[#4d8f6e] text-white hover:opacity-90 active:opacity-80 cursor-pointer',
           ].join(' ')}
         >
           {isLoading ? t.buttonStarting : t.buttonStart}
