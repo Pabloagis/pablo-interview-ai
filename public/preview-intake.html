@@ -25,6 +25,8 @@
       flex-direction: column;
       gap: 0;
     }
+    @media (min-width: 640px)  { .page { max-width: 640px; } }
+    @media (min-width: 760px)  { .page { max-width: 760px; } }
 
     /* ── Header ── */
     .header {
@@ -117,10 +119,11 @@
     }
 
     .vision-closing {
-      font-size: 13px;
-      color: #888;
+      font-size: 14px;
+      font-weight: 600;
+      color: #2d6cdf;
       font-style: italic;
-      line-height: 1.5;
+      line-height: 1.4;
       padding-top: 12px;
       border-top: 1px solid #f0ede8;
     }
@@ -332,8 +335,7 @@
     </p>
     <p class="vision-body">
       This is not a static document — it's an AI trained on my real experience, stories, and thinking.
-      Ask me anything you'd ask in a real interview: about my background, my approach to problems,
-      how I've handled difficult situations, or where I want to go next.
+      Ask me anything you'd ask in a real interview.
     </p>
     <p class="vision-closing">
       Because your professional future can no longer be summed up in a PDF. It's built in real time.
@@ -389,18 +391,6 @@
     </div>
   </div>
 
-  <!-- ── Divider ── -->
-  <div class="divider"></div>
-
-  <!-- ── Captcha card ── -->
-  <div class="card captcha-card">
-    <div class="captcha-row">
-      <input class="check-input" type="checkbox" id="captcha" onchange="updateBtn()" />
-      <label class="captcha-label" for="captcha">I'm a real person, not a bot</label>
-    </div>
-    <p class="captcha-sub">A tiny hospitality-tech sanity check.</p>
-  </div>
-
   <!-- ── GDPR inline ── -->
   <div class="card">
     <div class="gdpr-row">
@@ -415,7 +405,7 @@
   </div>
 
   <!-- ── Start button ── -->
-  <button class="btn-start" id="startBtn" disabled>Start the AI interview →</button>
+  <button class="btn-start" id="startBtn" disabled onclick="window.location.href='https://interviewmind.one'">Start the AI interview →</button>
 
 </div>
 
@@ -423,12 +413,11 @@
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   function updateBtn() {
-    const name    = document.getElementById('fieldName').value.trim();
-    const email   = document.getElementById('fieldEmail').value.trim();
-    const captcha = document.getElementById('captcha').checked;
-    const gdpr    = document.getElementById('gdpr').checked;
+    const name  = document.getElementById('fieldName').value.trim();
+    const email = document.getElementById('fieldEmail').value.trim();
+    const gdpr  = document.getElementById('gdpr').checked;
     document.getElementById('startBtn').disabled =
-      !(name.length > 0 && EMAIL_RE.test(email) && captcha && gdpr);
+      !(name.length > 0 && EMAIL_RE.test(email) && gdpr);
   }
 
   // Avatar expand
