@@ -49,6 +49,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const voiceTriggeredRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
+  const checkInLastActivityRef = useRef<number>(Date.now());
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reminderPersistentRef = useRef(false);
   const sendAutoIntroRef = useRef<() => Promise<void>>();
@@ -114,7 +115,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (messages.length > 0) lastActivityRef.current = Date.now();
+    if (messages.length > 0) {
+      lastActivityRef.current = Date.now();
+      checkInLastActivityRef.current = Date.now();
+    }
   }, [messages]);
 
   // Inactivity reminder: stays until the user interacts
@@ -267,8 +271,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastActivityRef.current >= 87_000) {
-        lastActivityRef.current = Date.now();
+      if (Date.now() - checkInLastActivityRef.current >= 87_000) {
+        checkInLastActivityRef.current = Date.now();
         sendCheckInRef.current?.();
       }
     }, 10_000);
