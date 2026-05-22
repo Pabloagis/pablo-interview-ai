@@ -100,7 +100,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     reminderDismissRef.current = setTimeout(() => {
       setReminderState('fading');
       setTimeout(() => setReminderState('hidden'), 350);
-    }, 2000);
+    }, 4000);
   };
 
   // Show on page load
