@@ -12,17 +12,22 @@ export default function IntakeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const [recruiterName, setRecruiterName] = useState('');
+  const [nameTouched, setNameTouched] = useState(false);
   const [email, setEmail] = useState('');
   const [emailTouched, setEmailTouched] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
+  const [captchaChecked, setCaptchaChecked] = useState(false);
   const [consentToEmail, setConsentToEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const isNameValid = recruiterName.trim().length > 0;
+  const showNameError = nameTouched && !isNameValid;
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
-  const isSubmitDisabled = isLoading || !isEmailValid || !consentToEmail;
+  const isSubmitDisabled =
+    isLoading || !isNameValid || !isEmailValid || !captchaChecked || !consentToEmail;
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +36,7 @@ export default function IntakeScreen() {
 
     try {
       const body: SessionCreateRequest & { email: string; consentToEmail: boolean } = {
-        recruiterName: recruiterName.trim() || undefined,
+        recruiterName: recruiterName.trim(),
         company: company.trim() || undefined,
         role: role.trim() || undefined,
         email: email.trim(),
@@ -53,11 +58,10 @@ export default function IntakeScreen() {
 
       const { sessionId } = await response.json();
 
-      // Persist context so ChatPanel can read it without another DB call
       sessionStorage.setItem(
         `session_${sessionId}`,
         JSON.stringify({
-          recruiterName: recruiterName.trim() || undefined,
+          recruiterName: recruiterName.trim(),
           email: email.trim(),
           company: company.trim() || undefined,
           role: role.trim() || undefined,
@@ -74,88 +78,109 @@ export default function IntakeScreen() {
   };
 
   const inputClass =
-    'w-full px-3 py-2.5 rounded-xl border border-gray-200 text-base text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-400 transition-colors bg-white';
+    'w-full px-3 py-2.5 rounded-xl border border-[#ddd] text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2d6cdf] focus:ring-1 focus:ring-[#2d6cdf]/20 transition-colors bg-[#fafafa] focus:bg-white';
 
   const inputErrorClass =
-    'w-full px-3 py-2.5 rounded-xl border border-red-300 text-base text-gray-800 placeholder-gray-400 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400 transition-colors bg-white';
+    'w-full px-3 py-2.5 rounded-xl border border-red-300 text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/20 transition-colors bg-[#fafafa] focus:bg-white';
+
+  const card = 'bg-white rounded-2xl border border-[#e8e5e0] shadow-sm p-5';
 
   return (
-    <div className="relative min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-12 w-full overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden">
       <div className="absolute top-3 right-3">
         <LanguageSwitcher />
       </div>
-      <div className="w-full max-w-md">
-        {/* Logo + title */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-            <span className="text-white font-bold text-xl">IM</span>
+
+      <form onSubmit={handleStart} className="w-full max-w-[440px]">
+
+        {/* ── Header ── */}
+        <div className="flex flex-col items-center gap-3 mb-7 text-center">
+          <div className="w-[50px] h-[50px] rounded-full bg-gradient-to-br from-[#2d6cdf] to-[#1a4fa8] flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+            P
           </div>
-          <h1 className="text-3xl font-bold text-gray-800">InterviewMind</h1>
-        </div>
-
-        {/* Vision statement */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-4 space-y-4">
-          <p className="text-gray-800 font-semibold text-sm leading-relaxed">
-            {t.visionTitle}{' '}
-            <span className="text-blue-500">{t.visionHighlight}</span>
-          </p>
-          <p className="text-gray-500 text-sm leading-relaxed">{t.visionP2}</p>
-          <p className="text-gray-400 text-sm leading-relaxed">
-            {t.visionP3}{' '}
-            <span className="text-gray-600 font-medium">{t.visionP3Emphasis}</span>
+          <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
+            Hi, I&apos;m Pablo Agis.
+          </h1>
+          <p className="text-[13px] text-gray-500 leading-snug">
+            SaaS &amp; Hospitality Tech | Helping hospitality grow through smart solutions
           </p>
         </div>
 
-        {/* How it works */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{t.howItWorksTitle}</p>
-          <div className="space-y-3">
-            {[
+        {/* ── Vision card ── */}
+        <div className={`${card} mb-3`}>
+          <p className="text-sm font-bold text-gray-900 leading-snug mb-3">{t.visionTitle}</p>
+          <p className="text-[13.5px] text-gray-500 leading-relaxed mb-3">{t.visionBody}</p>
+          <p className="text-[13px] text-gray-400 italic leading-snug pt-3 border-t border-[#f0ede8]">
+            {t.visionClosing}
+          </p>
+        </div>
+
+        {/* ── Divider ── */}
+        <hr className="border-t border-[#e8e5e0] my-1" />
+
+        {/* ── Time hint ── */}
+        <p className="text-[12.5px] text-gray-400 text-center tracking-[0.1px] my-3">
+          ⏱ Usually takes 3–5 minutes
+        </p>
+
+        {/* ── How this works ── */}
+        <div className={`${card} mb-3`}>
+          <p className="text-[10.5px] font-bold text-gray-300 uppercase tracking-[0.8px] mb-3">
+            {t.howItWorksTitle}
+          </p>
+          <div className="flex flex-col gap-3">
+            {([
               { n: '1', text: t.step1 },
               { n: '2', text: t.step2 },
-              { n: '3', text: <>{t.step3Label} <span className="text-green-600 font-semibold">{t.step3Action}</span> {t.step3Rest}</> },
-            ].map(({ n, text }) => (
+              { n: '3', text: t.step3 },
+              { n: '4', text: (
+                <>{t.step3Label}{' '}
+                  <strong className="text-green-700 font-semibold">{t.endButtonFull}</strong>
+                  {' '}{t.step3Rest}</>
+              )},
+            ] as { n: string; text: React.ReactNode }[]).map(({ n, text }) => (
               <div key={n} className="flex items-start gap-3">
-                <span className="w-5 h-5 rounded-full bg-blue-50 text-blue-500 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">{n}</span>
-                <p className="text-sm text-gray-600 leading-snug">{text}</p>
+                <span className="w-[22px] h-[22px] rounded-full bg-blue-50 text-blue-500 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                  {n}
+                </span>
+                <p className="text-[13.5px] text-gray-600 leading-snug">{text}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Intake form */}
-        <form
-          onSubmit={handleStart}
-          className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5"
-        >
-          <p className="text-sm font-medium text-gray-700 mb-4">{t.formTitle}</p>
-
-          <div className="space-y-3 mb-5">
+        {/* ── Intake form fields ── */}
+        <div className={`${card} mb-3`}>
+          <div className="space-y-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">{t.labelName}</label>
+              <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-[0.4px] mb-1">
+                {t.labelName} <span className="text-red-500">*</span>
+              </label>
               <input
                 type="text"
-                placeholder={t.placeholderName}
+                placeholder="Alex Chen"
                 value={recruiterName}
                 onChange={(e) => setRecruiterName(e.target.value)}
-                className={inputClass}
+                onBlur={() => setNameTouched(true)}
+                className={showNameError ? inputErrorClass : inputClass}
                 maxLength={100}
                 autoComplete="given-name"
+                required
               />
+              {showNameError && (
+                <p className="mt-1 text-xs text-red-500">{t.nameError}</p>
+              )}
             </div>
 
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-[0.4px] mb-1">
                 {t.labelEmail} <span className="text-red-500">*</span>
               </label>
               <input
                 type="email"
-                placeholder={t.placeholderEmail}
+                placeholder="alex@company.com"
                 value={email}
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                  setError('');
-                }}
+                onChange={(e) => { setEmail(e.target.value); setError(''); }}
                 onBlur={() => setEmailTouched(true)}
                 className={showEmailError ? inputErrorClass : inputClass}
                 maxLength={254}
@@ -167,57 +192,81 @@ export default function IntakeScreen() {
               )}
             </div>
 
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">{t.labelCompany}</label>
-              <input
-                type="text"
-                placeholder={t.placeholderCompany}
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-                className={inputClass}
-                maxLength={100}
-                autoComplete="organization"
-              />
-            </div>
-            <div>
-              <label className="block text-xs text-gray-500 mb-1">{t.labelRole}</label>
-              <input
-                type="text"
-                placeholder={t.placeholderRole}
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                className={inputClass}
-                maxLength={100}
-              />
+            <div className="grid grid-cols-2 gap-2.5">
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-[0.4px] mb-1">
+                  {t.labelCompany}
+                </label>
+                <input
+                  type="text"
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  className={inputClass}
+                  maxLength={100}
+                  autoComplete="organization"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-[0.4px] mb-1">
+                  {t.labelRole}
+                </label>
+                <input
+                  type="text"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
+                  className={inputClass}
+                  maxLength={100}
+                />
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* GDPR consent */}
-          <div className="mb-5">
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={consentToEmail}
-                onChange={(e) => setConsentToEmail(e.target.checked)}
-                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-500 accent-blue-500 flex-shrink-0"
-              />
-              <span className="text-xs text-gray-600 leading-relaxed">{t.consentText}</span>
+        {/* ── Divider ── */}
+        <hr className="border-t border-[#e8e5e0] my-1" />
+
+        {/* ── Captcha ── */}
+        <div className={`${card} mb-3`}>
+          <div className="flex items-center gap-2.5">
+            <input
+              type="checkbox"
+              id="captcha"
+              checked={captchaChecked}
+              onChange={(e) => setCaptchaChecked(e.target.checked)}
+              className="h-[17px] w-[17px] rounded border-gray-300 accent-blue-500 flex-shrink-0 cursor-pointer"
+            />
+            <label htmlFor="captcha" className="text-[14px] font-semibold text-gray-800 cursor-pointer">
+              {t.captchaLabel}
             </label>
           </div>
+          <p className="text-xs text-gray-400 ml-[29px] mt-1">{t.captchaSub}</p>
+        </div>
 
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+        {/* ── GDPR ── */}
+        <div className={`${card} mb-3`}>
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={consentToEmail}
+              onChange={(e) => setConsentToEmail(e.target.checked)}
+              className="mt-0.5 h-[17px] w-[17px] rounded border-gray-300 accent-blue-500 flex-shrink-0"
+            />
+            <span className="text-[12.5px] text-gray-500 leading-relaxed">{t.gdprText}</span>
+          </label>
+        </div>
 
-          <button
-            type="submit"
-            disabled={isSubmitDisabled}
-            className="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-3 px-4 rounded-xl transition-colors text-sm"
-          >
-            {isLoading ? t.buttonStarting : t.buttonStart}
-          </button>
+        {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
-          <p className="text-xs text-gray-400 text-center mt-3">{t.footerNote}</p>
-        </form>
-      </div>
+        {/* ── Start button ── */}
+        <button
+          type="submit"
+          disabled={isSubmitDisabled}
+          className="w-full bg-gradient-to-br from-[#1a8c4e] to-[#146b3c] hover:opacity-90 active:opacity-80 disabled:from-[#dde5f5] disabled:to-[#dde5f5] disabled:text-[#8aa5d8] text-white font-bold py-3.5 px-4 rounded-xl transition-all text-[15px] cursor-pointer disabled:cursor-not-allowed"
+        >
+          {isLoading ? t.buttonStarting : t.buttonStart}
+        </button>
+
+      </form>
     </div>
   );
 }

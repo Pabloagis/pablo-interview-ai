@@ -27,15 +27,21 @@ export type Translations = {
   tagline: string;
   visionTitle: string;
   visionHighlight: string;
+  visionBody: string;
   visionP2: string;
+  visionClosing: string;
   visionP3: string;
   visionP3Emphasis: string;
   howItWorksTitle: string;
   step1: string;
   step2: string;
+  step3: string;
   step3Label: string;
   step3Action: string;
   step3Rest: string;
+  captchaLabel: string;
+  captchaSub: string;
+  gdprText: string;
   formTitle: string;
   labelName: string;
   placeholderName: string;
@@ -50,6 +56,7 @@ export type Translations = {
   buttonStarting: string;
   footerNote: string;
   emailError: string;
+  nameError: string;
   // ChatPanel
   emptyGreeting: string;
   emptySubtitle: string;
@@ -89,17 +96,23 @@ export type Translations = {
 
 const EN: Translations = {
   tagline: 'Interview his AI. Then interview him.',
-  visionTitle: 'Welcome to the next generation of the CV:',
+  visionTitle: 'Welcome to the next generation of the CV: a living, intelligent and dynamic professional identity.',
   visionHighlight: 'a living, intelligent, and dynamic professional identity.',
+  visionBody: "This is not a static document — it's an AI trained on my real experience, stories, and thinking. Ask me anything you'd ask in a real interview: about my background, my approach to problems, how I've handled difficult situations, or where I want to go next.",
+  visionClosing: "Because your professional future can no longer be summed up in a PDF. It's built in real time.",
   visionP2: 'A new standard where artificial intelligence, storytelling and authenticity transform a static résumé into an experience that connects, demonstrates, and evolves with you.',
   visionP3: 'Because your professional future can no longer be summed up in a PDF.',
   visionP3Emphasis: "It's built in real time.",
   howItWorksTitle: 'How it works',
-  step1: 'Introduce yourself below (optional)',
-  step2: "Ask Pablo anything you'd ask in a real interview",
-  step3Label: "When you're finished, click",
+  step1: 'Introduce yourself below — only your name and email are required.',
+  step2: 'Ask Pablo anything you would ask in a real interview.',
+  step3: 'Every answer is grounded in real stories with concrete outcomes.',
+  step3Label: "When you're done, click",
   step3Action: 'End Interview',
   step3Rest: "— don't just close the tab",
+  captchaLabel: "I'm a real person, not a bot",
+  captchaSub: 'A tiny hospitality-tech sanity check.',
+  gdprText: "I understand the conversation's transcription may be stored to improve Pablo's interview preparation. Information shared during the conversation may be used to tailor real-time responses and insights. All data remains private and is never shared with third parties.",
   formTitle: 'Introduce yourself — Pablo will personalise the conversation',
   labelName: 'Your name',
   placeholderName: 'e.g. Alice',
@@ -114,6 +127,7 @@ const EN: Translations = {
   buttonStarting: 'Starting…',
   footerNote: 'Name, company & role optional · * Email required',
   emailError: 'Please enter a valid email address',
+  nameError: 'Please enter your name',
   emptyGreeting: "Hi, I'm Pablo Agis.",
   emptySubtitle: 'Ask me anything!',
   tryAsking: 'Try asking',
@@ -173,31 +187,38 @@ const EN: Translations = {
 
 const ES: Translations = {
   tagline: 'Entrevista su IA. Luego entrevístalo a él.',
-  visionTitle: 'Bienvenido a la próxima generación del CV:',
+  visionTitle: 'Bienvenido a la próxima generación del CV: una identidad profesional viva, inteligente y dinámica.',
   visionHighlight: 'una identidad profesional viva, inteligente y dinámica.',
+  visionBody: 'Este no es un documento estático — es una IA entrenada con mi experiencia real, mis historias y mi forma de pensar. Pregúntame lo que preguntarías en una entrevista real: sobre mi trayectoria, mi enfoque ante los problemas, cómo he gestionado situaciones difíciles, o hacia dónde quiero ir.',
+  visionClosing: 'Porque tu futuro profesional ya no puede resumirse en un PDF. Se construye en tiempo real.',
   visionP2: 'Un nuevo estándar donde la inteligencia artificial, el storytelling y la autenticidad transforman un currículum estático en una experiencia que conecta, demuestra y evoluciona contigo.',
   visionP3: 'Porque tu futuro profesional ya no puede resumirse en un PDF.',
   visionP3Emphasis: 'Se construye en tiempo real.',
   howItWorksTitle: 'Cómo funciona',
-  step1: 'Preséntate a continuación (opcional)',
-  step2: 'Pregunta a Pablo cualquier cosa que preguntarías en una entrevista real',
+  step1: 'Preséntate — solo tu nombre y email son obligatorios.',
+  step2: 'Pregunta a Pablo cualquier cosa que preguntarías en una entrevista real.',
+  step3: 'Cada respuesta está fundamentada en historias reales con resultados concretos.',
   step3Label: 'Cuando termines, haz clic en',
   step3Action: 'Finalizar entrevista',
   step3Rest: '— no cierres la pestaña sin más',
+  captchaLabel: 'Soy una persona real, no un bot',
+  captchaSub: 'Una pequeña verificación de tecnología hotelera.',
+  gdprText: 'Entiendo que la transcripción de la conversación puede almacenarse para mejorar la preparación de las entrevistas de Pablo. La información compartida puede usarse para personalizar respuestas en tiempo real. Todos los datos son privados y nunca se comparten con terceros.',
   formTitle: 'Preséntate — Pablo personalizará la conversación',
   labelName: 'Tu nombre',
   placeholderName: 'p.ej. Ana',
-  labelEmail: 'Tu correo electrónico',
+  labelEmail: 'Tu email',
   placeholderEmail: 'sara@empresa.com',
   labelCompany: 'Empresa',
   placeholderCompany: 'p.ej. Mews, Apaleo, HubOS',
   labelRole: 'Puesto que buscas cubrir',
   placeholderRole: 'p.ej. SDR, Account Executive, CSM',
-  consentText: 'Me gustaría recibir un correo con el resumen de la entrevista de Pablo y sus materiales',
+  consentText: 'Me gustaría recibir un email con el resumen de la entrevista de Pablo y sus materiales',
   buttonStart: 'Iniciar entrevista',
   buttonStarting: 'Iniciando…',
   footerNote: 'Nombre, empresa y rol opcionales · * Email obligatorio',
-  emailError: 'Por favor introduce un correo electrónico válido',
+  emailError: 'Por favor introduce un email válido',
+  nameError: 'Por favor introduce tu nombre',
   emptyGreeting: 'Hola, soy Pablo Agis.',
   emptySubtitle: '¡Pregúntame lo que quieras!',
   tryAsking: 'Prueba preguntando',
@@ -215,7 +236,7 @@ const ES: Translations = {
   allDoneMsg: 'Revisa tu bandeja de entrada, te hemos enviado todo a',
   allDoneSignature: 'Espero saber de ti pronto. — Pablo',
   conversationReset: 'Conversación reiniciada.',
-  connectionIssue: 'Error de conexión. Por favor inténtalo de nuevo.',
+  connectionIssue: 'Error de conexión. Por favcorreoor inténtalo de nuevo.',
   microphoneDenied: 'Acceso al micrófono denegado. Por favor permite el acceso al micrófono.',
   transcribeFailed: 'No se pudo transcribir. Por favor inténtalo de nuevo.',
   thinking: [
@@ -247,7 +268,7 @@ const ES: Translations = {
   endTooltipActive: 'Haz clic aquí para terminar correctamente la entrevista',
   endTooltipInactive: 'Sigue chateando — disponible tras mín. 3 preguntas',
   endModalTitle: '¿Finalizar esta entrevista?',
-  endModalWithConsent: 'Te enviaremos el CV de Pablo, su perfil de LinkedIn y la transcripción de la conversación a tu correo.',
+  endModalWithConsent: 'Te enviaremos el CV de Pablo, su perfil de LinkedIn y la transcripción de la conversación a tu email.',
   endModalWithoutConsent: 'La entrevista se cerrará. Gracias por chatear con Pablo.',
   endModalCancel: 'Cancelar',
   endModalConfirm: 'Sí, enviar todo',
@@ -257,17 +278,23 @@ const ES: Translations = {
 
 const IT: Translations = {
   tagline: "Intervista la sua IA. Poi intervistalo.",
-  visionTitle: 'Benvenuto alla prossima generazione del CV:',
+  visionTitle: "Benvenuto alla prossima generazione del CV: un'identità professionale viva, intelligente e dinamica.",
   visionHighlight: "un'identità professionale viva, intelligente e dinamica.",
+  visionBody: "Questo non è un documento statico — è un'IA addestrata sulla mia vera esperienza, le mie storie e il mio modo di pensare. Chiedimi qualsiasi cosa chiederesti in un colloquio reale: sul mio background, l'approccio ai problemi, come ho gestito situazioni difficili, o dove voglio arrivare.",
+  visionClosing: "Perché il tuo futuro professionale non può più essere riassunto in un PDF. Si costruisce in tempo reale.",
   visionP2: "Un nuovo standard in cui intelligenza artificiale, storytelling e autenticità trasformano un curriculum statico in un'esperienza che connette, dimostra ed evolve con te.",
   visionP3: "Perché il tuo futuro professionale non può più essere riassunto in un PDF.",
   visionP3Emphasis: "Si costruisce in tempo reale.",
   howItWorksTitle: 'Come funziona',
-  step1: 'Presentati qui sotto (opzionale)',
-  step2: "Chiedi a Pablo qualsiasi cosa gli chiederesti in un colloquio reale",
+  step1: 'Presentati — sono richiesti solo nome e email.',
+  step2: "Chiedi a Pablo qualsiasi cosa gli chiederesti in un colloquio reale.",
+  step3: 'Ogni risposta è basata su storie reali con risultati concreti.',
   step3Label: 'Quando hai finito, clicca su',
   step3Action: 'Fine colloquio',
   step3Rest: '— non chiudere semplicemente la scheda',
+  captchaLabel: 'Sono una persona reale, non un bot',
+  captchaSub: 'Un piccolo controllo di tecnologia alberghiera.',
+  gdprText: "Capisco che la trascrizione della conversazione potrà essere archiviata per migliorare la preparazione ai colloqui di Pablo. Le informazioni condivise potranno essere utilizzate per personalizzare le risposte in tempo reale. Tutti i dati sono privati e non vengono mai condivisi con terzi.",
   formTitle: 'Presentati — Pablo personalizzerà la conversazione',
   labelName: 'Il tuo nome',
   placeholderName: 'es. Anna',
@@ -282,6 +309,7 @@ const IT: Translations = {
   buttonStarting: 'Avvio…',
   footerNote: 'Nome, azienda e ruolo opzionali · * Email obbligatoria',
   emailError: "Inserisci un indirizzo email valido",
+  nameError: 'Inserisci il tuo nome',
   emptyGreeting: 'Ciao, sono Pablo Agis.',
   emptySubtitle: 'Chiedimi quello che vuoi!',
   tryAsking: 'Prova a chiedere',
@@ -341,17 +369,23 @@ const IT: Translations = {
 
 const PT: Translations = {
   tagline: 'Entreviste a sua IA. Depois entreviste-o.',
-  visionTitle: 'Bem-vindo à próxima geração do CV:',
+  visionTitle: 'Bem-vindo à próxima geração do CV: uma identidade profissional viva, inteligente e dinâmica.',
   visionHighlight: 'uma identidade profissional viva, inteligente e dinâmica.',
+  visionBody: 'Este não é um documento estático — é uma IA treinada com a minha experiência real, as minhas histórias e o meu pensamento. Pergunte-me qualquer coisa que perguntaria numa entrevista real: sobre o meu percurso, a minha abordagem aos problemas, como geri situações difíceis, ou para onde quero ir.',
+  visionClosing: 'Porque o seu futuro profissional já não pode ser resumido num PDF. Constrói-se em tempo real.',
   visionP2: 'Um novo padrão onde inteligência artificial, storytelling e autenticidade transformam um currículo estático numa experiência que conecta, demonstra e evolui consigo.',
   visionP3: 'Porque o seu futuro profissional já não pode ser resumido num PDF.',
   visionP3Emphasis: 'Constrói-se em tempo real.',
   howItWorksTitle: 'Como funciona',
-  step1: 'Apresente-se abaixo (opcional)',
-  step2: 'Pergunte ao Pablo qualquer coisa que perguntaria numa entrevista real',
+  step1: 'Apresente-se — apenas o nome e email são obrigatórios.',
+  step2: 'Pergunte ao Pablo qualquer coisa que perguntaria numa entrevista real.',
+  step3: 'Cada resposta baseia-se em histórias reais com resultados concretos.',
   step3Label: 'Quando terminar, clique em',
   step3Action: 'Terminar entrevista',
   step3Rest: '— não feche apenas o separador',
+  captchaLabel: 'Sou uma pessoa real, não um bot',
+  captchaSub: 'Uma pequena verificação de tecnologia hoteleira.',
+  gdprText: 'Compreendo que a transcrição da conversa poderá ser armazenada para melhorar a preparação das entrevistas de Pablo. As informações partilhadas poderão ser usadas para personalizar respostas em tempo real. Todos os dados são privados e nunca partilhados com terceiros.',
   formTitle: 'Apresente-se — Pablo irá personalizar a conversa',
   labelName: 'O seu nome',
   placeholderName: 'ex. Ana',
@@ -366,6 +400,7 @@ const PT: Translations = {
   buttonStarting: 'A iniciar…',
   footerNote: 'Nome, empresa e cargo opcionais · * Email obrigatório',
   emailError: 'Por favor introduza um endereço de email válido',
+  nameError: 'Por favor introduza o seu nome',
   emptyGreeting: 'Olá, sou o Pablo Agis.',
   emptySubtitle: 'Pergunte o que quiser!',
   tryAsking: 'Experimente perguntar',
