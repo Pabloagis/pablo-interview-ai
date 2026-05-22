@@ -348,10 +348,10 @@ function generateEmailHTML(
                 <!-- PRIMARY: Book a call -->
                 <tr>
                   <td style="padding-bottom:10px;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#111827; text-decoration:none; border-radius:18px; padding:28px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="44" height="44" alt="" style="display:block; margin:0 auto 14px; border-radius:8px;" />
-                      <span style="display:block; font-size:18px; font-weight:700; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:13px; color:rgba(255,255,255,0.55); font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['scheduleSub']}</span>
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#F8FAFC; border:1px dashed #D1D5DB; text-decoration:none; border-radius:12px; padding:16px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="28" height="28" alt="" style="display:block; margin:0 auto 8px; border-radius:5px;" />
+                      <span style="display:block; font-size:13px; font-weight:500; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                      <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${ui['scheduleSub']}</span>
                     </a>
                   </td>
                 </tr>
