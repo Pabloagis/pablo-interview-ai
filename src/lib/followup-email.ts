@@ -561,7 +561,11 @@ export async function sendFollowUpEmail({
     from: FROM_ADDRESS,
     to: [to],
     bcc: bcc ?? [PABLO_EMAIL],
-    subject: analysis.suggested_subject_line,
+    subject: (() => {
+      const parts = [jobTitle, companyName].filter(Boolean);
+      if (parts.length > 0) return `Pablo Agis Burgos · ${parts.join(' at ')}`;
+      return analysis.suggested_subject_line;
+    })(),
     html,
   });
 
