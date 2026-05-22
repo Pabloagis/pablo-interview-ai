@@ -37,7 +37,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [listenMode, setListenMode] = useState(false);
-  const [showEndReminder, setShowEndReminder] = useState(false);
+  const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -50,7 +50,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const voiceTriggeredRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const reminderShownOnceRef = useRef(false);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -93,32 +92,34 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages, isStreaming]);
 
-  // Show reminder once after first assistant message, then repeat on inactivity
+  const showReminder = () => {
+    if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
+    setReminderState('visible');
+    reminderDismissRef.current = setTimeout(() => {
+      setReminderState('fading');
+      setTimeout(() => setReminderState('hidden'), 350);
+    }, 2000);
+  };
+
+  // Show on page load
   useEffect(() => {
-    if (interviewEnded) return;
-    const hasAssistantMsg = messages.some(m => m.role === 'assistant');
-    if (hasAssistantMsg && !reminderShownOnceRef.current) {
-      reminderShownOnceRef.current = true;
-      const timer = setTimeout(() => {
-        setShowEndReminder(true);
-        reminderDismissRef.current = setTimeout(() => setShowEndReminder(false), 3500);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [messages, interviewEnded]);
+    const timer = setTimeout(showReminder, 600);
+    return () => {
+      clearTimeout(timer);
+      if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (messages.length > 0) lastActivityRef.current = Date.now();
   }, [messages]);
 
+  // Repeat on inactivity
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!reminderShownOnceRef.current) return;
       if (Date.now() - lastActivityRef.current >= 90_000) {
         lastActivityRef.current = Date.now();
-        if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
-        setShowEndReminder(true);
-        reminderDismissRef.current = setTimeout(() => setShowEndReminder(false), 3500);
+        showReminder();
       }
     }, 10_000);
     return () => clearInterval(interval);
@@ -570,12 +571,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       </div>
 
       {/* End interview reminder pill */}
-      {showEndReminder && !interviewEnded && (
+      {reminderState !== 'hidden' && !interviewEnded && (
         <div className="fixed top-14 left-0 right-0 flex justify-center z-40 pointer-events-none">
-          <div className="animate-slide-down bg-white border border-gray-200 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-1.5 text-[13px] text-gray-600 whitespace-nowrap">
-            When done, click{' '}
-            <strong className="text-green-700 font-semibold">End interview</strong>
-            {' '}— don't just close the tab
+          <div className={`animate-slide-down bg-white border border-gray-200 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-1.5 text-[13px] text-gray-600 whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}>
+            Click <strong className="text-green-700 font-semibold">End interview</strong> when you're done
           </div>
         </div>
       )}
