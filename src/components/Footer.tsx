@@ -11,26 +11,26 @@ export default function Footer({ variant = 'full' }: FooterProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   const links = (
-    <div className="flex items-center justify-center gap-4 text-[11px] text-gray-300">
+    <div className="flex items-center justify-center gap-4 text-[11px] text-gray-500">
       <button
         onClick={() => setPrivacyOpen(true)}
-        className="hover:text-gray-500 transition-colors"
+        className="hover:text-gray-700 transition-colors"
       >
         Privacy
       </button>
-      <span className="text-gray-200">·</span>
+      <span className="text-gray-300">·</span>
       <a
         href="https://www.linkedin.com/in/pablo-agis-burgos"
         target="_blank"
         rel="noopener noreferrer"
-        className="hover:text-gray-500 transition-colors"
+        className="hover:text-gray-700 transition-colors"
       >
         LinkedIn
       </a>
-      <span className="text-gray-200">·</span>
+      <span className="text-gray-300">·</span>
       <a
         href="mailto:pabloagisburgos@gmail.com"
-        className="hover:text-gray-500 transition-colors"
+        className="hover:text-gray-700 transition-colors"
       >
         Contact
       </a>
@@ -72,7 +72,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         <p className="text-[11.5px] text-gray-400 mb-4">
           Barcelona, Spain
         </p>
-        <p className="text-[11px] text-gray-400 mb-8">
+        <p className="text-[11px] text-gray-500 mb-8">
           All conversations remain private and are never shared externally.
         </p>
 
