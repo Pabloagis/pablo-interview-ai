@@ -317,15 +317,15 @@ function generateEmailHTML(
 
           <!-- HEADER -->
           <tr>
-            <td style="background-color:#0f172a;">
+            <td style="background-color:#ffffff; border-bottom:1px solid #e2e8f0;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="padding:32px 24px 24px; text-align:center;">
+                  <td style="padding:36px 24px 28px; text-align:center;">
                     ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
-                    <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:rgba(255,255,255,0.72); font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
-                    <img data-pablo-avatar src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
-                    <h1 style="margin:0; font-size:22px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; letter-spacing:-0.01em; text-shadow:0 1px 4px rgba(0,0,0,0.5);">Pablo Agis Burgos</h1>
-                    ${previewUrl ? `<p style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:12px;">↗ Click to open interactive version</p></a>` : ''}
+                    <p style="margin:0 0 20px; font-size:11px; letter-spacing:0.18em; color:#94a3b8; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
+                    <img data-pablo-avatar src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid #e2e8f0; margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
+                    <h1 style="margin:0; font-size:22px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
+                    ${previewUrl ? `<p style="font-size:11px; color:#94a3b8; margin-top:10px; text-decoration:none;">↗ Click to open interactive version</p></a>` : ''}
                   </td>
                 </tr>
               </table>

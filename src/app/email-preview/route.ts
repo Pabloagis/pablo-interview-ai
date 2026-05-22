@@ -11,7 +11,7 @@ const BROWSER_OVERRIDES = `
   [data-pablo-avatar] {
     width: 130px !important;
     height: 130px !important;
-    border: 4px solid rgba(255,255,255,0.9) !important;
+    border: 3px solid #e2e8f0 !important;
     box-shadow: 0 8px 32px rgba(0,0,0,0.35);
     cursor: zoom-in;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
