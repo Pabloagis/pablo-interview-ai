@@ -310,7 +310,7 @@ function generateEmailHTML(
                 style="background-image:url('${BASE_URL}/assets/header-bg.jpg'); background-size:cover; background-position:center top; background-color:#0f172a;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:rgba(10,18,35,0.25); padding:32px 24px 24px; text-align:center;">
+                  <td style="background-color:rgba(10,18,35,0.12); padding:32px 24px 24px; text-align:center;">
                     ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
                     <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:rgba(255,255,255,0.72); font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
                     <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
@@ -338,7 +338,7 @@ function generateEmailHTML(
               <table data-cta-table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
                 <tr>
                   <td style="padding-bottom:8px;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#bf6e52; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#cc907a; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
                           <img src="${BASE_URL}/assets/icon-google-meet.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
@@ -353,7 +353,7 @@ function generateEmailHTML(
                 </tr>
                 <tr>
                   <td style="padding-bottom:8px;">
-                    <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#9e5a48; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                    <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#b87c6a; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
                           <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
@@ -368,7 +368,7 @@ function generateEmailHTML(
                 </tr>
                 <tr>
                   <td style="${recruiterEmail ? 'padding-bottom:8px;' : ''}">
-                    <a href="${BASE_URL}/cv.pdf" style="display:block; background:#4d8ba6; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                    <a href="${BASE_URL}/cv.pdf" style="display:block; background:#72a8c0; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
                           <img src="${BASE_URL}/assets/icon-pdf.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
@@ -386,7 +386,7 @@ function generateEmailHTML(
                   const mailto = `mailto:${recruiterEmail}?subject=${encodeURIComponent(subject ? `Re: ${subject}` : 'Re: InterviewMind conversation')}`;
                   return `<tr>
                   <td>
-                    <a href="${mailto}" style="display:block; background:#4a7c5e; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                    <a href="${mailto}" style="display:block; background:#6a9a7a; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
                           <img src="${BASE_URL}/assets/icon-reply.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
