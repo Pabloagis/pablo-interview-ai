@@ -348,19 +348,10 @@ function generateEmailHTML(
                 <!-- PRIMARY: Book a call -->
                 <tr>
                   <td style="padding-bottom:10px;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#111827; text-decoration:none; border-radius:18px; padding:28px;">
-                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                        <td width="56" style="vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-google-meet.svg" width="44" height="44" alt="" style="display:block; border-radius:8px;" />
-                        </td>
-                        <td style="vertical-align:middle; padding-left:16px;">
-                          <span style="display:block; font-size:18px; font-weight:700; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                          <span style="display:block; font-size:13px; color:rgba(255,255,255,0.55); font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['scheduleSub']}</span>
-                        </td>
-                        <td width="32" style="vertical-align:middle; text-align:right;">
-                          <span style="font-size:20px; color:rgba(255,255,255,0.35); font-family:Arial,sans-serif;">&#8594;</span>
-                        </td>
-                      </tr></table>
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#111827; text-decoration:none; border-radius:18px; padding:28px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="44" height="44" alt="" style="display:block; margin:0 auto 14px; border-radius:8px;" />
+                      <span style="display:block; font-size:18px; font-weight:700; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                      <span style="display:block; font-size:13px; color:rgba(255,255,255,0.55); font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['scheduleSub']}</span>
                     </a>
                   </td>
                 </tr>
@@ -414,16 +405,10 @@ function generateEmailHTML(
                 <!-- TERTIARY: Recommend to a friend -->
                 <tr>
                   <td>
-                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#F8FAFC; border:1px dashed #D1D5DB; text-decoration:none; border-radius:12px; padding:14px 18px;">
-                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                        <td width="36" style="vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-recommend.svg" width="28" height="28" alt="" style="display:block; border-radius:5px;" />
-                        </td>
-                        <td style="vertical-align:middle; padding-left:12px;">
-                          <span style="display:block; font-size:13px; font-weight:500; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${ui['recommendSub']}</span>
-                        </td>
-                      </tr></table>
+                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#F8FAFC; border:1px dashed #D1D5DB; text-decoration:none; border-radius:12px; padding:16px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-recommend.svg" width="28" height="28" alt="" style="display:block; margin:0 auto 8px; border-radius:5px;" />
+                      <span style="display:block; font-size:13px; font-weight:500; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
+                      <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${ui['recommendSub']}</span>
                     </a>
                   </td>
                 </tr>
