@@ -51,6 +51,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const lastActivityRef = useRef<number>(Date.now());
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sendAutoIntroRef = useRef<() => Promise<void>>();
+  const sendCheckInRef = useRef<() => Promise<void>>();
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -212,6 +213,55 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   useEffect(() => {
     const timer = setTimeout(() => sendAutoIntroRef.current?.(), 35_000);
     return () => clearTimeout(timer);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Check-in message after 1m27s of inactivity (only when conversation has started)
+  sendCheckInRef.current = async () => {
+    if (messages.length === 0 || isStreaming || interviewEnded) return;
+    setStreamingText('');
+    setIsStreaming(true);
+    fetchAbortRef.current?.abort();
+    fetchAbortRef.current = new AbortController();
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: '__CHECK_IN__', sessionId, context: { ...context, language: lang }, autoCheckIn: true }),
+        signal: fetchAbortRef.current.signal,
+      });
+      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let accumulated = '';
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+          const event = parseSSELine(line) as { type: string; text?: string } | null;
+          if (!event) continue;
+          if (event.type === 'content' && event.text) { accumulated += event.text; setStreamingText(accumulated); }
+          else if (event.type === 'done') {
+            setMessages(prev => [...prev, { id: generateId(), role: 'assistant', content: accumulated, createdAt: new Date().toISOString() }]);
+            setStreamingText('');
+            setIsStreaming(false);
+          } else if (event.type === 'error') { setStreamingText(''); setIsStreaming(false); }
+        }
+      }
+    } catch (err) {
+      if (!(err instanceof Error && err.name === 'AbortError')) console.error('Check-in error:', err);
+      setStreamingText('');
+      setIsStreaming(false);
+    }
+  };
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (Date.now() - lastActivityRef.current >= 87_000) {
+        lastActivityRef.current = Date.now();
+        sendCheckInRef.current?.();
+      }
+    }, 10_000);
+    return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = async (overrideText?: string) => {

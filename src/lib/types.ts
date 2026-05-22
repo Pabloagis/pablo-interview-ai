@@ -29,6 +29,7 @@ export interface ChatRequest {
   sessionId: string;
   context: RecruiterContext;
   autoIntro?: boolean;
+  autoCheckIn?: boolean;
 }
 
 export interface SessionCreateRequest {

@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const { message, sessionId, context, autoIntro } = body;
+  const { message, sessionId, context, autoIntro, autoCheckIn } = body;
 
   if (!message?.trim() || !sessionId) {
     return new Response(JSON.stringify({ error: 'message and sessionId are required' }), {
@@ -158,6 +158,8 @@ export async function POST(request: NextRequest) {
         const conversationHistory: AnthropicMessage[] = (session.messages || []) as AnthropicMessage[];
         const userTurn = autoIntro
           ? `[SYSTEM TRIGGER — not from the recruiter] The recruiter opened the interview page but hasn't typed yet. Send a brief, warm greeting${context?.recruiterName ? ` addressing them as ${context.recruiterName}` : ''}. 1–2 sentences max. Natural and human — no bullet lists, no topic menus, just a genuine opening that makes them feel welcome to start.`
+          : autoCheckIn
+          ? `[SYSTEM TRIGGER — not from the recruiter] There has been no activity for a while. Gently check in — see if they're still there or wrapping up. Remind them in a natural, warm way that they can click the "End interview" button when they're done to close the session. 1–2 sentences only. Don't repeat anything already said. Keep it light and human.`
           : message.trim();
         const newUserMessage: AnthropicMessage = { role: 'user', content: userTurn };
         const messagesForClaude: AnthropicMessage[] = [...conversationHistory, newUserMessage];
@@ -216,8 +218,8 @@ export async function POST(request: NextRequest) {
           send({ type: 'done' });
 
           // Persist updated conversation history — non-blocking
-          // For auto-intro: skip storing the hidden trigger; only keep the assistant greeting
-          const updatedMessages: AnthropicMessage[] = autoIntro
+          // For auto-triggers: skip storing the hidden prompt; only keep the assistant message
+          const updatedMessages: AnthropicMessage[] = (autoIntro || autoCheckIn)
             ? [...conversationHistory, { role: 'assistant', content: fullResponse }]
             : [...messagesForClaude, { role: 'assistant', content: fullResponse }];
 
@@ -230,8 +232,8 @@ export async function POST(request: NextRequest) {
             });
 
           // Store both messages in memory with embeddings — fully non-blocking
-          // Skip user memory for auto-intro (no real user message to store)
-          if (!autoIntro) {
+          // Skip user memory for auto-triggers (no real user message to store)
+          if (!autoIntro && !autoCheckIn) {
             storeMemory(
               supabase, sessionId, message, 'user_message',
               context.recruiterName, context.company, embedding
