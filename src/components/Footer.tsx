@@ -66,8 +66,14 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         <p className="text-[13px] font-semibold text-gray-500 tracking-tight mb-1">
           InterviewMind
         </p>
-        <p className="text-[11.5px] text-gray-400 mb-8">
-          Built by Pablo Agis Burgos &middot; Barcelona, Spain
+        <p className="text-[11.5px] text-gray-400 mb-0.5">
+          Built and owned by Pablo Agis Burgos
+        </p>
+        <p className="text-[11.5px] text-gray-400 mb-4">
+          Barcelona, Spain
+        </p>
+        <p className="text-[11px] text-gray-300 mb-8">
+          All conversations remain private and are never shared externally.
         </p>
 
         {/* Links */}
