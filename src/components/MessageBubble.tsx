@@ -20,7 +20,7 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5 overflow-x-hidden w-full`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full overflow-hidden border border-blue-100 mr-2.5 mt-0.5 flex-shrink-0">
+        <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm mr-3 mt-0.5 flex-shrink-0">
           <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
         </div>
       )}
@@ -41,7 +41,7 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
       </div>
 
       {isUser && (
-        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 font-bold text-sm ml-2.5 mt-0.5 flex-shrink-0">
+        <div className="w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-[13px] ml-3 mt-0.5 flex-shrink-0 shadow-sm">
           {getInitials(recruiterName)}
         </div>
       )}
