@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerSupabaseClient();
     const { data: session, error } = await supabase
       .from('sessions')
-      .select('messages, recruiter_name, company, role, email')
+      .select('messages, recruiter_name, company, role, email, email_sent_at')
       .eq('id', sessionId)
       .single();
 
@@ -21,12 +21,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'session not found' }, { status: 404 });
     }
 
+    if (session.email_sent_at) {
+      console.log(`[internal-notify] Skipped — email already sent for session ${sessionId}`);
+      return NextResponse.json({ ok: true, skipped: true });
+    }
+
     const messages = (session.messages ?? []) as Array<{ role: string; content: string }>;
     const transcript = messages
       .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
       .join('\n\n');
 
-    await sendFollowUpEmail({
+    const { html } = await sendFollowUpEmail({
       to: 'pabloagisburgos@gmail.com',
       transcript,
       messages,
@@ -37,6 +42,11 @@ export async function POST(request: NextRequest) {
       recruiterEmail: session.email || null,
       bcc: [],
     });
+
+    await supabase
+      .from('sessions')
+      .update({ email_sent_at: new Date().toISOString(), email_html: html })
+      .eq('id', sessionId);
 
     console.log(`[internal-notify] Notification sent for session ${sessionId}`);
     return NextResponse.json({ ok: true });
