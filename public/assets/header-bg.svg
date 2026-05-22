@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="220" viewBox="0 0 600 220">
+  <defs>
+    <!-- Deep navy base gradient (top-dark to slightly lighter) -->
+    <linearGradient id="base" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#080f1e"/>
+      <stop offset="100%" stop-color="#0f1f3d"/>
+    </linearGradient>
+
+    <!-- Blue glow — upper right -->
+    <radialGradient id="glow-blue" cx="80%" cy="0%" r="60%">
+      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#080f1e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Teal glow — lower left -->
+    <radialGradient id="glow-teal" cx="10%" cy="100%" r="55%">
+      <stop offset="0%" stop-color="#0891b2" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#080f1e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Soft centre halo -->
+    <radialGradient id="glow-center" cx="50%" cy="50%" r="45%">
+      <stop offset="0%" stop-color="#1e3a8a" stop-opacity="0.20"/>
+      <stop offset="100%" stop-color="#080f1e" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Dot grid tile -->
+    <pattern id="dots" x="0" y="0" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.2" fill="rgba(255,255,255,0.055)"/>
+    </pattern>
+  </defs>
+
+  <!-- Base -->
+  <rect width="600" height="220" fill="url(#base)"/>
+
+  <!-- Glows -->
+  <rect width="600" height="220" fill="url(#glow-blue)"/>
+  <rect width="600" height="220" fill="url(#glow-teal)"/>
+  <rect width="600" height="220" fill="url(#glow-center)"/>
+
+  <!-- Dot texture -->
+  <rect width="600" height="220" fill="url(#dots)"/>
+
+  <!-- Abstract ring — top right, large -->
+  <circle cx="520" cy="-20" r="130" fill="none" stroke="rgba(255,255,255,0.045)" stroke-width="1.5"/>
+  <circle cx="520" cy="-20" r="90"  fill="none" stroke="rgba(255,255,255,0.035)" stroke-width="1"/>
+
+  <!-- Abstract ring — bottom left, medium -->
+  <circle cx="60" cy="240" r="100" fill="none" stroke="rgba(255,255,255,0.04)"  stroke-width="1.2"/>
+
+  <!-- Subtle horizontal line near bottom -->
+  <line x1="0" y1="215" x2="600" y2="215" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+</svg>

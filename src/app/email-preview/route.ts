@@ -5,6 +5,8 @@ export const dynamic = 'force-dynamic';
 
 const BROWSER_OVERRIDES = `
 <style>
+  [data-email-container] { max-width: 860px !important; }
+  [data-previewlink] { display: none !important; }
   [data-accordion-header] { cursor: pointer; }
   [data-pablo-avatar] {
     width: 130px !important;
@@ -34,6 +36,14 @@ const BROWSER_OVERRIDES = `
 </div>
 <script>
 (function () {
+  // Remove self-referencing links (we're already on the preview page)
+  document.querySelectorAll('a[href*="email-preview"]').forEach(function (a) {
+    var parent = a.parentNode;
+    if (!parent) return;
+    while (a.firstChild) parent.insertBefore(a.firstChild, a);
+    parent.removeChild(a);
+  });
+
   // Avatar zoom
   var avatar = document.querySelector('[data-pablo-avatar]');
   var lightbox = document.getElementById('avatar-lightbox');

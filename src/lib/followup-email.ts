@@ -302,26 +302,25 @@ function generateEmailHTML(
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pablo Agis Burgos — InterviewMind</title>
 </head>
-<body style="margin:0; padding:0; background-color:#f8fafc; font-family: Arial, Helvetica, sans-serif;">
+<body style="margin:0; padding:0; background-color:#ffffff; font-family: Arial, Helvetica, sans-serif;">
 
-  ${previewUrl ? `<p style="text-align:center; margin-bottom:12px;">
+  ${previewUrl ? `<p data-previewlink style="text-align:center; margin-bottom:12px;">
     <a href="${previewUrl}" style="font-size:11px; color:#94a3b8; text-decoration:none; letter-spacing:0.04em;">
       Having trouble viewing this email? Open in browser →
     </a>
   </p>` : ''}
 
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc; padding: 32px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; padding: 32px 16px;">
     <tr>
       <td align="center">
-        <table cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+        <table data-email-container cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
 
           <!-- HEADER -->
           <tr>
-            <td background="${BASE_URL}/assets/header-bg.jpg"
-                style="background-image:url('${BASE_URL}/assets/header-bg.jpg'); background-size:cover; background-position:center top; background-color:#0f172a;">
+            <td style="background-color:#0f172a;">
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
-                  <td style="background-color:rgba(10,18,35,0.12); padding:32px 24px 24px; text-align:center;">
+                  <td style="padding:32px 24px 24px; text-align:center;">
                     ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
                     <p style="margin:0 0 20px; font-size:12px; letter-spacing:0.15em; color:rgba(255,255,255,0.72); font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
                     <img data-pablo-avatar src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="72" height="72" style="width:72px; height:72px; border-radius:50%; border:3px solid rgba(255,255,255,0.85); margin:0 auto 16px; display:block; object-fit:cover; object-position:top center;" />
