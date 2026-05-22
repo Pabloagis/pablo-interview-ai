@@ -239,7 +239,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         setStreamingText('');
         setIsStreaming(false);
       }
-    }, 35_000);
+    }, 20_000);
     return () => { clearTimeout(timer); introAbort.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
