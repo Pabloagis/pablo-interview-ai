@@ -351,10 +351,10 @@ function generateEmailHTML(
                 <!-- PRIMARY: Book a call -->
                 <tr>
                   <td style="padding-bottom:10px;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#F8FAFC; border:1px dashed #D1D5DB; text-decoration:none; border-radius:12px; padding:16px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="28" height="28" alt="" style="display:block; margin:0 auto 8px; border-radius:5px;" />
-                      <span style="display:block; font-size:13px; font-weight:500; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${ui['scheduleSub']}</span>
+                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 16px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-google-meet.svg" width="44" height="44" alt="" style="display:block; margin:0 auto 12px; border-radius:10px;" />
+                      <span style="display:block; font-size:16px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
+                      <span style="display:block; font-size:12px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px;">${ui['scheduleSub']}</span>
                     </a>
                   </td>
                 </tr>
@@ -364,17 +364,17 @@ function generateEmailHTML(
                   <td style="padding-bottom:10px;">
                     <table width="100%" cellpadding="0" cellspacing="0"><tr>
                       <td width="50%" style="padding-right:5px; vertical-align:top;">
-                        <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#ffffff; border:1px solid #E5E7EB; text-decoration:none; border-radius:12px; padding:20px 12px; text-align:center;">
-                          <img src="${BASE_URL}/assets/icon-linkedin.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
-                          <span style="display:block; font-size:13px; font-weight:600; color:#111827; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:4px; line-height:1.5;">${ui['linkedinSub']}</span>
+                        <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#EEF2FF; border:1px solid #C7D2FE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
+                          <img src="${BASE_URL}/assets/icon-linkedin.svg" width="38" height="38" alt="" style="display:block; margin:0 auto 12px; border-radius:8px;" />
+                          <span style="display:block; font-size:13px; font-weight:700; color:#3730A3; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
+                          <span style="display:block; font-size:11px; color:#6366F1; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['linkedinSub']}</span>
                         </a>
                       </td>
                       <td width="50%" style="padding-left:5px; vertical-align:top;">
-                        <a href="${BASE_URL}/cv.pdf" style="display:block; background:#ffffff; border:1px solid #E5E7EB; text-decoration:none; border-radius:12px; padding:20px 12px; text-align:center;">
-                          <img src="${BASE_URL}/assets/icon-pdf.svg" width="32" height="32" alt="" style="display:block; margin:0 auto 10px; border-radius:6px;" />
-                          <span style="display:block; font-size:13px; font-weight:600; color:#111827; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:4px; line-height:1.5;">${ui['cvSub']}</span>
+                        <a href="${BASE_URL}/cv.pdf" style="display:block; background:#EFF6FF; border:1px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center;">
+                          <img src="${BASE_URL}/assets/icon-pdf.svg" width="38" height="38" alt="" style="display:block; margin:0 auto 12px; border-radius:8px;" />
+                          <span style="display:block; font-size:13px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
+                          <span style="display:block; font-size:11px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['cvSub']}</span>
                         </a>
                       </td>
                     </tr></table>
@@ -387,17 +387,17 @@ function generateEmailHTML(
                   const mailto = `mailto:${recruiterEmail}?subject=${encodeURIComponent(subject ? `Re: ${subject}` : 'Re: InterviewMind conversation')}`;
                   return `<tr>
                   <td style="padding-bottom:10px;">
-                    <a href="${mailto}" style="display:block; background:#ffffff; border:1px solid #E5E7EB; text-decoration:none; border-radius:12px; padding:16px 20px;">
+                    <a href="${mailto}" style="display:block; background:#F0FDF4; border:1px solid #BBF7D0; text-decoration:none; border-radius:14px; padding:16px 20px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                        <td width="40" style="vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/icon-reply.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-reply.svg" width="36" height="36" alt="" style="display:block; border-radius:8px;" />
                         </td>
                         <td style="vertical-align:middle; padding-left:12px;">
-                          <span style="display:block; font-size:14px; font-weight:600; color:#111827; font-family:Arial,sans-serif; line-height:1.3;">Reply to recruiter</span>
-                          <span style="display:block; font-size:12px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${recruiterEmail}</span>
+                          <span style="display:block; font-size:14px; font-weight:700; color:#065F46; font-family:Arial,sans-serif; line-height:1.3;">Reply to recruiter</span>
+                          <span style="display:block; font-size:12px; color:#059669; font-family:Arial,sans-serif; margin-top:3px;">${recruiterEmail}</span>
                         </td>
                         <td width="28" style="vertical-align:middle; text-align:right;">
-                          <span style="font-size:16px; color:#D1D5DB; font-family:Arial,sans-serif;">&#8594;</span>
+                          <span style="font-size:18px; color:#6EE7B7; font-family:Arial,sans-serif;">&#8594;</span>
                         </td>
                       </tr></table>
                     </a>
@@ -405,13 +405,13 @@ function generateEmailHTML(
                 </tr>`;
                 })() : ''}
 
-                <!-- TERTIARY: Recommend to a friend -->
+                <!-- TERTIARY: Refer to a colleague -->
                 <tr>
                   <td>
-                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#F8FAFC; border:1px dashed #D1D5DB; text-decoration:none; border-radius:12px; padding:16px; text-align:center;">
-                      <img src="${BASE_URL}/assets/icon-recommend.svg" width="28" height="28" alt="" style="display:block; margin:0 auto 8px; border-radius:5px;" />
-                      <span style="display:block; font-size:13px; font-weight:500; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
-                      <span style="display:block; font-size:11px; color:#6B7280; font-family:Arial,sans-serif; margin-top:3px;">${ui['recommendSub']}</span>
+                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#FAFAFA; border:1.5px dashed #D1D5DB; text-decoration:none; border-radius:14px; padding:20px 16px; text-align:center;">
+                      <img src="${BASE_URL}/assets/icon-recommend.svg" width="36" height="36" alt="" style="display:block; margin:0 auto 10px; border-radius:8px;" />
+                      <span style="display:block; font-size:13px; font-weight:600; color:#374151; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
+                      <span style="display:block; font-size:11px; color:#9CA3AF; font-family:Arial,sans-serif; margin-top:4px;">${ui['recommendSub']}</span>
                     </a>
                   </td>
                 </tr>
