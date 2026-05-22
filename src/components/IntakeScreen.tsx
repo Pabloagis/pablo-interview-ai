@@ -29,6 +29,21 @@ export default function IntakeScreen() {
   const [error, setError] = useState('');
   const [resumeSession, setResumeSession] = useState<ResumeState>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const [splashPhase, setSplashPhase] = useState<'hero' | 'fading' | 'done'>('hero');
+
+  // Hero splash — only on first visit per browser session
+  useEffect(() => {
+    if (sessionStorage.getItem('im_splash_shown')) {
+      setSplashPhase('done');
+      return;
+    }
+    const t1 = setTimeout(() => setSplashPhase('fading'), 1400);
+    const t2 = setTimeout(() => {
+      setSplashPhase('done');
+      sessionStorage.setItem('im_splash_shown', '1');
+    }, 2100);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   // Check for an unfinished session in localStorage on mount
   useEffect(() => {
@@ -166,7 +181,7 @@ export default function IntakeScreen() {
   const card = 'bg-white rounded-2xl border border-[#e8e5e0] shadow-sm p-5';
 
   return (
-    <div className="relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden">
+    <div className={`relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden transition-opacity duration-700 ${splashPhase === 'hero' ? 'opacity-0' : 'opacity-100'}`}>
       <div className="absolute top-3 right-3">
         <LanguageSwitcher />
       </div>
@@ -367,6 +382,25 @@ export default function IntakeScreen() {
         >
           <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-2xl animate-scale-in">
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+          </div>
+        </div>
+      )}
+
+      {/* Hero splash — full-screen on first visit, fades out into the page */}
+      {splashPhase !== 'done' && (
+        <div
+          className={`fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#f8f7f4] pointer-events-none transition-all duration-700 ease-in-out ${
+            splashPhase === 'fading' ? 'opacity-0 scale-[0.97]' : 'opacity-100 scale-100'
+          }`}
+        >
+          <div className="flex flex-col items-center gap-5 text-center px-8 animate-slide-up">
+            <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-blue-200 shadow-md">
+              <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+            </div>
+            <div>
+              <h1 className="text-[28px] font-bold text-gray-900 tracking-tight mb-1.5">{t.emptyGreeting}</h1>
+              <p className="text-[14px] text-gray-500 leading-snug">{t.intakeSubtitle}</p>
+            </div>
           </div>
         </div>
       )}
