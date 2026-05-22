@@ -34,6 +34,10 @@ const UI: Record<string, Record<string, string>> = {
     bodySignoff: "I'd love to stay in touch!",
     footerText: 'Thanks again for your time and consideration!',
     transcriptTitle: 'Conversation transcript',
+    recommendLabel: 'Recommend to a friend',
+    recommendSub: 'Share InterviewMind with a colleague',
+    recommendSubject: 'Check out InterviewMind',
+    recommendBody: 'Hi,\n\nI thought you\'d find this interesting — InterviewMind lets you have a real conversation with AI-represented candidates before scheduling a call.\n\nCheck it out: https://interviewmind.one',
   },
   es: {
     greeting: 'Hola',
@@ -55,6 +59,10 @@ const UI: Record<string, Record<string, string>> = {
     bodySignoff: '¡Me encantaría mantener el contacto!',
     footerText: '¡Muchas gracias por tu tiempo y consideración!',
     transcriptTitle: 'Transcripción de la conversación',
+    recommendLabel: 'Recomendar a un amigo',
+    recommendSub: 'Comparte InterviewMind con un colega',
+    recommendSubject: 'Echa un vistazo a InterviewMind',
+    recommendBody: 'Hola,\n\nCreo que esto te puede interesar — InterviewMind permite conversar con candidatos representados por IA antes de agendar una entrevista.\n\nPruébalo: https://interviewmind.one',
   },
 };
 
@@ -385,7 +393,7 @@ function generateEmailHTML(
                   const subject = [jobTitle, companyName].filter(Boolean).join(' at ');
                   const mailto = `mailto:${recruiterEmail}?subject=${encodeURIComponent(subject ? `Re: ${subject}` : 'Re: InterviewMind conversation')}`;
                   return `<tr>
-                  <td>
+                  <td style="padding-bottom:8px;">
                     <a href="${mailto}" style="display:block; background:#6a9a7a; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
@@ -400,6 +408,21 @@ function generateEmailHTML(
                   </td>
                 </tr>`;
                 })() : ''}
+                <tr>
+                  <td>
+                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#8a72a8; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-recommend.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        </td>
+                        <td style="vertical-align:middle; padding-left:4px;">
+                          <span style="display:block; font-size:15px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
+                          <span style="display:block; font-size:12px; color:rgba(255,255,255,0.62); font-family:Arial,sans-serif; margin-top:3px;">${ui['recommendSub']}</span>
+                        </td>
+                      </tr></table>
+                    </a>
+                  </td>
+                </tr>
               </table>
 
               <!-- Section: Executive Summary -->
