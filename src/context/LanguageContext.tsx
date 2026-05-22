@@ -57,6 +57,8 @@ export type Translations = {
   footerNote: string;
   emailError: string;
   nameError: string;
+  intakeSubtitle: string;
+  timeHint: string;
   // ChatPanel
   emptyGreeting: string;
   emptySubtitle: string;
@@ -128,6 +130,8 @@ const EN: Translations = {
   footerNote: 'Name, company & role optional · * Email required',
   emailError: 'Please enter a valid email address',
   nameError: 'Please enter your name',
+  intakeSubtitle: 'SaaS & Hospitality Tech | Helping hospitality grow through smart solutions',
+  timeHint: '⏱ Usually takes 3–5 minutes',
   emptyGreeting: "Hi, I'm Pablo Agis.",
   emptySubtitle: 'Ask me anything!',
   tryAsking: 'Try asking',
@@ -219,6 +223,8 @@ const ES: Translations = {
   footerNote: 'Nombre, empresa y rol opcionales · * Email obligatorio',
   emailError: 'Por favor introduce un email válido',
   nameError: 'Por favor introduce tu nombre',
+  intakeSubtitle: 'SaaS y Tecnología Hotelera | Ayudando a la hostelería a crecer con soluciones inteligentes',
+  timeHint: '⏱ Suele durar entre 3 y 5 minutos',
   emptyGreeting: 'Hola, soy Pablo Agis.',
   emptySubtitle: '¡Pregúntame lo que quieras!',
   tryAsking: 'Prueba preguntando',
@@ -236,7 +242,7 @@ const ES: Translations = {
   allDoneMsg: 'Revisa tu bandeja de entrada, te hemos enviado todo a',
   allDoneSignature: 'Espero saber de ti pronto. — Pablo',
   conversationReset: 'Conversación reiniciada.',
-  connectionIssue: 'Error de conexión. Por favcorreoor inténtalo de nuevo.',
+  connectionIssue: 'Error de conexión. Por favor inténtalo de nuevo.',
   microphoneDenied: 'Acceso al micrófono denegado. Por favor permite el acceso al micrófono.',
   transcribeFailed: 'No se pudo transcribir. Por favor inténtalo de nuevo.',
   thinking: [
@@ -310,6 +316,8 @@ const IT: Translations = {
   footerNote: 'Nome, azienda e ruolo opzionali · * Email obbligatoria',
   emailError: "Inserisci un indirizzo email valido",
   nameError: 'Inserisci il tuo nome',
+  intakeSubtitle: 'SaaS e Tecnologia Alberghiera | Aiutare l\'ospitalità a crescere con soluzioni intelligenti',
+  timeHint: '⏱ Di solito dura 3–5 minuti',
   emptyGreeting: 'Ciao, sono Pablo Agis.',
   emptySubtitle: 'Chiedimi quello che vuoi!',
   tryAsking: 'Prova a chiedere',
@@ -401,6 +409,8 @@ const PT: Translations = {
   footerNote: 'Nome, empresa e cargo opcionais · * Email obrigatório',
   emailError: 'Por favor introduza um endereço de email válido',
   nameError: 'Por favor introduza o seu nome',
+  intakeSubtitle: 'SaaS e Tecnologia Hoteleira | Ajudando a hotelaria a crescer com soluções inteligentes',
+  timeHint: '⏱ Geralmente demora 3–5 minutos',
   emptyGreeting: 'Olá, sou o Pablo Agis.',
   emptySubtitle: 'Pergunte o que quiser!',
   tryAsking: 'Experimente perguntar',

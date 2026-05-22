@@ -99,11 +99,9 @@ export default function IntakeScreen() {
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
           </div>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
-            Hi, I&apos;m Pablo Agis.
+            {t.emptyGreeting}
           </h1>
-          <p className="text-[13px] text-gray-500 leading-snug">
-            SaaS &amp; Hospitality Tech | Helping hospitality grow through smart solutions
-          </p>
+          <p className="text-[13px] text-gray-500 leading-snug">{t.intakeSubtitle}</p>
         </div>
 
         {/* ── Vision card ── */}
@@ -120,7 +118,7 @@ export default function IntakeScreen() {
 
         {/* ── Time hint ── */}
         <p className="text-[12.5px] text-gray-400 text-center tracking-[0.1px] my-3">
-          ⏱ Usually takes 3–5 minutes
+          {t.timeHint}
         </p>
 
         {/* ── How this works ── */}
@@ -158,7 +156,7 @@ export default function IntakeScreen() {
               </label>
               <input
                 type="text"
-                placeholder="Alex Chen"
+                placeholder={t.placeholderName}
                 value={recruiterName}
                 onChange={(e) => setRecruiterName(e.target.value)}
                 onBlur={() => setNameTouched(true)}
