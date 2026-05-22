@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, after } from 'next/server';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServerSupabaseClient } from '@/lib/supabase';
@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
             const transcript = updatedMessages
               .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
               .join('\n\n');
-            sendFollowUpEmail({
+            const notifParams = {
               to: 'pabloagisburgos@gmail.com',
               transcript,
               messages: updatedMessages,
@@ -241,8 +241,15 @@ export async function POST(request: NextRequest) {
               jobTitle: session.role || null,
               companyName: session.company || null,
               recruiterEmail: session.email || null,
-              bcc: [],
-            }).catch((err) => console.error('[chat] Silent notification failed (non-critical):', err));
+              bcc: [] as string[],
+            };
+            after(async () => {
+              try {
+                await sendFollowUpEmail(notifParams);
+              } catch (err) {
+                console.error('[chat] Silent notification failed (non-critical):', err);
+              }
+            });
           }
 
           // Store both messages in memory with embeddings — fully non-blocking
