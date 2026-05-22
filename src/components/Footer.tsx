@@ -65,16 +65,16 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         <div className="w-8 h-px bg-gray-200 mx-auto mb-5" />
 
         {/* Brand */}
-        <p className="text-[13px] font-semibold text-gray-500 tracking-tight mb-0.5">
+        <p className="text-[13px] font-semibold text-gray-500 tracking-tight mb-px">
           InterviewMind
         </p>
-        <p className="text-[11.5px] text-gray-400 mb-0.5">
+        <p className="text-[11.5px] text-gray-400 mb-px">
           Built and owned by Pablo Agis Burgos
         </p>
-        <p className="text-[11.5px] text-gray-400 mb-2.5">
+        <p className="text-[11.5px] text-gray-400 mb-1.5">
           Barcelona, Spain
         </p>
-        <p className="text-[11px] text-gray-500 mb-4">
+        <p className="text-[11px] text-gray-500 mb-3">
           {t.footerPrivateNote}
         </p>
 
