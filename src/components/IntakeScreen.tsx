@@ -103,7 +103,7 @@ export default function IntakeScreen() {
         </div>
 
         {/* ── Vision card ── */}
-        <div className={`${card} mb-3`}>
+        <div className={`${card} mb-3 text-center`}>
           <p className="text-sm font-bold text-gray-900 leading-snug mb-3">{t.visionTitle}</p>
           <p className="text-[13.5px] text-gray-500 leading-relaxed mb-3">{t.visionBody}</p>
           <p className="text-[13px] text-gray-400 italic leading-snug pt-3 border-t border-[#f0ede8]">
