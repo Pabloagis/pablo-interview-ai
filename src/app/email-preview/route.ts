@@ -22,7 +22,7 @@ const BROWSER_OVERRIDES = `
   }
   #avatar-lightbox.open { display: flex; }
   #avatar-lightbox img {
-    width: 220px; height: 220px; border-radius: 50%;
+    width: 280px; height: 280px; border-radius: 50%;
     border: 5px solid white; object-fit: cover; object-position: top center;
     box-shadow: 0 20px 60px rgba(0,0,0,0.6);
     animation: zoomIn 0.2s ease;
