@@ -616,11 +616,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           </div>
       </div>
 
-      {/* End interview reminder pill */}
+      {/* End interview reminder — anchored below the End Interview button */}
       {reminderState !== 'hidden' && !interviewEnded && (
-        <div className="fixed top-14 left-0 right-0 flex justify-center z-40 pointer-events-none">
-          <div className={`animate-slide-down bg-white border border-gray-200 shadow-lg rounded-full px-5 py-2.5 flex items-center gap-1.5 text-[13px] text-gray-600 whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}>
-            Click <strong className="text-green-700 font-semibold">End interview</strong> when you're done
+        <div className="fixed top-[58px] right-3 z-40 pointer-events-none">
+          <div className={`animate-slide-down relative bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-2.5 text-[13px] text-gray-600 whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}>
+            {/* Arrow pointing up toward the End Interview button */}
+            <div className="absolute -top-[5px] right-4 w-2.5 h-2.5 bg-white border-l border-t border-gray-200 rotate-45" />
+            Click <strong className="text-green-700 font-semibold">End interview</strong> when done
           </div>
         </div>
       )}
