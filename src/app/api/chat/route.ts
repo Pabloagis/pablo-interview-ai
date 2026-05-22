@@ -7,9 +7,11 @@ import { buildSystemPrompt } from '@/lib/prompts';
 import { retrieveKnowledge, detectTone, logRetrieval } from '@/lib/retrieval';
 import {
   CLAUDE_MODEL,
+  CLAUDE_FALLBACK_MODEL,
   MAX_TOKENS,
   API_TIMEOUT_MS,
   MEMORY_SEARCH_LIMIT,
+  MEMORY_TIMEOUT_MS,
   EMBEDDING_MODEL,
   EMBEDDING_DIMENSIONS,
 } from '@/lib/constants';
@@ -17,7 +19,6 @@ import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
 
-const MEMORY_TIMEOUT_MS = 5000;
 
 type SupabaseClient = ReturnType<typeof createServerSupabaseClient>;
 
@@ -26,7 +27,7 @@ function withMemoryTimeout<T>(promise: Promise<T>): Promise<T | null> {
     promise,
     new Promise<null>((resolve) =>
       setTimeout(() => {
-        console.error('[Memory] timeout after 5s - continuing without');
+        console.error(`[Memory] timeout after ${MEMORY_TIMEOUT_MS / 1000}s - continuing without`);
         resolve(null);
       }, MEMORY_TIMEOUT_MS)
     ),
@@ -189,28 +190,34 @@ export async function POST(request: NextRequest) {
         const systemPrompt = buildSystemPrompt(enrichedContext, relevantMemories, retrieved.formattedText);
         const anthropic = getAnthropicClient();
         let fullResponse = '';
+        let tokensSent = false;
 
-        // Stream from Claude with abort signal for timeout
-        const claudeStream = anthropic.messages.stream(
-          {
-            model: CLAUDE_MODEL,
-            max_tokens: MAX_TOKENS,
-            system: systemPrompt,
-            messages: messagesForClaude,
-          },
-          { signal: abortController.signal }
-        );
+        const runStream = async (model: string) => {
+          const claudeStream = anthropic.messages.stream(
+            { model, max_tokens: MAX_TOKENS, system: systemPrompt, messages: messagesForClaude },
+            { signal: abortController.signal }
+          );
+          for await (const event of claudeStream) {
+            if (abortController.signal.aborted) break;
+            if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+              const text = event.delta.text;
+              fullResponse += text;
+              tokensSent = true;
+              send({ type: 'content', text });
+            }
+          }
+        };
 
-        for await (const event of claudeStream) {
-          if (abortController.signal.aborted) break;
-
-          if (
-            event.type === 'content_block_delta' &&
-            event.delta.type === 'text_delta'
-          ) {
-            const text = event.delta.text;
-            fullResponse += text;
-            send({ type: 'content', text });
+        try {
+          await runStream(CLAUDE_MODEL);
+        } catch (streamError) {
+          const isOverloaded =
+            streamError instanceof Error && streamError.message.includes('overloaded_error');
+          if (isOverloaded && !tokensSent) {
+            fullResponse = '';
+            await runStream(CLAUDE_FALLBACK_MODEL);
+          } else {
+            throw streamError;
           }
         }
 
@@ -252,7 +259,10 @@ export async function POST(request: NextRequest) {
 
         if (error instanceof Anthropic.AuthenticationError) {
           send({ type: 'error', message: 'Configuration error. Please contact Pablo.' });
-        } else if (error instanceof Anthropic.RateLimitError) {
+        } else if (
+          error instanceof Anthropic.RateLimitError ||
+          (error instanceof Error && error.message.includes('overloaded_error'))
+        ) {
           send({ type: 'error', message: 'Claude is busy. Please try again in a moment.' });
         } else if (
           error instanceof Error &&

@@ -8,6 +8,7 @@ export const EMBEDDING_DIMENSIONS = 1536;
 export const MAX_TOKENS = 1000;
 export const API_TIMEOUT_MS = 30_000;
 export const MEMORY_SEARCH_LIMIT = 5;
+export const MEMORY_TIMEOUT_MS = 8000;
 
 // UI
 export const TOAST_DURATION_MS = 5000;
