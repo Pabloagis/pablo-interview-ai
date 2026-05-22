@@ -59,6 +59,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const langRef = useRef(lang);
   const sendCheckInRef = useRef<() => Promise<void>>();
   const dismissPersistentReminderRef = useRef<() => void>();
+  const usedTopicsRef = useRef<Set<string>>(new Set());
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
 
@@ -97,7 +98,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   // Reset suggestions when language changes
   useEffect(() => {
-    setSuggestions(pickRandom(t.topics, 5));
+    usedTopicsRef.current = new Set();
+    const initial = pickRandom(t.topics, 5);
+    initial.forEach(tp => usedTopicsRef.current.add(tp.label));
+    setSuggestions(initial);
   }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Rotate thinking phrases while waiting for first streaming content
@@ -497,8 +501,22 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   };
 
+  const refreshSuggestions = () => {
+    usedTopicsRef.current = new Set();
+    const next = pickRandom(t.topics, 5);
+    next.forEach(tp => usedTopicsRef.current.add(tp.label));
+    setSuggestions(next);
+  };
+
   const handleSuggestedQuestion = (topic: Topic) => {
-    setSuggestions((prev) => prev.filter((s) => s.label !== topic.label));
+    usedTopicsRef.current.add(topic.label);
+    const unused = t.topics.filter(tp => !usedTopicsRef.current.has(tp.label));
+    const replacement = unused.length > 0 ? pickRandom(unused, 1) : [];
+    if (replacement.length > 0) usedTopicsRef.current.add(replacement[0].label);
+    setSuggestions(prev => {
+      const remaining = prev.filter(s => s.label !== topic.label);
+      return [...remaining, ...replacement];
+    });
     sendMessage(topic.question);
   };
 
@@ -508,7 +526,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setStreamingText('');
     setIsStreaming(false);
     setInputText('');
-    setSuggestions(pickRandom(t.topics, 5));
+    usedTopicsRef.current = new Set();
+    const fresh = pickRandom(t.topics, 5);
+    fresh.forEach(tp => usedTopicsRef.current.add(tp.label));
+    setSuggestions(fresh);
     localStorage.removeItem(`im_chat_${sessionId}`);
     addToast(t.conversationReset, 'info');
   };
@@ -608,21 +629,33 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       />
 
-      {/* Topics sub-header — persists throughout conversation */}
+      {/* Suggested topics strip */}
       {suggestions.length > 0 && (
-        <div className="border-b bg-white px-3 py-2 shrink-0">
-          <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+        <div className="border-b bg-[#fafafa] px-3 py-2 shrink-0">
+          <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {suggestions.map((topic) => (
               <button
                 key={topic.label}
                 onClick={() => handleSuggestedQuestion(topic)}
                 disabled={isStreaming}
-                className="flex items-center gap-1 shrink-0 text-xs font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md px-2.5 py-1 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 disabled:opacity-40 transition-all"
+                className="flex items-center gap-1.5 shrink-0 text-[12px] font-semibold text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 hover:shadow-none disabled:opacity-40 transition-all"
               >
                 {topic.label}
-                <span className="text-gray-400 text-[10px]">→</span>
               </button>
             ))}
+            <button
+              onClick={refreshSuggestions}
+              disabled={isStreaming}
+              title="New suggestions"
+              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 disabled:opacity-40 transition-all ml-0.5"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                <path d="M8 16H3v5"/>
+              </svg>
+            </button>
           </div>
         </div>
       )}
