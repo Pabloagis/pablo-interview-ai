@@ -213,7 +213,10 @@ function generateEmailHTML(
   analysis: ConversationAnalysis,
   recruiterName?: string | null,
   messages?: RawMessage[] | null,
-  previewUrl?: string
+  previewUrl?: string,
+  recruiterEmail?: string | null,
+  jobTitle?: string | null,
+  companyName?: string | null
 ): string {
   const {
     language,
@@ -364,7 +367,7 @@ function generateEmailHTML(
                   </td>
                 </tr>
                 <tr>
-                  <td>
+                  <td style="${recruiterEmail ? 'padding-bottom:8px;' : ''}">
                     <a href="${BASE_URL}/cv.pdf" style="display:block; background:#4d8ba6; text-decoration:none; border-radius:10px; padding:14px 18px;">
                       <table width="100%" cellpadding="0" cellspacing="0"><tr>
                         <td width="44" style="vertical-align:middle;">
@@ -378,6 +381,25 @@ function generateEmailHTML(
                     </a>
                   </td>
                 </tr>
+                ${recruiterEmail ? (() => {
+                  const subject = [jobTitle, companyName].filter(Boolean).join(' at ');
+                  const mailto = `mailto:${recruiterEmail}?subject=${encodeURIComponent(subject ? `Re: ${subject}` : 'Re: InterviewMind conversation')}`;
+                  return `<tr>
+                  <td>
+                    <a href="${mailto}" style="display:block; background:#4a7c5e; text-decoration:none; border-radius:10px; padding:14px 18px;">
+                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
+                        <td width="44" style="vertical-align:middle;">
+                          <img src="${BASE_URL}/assets/icon-reply.svg" width="32" height="32" alt="" style="display:block; border-radius:6px;" />
+                        </td>
+                        <td style="vertical-align:middle; padding-left:4px;">
+                          <span style="display:block; font-size:15px; font-weight:600; color:#ffffff; font-family:Arial,sans-serif; line-height:1.3;">Reply to recruiter</span>
+                          <span style="display:block; font-size:12px; color:rgba(255,255,255,0.62); font-family:Arial,sans-serif; margin-top:3px;">${recruiterEmail}</span>
+                        </td>
+                      </tr></table>
+                    </a>
+                  </td>
+                </tr>`;
+                })() : ''}
               </table>
 
               <!-- Section: Executive Summary -->
@@ -516,6 +538,7 @@ export interface SendFollowUpEmailParams {
   companyName?: string | null;
   sessionId?: string | null;
   bcc?: string[];
+  recruiterEmail?: string | null;
 }
 
 export async function sendFollowUpEmail({
@@ -527,10 +550,11 @@ export async function sendFollowUpEmail({
   companyName,
   sessionId,
   bcc,
+  recruiterEmail,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
-  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl);
+  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl, recruiterEmail, jobTitle, companyName);
   const resend = getResendClient();
 
   const result = await resend.emails.send({
