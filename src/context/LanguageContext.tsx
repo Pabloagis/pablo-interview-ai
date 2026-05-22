@@ -87,6 +87,8 @@ export type Translations = {
   endButtonFull: string;
   endTooltipActive: string;
   endTooltipInactive: string;
+  startVoiceInput: string;
+  stopRecording: string;
   endModalTitle: string;
   endModalWithConsent: string;
   endModalWithoutConsent: string;
@@ -216,6 +218,8 @@ const EN: Translations = {
   endButtonFull: 'Insights',
   endTooltipActive: 'Click here to properly finish the interview',
   endTooltipInactive: 'Keep chatting — available after min. 3 questions',
+  startVoiceInput: 'Voice input',
+  stopRecording: 'Stop recording',
   endModalTitle: 'Get your insights?',
   endModalWithConsent: "We'll send you conversation insights and transcript to your email.",
   endModalWithoutConsent: 'The interview will be closed. Thanks for chatting with Pablo.',
@@ -363,6 +367,8 @@ const ES: Translations = {
   endButtonFull: 'Insights',
   endTooltipActive: 'Haz clic aquí para terminar correctamente la entrevista',
   endTooltipInactive: 'Sigue chateando — disponible tras mín. 3 preguntas',
+  startVoiceInput: 'Entrada de voz',
+  stopRecording: 'Parar grabación',
   endModalTitle: '¿Ver tus insights?',
   endModalWithConsent: 'Te enviaremos los insights de la conversación y la transcripción a tu email.',
   endModalWithoutConsent: 'La entrevista se cerrará. Gracias por chatear con Pablo.',
@@ -510,6 +516,8 @@ const IT: Translations = {
   endButtonFull: 'Insights',
   endTooltipActive: 'Clicca qui per terminare correttamente il colloquio',
   endTooltipInactive: 'Continua a chattare — disponibile dopo min. 3 domande',
+  startVoiceInput: 'Input vocale',
+  stopRecording: 'Ferma registrazione',
   endModalTitle: 'Vuoi i tuoi insights?',
   endModalWithConsent: "Ti invieremo gli insights della conversazione e la trascrizione alla tua email.",
   endModalWithoutConsent: 'Il colloquio verrà chiuso. Grazie per aver chattato con Pablo.',
@@ -657,6 +665,8 @@ const PT: Translations = {
   endButtonFull: 'Insights',
   endTooltipActive: 'Clique aqui para terminar corretamente a entrevista',
   endTooltipInactive: 'Continue a conversar — disponível após mín. 3 perguntas',
+  startVoiceInput: 'Entrada de voz',
+  stopRecording: 'Parar gravação',
   endModalTitle: 'Ver os seus insights?',
   endModalWithConsent: "Enviaremos os insights da conversa e a transcrição para o seu email.",
   endModalWithoutConsent: 'A entrevista será encerrada. Obrigado por conversar com Pablo.',

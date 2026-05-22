@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
+import Tooltip from './Tooltip';
 
 interface EndInterviewButtonProps {
   sessionId: string;
@@ -73,7 +74,13 @@ export default function EndInterviewButton({
   return (
     <>
       {/* Inline trigger — positioned by parent (Header) */}
-      <div className="relative group flex-shrink-0">
+      <Tooltip
+        text={isActive ? t.endTooltipActive : t.endTooltipInactive}
+        position="bottom"
+        align="right"
+        disabled={suppressTooltip}
+        className="hidden sm:block flex-shrink-0"
+      >
         <button
           onClick={openModal}
           disabled={!isActive}
@@ -84,21 +91,26 @@ export default function EndInterviewButton({
               : 'bg-[#4d8f6e] opacity-80 cursor-not-allowed',
           ].join(' ')}
         >
-          {/* Mobile: lightbulb icon */}
-          <svg className="sm:hidden w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m1.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-          </svg>
-          {/* Desktop: text */}
-          <span className="hidden sm:inline">Insights</span>
+          Insights
         </button>
+      </Tooltip>
 
-        {/* Tooltip — desktop only, hidden while the reminder banner is visible */}
-        {!suppressTooltip && (
-          <div className="hidden sm:block absolute top-full right-0 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none z-10">
-            {isActive ? t.endTooltipActive : t.endTooltipInactive}
-          </div>
-        )}
-      </div>
+      {/* Mobile: icon-only button, no tooltip (touch devices don't hover) */}
+      <button
+        onClick={openModal}
+        disabled={!isActive}
+        aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
+        className={[
+          'sm:hidden min-h-[36px] w-9 rounded-lg flex items-center justify-center transition-all duration-200',
+          isActive
+            ? 'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30 active:scale-[0.99]'
+            : 'bg-[#4d8f6e] opacity-80 cursor-not-allowed',
+        ].join(' ')}
+      >
+        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m1.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+        </svg>
+      </button>
 
       {/* Confirmation modal */}
       {modalOpen && (

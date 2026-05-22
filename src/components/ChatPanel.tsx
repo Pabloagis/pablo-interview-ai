@@ -9,6 +9,7 @@ import MessageBubble from './MessageBubble';
 import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
+import Tooltip from './Tooltip';
 import { useLanguage } from '@/context/LanguageContext';
 import Footer from './Footer';
 
@@ -734,12 +735,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </div>
 
             {/* Mic button */}
+            <Tooltip text={isRecording ? t.stopRecording : t.startVoiceInput} className="shrink-0">
             <button
               onClick={toggleRecording}
               disabled={isStreaming || isTranscribing || isPlayingAudio}
               aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
               className={[
-                'shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all',
+                'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
                 isRecording
                   ? 'bg-red-500 hover:bg-red-600 animate-pulse'
                   : isTranscribing
@@ -762,6 +764,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 </svg>
               )}
             </button>
+            </Tooltip>
 
             <button
               onClick={() => sendMessage()}
@@ -786,16 +789,17 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </span>
             <div className="flex gap-3 items-center">
               {/* Listen mode toggle */}
-              <button
-                onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
-                aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
-                title={listenMode ? t.listenModeOn : t.listenModeOff}
-                className={listenMode ? 'text-blue-500 hover:text-blue-600 transition-colors' : 'text-gray-400 hover:text-gray-600 transition-colors'}
-              >
-                <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
-                </svg>
-              </button>
+              <Tooltip text={listenMode ? t.listenModeOn : t.listenModeOff}>
+                <button
+                  onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
+                  aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
+                  className={listenMode ? 'text-blue-500 hover:text-blue-600 transition-colors' : 'text-gray-400 hover:text-gray-600 transition-colors'}
+                >
+                  <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
+                  </svg>
+                </button>
+              </Tooltip>
               <button
                 onClick={handleDownloadTranscript}
                 aria-label="Download transcript"
