@@ -50,6 +50,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const voiceTriggeredRef = useRef(false);
   const lastActivityRef = useRef<number>(Date.now());
   const checkInLastActivityRef = useRef<number>(Date.now());
+  const userMessageCountRef = useRef(0);
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reminderPersistentRef = useRef(false);
   const sendAutoIntroRef = useRef<() => Promise<void>>();
@@ -121,10 +122,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages]);
 
-  // Inactivity reminder: stays until the user interacts
+  // Inactivity reminder: only after 3 user messages and 90s of no activity
   useEffect(() => {
     const interval = setInterval(() => {
-      if (Date.now() - lastActivityRef.current >= 90_000) {
+      if (userMessageCountRef.current >= 3 && Date.now() - lastActivityRef.current >= 90_000) {
         lastActivityRef.current = Date.now();
         if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
         reminderPersistentRef.current = true;
@@ -184,6 +185,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null; }
     setIsPlayingAudio(false);
   }, []);
+
+  // Keep current user message count accessible inside interval callbacks
+  userMessageCountRef.current = messages.filter(m => m.role === 'user').length;
 
   // Keep ref in sync with latest closure so the 35s timer always sees current state
   sendAutoIntroRef.current = async () => {
