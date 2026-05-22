@@ -53,7 +53,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const userMessageCountRef = useRef(0);
   const reminderDismissRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reminderPersistentRef = useRef(false);
-  const sendAutoIntroRef = useRef<() => Promise<void>>();
+  const isStreamingRef = useRef(false);
+  const messagesLengthRef = useRef(0);
+  const contextRef = useRef(context);
+  const langRef = useRef(lang);
   const sendCheckInRef = useRef<() => Promise<void>>();
   const dismissPersistentReminderRef = useRef<() => void>();
 
@@ -186,52 +189,58 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setIsPlayingAudio(false);
   }, []);
 
-  // Keep current user message count accessible inside interval callbacks
+  // Keep refs in sync with latest values so empty-dep effects always see current state
   userMessageCountRef.current = messages.filter(m => m.role === 'user').length;
+  isStreamingRef.current = isStreaming;
+  messagesLengthRef.current = messages.length;
+  contextRef.current = context;
+  langRef.current = lang;
 
-  // Keep ref in sync with latest closure so the 35s timer always sees current state
-  sendAutoIntroRef.current = async () => {
-    if (messages.length > 0 || isStreaming) return;
-    setStreamingText('');
-    setIsStreaming(true);
-    fetchAbortRef.current?.abort();
-    fetchAbortRef.current = new AbortController();
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: '__AUTO_INTRO__', sessionId, context: { ...context, language: lang }, autoIntro: true }),
-        signal: fetchAbortRef.current.signal,
-      });
-      if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let accumulated = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        for (const line of decoder.decode(value, { stream: true }).split('\n')) {
-          const event = parseSSELine(line) as { type: string; text?: string } | null;
-          if (!event) continue;
-          if (event.type === 'content' && event.text) { accumulated += event.text; setStreamingText(accumulated); }
-          else if (event.type === 'done') {
-            setMessages([{ id: generateId(), role: 'assistant', content: accumulated, createdAt: new Date().toISOString() }]);
-            setStreamingText('');
-            setIsStreaming(false);
-          } else if (event.type === 'error') { setStreamingText(''); setIsStreaming(false); }
-        }
-      }
-    } catch (err) {
-      if (!(err instanceof Error && err.name === 'AbortError')) console.error('Auto-intro error:', err);
-      setStreamingText('');
-      setIsStreaming(false);
-    }
-  };
-
-  // Greet recruiter if they haven't typed after 35 seconds
+  // Greet recruiter after 35s if they haven't typed — uses its own AbortController
+  // so regular sendMessage / check-in cannot accidentally abort this fetch
   useEffect(() => {
-    const timer = setTimeout(() => sendAutoIntroRef.current?.(), 35_000);
-    return () => clearTimeout(timer);
+    const introAbort = new AbortController();
+    const timer = setTimeout(async () => {
+      if (messagesLengthRef.current > 0 || isStreamingRef.current) return;
+      setStreamingText('');
+      setIsStreaming(true);
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: '__AUTO_INTRO__',
+            sessionId,
+            context: { ...contextRef.current, language: langRef.current },
+            autoIntro: true,
+          }),
+          signal: introAbort.signal,
+        });
+        if (!response.ok || !response.body) throw new Error(`HTTP ${response.status}`);
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let accumulated = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          for (const line of decoder.decode(value, { stream: true }).split('\n')) {
+            const event = parseSSELine(line) as { type: string; text?: string } | null;
+            if (!event) continue;
+            if (event.type === 'content' && event.text) { accumulated += event.text; setStreamingText(accumulated); }
+            else if (event.type === 'done') {
+              setMessages([{ id: generateId(), role: 'assistant', content: accumulated, createdAt: new Date().toISOString() }]);
+              setStreamingText('');
+              setIsStreaming(false);
+            } else if (event.type === 'error') { setStreamingText(''); setIsStreaming(false); }
+          }
+        }
+      } catch (err) {
+        if (!(err instanceof Error && err.name === 'AbortError')) console.error('Auto-intro error:', err);
+        setStreamingText('');
+        setIsStreaming(false);
+      }
+    }, 35_000);
+    return () => { clearTimeout(timer); introAbort.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check-in message after 1m27s of inactivity (only when conversation has started)
