@@ -213,7 +213,7 @@ export default function IntakeScreen() {
           <button
             type="button"
             onClick={() => setAvatarOpen(true)}
-            className="w-20 h-20 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
+            className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
           >
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
           </button>
@@ -365,7 +365,7 @@ export default function IntakeScreen() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
           onClick={() => setAvatarOpen(false)}
         >
-          <div className="w-56 h-56 rounded-full overflow-hidden border-4 border-white shadow-2xl animate-scale-in">
+          <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-2xl animate-scale-in">
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
           </div>
         </div>
