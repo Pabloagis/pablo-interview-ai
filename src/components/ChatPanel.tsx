@@ -59,6 +59,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const langRef = useRef(lang);
   const sendCheckInRef = useRef<() => Promise<void>>();
   const dismissPersistentReminderRef = useRef<() => void>();
+  const exitEmailFiredRef = useRef(false);
+  const interviewEndedRef = useRef(false);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -228,6 +230,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   messagesLengthRef.current = messages.length;
   contextRef.current = context;
   langRef.current = lang;
+  interviewEndedRef.current = interviewEnded !== null;
 
   // Greet recruiter after 35s if they haven't typed — uses its own AbortController
   // so regular sendMessage / check-in cannot accidentally abort this fetch
@@ -324,6 +327,30 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }, 10_000);
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Exit trigger: fire when recruiter leaves or hides the tab without clicking End Interview
+  useEffect(() => {
+    const fireExitNotify = () => {
+      if (exitEmailFiredRef.current) return;
+      if (interviewEndedRef.current) return;
+      if (userMessageCountRef.current < 3) return;
+      exitEmailFiredRef.current = true;
+      const payload = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
+      navigator.sendBeacon('/api/exit-notify', payload);
+    };
+
+    const handleBeforeUnload = () => fireExitNotify();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') fireExitNotify();
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = async (overrideText?: string) => {
     const trimmed = (overrideText ?? inputText).trim();
