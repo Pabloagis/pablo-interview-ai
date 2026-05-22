@@ -17,7 +17,6 @@ export default function IntakeScreen() {
   const [emailTouched, setEmailTouched] = useState(false);
   const [company, setCompany] = useState('');
   const [role, setRole] = useState('');
-  const [captchaChecked, setCaptchaChecked] = useState(false);
   const [consentToEmail, setConsentToEmail] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -27,7 +26,7 @@ export default function IntakeScreen() {
   const isEmailValid = EMAIL_REGEX.test(email.trim());
   const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
   const isSubmitDisabled =
-    isLoading || !isNameValid || !isEmailValid || !captchaChecked || !consentToEmail;
+    isLoading || !isNameValid || !isEmailValid || !consentToEmail;
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -218,26 +217,6 @@ export default function IntakeScreen() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* ── Divider ── */}
-        <hr className="border-t border-[#e8e5e0] my-1" />
-
-        {/* ── Captcha ── */}
-        <div className={`${card} mb-3`}>
-          <div className="flex items-center gap-2.5">
-            <input
-              type="checkbox"
-              id="captcha"
-              checked={captchaChecked}
-              onChange={(e) => setCaptchaChecked(e.target.checked)}
-              className="h-[17px] w-[17px] rounded border-gray-300 accent-blue-500 flex-shrink-0 cursor-pointer"
-            />
-            <label htmlFor="captcha" className="text-[14px] font-semibold text-gray-800 cursor-pointer">
-              {t.captchaLabel}
-            </label>
-          </div>
-          <p className="text-xs text-gray-400 ml-[29px] mt-1">{t.captchaSub}</p>
         </div>
 
         {/* ── GDPR ── */}
