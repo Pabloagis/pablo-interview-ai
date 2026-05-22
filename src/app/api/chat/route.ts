@@ -253,6 +253,22 @@ export async function POST(request: NextRequest) {
               context.recruiterName, context.company, responseEmbedding
             );
           });
+
+          // Log assistant message to message_events (fire-and-forget)
+          supabase
+            .from('message_events')
+            .insert({
+              session_id: sessionId,
+              recruiter_name: session.recruiter_name,
+              email: session.email,
+              company: session.company,
+              role: session.role,
+              message_role: 'assistant',
+              content: fullResponse,
+            })
+            .then(({ error }) => {
+              if (error) console.error('message_events assistant insert failed (non-critical):', error);
+            });
         }
       } catch (error) {
         console.error('Chat stream error:', error);

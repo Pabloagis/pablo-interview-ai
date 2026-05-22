@@ -110,3 +110,20 @@ ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_sent_at TIMESTAMPTZ;
 -- Added: email preview HTML storage (2026-05-21)
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_html TEXT;
 
+-- Added: per-message event log for real-time monitoring (2026-05-22)
+-- Stores every message as it is sent, with denormalized session context.
+CREATE TABLE IF NOT EXISTS message_events (
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id     UUID        NOT NULL REFERENCES sessions(id) ON DELETE CASCADE,
+  recruiter_name TEXT,
+  email          TEXT,
+  company        TEXT,
+  role           TEXT,                          -- recruiter's job role
+  message_role   TEXT        NOT NULL CHECK (message_role IN ('user', 'assistant')),
+  content        TEXT        NOT NULL,
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_message_events_session_id ON message_events(session_id);
+CREATE INDEX IF NOT EXISTS idx_message_events_created_at ON message_events(created_at DESC);
+

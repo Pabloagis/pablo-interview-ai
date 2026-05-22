@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -8,6 +8,13 @@ import LanguageSwitcher from './LanguageSwitcher';
 import Footer from './Footer';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+type ResumeState = {
+  sessionId: string;
+  recruiterName?: string;
+  company?: string;
+  messageCount: number;
+} | null;
 
 export default function IntakeScreen() {
   const router = useRouter();
@@ -20,6 +27,74 @@ export default function IntakeScreen() {
   const [role, setRole] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resumeSession, setResumeSession] = useState<ResumeState>(null);
+
+  // Check for an unfinished session in localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('im_last_session');
+      if (!raw) return;
+      const data = JSON.parse(raw) as {
+        sessionId: string;
+        recruiterName?: string;
+        company?: string;
+        ended?: boolean;
+      };
+      if (data.ended) return;
+      const msgsRaw = localStorage.getItem(`im_chat_${data.sessionId}`);
+      const msgs: unknown[] = msgsRaw ? JSON.parse(msgsRaw) : [];
+      if (Array.isArray(msgs) && msgs.length > 0) {
+        setResumeSession({
+          sessionId: data.sessionId,
+          recruiterName: data.recruiterName,
+          company: data.company,
+          messageCount: msgs.length,
+        });
+      }
+    } catch {
+      localStorage.removeItem('im_last_session');
+    }
+  }, []);
+
+  const handleResume = () => {
+    try {
+      const raw = localStorage.getItem('im_last_session');
+      if (!raw) return;
+      const data = JSON.parse(raw) as {
+        sessionId: string;
+        recruiterName?: string;
+        email?: string;
+        company?: string;
+        role?: string;
+        consentToEmail?: boolean;
+      };
+      sessionStorage.setItem(
+        `session_${data.sessionId}`,
+        JSON.stringify({
+          recruiterName: data.recruiterName,
+          email: data.email,
+          company: data.company,
+          role: data.role,
+          consentToEmail: data.consentToEmail,
+        })
+      );
+      router.push(`/interview/${data.sessionId}`);
+    } catch {
+      setResumeSession(null);
+    }
+  };
+
+  const handleDismissResume = () => {
+    try {
+      const raw = localStorage.getItem('im_last_session');
+      if (raw) {
+        const data = JSON.parse(raw) as { sessionId: string };
+        localStorage.removeItem(`im_chat_${data.sessionId}`);
+      }
+    } catch {}
+    localStorage.removeItem('im_last_session');
+    setResumeSession(null);
+  };
 
   const isNameValid = recruiterName.trim().length > 0;
   const showNameError = nameTouched && !isNameValid;
@@ -58,15 +133,19 @@ export default function IntakeScreen() {
 
       const { sessionId } = await response.json();
 
-      sessionStorage.setItem(
-        `session_${sessionId}`,
-        JSON.stringify({
-          recruiterName: recruiterName.trim(),
-          email: email.trim(),
-          company: company.trim() || undefined,
-          role: role.trim() || undefined,
-          consentToEmail: true,
-        })
+      const sessionContext = {
+        recruiterName: recruiterName.trim(),
+        email: email.trim(),
+        company: company.trim() || undefined,
+        role: role.trim() || undefined,
+        consentToEmail: true,
+      };
+
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(sessionContext));
+
+      localStorage.setItem(
+        'im_last_session',
+        JSON.stringify({ sessionId, ...sessionContext })
       );
 
       router.push(`/interview/${sessionId}`);
@@ -90,6 +169,41 @@ export default function IntakeScreen() {
       <div className="absolute top-3 right-3">
         <LanguageSwitcher />
       </div>
+
+      {resumeSession && (
+        <div className="w-full max-w-[440px] sm:max-w-[640px] lg:max-w-[760px] mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start sm:items-center justify-between gap-3">
+            <p className="text-sm text-blue-800">
+              Resume your session
+              {resumeSession.recruiterName && (
+                <span className="font-medium"> with {resumeSession.recruiterName}</span>
+              )}
+              {resumeSession.company && (
+                <span className="text-blue-600"> ({resumeSession.company})</span>
+              )}
+              <span className="text-blue-500 text-xs ml-1">
+                · {resumeSession.messageCount} message{resumeSession.messageCount !== 1 ? 's' : ''}
+              </span>
+            </p>
+            <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleResume}
+                className="text-xs font-semibold bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Resume
+              </button>
+              <button
+                type="button"
+                onClick={handleDismissResume}
+                className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1.5 transition-colors"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[640px] lg:max-w-[760px]">
 

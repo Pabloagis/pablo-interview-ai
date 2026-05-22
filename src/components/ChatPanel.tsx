@@ -71,6 +71,28 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [sessionId]);
 
+  // Restore messages from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(`im_chat_${sessionId}`);
+      if (!stored) return;
+      const msgs = JSON.parse(stored) as Message[];
+      if (Array.isArray(msgs) && msgs.length > 0) setMessages(msgs);
+    } catch {
+      // ignore corrupt data
+    }
+  }, [sessionId]);
+
+  // Sync messages to localStorage in real time
+  useEffect(() => {
+    if (messages.length === 0) return;
+    try {
+      localStorage.setItem(`im_chat_${sessionId}`, JSON.stringify(messages));
+    } catch {
+      // ignore (e.g. storage quota exceeded)
+    }
+  }, [messages, sessionId]);
+
   // Reset suggestions when language changes
   useEffect(() => {
     setSuggestions(pickRandom(t.topics, 5));
@@ -157,7 +179,18 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const handleInterviewEnded = useCallback((emailSent: boolean) => {
     setInterviewEnded({ emailSent });
-  }, []);
+    try {
+      const raw = localStorage.getItem('im_last_session');
+      if (raw) {
+        const data = JSON.parse(raw) as { sessionId: string };
+        if (data.sessionId === sessionId) {
+          localStorage.setItem('im_last_session', JSON.stringify({ ...data, ended: true }));
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, [sessionId]);
 
   const playResponse = useCallback(async (text: string) => {
     if (currentAudioRef.current) {
@@ -313,6 +346,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       textareaRef.current.style.height = 'auto';
     }
 
+    // Save user message to Supabase immediately (fire-and-forget)
+    fetch('/api/save-message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionId, role: 'user', content: trimmed }),
+    }).catch(() => {});
+
     fetchAbortRef.current?.abort();
     fetchAbortRef.current = new AbortController();
 
@@ -442,6 +482,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setIsStreaming(false);
     setInputText('');
     setSuggestions(pickRandom(t.topics, 5));
+    localStorage.removeItem(`im_chat_${sessionId}`);
     addToast(t.conversationReset, 'info');
   };
 
