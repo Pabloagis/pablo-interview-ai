@@ -1,4 +1,4 @@
-import { NextRequest, after } from 'next/server';
+import { NextRequest } from 'next/server';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServerSupabaseClient } from '@/lib/supabase';
@@ -14,7 +14,7 @@ import {
   EMBEDDING_DIMENSIONS,
 } from '@/lib/constants';
 import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
-import { sendFollowUpEmail } from '@/lib/followup-email';
+const INTERNAL_NOTIFY_URL = 'https://interviewmind.one/api/internal-notify';
 
 export const dynamic = 'force-dynamic';
 
@@ -230,26 +230,11 @@ export async function POST(request: NextRequest) {
           // Silent notification to Pablo after 3rd assistant message
           const assistantCount = updatedMessages.filter((m) => m.role === 'assistant').length;
           if (assistantCount === 3) {
-            const transcript = updatedMessages
-              .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
-              .join('\n\n');
-            const notifParams = {
-              to: 'pabloagisburgos@gmail.com',
-              transcript,
-              messages: updatedMessages,
-              recruiterName: session.recruiter_name || null,
-              jobTitle: session.role || null,
-              companyName: session.company || null,
-              recruiterEmail: session.email || null,
-              bcc: [] as string[],
-            };
-            after(async () => {
-              try {
-                await sendFollowUpEmail(notifParams);
-              } catch (err) {
-                console.error('[chat] Silent notification failed (non-critical):', err);
-              }
-            });
+            fetch(INTERNAL_NOTIFY_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ sessionId }),
+            }).catch((err) => console.error('[chat] Notify fetch failed (non-critical):', err));
           }
 
           // Store both messages in memory with embeddings — fully non-blocking
