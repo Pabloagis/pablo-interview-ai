@@ -669,7 +669,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-14 w-full">
               <Tooltip text={t.meetPablo} className="mb-5">
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200">
+                <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-200">
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
               </Tooltip>
