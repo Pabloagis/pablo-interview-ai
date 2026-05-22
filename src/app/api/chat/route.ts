@@ -222,21 +222,20 @@ export async function POST(request: NextRequest) {
         }
 
         if (!abortController.signal.aborted && fullResponse) {
-          send({ type: 'done' });
-
-          // Persist updated conversation history — non-blocking
+          // Persist updated conversation history before signalling done so
+          // send-followup always reads a complete message list
           // For auto-triggers: skip storing the hidden prompt; only keep the assistant message
           const updatedMessages: AnthropicMessage[] = (autoIntro || autoCheckIn)
             ? [...conversationHistory, { role: 'assistant', content: fullResponse }]
             : [...messagesForClaude, { role: 'assistant', content: fullResponse }];
 
-          supabase
+          const { error: updateError } = await supabase
             .from('sessions')
             .update({ messages: updatedMessages, updated_at: new Date().toISOString() })
-            .eq('id', sessionId)
-            .then(({ error }) => {
-              if (error) console.error('Session update failed (non-critical):', error);
-            });
+            .eq('id', sessionId);
+          if (updateError) console.error('Session update failed (non-critical):', updateError);
+
+          send({ type: 'done' });
 
           // Store both messages in memory with embeddings — fully non-blocking
           // Skip user memory for auto-triggers (no real user message to store)
