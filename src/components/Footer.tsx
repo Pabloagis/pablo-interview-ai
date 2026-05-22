@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import PrivacyModal from './PrivacyModal';
+import { useLanguage } from '@/context/LanguageContext';
 
 interface FooterProps {
   variant?: 'full' | 'compact';
@@ -9,6 +10,7 @@ interface FooterProps {
 
 export default function Footer({ variant = 'full' }: FooterProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const { t } = useLanguage();
 
   const links = (
     <div className="flex items-center justify-center gap-4 text-[12px] font-medium text-blue-500">
@@ -16,7 +18,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         onClick={() => setPrivacyOpen(true)}
         className="hover:text-blue-700 transition-colors"
       >
-        Privacy
+        {t.footerPrivacy}
       </button>
       <span className="text-gray-300">·</span>
       <a
@@ -32,7 +34,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
         href="mailto:pabloagisburgos@gmail.com"
         className="hover:text-blue-700 transition-colors"
       >
-        Contact
+        {t.footerContact}
       </a>
     </div>
   );
@@ -44,11 +46,11 @@ export default function Footer({ variant = 'full' }: FooterProps) {
           <div className="flex items-center justify-center gap-3 text-[10px] text-gray-300">
             <span className="font-medium text-gray-400">InterviewMind</span>
             <span className="text-gray-200">·</span>
-            <button onClick={() => setPrivacyOpen(true)} className="hover:text-gray-500 transition-colors">Privacy</button>
+            <button onClick={() => setPrivacyOpen(true)} className="hover:text-gray-500 transition-colors">{t.footerPrivacy}</button>
             <span className="text-gray-200">·</span>
             <a href="https://www.linkedin.com/in/pablo-agis-burgos" target="_blank" rel="noopener noreferrer" className="hover:text-gray-500 transition-colors">LinkedIn</a>
             <span className="text-gray-200">·</span>
-            <a href="mailto:pabloagisburgos@gmail.com" className="hover:text-gray-500 transition-colors">Contact</a>
+            <a href="mailto:pabloagisburgos@gmail.com" className="hover:text-gray-500 transition-colors">{t.footerContact}</a>
           </div>
         </div>
         {privacyOpen && <PrivacyModal onClose={() => setPrivacyOpen(false)} />}
@@ -73,7 +75,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
           Barcelona, Spain
         </p>
         <p className="text-[11px] text-gray-500 mb-4">
-          All conversations remain private and are never shared externally.
+          {t.footerPrivateNote}
         </p>
 
         {/* Links */}
