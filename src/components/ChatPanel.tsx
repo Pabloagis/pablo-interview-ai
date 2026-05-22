@@ -668,9 +668,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-14 w-full">
-              <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200 mb-5">
-                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
-              </div>
+              <Tooltip text={t.meetPablo} className="mb-5">
+                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200">
+                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+                </div>
+              </Tooltip>
               <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">{t.emptyGreeting}</h1>
               <p className="text-gray-400 text-sm text-center leading-relaxed mb-8 max-w-xs">
                 {t.emptySubtitle}
@@ -766,11 +768,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </button>
             </Tooltip>
 
+            <Tooltip text={t.sendTooltip} className="shrink-0">
             <button
               onClick={() => sendMessage()}
               disabled={!inputText.trim() || isStreaming}
               aria-label="Send message"
-              className="shrink-0 w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors"
+              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
@@ -781,6 +784,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 />
               </svg>
             </button>
+            </Tooltip>
           </div>
 
           <div className="flex items-center justify-between mt-2 px-1">
@@ -800,27 +804,30 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   </svg>
                 </button>
               </Tooltip>
-              <button
-                onClick={handleDownloadTranscript}
-                aria-label="Download transcript"
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {/* Download icon — label on desktop, icon-only on mobile */}
-                <span className="hidden sm:inline text-xs">{t.downloadTranscript}</span>
-                <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-              </button>
-              <button
-                onClick={handleReset}
-                aria-label="Reset conversation"
-                className="text-gray-400 hover:text-red-500 transition-colors"
-              >
-                <span className="hidden sm:inline text-xs">{t.reset}</span>
-                <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-              </button>
+              <Tooltip text={t.downloadTranscript}>
+                <button
+                  onClick={handleDownloadTranscript}
+                  aria-label="Download transcript"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <span className="hidden sm:inline text-xs">{t.downloadTranscript}</span>
+                  <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                </button>
+              </Tooltip>
+              <Tooltip text={t.clearConversation}>
+                <button
+                  onClick={handleReset}
+                  aria-label="Reset conversation"
+                  className="text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  <span className="hidden sm:inline text-xs">{t.reset}</span>
+                  <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
+              </Tooltip>
             </div>
           </div>
       </div>

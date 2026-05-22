@@ -89,6 +89,10 @@ export type Translations = {
   endTooltipInactive: string;
   startVoiceInput: string;
   stopRecording: string;
+  changeLanguage: string;
+  sendTooltip: string;
+  clearConversation: string;
+  meetPablo: string;
   endModalTitle: string;
   endModalWithConsent: string;
   endModalWithoutConsent: string;
@@ -220,6 +224,10 @@ const EN: Translations = {
   endTooltipInactive: 'Keep chatting — available after min. 3 questions',
   startVoiceInput: 'Voice input',
   stopRecording: 'Stop recording',
+  changeLanguage: 'Change language',
+  sendTooltip: 'Send (Enter)',
+  clearConversation: 'Clear conversation',
+  meetPablo: 'Meet Pablo Agis Burgos',
   endModalTitle: 'Get your insights?',
   endModalWithConsent: "We'll send you conversation insights and transcript to your email.",
   endModalWithoutConsent: 'The interview will be closed. Thanks for chatting with Pablo.',
@@ -369,6 +377,10 @@ const ES: Translations = {
   endTooltipInactive: 'Sigue chateando — disponible tras mín. 3 preguntas',
   startVoiceInput: 'Entrada de voz',
   stopRecording: 'Parar grabación',
+  changeLanguage: 'Cambiar idioma',
+  sendTooltip: 'Enviar (Enter)',
+  clearConversation: 'Borrar conversación',
+  meetPablo: 'Conoce a Pablo Agis Burgos',
   endModalTitle: '¿Ver tus insights?',
   endModalWithConsent: 'Te enviaremos los insights de la conversación y la transcripción a tu email.',
   endModalWithoutConsent: 'La entrevista se cerrará. Gracias por chatear con Pablo.',
@@ -518,6 +530,10 @@ const IT: Translations = {
   endTooltipInactive: 'Continua a chattare — disponibile dopo min. 3 domande',
   startVoiceInput: 'Input vocale',
   stopRecording: 'Ferma registrazione',
+  changeLanguage: 'Cambia lingua',
+  sendTooltip: 'Invia (Enter)',
+  clearConversation: 'Cancella conversazione',
+  meetPablo: 'Incontra Pablo Agis Burgos',
   endModalTitle: 'Vuoi i tuoi insights?',
   endModalWithConsent: "Ti invieremo gli insights della conversazione e la trascrizione alla tua email.",
   endModalWithoutConsent: 'Il colloquio verrà chiuso. Grazie per aver chattato con Pablo.',
@@ -667,6 +683,10 @@ const PT: Translations = {
   endTooltipInactive: 'Continue a conversar — disponível após mín. 3 perguntas',
   startVoiceInput: 'Entrada de voz',
   stopRecording: 'Parar gravação',
+  changeLanguage: 'Mudar idioma',
+  sendTooltip: 'Enviar (Enter)',
+  clearConversation: 'Limpar conversa',
+  meetPablo: 'Conhecer Pablo Agis Burgos',
   endModalTitle: 'Ver os seus insights?',
   endModalWithConsent: "Enviaremos os insights da conversa e a transcrição para o seu email.",
   endModalWithoutConsent: 'A entrevista será encerrada. Obrigado por conversar com Pablo.',

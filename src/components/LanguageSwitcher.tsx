@@ -2,11 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useLanguage, Lang, LANG_FLAGS } from '@/context/LanguageContext';
+import Tooltip from './Tooltip';
 
 const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
 
 export default function LanguageSwitcher() {
-  const { lang, setLang } = useLanguage();
+  const { lang, setLang, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -21,6 +22,7 @@ export default function LanguageSwitcher() {
 
   return (
     <div ref={ref} className="relative shrink-0">
+      <Tooltip text={t.changeLanguage} position="bottom" disabled={open}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label="Select language"
@@ -40,6 +42,7 @@ export default function LanguageSwitcher() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
+      </Tooltip>
 
       {open && (
         <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50 min-w-[44px]">
