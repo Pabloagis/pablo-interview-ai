@@ -28,6 +28,7 @@ export default function IntakeScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [resumeSession, setResumeSession] = useState<ResumeState>(null);
+  const [avatarOpen, setAvatarOpen] = useState(false);
 
   // Check for an unfinished session in localStorage on mount
   useEffect(() => {
@@ -209,9 +210,13 @@ export default function IntakeScreen() {
 
         {/* ── Header ── */}
         <div className="flex flex-col items-center gap-3 mb-7 text-center">
-          <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0">
+          <button
+            type="button"
+            onClick={() => setAvatarOpen(true)}
+            className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
+          >
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
-          </div>
+          </button>
           <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
             {t.emptyGreeting}
           </h1>
@@ -354,6 +359,17 @@ export default function IntakeScreen() {
 
       </form>
       <Footer />
+
+      {avatarOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          onClick={() => setAvatarOpen(false)}
+        >
+          <div className="w-40 h-40 rounded-full overflow-hidden border-4 border-white shadow-2xl animate-scale-in">
+            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

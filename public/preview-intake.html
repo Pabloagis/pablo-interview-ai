@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InterviewMind — Preview</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f7f4;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 64px;
+      color: #1a1a1a;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 440px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid #bfdbfe;
+      flex-shrink: 0;
+      cursor: zoom-in;
+      transition: transform 0.15s ease;
+    }
+    .avatar:hover { transform: scale(1.1); }
+    .avatar:active { transform: scale(0.95); }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+
+    .avatar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+    }
+    .avatar-overlay.open { display: flex; }
+    .avatar-overlay-img {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 4px solid #fff;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      animation: scaleIn 0.2s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    .avatar-overlay-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+    @keyframes scaleIn {
+      from { transform: scale(0.5); opacity: 0; }
+      to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .header-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #111;
+      letter-spacing: -0.4px;
+    }
+
+    .header-tagline {
+      font-size: 13px;
+      color: #777;
+      font-weight: 400;
+      line-height: 1.4;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: #fff;
+      border: 1px solid #e8e5e0;
+      border-radius: 16px;
+      padding: 20px 22px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    /* ── Vision card ── */
+    .vision-headline {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111;
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+
+    .vision-body {
+      font-size: 13.5px;
+      color: #555;
+      line-height: 1.65;
+      margin-bottom: 14px;
+    }
+
+    .vision-closing {
+      font-size: 13px;
+      color: #888;
+      font-style: italic;
+      line-height: 1.5;
+      padding-top: 12px;
+      border-top: 1px solid #f0ede8;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #e8e5e0;
+      margin: 4px 0 16px;
+    }
+
+    /* ── Time hint ── */
+    .time-hint {
+      font-size: 12.5px;
+      color: #999;
+      text-align: center;
+      margin-bottom: 14px;
+      letter-spacing: 0.1px;
+    }
+
+    /* ── How this works ── */
+    .section-label {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #aaa;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
+    }
+
+    .steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .step-num {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #eef2fb;
+      color: #2d6cdf;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .step-text {
+      font-size: 13.5px;
+      color: #444;
+      line-height: 1.55;
+    }
+
+    /* ── Form fields ── */
+    .form-section {
+      margin-top: 0;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 5px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .required-star { color: #e74c3c; }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #222;
+      background: #fafafa;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .form-input::placeholder { color: #bbb; }
+    .form-input:focus { border-color: #2d6cdf; background: #fff; box-shadow: 0 0 0 2px rgba(45,108,223,0.08); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    /* ── Captcha card ── */
+    .captcha-card {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .captcha-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .captcha-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #222;
+    }
+
+    .captcha-sub {
+      font-size: 12px;
+      color: #aaa;
+      margin-left: 30px;
+      margin-top: 2px;
+    }
+
+    /* ── GDPR inline ── */
+    .gdpr-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .gdpr-text {
+      font-size: 12.5px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .gdpr-text a {
+      color: #2d6cdf;
+      text-decoration: none;
+    }
+
+    /* ── Checkbox ── */
+    .check-input {
+      width: 17px;
+      height: 17px;
+      flex-shrink: 0;
+      margin-top: 2px;
+      accent-color: #2d6cdf;
+      cursor: pointer;
+    }
+
+    /* ── Button ── */
+    .btn-start {
+      width: 100%;
+      padding: 13px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+      letter-spacing: -0.1px;
+      margin-top: 4px;
+      font-family: inherit;
+    }
+
+    .btn-start:enabled {
+      background: linear-gradient(135deg, #1a8c4e 0%, #146b3c 100%);
+      color: #fff;
+    }
+
+    .btn-start:enabled:hover {
+      opacity: 0.9;
+    }
+
+    .btn-start:disabled {
+      background: #dde5f5;
+      color: #8aa5d8;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ── Header ── -->
+  <div class="header">
+    <div class="avatar" id="avatarBtn">
+      <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" />
+    </div>
+    <div class="header-name">Hi, I'm Pablo Agis.</div>
+    <div class="header-tagline">SaaS &amp; Hospitality Tech | Helping hospitality grow through smart solutions</div>
+  </div>
+
+  <!-- ── Vision card ── -->
+  <div class="card">
+    <p class="vision-headline">
+      Welcome to the next generation of the CV: a living, intelligent and dynamic professional identity.
+    </p>
+    <p class="vision-body">
+      This is not a static document — it's an AI trained on my real experience, stories, and thinking.
+      Ask me anything you'd ask in a real interview: about my background, my approach to problems,
+      how I've handled difficult situations, or where I want to go next.
+    </p>
+    <p class="vision-closing">
+      Because your professional future can no longer be summed up in a PDF. It's built in real time.
+    </p>
+  </div>
+
+  <!-- ── Divider + time hint ── -->
+  <div class="divider"></div>
+  <div class="time-hint">⏱ Usually takes 3–5 minutes</div>
+
+  <!-- ── How this works ── -->
+  <div class="card">
+    <p class="section-label">How this works</p>
+    <div class="steps">
+      <div class="step">
+        <span class="step-num">1</span>
+        <p class="step-text">Introduce yourself below — only your name and email are required.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <p class="step-text">Ask Pablo anything you would ask in a real interview.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <p class="step-text">Every answer is grounded in real stories with concrete outcomes.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">4</span>
+        <p class="step-text">When you're done, click <strong style="color:#1a8c4e">End interview</strong> — don't just close the tab.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Intake form ── -->
+  <div class="card form-section">
+    <div class="form-group">
+      <label class="form-label">Your name <span class="required-star">*</span></label>
+      <input class="form-input" id="fieldName" type="text" placeholder="Alex Chen" oninput="updateBtn()" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Your email <span class="required-star">*</span></label>
+      <input class="form-input" id="fieldEmail" type="email" placeholder="alex@company.com" oninput="updateBtn()" />
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Company</label>
+        <input class="form-input" type="text" placeholder="" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Role you're filling</label>
+        <input class="form-input" type="text" placeholder="" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Divider ── -->
+  <div class="divider"></div>
+
+  <!-- ── Captcha card ── -->
+  <div class="card captcha-card">
+    <div class="captcha-row">
+      <input class="check-input" type="checkbox" id="captcha" onchange="updateBtn()" />
+      <label class="captcha-label" for="captcha">I'm a real person, not a bot</label>
+    </div>
+    <p class="captcha-sub">A tiny hospitality-tech sanity check.</p>
+  </div>
+
+  <!-- ── GDPR inline ── -->
+  <div class="card">
+    <div class="gdpr-row">
+      <input class="check-input" type="checkbox" id="gdpr" onchange="updateBtn()" />
+      <label class="gdpr-text" for="gdpr">
+        I understand the conversation's transcription may be stored to improve Pablo's interview preparation.
+        Information shared during the conversation may be used to tailor real-time responses and insights.
+        All data remains private and is never shared with third parties.
+        <a href="#">Privacy policy.</a>
+      </label>
+    </div>
+  </div>
+
+  <!-- ── Start button ── -->
+  <button class="btn-start" id="startBtn" disabled>Start the AI interview →</button>
+
+</div>
+
+<script>
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  function updateBtn() {
+    const name    = document.getElementById('fieldName').value.trim();
+    const email   = document.getElementById('fieldEmail').value.trim();
+    const captcha = document.getElementById('captcha').checked;
+    const gdpr    = document.getElementById('gdpr').checked;
+    document.getElementById('startBtn').disabled =
+      !(name.length > 0 && EMAIL_RE.test(email) && captcha && gdpr);
+  }
+
+  // Avatar expand
+  const overlay = document.createElement('div');
+  overlay.className = 'avatar-overlay';
+  overlay.innerHTML = '<div class="avatar-overlay-img"><img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" /></div>';
+  document.body.appendChild(overlay);
+  document.getElementById('avatarBtn').addEventListener('click', () => overlay.classList.add('open'));
+  overlay.addEventListener('click', () => overlay.classList.remove('open'));
+</script>
+
+</body>
+</html>
