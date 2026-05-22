@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import Footer from './Footer';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -244,6 +245,7 @@ export default function IntakeScreen() {
         </button>
 
       </form>
+      <Footer />
     </div>
   );
 }

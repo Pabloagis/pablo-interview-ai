@@ -10,6 +10,7 @@ import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
 import { useLanguage } from '@/context/LanguageContext';
+import Footer from './Footer';
 
 import type { Topic } from '@/context/LanguageContext';
 
@@ -524,6 +525,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           </div>
       </div>
 
+      <Footer variant="compact" />
       <Toast toasts={toasts} onDismiss={dismissToast} />
     </div>
   );
