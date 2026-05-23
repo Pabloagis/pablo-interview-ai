@@ -317,23 +317,23 @@ export default function IntakeScreen() {
           <div className="w-full max-w-[440px] sm:max-w-[600px] mb-4 mt-2" style={emerge(0)}>
             <div className="glass rounded-xl px-4 py-3 flex items-start sm:items-center justify-between gap-3 border-[rgba(60,90,200,0.3)]">
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Resume your session
-                {resumeSession.recruiterName && <span className="font-medium"> with {resumeSession.recruiterName}</span>}
+                {t.resumeBannerPrefix}
+                {resumeSession.recruiterName && <span className="font-medium"> {t.resumeBannerWith} {resumeSession.recruiterName}</span>}
                 {resumeSession.company && <span style={{ color:'var(--text-tertiary)' }}> ({resumeSession.company})</span>}
                 <span className="text-xs ml-1" style={{ color:'var(--text-muted)' }}>
-                  · {resumeSession.messageCount} message{resumeSession.messageCount !== 1 ? 's' : ''}
+                  · {resumeSession.messageCount} {resumeSession.messageCount !== 1 ? t.resumeBannerMsgs : t.resumeBannerMsg}
                 </span>
               </p>
               <div className="flex gap-2 shrink-0">
                 <button type="button" onClick={handleResume}
                   className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                  style={{ background:'rgba(60,90,200,0.35)', color:'rgba(180,200,255,1)', border:'0.5px solid rgba(60,90,200,0.5)' }}>
-                  Resume
+                  style={{ background:'var(--chip-hover-bg)', color:'var(--chip-hover-text)', border:'0.5px solid var(--chip-hover-border)' }}>
+                  {t.resumeBtn}
                 </button>
                 <button type="button" onClick={handleDismissResume}
                   className="text-xs px-2 py-1.5 transition-colors"
                   style={{ color:'var(--text-muted)' }}>
-                  Dismiss
+                  {t.dismissBtn}
                 </button>
               </div>
             </div>

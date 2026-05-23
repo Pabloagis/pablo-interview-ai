@@ -141,6 +141,13 @@ export type Translations = {
   exitIntentBody: string;
   exitIntentCta: string;
   exitIntentLeave: string;
+  // Resume banner
+  resumeBannerPrefix: string;
+  resumeBannerWith: string;
+  resumeBannerMsg: string;
+  resumeBannerMsgs: string;
+  resumeBtn: string;
+  dismissBtn: string;
 };
 
 const EN: Translations = {
@@ -298,6 +305,12 @@ const EN: Translations = {
   exitIntentBody: 'You\'re mid-conversation. Get your insights first — Pablo will send his CV and a summary to your inbox.',
   exitIntentCta: 'Get insights & leave',
   exitIntentLeave: 'Leave without insights',
+  resumeBannerPrefix: 'Resume your session',
+  resumeBannerWith: 'with',
+  resumeBannerMsg: 'message',
+  resumeBannerMsgs: 'messages',
+  resumeBtn: 'Resume',
+  dismissBtn: 'Dismiss',
 };
 
 const ES: Translations = {
@@ -455,6 +468,12 @@ const ES: Translations = {
   exitIntentBody: 'Estás a mitad de conversación. Obtén tus insights primero — Pablo te enviará su CV y un resumen.',
   exitIntentCta: 'Obtener insights y salir',
   exitIntentLeave: 'Salir sin insights',
+  resumeBannerPrefix: 'Retomar tu sesión',
+  resumeBannerWith: 'con',
+  resumeBannerMsg: 'mensaje',
+  resumeBannerMsgs: 'mensajes',
+  resumeBtn: 'Retomar',
+  dismissBtn: 'Descartar',
 };
 
 const IT: Translations = {
@@ -612,6 +631,12 @@ const IT: Translations = {
   exitIntentBody: 'Sei a metà conversazione. Ottieni prima i tuoi insights — Pablo ti invierà il CV e un riepilogo.',
   exitIntentCta: 'Ottieni insights ed esci',
   exitIntentLeave: 'Esci senza insights',
+  resumeBannerPrefix: 'Riprendi la sessione',
+  resumeBannerWith: 'con',
+  resumeBannerMsg: 'messaggio',
+  resumeBannerMsgs: 'messaggi',
+  resumeBtn: 'Riprendi',
+  dismissBtn: 'Ignora',
 };
 
 const PT: Translations = {
@@ -769,6 +794,12 @@ const PT: Translations = {
   exitIntentBody: 'Está a meio da conversa. Obtenha primeiro os seus insights — Pablo enviará o CV e um resumo.',
   exitIntentCta: 'Obter insights e sair',
   exitIntentLeave: 'Sair sem insights',
+  resumeBannerPrefix: 'Retomar a sessão',
+  resumeBannerWith: 'com',
+  resumeBannerMsg: 'mensagem',
+  resumeBannerMsgs: 'mensagens',
+  resumeBtn: 'Retomar',
+  dismissBtn: 'Dispensar',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };
