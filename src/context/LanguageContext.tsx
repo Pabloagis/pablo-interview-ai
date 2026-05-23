@@ -148,6 +148,19 @@ export type Translations = {
   resumeBannerMsgs: string;
   resumeBtn: string;
   dismissBtn: string;
+  // HowItWorksModal
+  howItWorksChip: string;
+  hiwStep: string;
+  hiwStep1Title: string;
+  hiwStep2Title: string;
+  hiwStep3Title: string;
+  hiwStep4Title: string;
+  hiwStep1Desc: string;
+  hiwStep2Desc: string;
+  hiwStep3Desc: string;
+  hiwStep4Desc: string;
+  hiwClose: string;
+  hiwNext: string;
 };
 
 const EN: Translations = {
@@ -311,6 +324,18 @@ const EN: Translations = {
   resumeBannerMsgs: 'messages',
   resumeBtn: 'Resume',
   dismissBtn: 'Dismiss',
+  howItWorksChip: 'See how it works',
+  hiwStep: 'Step',
+  hiwStep1Title: 'Introduce yourself',
+  hiwStep2Title: 'Start the interview',
+  hiwStep3Title: 'Ask anything',
+  hiwStep4Title: 'Get your insights',
+  hiwStep1Desc: 'Fill in your name and email — everything else is optional. Takes under 30 seconds.',
+  hiwStep2Desc: "Ask Pablo anything you'd ask in a real interview. No preparation needed — just start.",
+  hiwStep3Desc: "Every answer draws on real stories from Pablo's career — with concrete context and outcomes.",
+  hiwStep4Desc: "Click Insights when done. Pablo will send his CV and a conversation summary straight to your inbox.",
+  hiwClose: 'Got it',
+  hiwNext: 'Next',
 };
 
 const ES: Translations = {
@@ -474,6 +499,18 @@ const ES: Translations = {
   resumeBannerMsgs: 'mensajes',
   resumeBtn: 'Retomar',
   dismissBtn: 'Descartar',
+  howItWorksChip: 'Ver cómo funciona',
+  hiwStep: 'Paso',
+  hiwStep1Title: 'Preséntate',
+  hiwStep2Title: 'Empieza la entrevista',
+  hiwStep3Title: 'Pregunta lo que quieras',
+  hiwStep4Title: 'Obtén tus insights',
+  hiwStep1Desc: 'Introduce tu nombre y email — el resto es opcional. Menos de 30 segundos.',
+  hiwStep2Desc: 'Pregúntale a Pablo cualquier cosa que le preguntarías en una entrevista real. Sin preparación.',
+  hiwStep3Desc: 'Cada respuesta se basa en historias reales de la carrera de Pablo — con contexto y resultados concretos.',
+  hiwStep4Desc: 'Haz clic en Insights cuando termines. Pablo enviará su CV y un resumen de la conversación a tu email.',
+  hiwClose: 'Entendido',
+  hiwNext: 'Siguiente',
 };
 
 const IT: Translations = {
@@ -637,6 +674,18 @@ const IT: Translations = {
   resumeBannerMsgs: 'messaggi',
   resumeBtn: 'Riprendi',
   dismissBtn: 'Ignora',
+  howItWorksChip: 'Scopri come funziona',
+  hiwStep: 'Passo',
+  hiwStep1Title: 'Presentati',
+  hiwStep2Title: 'Inizia il colloquio',
+  hiwStep3Title: 'Chiedi qualsiasi cosa',
+  hiwStep4Title: 'Ottieni i tuoi insights',
+  hiwStep1Desc: 'Inserisci nome e email — il resto è facoltativo. Meno di 30 secondi.',
+  hiwStep2Desc: "Chiedi a Pablo qualsiasi cosa gli chiederesti in un colloquio reale. Senza preparazione.",
+  hiwStep3Desc: "Ogni risposta attinge a storie reali della carriera di Pablo — con contesto e risultati concreti.",
+  hiwStep4Desc: "Clicca su Insights quando hai finito. Pablo ti invierà il CV e un riepilogo della conversazione via email.",
+  hiwClose: 'Capito',
+  hiwNext: 'Avanti',
 };
 
 const PT: Translations = {
@@ -800,6 +849,18 @@ const PT: Translations = {
   resumeBannerMsgs: 'mensagens',
   resumeBtn: 'Retomar',
   dismissBtn: 'Dispensar',
+  howItWorksChip: 'Ver como funciona',
+  hiwStep: 'Passo',
+  hiwStep1Title: 'Apresente-se',
+  hiwStep2Title: 'Inicie a entrevista',
+  hiwStep3Title: 'Pergunte o que quiser',
+  hiwStep4Title: 'Obtenha os seus insights',
+  hiwStep1Desc: 'Introduza o seu nome e email — o resto é opcional. Menos de 30 segundos.',
+  hiwStep2Desc: 'Pergunte ao Pablo qualquer coisa que perguntaria numa entrevista real. Sem preparação.',
+  hiwStep3Desc: 'Cada resposta baseia-se em histórias reais da carreira do Pablo — com contexto e resultados concretos.',
+  hiwStep4Desc: 'Clique em Insights quando terminar. O Pablo enviará o CV e um resumo da conversa para o seu email.',
+  hiwClose: 'Entendido',
+  hiwNext: 'Próximo',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

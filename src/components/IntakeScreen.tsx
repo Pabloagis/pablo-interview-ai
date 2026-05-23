@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import HowItWorksModal from './HowItWorksModal';
 import Footer from './Footer';
 import Background from './Background';
 
@@ -30,6 +31,7 @@ export default function IntakeScreen() {
   const [error,         setError]           = useState('');
   const [resumeSession, setResumeSession]   = useState<ResumeState>(null);
   const [avatarOpen,    setAvatarOpen]      = useState(false);
+  const [hiwOpen,       setHiwOpen]         = useState(false);
   const [splashDone,    setSplashDone]      = useState(false);
   const [pageReady,     setPageReady]       = useState(false);
 
@@ -369,6 +371,33 @@ export default function IntakeScreen() {
             </p>
           </div>
 
+          {/* ── How it works chip ── */}
+          <div className="flex justify-center mb-5" style={emerge(150)}>
+            <button
+              type="button"
+              onClick={() => setHiwOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 15px', borderRadius: 999,
+                background: 'rgba(64,96,208,0.10)',
+                border: '0.5px solid rgba(64,96,208,0.28)',
+                color: 'var(--accent-primary)',
+                fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
+                transition: 'background 200ms, border-color 200ms',
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(64,96,208,0.18)'; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(64,96,208,0.10)'; }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              {t.howItWorksChip}
+              <span style={{ opacity: 0.6, fontSize: 11 }}>→</span>
+            </button>
+          </div>
+
           {/* ── Vision card ── */}
           <div className="glass p-5 mb-3 text-center" style={emerge(200)}>
             <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, marginBottom:10 }}>
@@ -504,6 +533,9 @@ export default function IntakeScreen() {
 
         <Footer />
       </div>
+
+      {/* ── How it works modal ── */}
+      {hiwOpen && <HowItWorksModal onClose={() => setHiwOpen(false)} />}
 
       {/* ── Avatar zoom overlay ── */}
       {avatarOpen && (
