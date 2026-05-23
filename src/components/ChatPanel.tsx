@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
 import { Message, RecruiterContext, ToastMessage } from '@/lib/types';
 import { generateId, parseSSELine } from '@/lib/utils';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
@@ -39,6 +39,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [listenMode, setListenMode] = useState(false);
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
+  const [chatSplashPhase, setChatSplashPhase] = useState<'hero' | 'fading' | 'done'>('hero');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -63,6 +64,21 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
+
+  // SPLASH 2 — skip before first paint on revisit, run once per session otherwise
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem(`im_s2_${sessionId}`)) setChatSplashPhase('done');
+  }, [sessionId]);
+  useEffect(() => {
+    if (sessionStorage.getItem(`im_s2_${sessionId}`)) return;
+    // wordmark ends at 480+380=860ms, hold 1400ms → exit at 2260ms
+    const t1 = setTimeout(() => setChatSplashPhase('fading'), 2260);
+    const t2 = setTimeout(() => {
+      setChatSplashPhase('done');
+      sessionStorage.setItem(`im_s2_${sessionId}`, '1');
+    }, 2800);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, [sessionId]);
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -608,7 +624,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   }
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gray-50 overflow-hidden">
+    <div
+      className={`fixed inset-0 flex flex-col bg-gray-50 overflow-hidden ${chatSplashPhase === 'hero' ? 'opacity-0 translate-y-9' : 'opacity-100 translate-y-0'}`}
+      style={chatSplashPhase === 'fading' ? {
+        transitionProperty: 'opacity, transform',
+        transitionDuration: '480ms',
+        transitionDelay: '220ms',
+        transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
+      } : undefined}
+    >
       <Header
         recruiterName={context.recruiterName}
         company={context.company}
@@ -836,6 +860,55 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
       <Footer variant="compact" />
       <Toast toasts={toasts} onDismiss={dismissToast} />
+
+      {/* SPLASH 2 */}
+      {chatSplashPhase !== 'done' && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
+          style={{ background: '#f0eeea' }}
+        >
+          <div className={chatSplashPhase === 'fading' ? 'animate-hero-exit' : undefined}>
+            <div className="flex flex-col items-center text-center">
+
+              {/* Avatar + halo */}
+              <div className="relative mb-5 animate-s2-avatar" style={{ width: 64, height: 64 }}>
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    width: 108, height: 108,
+                    top: -22, left: -22,
+                    background: 'radial-gradient(circle, rgba(120,130,150,0.22) 0%, transparent 68%)',
+                    animation: 'hero-halo-in 0.3s ease-out 0.08s both, hero-halo-breathe 2.4s ease-in-out 0.32s infinite',
+                  }}
+                />
+                <div
+                  className="relative w-full h-full rounded-full overflow-hidden"
+                  style={{ border: '1.5px solid rgba(180,185,195,0.55)', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
+                >
+                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+                </div>
+              </div>
+
+              {/* Name */}
+              <p
+                className="animate-s2-name"
+                style={{ fontSize: 18, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 0 }}
+              >
+                Pablo Agis Burgos
+              </p>
+
+              {/* Wordmark */}
+              <p
+                className="animate-s2-brand"
+                style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32 }}
+              >
+                InterviewMind
+              </p>
+
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -39,11 +39,12 @@ export default function IntakeScreen() {
   // Run animation sequence only on genuine first visit
   useEffect(() => {
     if (sessionStorage.getItem('im_splash_shown')) return;
-    const t1 = setTimeout(() => setSplashPhase('fading'), 3500);
+    // wordmark ends at 780+480=1260ms, hold 2000ms → exit at 3260ms
+    const t1 = setTimeout(() => setSplashPhase('fading'), 3260);
     const t2 = setTimeout(() => {
       setSplashPhase('done');
       sessionStorage.setItem('im_splash_shown', '1');
-    }, 4150);
+    }, 3800);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -187,8 +188,8 @@ export default function IntakeScreen() {
       className={`relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden ${splashPhase === 'hero' ? 'opacity-0 translate-y-9' : 'opacity-100 translate-y-0'}`}
       style={splashPhase === 'fading' ? {
         transitionProperty: 'opacity, transform',
-        transitionDuration: '560ms',
-        transitionDelay: '150ms',
+        transitionDuration: '480ms',
+        transitionDelay: '220ms',
         transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
       } : undefined}
     >
@@ -396,35 +397,61 @@ export default function IntakeScreen() {
         </div>
       )}
 
-      {/* Hero splash — full-screen on first visit */}
+      {/* SPLASH 1 */}
       {splashPhase !== 'done' && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#f8f7f4] pointer-events-none">
+        <div
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none"
+          style={{ background: '#f0eeea' }}
+        >
           <div className={splashPhase === 'fading' ? 'animate-hero-exit' : undefined}>
-            <div className="flex flex-col items-center text-center px-8">
+            <div className="flex flex-col items-center text-center">
 
-              {/* Avatar with breathing glow halo */}
-              <div className="relative mb-7 animate-hero-avatar">
-                <div className="absolute inset-0 rounded-full bg-blue-200 blur-[28px] animate-hero-halo" />
-                <div className="relative w-32 h-32 rounded-full overflow-hidden border-[3px] border-white shadow-2xl">
+              {/* Avatar + halo */}
+              <div className="relative mb-6 animate-s1-avatar" style={{ width: 88, height: 88 }}>
+                <div
+                  className="absolute rounded-full"
+                  style={{
+                    width: 148, height: 148,
+                    top: -30, left: -30,
+                    background: 'radial-gradient(circle, rgba(120,130,150,0.22) 0%, transparent 68%)',
+                    animation: 'hero-halo-in 0.3s ease-out 0.08s both, hero-halo-breathe 2.8s ease-in-out 0.38s infinite',
+                  }}
+                />
+                <div
+                  className="relative w-full h-full rounded-full overflow-hidden"
+                  style={{ border: '1.5px solid rgba(180,185,195,0.55)', boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
+                >
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
               </div>
 
               {/* Name */}
-              <h1 className="text-[32px] font-bold text-gray-900 tracking-tight mb-3 animate-hero-name">
-                {t.emptyGreeting}
-              </h1>
-
-              {/* Divider */}
-              <div className="w-8 h-px bg-gray-200 mb-3 animate-hero-divider" />
-
-              {/* Tagline */}
-              <p className="text-[13.5px] text-gray-500 leading-snug max-w-[270px] animate-hero-tagline">
-                {t.intakeSubtitle}
+              <p
+                className="animate-s1-name"
+                style={{ fontSize: 22, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 14 }}
+              >
+                Pablo Agis Burgos
               </p>
 
-              {/* Brand */}
-              <p className="text-[10.5px] font-bold text-gray-300 uppercase tracking-[2px] mt-10 animate-hero-brand">
+              {/* Divider */}
+              <div
+                className="animate-s1-sep"
+                style={{ width: 110, height: 0.5, background: 'rgba(100,105,115,0.25)', marginBottom: 12 }}
+              />
+
+              {/* Tagline */}
+              <p
+                className="animate-s1-tagline"
+                style={{ fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em' }}
+              >
+                SaaS · Hospitality Tech · Sales
+              </p>
+
+              {/* Wordmark */}
+              <p
+                className="animate-s1-brand"
+                style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40 }}
+              >
                 InterviewMind
               </p>
 

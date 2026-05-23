@@ -29,86 +29,69 @@
   animation: scale-in 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ── Hero splash — cinematographic ── */
+/* ─── Hero splashes ─── */
 
-/* Avatar: spring physics, overshoot + settle */
 @keyframes hero-avatar-in {
-  0%   { transform: scale(0.52) translateY(-20px); opacity: 0; }
-  65%  { transform: scale(1.04) translateY(2px);   opacity: 1; }
-  100% { transform: scale(1)    translateY(0);      opacity: 1; }
-}
-.animate-hero-avatar {
-  animation: hero-avatar-in 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  0%   { transform: scale(0.52); opacity: 0; }
+  65%  { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
-/* Halo: fade in at 80ms, then breathe infinitely from 1.5s */
 @keyframes hero-halo-in {
-  from { transform: scale(1.35); opacity: 0;   }
-  to   { transform: scale(1.35); opacity: 0.7; }
-}
-@keyframes hero-halo-breathe {
-  0%, 100% { transform: scale(1.35); opacity: 0.6;  }
-  50%       { transform: scale(1.55); opacity: 0.32; }
-}
-.animate-hero-halo {
-  animation:
-    hero-halo-in      0.3s  ease-out                        0.08s both,
-    hero-halo-breathe 2.2s  cubic-bezier(0.45, 0, 0.55, 1) 1.5s  infinite;
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
-/* Name: translateY 18px → 0, easeOutCubic */
+@keyframes hero-halo-breathe {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%       { transform: scale(1.18); opacity: 0.4;  }
+}
+
 @keyframes hero-name-in {
   from { transform: translateY(18px); opacity: 0; }
   to   { transform: translateY(0);    opacity: 1; }
 }
-.animate-hero-name {
-  animation: hero-name-in 0.38s cubic-bezier(0.33, 1, 0.68, 1) 0.32s both;
+
+@keyframes hero-name-s2-in {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* Separator: scaleX from center, easeOutQuart */
 @keyframes hero-sep-in {
   from { transform: scaleX(0); opacity: 0; }
   to   { transform: scaleX(1); opacity: 1; }
 }
-.animate-hero-divider {
-  transform-origin: center;
-  animation: hero-sep-in 0.28s cubic-bezier(0.25, 1, 0.5, 1) 0.47s both;
-}
 
-/* Tagline: translateY 14px → 0, easeOutCubic */
 @keyframes hero-tagline-in {
-  from { transform: translateY(14px); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-.animate-hero-tagline {
-  animation: hero-tagline-in 0.42s cubic-bezier(0.33, 1, 0.68, 1) 0.61s both;
+  from { transform: translateY(14px); opacity: 0;   }
+  to   { transform: translateY(0);    opacity: 0.8; }
 }
 
-/* Wordmark: opacity only, lands at 0.55 — subtle, not full */
 @keyframes hero-brand-in {
   from { opacity: 0;    }
-  to   { opacity: 0.55; }
-}
-.animate-hero-brand {
-  animation: hero-brand-in 0.5s cubic-bezier(0.33, 1, 0.68, 1) 0.78s both;
+  to   { opacity: 0.72; }
 }
 
-/* Exit: up + scale down + blur, easeInOutQuart */
 @keyframes hero-exit {
-  from {
-    transform: translateY(0) scale(1);
-    filter: blur(0px);
-    opacity: 1;
-  }
-  to {
-    transform: translateY(-52px) scale(0.985);
-    filter: blur(6px);
-    opacity: 0;
-  }
+  from { transform: translateY(0) scale(1);         filter: blur(0px); opacity: 1; }
+  to   { transform: translateY(-48px) scale(0.985); filter: blur(5px); opacity: 0; }
 }
-.animate-hero-exit {
-  animation: hero-exit 0.52s cubic-bezier(0.76, 0, 0.24, 1) both;
-}
+
+/* Splash 1 */
+.animate-s1-avatar  { animation: hero-avatar-in  0.68s cubic-bezier(0.34, 1.56, 0.64, 1) 0s     both; }
+.animate-s1-name    { animation: hero-name-in    0.38s cubic-bezier(0.33, 1, 0.68, 1)    0.32s  both; }
+.animate-s1-sep     { transform-origin: center;
+                      animation: hero-sep-in     0.28s cubic-bezier(0.33, 1, 0.68, 1)    0.47s  both; }
+.animate-s1-tagline { animation: hero-tagline-in 0.42s cubic-bezier(0.33, 1, 0.68, 1)    0.61s  both; }
+.animate-s1-brand   { animation: hero-brand-in   0.48s cubic-bezier(0.33, 1, 0.68, 1)    0.78s  both; }
+
+/* Splash 2 */
+.animate-s2-avatar  { animation: hero-avatar-in  0.56s cubic-bezier(0.34, 1.56, 0.64, 1) 0s     both; }
+.animate-s2-name    { animation: hero-name-s2-in 0.34s cubic-bezier(0.33, 1, 0.68, 1)    0.26s  both; }
+.animate-s2-brand   { animation: hero-brand-in   0.38s cubic-bezier(0.33, 1, 0.68, 1)    0.48s  both; }
+
+/* Exit — shared */
+.animate-hero-exit  { animation: hero-exit 0.48s cubic-bezier(0.76, 0, 0.24, 1) both; }
 
 *,
 *::before,
