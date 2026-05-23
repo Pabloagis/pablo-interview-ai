@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useLayoutEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -31,12 +31,14 @@ export default function IntakeScreen() {
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [splashPhase, setSplashPhase] = useState<'hero' | 'fading' | 'done'>('hero');
 
-  // Hero splash — only on first visit per browser session
+  // Skip splash instantly (before first paint) for returning visitors — prevents white flash
+  useLayoutEffect(() => {
+    if (sessionStorage.getItem('im_splash_shown')) setSplashPhase('done');
+  }, []);
+
+  // Run animation sequence only on genuine first visit
   useEffect(() => {
-    if (sessionStorage.getItem('im_splash_shown')) {
-      setSplashPhase('done');
-      return;
-    }
+    if (sessionStorage.getItem('im_splash_shown')) return;
     const t1 = setTimeout(() => setSplashPhase('fading'), 3500);
     const t2 = setTimeout(() => {
       setSplashPhase('done');
