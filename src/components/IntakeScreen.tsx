@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useLayoutEffect } from 'react';
+import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -29,24 +29,109 @@ export default function IntakeScreen() {
   const [error, setError] = useState('');
   const [resumeSession, setResumeSession] = useState<ResumeState>(null);
   const [avatarOpen, setAvatarOpen] = useState(false);
-  const [splashPhase, setSplashPhase] = useState<'hero' | 'fading' | 'done'>('hero');
+  const [splashDone, setSplashDone] = useState(false);
+  const [pageEnter, setPageEnter] = useState(false);
+  const splashOverlayRef = useRef<HTMLDivElement>(null);
+  const splashAvRef     = useRef<HTMLDivElement>(null);
+  const splashHaloRef   = useRef<HTMLDivElement>(null);
+  const splashNameRef   = useRef<HTMLParagraphElement>(null);
+  const splashDivRef    = useRef<HTMLDivElement>(null);
+  const splashTagRef    = useRef<HTMLParagraphElement>(null);
+  const splashWmRef     = useRef<HTMLParagraphElement>(null);
 
-  // Skip splash instantly (before first paint) for returning visitors — prevents white flash
+  // Skip before first paint for returning visitors
   useLayoutEffect(() => {
-    if (sessionStorage.getItem('im_splash_shown')) setSplashPhase('done');
+    if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageEnter(true); }
   }, []);
 
-  // Run animation sequence only on genuine first visit
+  // JS rAF animation — mirrors the reference HTML exactly
   useEffect(() => {
     if (sessionStorage.getItem('im_splash_shown')) return;
-    // wordmark ends at 780+480=1260ms, hold 2000ms → exit at 3260ms
-    const t1 = setTimeout(() => setSplashPhase('fading'), 3260);
-    const t2 = setTimeout(() => {
-      setSplashPhase('done');
-      sessionStorage.setItem('im_splash_shown', '1');
-    }, 3800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, []);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const rafs: number[] = [];
+    const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
+    const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+    const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
+    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
+
+    function spring(el: HTMLElement, from: number, peak: number, fin: number, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now(), h = dur * 0.55;
+        function f(now: number) {
+          const e = now-s, sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
+          el.style.transform = `scale(${sc.toFixed(4)})`; el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
+          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; }
+        }
+        tick(f);
+      }, delay);
+    }
+    function fadeSlide(el: HTMLElement, yFrom: number, dur: number, delay: number, maxOp: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
+          el.style.opacity = (raw*maxOp).toFixed(4); el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
+          if (raw < 1) tick(f);
+        }
+        tick(f);
+      }, delay);
+    }
+    function scaleXAnim(el: HTMLElement, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
+          el.style.opacity = (raw*0.65).toFixed(4); el.style.transform = `scaleX(${p.toFixed(4)})`;
+          if (raw < 1) tick(f);
+        }
+        tick(f);
+      }, delay);
+    }
+    function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1);
+          el.style.opacity = (raw*maxOp).toFixed(4);
+          if (raw < 1) tick(f);
+        }
+        tick(f);
+      }, delay);
+    }
+
+    const ov=splashOverlayRef.current, av=splashAvRef.current, hl=splashHaloRef.current;
+    const nm=splashNameRef.current, dv=splashDivRef.current, tg=splashTagRef.current, wm=splashWmRef.current;
+    if (!ov||!av||!hl||!nm||!dv||!tg||!wm) return;
+
+    spring(av, 0.52, 1.04, 1.0, 680, 0);
+    after(() => { hl.style.animation = '_s1Hb 2.8s ease-in-out infinite'; }, 380);
+    fadeSlide(nm, 18, 380, 320, 1);
+    scaleXAnim(dv, 280, 470);
+    fadeSlide(tg, 14, 420, 610, 0.8);
+    fadeIn(wm, 480, 780, 0.72);
+
+    after(() => {
+      if (!ov) return;
+      const _ov = ov;
+      hl.style.animation = 'none';
+      const s = performance.now();
+      function exit(now: number) {
+        const raw = Math.min((now-s)/480, 1), p = eio4(raw);
+        _ov.style.opacity = (1-p).toFixed(4);
+        _ov.style.transform = `translateY(${(-48*p).toFixed(1)}px) scale(${(1-0.015*p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(5*p).toFixed(1)}px)`;
+        if (raw < 1) tick(exit);
+        else {
+          setSplashDone(true);
+          sessionStorage.setItem('im_splash_shown', '1');
+          requestAnimationFrame(() => requestAnimationFrame(() => setPageEnter(true)));
+        }
+      }
+      tick(exit);
+    }, 3260);
+
+    return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check for an unfinished session in localStorage on mount
   useEffect(() => {
@@ -185,13 +270,12 @@ export default function IntakeScreen() {
 
   return (
     <div
-      className={`relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden ${splashPhase === 'hero' ? 'opacity-0 translate-y-9' : 'opacity-100 translate-y-0'}`}
-      style={splashPhase === 'fading' ? {
-        transitionProperty: 'opacity, transform',
-        transitionDuration: '480ms',
-        transitionDelay: '220ms',
-        transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
-      } : undefined}
+      className="relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden"
+      style={{
+        opacity: pageEnter ? 1 : 0,
+        transform: pageEnter ? 'translateY(0)' : 'translateY(36px)',
+        transition: 'opacity 480ms cubic-bezier(.76,0,.24,1) 220ms, transform 480ms cubic-bezier(.76,0,.24,1) 220ms',
+      }}
     >
       <div className="absolute top-3 right-3">
         <LanguageSwitcher />
@@ -397,40 +481,25 @@ export default function IntakeScreen() {
         </div>
       )}
 
-      {/* SPLASH 1 — self-contained, no globals.css dependency */}
-      {splashPhase !== 'done' && (
+      {/* SPLASH 1 — JS rAF animated, self-contained */}
+      {!splashDone && (
         <>
-          <style>{`
-            @keyframes _s1Av { 0%{transform:scale(.52);opacity:0} 65%{transform:scale(1.04);opacity:1} 100%{transform:scale(1);opacity:1} }
-            @keyframes _s1Hi { from{opacity:0} to{opacity:1} }
-            @keyframes _s1Hb { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.18);opacity:.4} }
-            @keyframes _s1Nm { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
-            @keyframes _s1Sp { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
-            @keyframes _s1Tg { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:.8} }
-            @keyframes _s1Br { from{opacity:0} to{opacity:.72} }
-            @keyframes _s1Ex { from{transform:translateY(0) scale(1);filter:blur(0px);opacity:1} to{transform:translateY(-48px) scale(.985);filter:blur(5px);opacity:0} }
-          `}</style>
+          <style>{`@keyframes _s1Hb{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.15);opacity:.55}}`}</style>
           <div
+            ref={splashOverlayRef}
             style={{
               position: 'fixed', inset: 0, zIndex: 40,
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
               pointerEvents: 'none', background: '#f0eeea',
-              animation: splashPhase === 'fading' ? '_s1Ex 0.48s cubic-bezier(.76,0,.24,1) both' : undefined,
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-
-              {/* Avatar + halo */}
-              <div style={{
-                position: 'relative', width: 88, height: 88, marginBottom: 24,
-                animation: '_s1Av 0.68s cubic-bezier(.34,1.56,.64,1) 0s both',
-              }}>
-                <div style={{
+              <div ref={splashAvRef} style={{ position: 'relative', width: 88, height: 88, marginBottom: 24, opacity: 0, transform: 'scale(0.52)' }}>
+                <div ref={splashHaloRef} style={{
                   position: 'absolute', borderRadius: '50%',
                   width: 148, height: 148, top: -30, left: -30,
                   background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
-                  animation: '_s1Hi .3s ease-out .08s both, _s1Hb 2.8s ease-in-out .38s infinite',
                 }} />
                 <div style={{
                   position: 'relative', width: '100%', height: '100%',
@@ -441,41 +510,16 @@ export default function IntakeScreen() {
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                 </div>
               </div>
-
-              {/* Name */}
-              <p style={{
-                fontSize: 22, fontWeight: 700, color: '#0d1117',
-                letterSpacing: '-0.01em', marginBottom: 14,
-                animation: '_s1Nm .38s cubic-bezier(.33,1,.68,1) .32s both',
-              }}>
+              <p ref={splashNameRef} style={{ fontSize: 22, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 14, opacity: 0, transform: 'translateY(18px)' }}>
                 Pablo Agis Burgos
               </p>
-
-              {/* Divider */}
-              <div style={{
-                width: 110, height: 0.5,
-                background: 'rgba(100,105,115,.25)', marginBottom: 12,
-                transformOrigin: 'center',
-                animation: '_s1Sp .28s cubic-bezier(.33,1,.68,1) .47s both',
-              }} />
-
-              {/* Tagline */}
-              <p style={{
-                fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em',
-                animation: '_s1Tg .42s cubic-bezier(.33,1,.68,1) .61s both',
-              }}>
+              <div ref={splashDivRef} style={{ width: 110, height: 0.5, background: 'rgba(100,105,115,.25)', marginBottom: 12, transformOrigin: 'center', opacity: 0, transform: 'scaleX(0)' }} />
+              <p ref={splashTagRef} style={{ fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em', opacity: 0, transform: 'translateY(14px)' }}>
                 SaaS · Hospitality Tech · Sales
               </p>
-
-              {/* Wordmark */}
-              <p style={{
-                fontSize: 11, fontWeight: 500, color: '#a8adb8',
-                letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40,
-                animation: '_s1Br .48s cubic-bezier(.33,1,.68,1) .78s both',
-              }}>
+              <p ref={splashWmRef} style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40, opacity: 0 }}>
                 InterviewMind
               </p>
-
             </div>
           </div>
         </>

@@ -39,7 +39,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [listenMode, setListenMode] = useState(false);
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
-  const [chatSplashPhase, setChatSplashPhase] = useState<'hero' | 'fading' | 'done'>('hero');
+  const [chatSplashDone, setChatSplashDone] = useState(false);
+  const [chatPageEnter, setChatPageEnter] = useState(false);
+  const s2OverlayRef = useRef<HTMLDivElement>(null);
+  const s2AvRef      = useRef<HTMLDivElement>(null);
+  const s2HaloRef    = useRef<HTMLDivElement>(null);
+  const s2NameRef    = useRef<HTMLParagraphElement>(null);
+  const s2WmRef      = useRef<HTMLParagraphElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -65,20 +71,86 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
 
-  // SPLASH 2 — skip before first paint on revisit, run once per session otherwise
+  // SPLASH 2 — skip before first paint on revisit
   useLayoutEffect(() => {
-    if (sessionStorage.getItem(`im_s2_${sessionId}`)) setChatSplashPhase('done');
+    if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); setChatPageEnter(true); }
   }, [sessionId]);
+
+  // JS rAF animation for splash 2 (first session visit only)
   useEffect(() => {
     if (sessionStorage.getItem(`im_s2_${sessionId}`)) return;
-    // wordmark ends at 480+380=860ms, hold 1400ms → exit at 2260ms
-    const t1 = setTimeout(() => setChatSplashPhase('fading'), 2260);
-    const t2 = setTimeout(() => {
-      setChatSplashPhase('done');
-      sessionStorage.setItem(`im_s2_${sessionId}`, '1');
-    }, 2800);
-    return () => { clearTimeout(t1); clearTimeout(t2); };
-  }, [sessionId]);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const rafs: number[] = [];
+    const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
+    const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+    const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
+    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
+
+    function spring(el: HTMLElement, from: number, peak: number, fin: number, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now(), h = dur * 0.55;
+        function f(now: number) {
+          const e = now-s, sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
+          el.style.transform = `scale(${sc.toFixed(4)})`; el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
+          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; }
+        }
+        tick(f);
+      }, delay);
+    }
+    function fadeSlide(el: HTMLElement, yFrom: number, dur: number, delay: number, maxOp: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
+          el.style.opacity = (raw*maxOp).toFixed(4); el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
+          if (raw < 1) tick(f);
+        }
+        tick(f);
+      }, delay);
+    }
+    function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1);
+          el.style.opacity = (raw*maxOp).toFixed(4);
+          if (raw < 1) tick(f);
+        }
+        tick(f);
+      }, delay);
+    }
+
+    const ov=s2OverlayRef.current, av=s2AvRef.current, hl=s2HaloRef.current;
+    const nm=s2NameRef.current, wm=s2WmRef.current;
+    if (!ov||!av||!hl||!nm||!wm) return;
+
+    spring(av, 0.52, 1.03, 1.0, 560, 0);
+    after(() => { hl.style.animation = '_s2Hb 2.4s ease-in-out infinite'; }, 320);
+    fadeSlide(nm, 14, 340, 260, 1);
+    fadeIn(wm, 380, 480, 0.7);
+
+    after(() => {
+      if (!ov) return;
+      const _ov = ov;
+      hl.style.animation = 'none';
+      const s = performance.now();
+      function exit(now: number) {
+        const raw = Math.min((now-s)/480, 1), p = eio4(raw);
+        _ov.style.opacity = (1-p).toFixed(4);
+        _ov.style.transform = `translateY(${(-48*p).toFixed(1)}px) scale(${(1-0.015*p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(5*p).toFixed(1)}px)`;
+        if (raw < 1) tick(exit);
+        else {
+          setChatSplashDone(true);
+          sessionStorage.setItem(`im_s2_${sessionId}`, '1');
+          requestAnimationFrame(() => requestAnimationFrame(() => setChatPageEnter(true)));
+        }
+      }
+      tick(exit);
+    }, 2260);
+
+    return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
+  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load recruiter context from sessionStorage (set by IntakeScreen)
   useEffect(() => {
@@ -625,13 +697,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   return (
     <div
-      className={`fixed inset-0 flex flex-col bg-gray-50 overflow-hidden ${chatSplashPhase === 'hero' ? 'opacity-0 translate-y-9' : 'opacity-100 translate-y-0'}`}
-      style={chatSplashPhase === 'fading' ? {
-        transitionProperty: 'opacity, transform',
-        transitionDuration: '480ms',
-        transitionDelay: '220ms',
-        transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
-      } : undefined}
+      className="fixed inset-0 flex flex-col bg-gray-50 overflow-hidden"
+      style={{
+        opacity: chatPageEnter ? 1 : 0,
+        transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
+        transition: 'opacity 480ms cubic-bezier(.76,0,.24,1) 220ms, transform 480ms cubic-bezier(.76,0,.24,1) 220ms',
+      }}
     >
       <Header
         recruiterName={context.recruiterName}
@@ -861,38 +932,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <Footer variant="compact" />
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
-      {/* SPLASH 2 — self-contained, no globals.css dependency */}
-      {chatSplashPhase !== 'done' && (
+      {/* SPLASH 2 — JS rAF animated, self-contained */}
+      {!chatSplashDone && (
         <>
-          <style>{`
-            @keyframes _s2Av { 0%{transform:scale(.52);opacity:0} 65%{transform:scale(1.04);opacity:1} 100%{transform:scale(1);opacity:1} }
-            @keyframes _s2Hi { from{opacity:0} to{opacity:1} }
-            @keyframes _s2Hb { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.18);opacity:.4} }
-            @keyframes _s2Nm { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
-            @keyframes _s2Br { from{opacity:0} to{opacity:.72} }
-            @keyframes _s2Ex { from{transform:translateY(0) scale(1);filter:blur(0px);opacity:1} to{transform:translateY(-48px) scale(.985);filter:blur(5px);opacity:0} }
-          `}</style>
+          <style>{`@keyframes _s2Hb{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.15);opacity:.55}}`}</style>
           <div
+            ref={s2OverlayRef}
             style={{
               position: 'fixed', inset: 0, zIndex: 50,
               display: 'flex', flexDirection: 'column',
               alignItems: 'center', justifyContent: 'center',
               pointerEvents: 'none', background: '#f0eeea',
-              animation: chatSplashPhase === 'fading' ? '_s2Ex 0.48s cubic-bezier(.76,0,.24,1) both' : undefined,
             }}
           >
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-
-              {/* Avatar + halo */}
-              <div style={{
-                position: 'relative', width: 64, height: 64, marginBottom: 20,
-                animation: '_s2Av .56s cubic-bezier(.34,1.56,.64,1) 0s both',
-              }}>
-                <div style={{
+              <div ref={s2AvRef} style={{ position: 'relative', width: 64, height: 64, marginBottom: 20, opacity: 0, transform: 'scale(0.52)' }}>
+                <div ref={s2HaloRef} style={{
                   position: 'absolute', borderRadius: '50%',
                   width: 108, height: 108, top: -22, left: -22,
                   background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
-                  animation: '_s2Hi .3s ease-out .08s both, _s2Hb 2.4s ease-in-out .32s infinite',
                 }} />
                 <div style={{
                   position: 'relative', width: '100%', height: '100%',
@@ -903,25 +961,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                 </div>
               </div>
-
-              {/* Name */}
-              <p style={{
-                fontSize: 18, fontWeight: 700, color: '#0d1117',
-                letterSpacing: '-0.01em', marginBottom: 0,
-                animation: '_s2Nm .34s cubic-bezier(.33,1,.68,1) .26s both',
-              }}>
+              <p ref={s2NameRef} style={{ fontSize: 18, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 0, opacity: 0, transform: 'translateY(14px)' }}>
                 Pablo Agis Burgos
               </p>
-
-              {/* Wordmark */}
-              <p style={{
-                fontSize: 11, fontWeight: 500, color: '#a8adb8',
-                letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32,
-                animation: '_s2Br .38s cubic-bezier(.33,1,.68,1) .48s both',
-              }}>
+              <p ref={s2WmRef} style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32, opacity: 0 }}>
                 InterviewMind
               </p>
-
             </div>
           </div>
         </>
