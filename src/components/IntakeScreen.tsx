@@ -331,7 +331,7 @@ export default function IntakeScreen() {
           <div className="flex flex-col items-center gap-3 mb-7 text-center" style={emerge(100)}>
             <button type="button" onClick={() => setAvatarOpen(true)}
               className="relative cursor-zoom-in"
-              style={{ width: 80, height: 80 }}>
+              style={{ width: 112, height: 112 }}>
               {/* Conic ring */}
               <div className="absolute inset-0 rounded-full" style={{
                 background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
@@ -375,45 +375,6 @@ export default function IntakeScreen() {
           <p className="text-center mb-4" style={{ fontSize:12, color:'rgba(255,255,255,0.28)', letterSpacing:'0.1px', ...emerge(280) }}>
             {t.timeHint}
           </p>
-
-          {/* ── Bento grid ── */}
-          <div className="grid grid-cols-2 gap-2.5 mb-2.5" style={emerge(300)}>
-            {/* Cell 1 — Rol actual */}
-            <div className="glass p-4" style={{ transform:'rotate(-0.3deg)' }}>
-              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
-                Rol actual
-              </p>
-              <p style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.85)', lineHeight:1.4 }}>
-                Implementation Specialist
-              </p>
-              <p style={{ fontSize:11, color:'rgba(255,255,255,0.38)', marginTop:2 }}>
-                HubOS · 2026
-              </p>
-            </div>
-
-            {/* Cell 2 — Idiomas */}
-            <div className="glass p-4" style={{ transform:'rotate(0.3deg)' }}>
-              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
-                Idiomas
-              </p>
-              <p style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.85)' }}>
-                5 languages
-              </p>
-              <p style={{ fontSize:11, color:'rgba(255,255,255,0.38)', marginTop:2, letterSpacing:'0.06em' }}>
-                ES · EN · IT · PT · GL
-              </p>
-            </div>
-
-            {/* Cell 3 — Posicionamiento (full width) */}
-            <div className="glass p-4 col-span-2">
-              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
-                Posicionamiento
-              </p>
-              <p style={{ fontSize:13, color:'rgba(255,255,255,0.72)', lineHeight:1.55 }}>
-                Hospitality-Tech Generalist → Commercial SaaS
-              </p>
-            </div>
-          </div>
 
           {/* ── How it works ── */}
           <div className="glass p-5 mb-2.5" style={emerge(360)}>
