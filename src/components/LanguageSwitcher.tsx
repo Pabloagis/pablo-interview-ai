@@ -27,7 +27,7 @@ export default function LanguageSwitcher() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Select language"
           className="flex items-center gap-1 px-1 py-1 rounded-lg transition-colors"
-          style={{ color: open ? 'rgba(255,255,255,0.75)' : 'rgba(255,255,255,0.38)' }}
+          style={{ color: open ? 'var(--lang-trigger-open)' : 'var(--lang-trigger)' }}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" strokeWidth={2} />
@@ -49,9 +49,9 @@ export default function LanguageSwitcher() {
         <div
           className="absolute right-0 top-full mt-1 rounded-xl py-1 z-50 min-w-[44px]"
           style={{
-            background: '#1c2135',
-            border: '0.5px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.48)',
+            background: 'var(--lang-dropdown-bg)',
+            border: '0.5px solid var(--lang-dropdown-border)',
+            boxShadow: 'var(--lang-dropdown-shadow)',
           }}
         >
           {LANG_ORDER.map((l) => (
@@ -59,10 +59,7 @@ export default function LanguageSwitcher() {
               key={l}
               onClick={() => { setLang(l); setOpen(false); }}
               aria-label={l}
-              className="flex items-center justify-center w-full px-3 py-2 text-base leading-none transition-colors"
-              style={{ background: lang === l ? 'rgba(64,96,208,0.22)' : undefined }}
-              onMouseEnter={(e) => { if (lang !== l) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
-              onMouseLeave={(e) => { if (lang !== l) (e.currentTarget as HTMLElement).style.background = ''; }}
+              className={`lang-item flex items-center justify-center w-full px-3 py-2 text-base leading-none${lang === l ? ' selected' : ''}`}
             >
               {LANG_FLAGS[l]}
             </button>

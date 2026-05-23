@@ -301,11 +301,11 @@ export default function IntakeScreen() {
         {resumeSession && (
           <div className="w-full max-w-[440px] sm:max-w-[600px] mb-4 mt-2" style={emerge(0)}>
             <div className="glass rounded-xl px-4 py-3 flex items-start sm:items-center justify-between gap-3 border-[rgba(60,90,200,0.3)]">
-              <p className="text-sm" style={{ color: 'rgba(180,200,255,0.9)' }}>
+              <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 Resume your session
                 {resumeSession.recruiterName && <span className="font-medium"> with {resumeSession.recruiterName}</span>}
-                {resumeSession.company && <span style={{ color:'rgba(180,200,255,0.6)' }}> ({resumeSession.company})</span>}
-                <span className="text-xs ml-1" style={{ color:'rgba(255,255,255,0.35)' }}>
+                {resumeSession.company && <span style={{ color:'var(--text-tertiary)' }}> ({resumeSession.company})</span>}
+                <span className="text-xs ml-1" style={{ color:'var(--text-muted)' }}>
                   · {resumeSession.messageCount} message{resumeSession.messageCount !== 1 ? 's' : ''}
                 </span>
               </p>
@@ -317,7 +317,7 @@ export default function IntakeScreen() {
                 </button>
                 <button type="button" onClick={handleDismissResume}
                   className="text-xs px-2 py-1.5 transition-colors"
-                  style={{ color:'rgba(255,255,255,0.35)' }}>
+                  style={{ color:'var(--text-muted)' }}>
                   Dismiss
                 </button>
               </div>
@@ -338,7 +338,7 @@ export default function IntakeScreen() {
                 animation: 'ring-spin 3.5s linear infinite',
                 padding: 2,
               }}>
-                <div className="w-full h-full rounded-full" style={{ background:'#0d0f14' }} />
+                <div className="w-full h-full rounded-full" style={{ background:'var(--bg-base)' }} />
               </div>
               {/* Avatar */}
               <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
@@ -349,36 +349,34 @@ export default function IntakeScreen() {
             <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
               {t.emptyGreeting}
             </h1>
-            <p style={{ fontSize: 12, color:'rgba(255,255,255,0.45)', letterSpacing:'0.04em', lineHeight:1.5 }}>
+            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5 }}>
               {t.intakeSubtitle}
             </p>
           </div>
 
           {/* ── Vision card ── */}
           <div className="glass p-5 mb-3 text-center" style={emerge(200)}>
-            <p style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.9)', lineHeight:1.5, marginBottom:10 }}>
+            <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, marginBottom:10 }}>
               {t.visionTitle}
             </p>
-            <p style={{ fontSize:13, color:'rgba(255,255,255,0.52)', lineHeight:1.65, marginBottom:12 }}>
+            <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.65, marginBottom:12 }}>
               {t.visionBody}
             </p>
-            <p style={{ fontSize:13.5, fontWeight:600, fontStyle:'italic', lineHeight:1.4,
-              background:'linear-gradient(90deg, rgba(120,160,255,0.9), rgba(160,120,255,0.8))',
-              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-              backgroundClip:'text', paddingTop:12, borderTop:'0.5px solid rgba(255,255,255,0.08)' }}>
+            <p className="vision-closing" style={{ fontSize:13.5, fontWeight:600, fontStyle:'italic', lineHeight:1.4,
+              paddingTop:12, borderTop:'0.5px solid var(--glass-border)' }}>
               {t.visionClosing}
             </p>
           </div>
 
           {/* ── Divider + time hint ── */}
-          <div style={{ height:0.5, background:'rgba(255,255,255,0.07)', margin:'6px 0 10px', ...emerge(250) }} />
-          <p className="text-center mb-4" style={{ fontSize:12, color:'rgba(255,255,255,0.28)', letterSpacing:'0.1px', ...emerge(280) }}>
+          <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(250) }} />
+          <p className="text-center mb-4" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px', ...emerge(280) }}>
             {t.timeHint}
           </p>
 
           {/* ── How it works ── */}
           <div className="glass p-5 mb-2.5" style={emerge(360)}>
-            <p style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:14 }}>
+            <p style={{ fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:14 }}>
               {t.howItWorksTitle}
             </p>
             <div className="flex flex-col gap-3">
@@ -388,16 +386,16 @@ export default function IntakeScreen() {
                 { n:'3', text: t.step3 },
                 { n:'4', text: (
                   <>{t.step3Label}{' '}
-                    <strong style={{ color:'rgba(80,180,120,0.9)' }}>{t.endButtonFull}</strong>
+                    <strong style={{ color:'var(--step-cta-color)' }}>{t.endButtonFull}</strong>
                     {' '}{t.step3Rest}</>
                 )},
               ] as { n:string; text:React.ReactNode }[]).map(({ n, text }) => (
                 <div key={n} className="flex items-start gap-3">
                   <span className="flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ width:22, height:22, borderRadius:'50%', background:'rgba(60,90,200,0.2)', color:'rgba(120,160,255,0.9)', fontSize:11, fontWeight:700 }}>
+                    style={{ width:22, height:22, borderRadius:'50%', background:'var(--step-num-bg)', color:'var(--step-num-text)', fontSize:11, fontWeight:700 }}>
                     {n}
                   </span>
-                  <p style={{ fontSize:13.5, color:'rgba(255,255,255,0.6)', lineHeight:1.55 }}>{text}</p>
+                  <p style={{ fontSize:13.5, color:'var(--text-secondary)', lineHeight:1.55 }}>{text}</p>
                 </div>
               ))}
             </div>
@@ -407,7 +405,7 @@ export default function IntakeScreen() {
           <div className="glass p-5 mb-2.5" style={emerge(460)}>
             <div className="flex flex-col gap-3">
               <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
                   {t.labelName} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
                 </label>
                 <input
@@ -425,7 +423,7 @@ export default function IntakeScreen() {
               </div>
 
               <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
                   {t.labelEmail} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
                 </label>
                 <input
@@ -444,13 +442,13 @@ export default function IntakeScreen() {
 
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.22)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
                     {t.labelCompany}
                   </label>
                   <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="input-glass" maxLength={100} autoComplete="organization" />
                 </div>
                 <div>
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.22)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
                     {t.labelRole}
                   </label>
                   <input type="text" value={role} onChange={(e) => setRole(e.target.value)} className="input-glass" maxLength={100} />
@@ -468,14 +466,14 @@ export default function IntakeScreen() {
               disabled={isSubmitDisabled}
               className="w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200"
               style={isSubmitDisabled ? {
-                background: 'rgba(255,255,255,0.06)',
-                color: 'rgba(255,255,255,0.28)',
+                background: 'var(--btn-disabled-bg)',
+                color: 'var(--btn-disabled-color)',
                 cursor: 'not-allowed',
-                border: '0.5px solid rgba(255,255,255,0.08)',
+                border: '0.5px solid var(--btn-disabled-border)',
               } : isFullyFilled ? {
-                background: 'linear-gradient(135deg, #3a55c0, #6030b8)',
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
                 color: '#fff',
-                boxShadow: '0 4px 28px rgba(60,85,192,0.4)',
+                boxShadow: '0 4px 28px var(--accent-glow)',
                 border: 'none',
               } : {
                 background: 'linear-gradient(135deg, rgba(58,85,192,0.7), rgba(96,48,184,0.7))',
@@ -485,7 +483,7 @@ export default function IntakeScreen() {
             >
               {isLoading ? t.buttonStarting : t.buttonStart}
             </button>
-            <p className="text-center mt-3" style={{ fontSize:12, color:'rgba(255,255,255,0.22)' }}>
+            <p className="text-center mt-3" style={{ fontSize:12, color:'var(--text-muted)' }}>
               {t.timeHint}
             </p>
           </div>
@@ -514,7 +512,7 @@ export default function IntakeScreen() {
 
             {/* Wordmark */}
             <p ref={splashWmRef} style={{
-              fontSize:10, fontWeight:500, color:'rgba(255,255,255,0.28)',
+              fontSize:10, fontWeight:500, color:'var(--splash-wm)',
               letterSpacing:'0.22em', textTransform:'uppercase',
               marginBottom:52, opacity:0,
             }}>
@@ -531,7 +529,7 @@ export default function IntakeScreen() {
                 padding:2, opacity:0,
                 animation:'ring-spin 3.5s linear infinite',
               }}>
-                <div className="w-full h-full rounded-full" style={{ background:'#0d0f14' }} />
+                <div className="w-full h-full rounded-full" style={{ background:'var(--bg-base)' }} />
               </div>
               {/* Photo */}
               <div className="absolute rounded-full overflow-hidden" style={{ inset:3 }}>
@@ -549,7 +547,7 @@ export default function IntakeScreen() {
 
             {/* Role */}
             <p ref={splashRoleRef} style={{
-              fontSize:12.5, color:'rgba(255,255,255,0.55)', letterSpacing:'0.04em',
+              fontSize:12.5, color:'var(--splash-role)', letterSpacing:'0.04em',
               marginBottom:16, opacity:0, transform:'translateX(50px)',
             }}>
               SaaS &amp; Hospitality Tech
@@ -558,7 +556,7 @@ export default function IntakeScreen() {
             {/* Divider */}
             <div ref={splashDivRef} style={{
               width:200, height:0.5, marginBottom:20, transformOrigin:'center',
-              background:'linear-gradient(90deg, transparent, rgba(100,130,255,0.5), transparent)',
+              background:'var(--splash-divider)',
               opacity:0, transform:'scaleX(0)',
             }} />
 
@@ -571,9 +569,9 @@ export default function IntakeScreen() {
                   style={{
                     padding:'5px 12px',
                     borderRadius:999,
-                    background:'rgba(255,255,255,0.06)',
-                    border:'0.5px solid rgba(255,255,255,0.14)',
-                    fontSize:11.5, color:'rgba(255,255,255,0.55)',
+                    background:'var(--splash-tag-bg)',
+                    border:'0.5px solid var(--splash-tag-border)',
+                    fontSize:11.5, color:'var(--splash-tag-text)',
                     opacity:0, transform:'translateY(24px)',
                   }}
                 >

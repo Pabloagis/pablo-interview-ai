@@ -694,7 +694,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const toggleRecording = () => { if (isRecording) { stopRecording(); } else { startRecording(); } };
   const handleDownloadTranscript = () => { window.open(`/api/transcript?sessionId=${sessionId}`, '_blank'); };
 
-  // Dark glass ended screen
+  // Ended screen
   if (interviewEnded !== null) {
     return (
       <>
@@ -703,8 +703,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           <div
             className="w-full max-w-md text-center p-10"
             style={{
-              background: 'rgba(28,33,53,0.92)',
-              border: '0.5px solid rgba(255,255,255,0.10)',
+              background: 'var(--ended-card-bg)',
+              border: '0.5px solid var(--ended-card-border)',
               borderRadius: 20,
               boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
               backdropFilter: 'blur(20px)',
@@ -717,27 +717,27 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
                   style={{ background: 'rgba(58,106,64,0.3)', border: '0.5px solid rgba(58,106,64,0.5)' }}
                 >
-                  <svg className="w-8 h-8" style={{ color: '#4ade80' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8" style={{ color: 'var(--success-text)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>{t.allDoneTitle}</h2>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: 4 }}>{t.allDoneMsg}</p>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--ended-title)', marginBottom: 12 }}>{t.allDoneTitle}</h2>
+                <p style={{ fontSize: 13, color: 'var(--ended-body)', lineHeight: 1.6, marginBottom: 4 }}>{t.allDoneMsg}</p>
                 {context.email && (
-                  <p style={{ fontSize: 13, color: '#6080e8', fontWeight: 500, marginBottom: 24 }}>{context.email}</p>
+                  <p style={{ fontSize: 13, color: 'var(--accent-mid)', fontWeight: 500, marginBottom: 24 }}>{context.email}</p>
                 )}
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.28)', fontStyle: 'italic' }}>{t.allDoneSignature}</p>
+                <p style={{ fontSize: 13, color: 'var(--ended-sig)', fontStyle: 'italic' }}>{t.allDoneSignature}</p>
               </>
             ) : (
               <>
                 <div
                   className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
-                  style={{ background: 'linear-gradient(135deg, #4060d0, #7040c0)', boxShadow: '0 4px 24px rgba(64,96,208,0.35)' }}
+                  style={{ background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))', boxShadow: '0 4px 24px var(--accent-glow)' }}
                 >
                   <span style={{ color: '#fff', fontWeight: 800, fontSize: 22 }}>P</span>
                 </div>
-                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>{t.interviewEndedTitle}</h2>
-                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>{t.interviewEndedMsg}</p>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: 'var(--ended-title)', marginBottom: 12 }}>{t.interviewEndedTitle}</h2>
+                <p style={{ fontSize: 13, color: 'var(--ended-body)', lineHeight: 1.6 }}>{t.interviewEndedMsg}</p>
               </>
             )}
           </div>
@@ -779,8 +779,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           <div
             className="px-3 py-2 shrink-0"
             style={{
-              borderBottom: '0.5px solid rgba(255,255,255,0.06)',
-              background: 'rgba(255,255,255,0.02)',
+              borderBottom: '0.5px solid var(--chips-strip-border)',
+              background: 'var(--chips-strip-bg)',
             }}
           >
             <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
@@ -789,22 +789,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   key={topic.label}
                   onClick={() => handleSuggestedQuestion(topic)}
                   disabled={isStreaming}
-                  className="flex items-center gap-1.5 shrink-0 text-[12px] font-semibold rounded-full px-3 py-1.5 transition-all disabled:opacity-40"
-                  style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    border: '0.5px solid rgba(255,255,255,0.10)',
-                    color: 'rgba(255,255,255,0.65)',
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'rgba(64,96,208,0.18)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(64,96,208,0.45)';
-                    (e.currentTarget as HTMLElement).style.color = 'rgba(180,200,255,0.9)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
-                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.10)';
-                    (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)';
-                  }}
+                  className="theme-chip flex items-center gap-1.5 shrink-0 text-[12px] font-semibold rounded-full px-3 py-1.5 transition-all disabled:opacity-40"
                 >
                   {topic.label}
                 </button>
@@ -813,10 +798,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 onClick={refreshSuggestions}
                 disabled={isStreaming}
                 title="New suggestions"
-                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full disabled:opacity-40 transition-all ml-0.5"
-                style={{ color: 'rgba(255,255,255,0.28)' }}
-                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'}
-                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
+                className="theme-util-btn shrink-0 w-7 h-7 flex items-center justify-center rounded-full disabled:opacity-40 ml-0.5"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
@@ -837,7 +819,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <Tooltip text={t.meetPablo} className="mb-5">
                 <div
                   className="w-14 h-14 rounded-full overflow-hidden mb-5 cursor-pointer transition-transform hover:scale-105"
-                  style={{ border: '1.5px solid rgba(255,255,255,0.18)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
+                  style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
                 >
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
@@ -845,11 +827,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
                 {t.emptyGreeting}
               </h1>
-              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'var(--text-tertiary)' }}>
                 {t.emptySubtitle}
               </p>
-              <div className="w-10 h-px mb-6" style={{ background: 'rgba(255,255,255,0.10)' }} />
-              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.22)' }}>
+              <div className="w-10 h-px mb-6" style={{ background: 'var(--glass-border)' }} />
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
                 {t.tryAsking}
               </p>
               <div className="w-full max-w-sm space-y-2">
@@ -858,22 +840,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                     key={q}
                     onClick={() => sendMessage(q)}
                     disabled={isStreaming}
-                    className="w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all disabled:opacity-40"
-                    style={{
-                      background: 'rgba(255,255,255,0.04)',
-                      border: '0.5px solid rgba(255,255,255,0.09)',
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(64,96,208,0.14)';
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(64,96,208,0.35)';
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
-                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.09)';
-                    }}
+                    className="theme-question w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left disabled:opacity-40"
                   >
-                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>{q}</span>
-                    <span className="ml-3 shrink-0" style={{ color: 'rgba(255,255,255,0.28)' }}>↗</span>
+                    <span className="q-label text-sm">{q}</span>
+                    <span className="q-arrow ml-3 shrink-0">↗</span>
                   </button>
                 ))}
               </div>
@@ -898,8 +868,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         <div
           className="shrink-0 p-3"
           style={{
-            borderTop: '0.5px solid rgba(255,255,255,0.08)',
-            background: 'rgba(13,15,20,0.88)',
+            borderTop: '0.5px solid var(--input-area-border)',
+            background: 'var(--input-area-bg)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
           }}
@@ -910,12 +880,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               onClick={stopAudio}
               className="flex items-center gap-2 text-xs rounded-full px-3 py-1.5 mb-2 transition-colors"
               style={{
-                background: 'rgba(64,96,208,0.18)',
-                border: '0.5px solid rgba(64,96,208,0.35)',
-                color: 'rgba(180,200,255,0.9)',
+                background: 'var(--playing-bg)',
+                border: '0.5px solid var(--playing-border)',
+                color: 'var(--playing-text)',
               }}
             >
-              <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: '#6080e8' }} />
+              <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: 'var(--accent-mid)' }} />
               {t.playingIndicator}
             </button>
           )}
@@ -925,9 +895,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <div
               className="flex-1 min-w-0 flex items-end rounded-3xl px-4 py-2.5"
               style={{
-                background: 'rgba(255,255,255,0.05)',
-                border: `0.5px solid ${inputFocused ? 'rgba(64,96,208,0.55)' : 'rgba(255,255,255,0.10)'}`,
-                boxShadow: inputFocused ? '0 0 0 3px rgba(64,96,208,0.14)' : 'none',
+                background: 'var(--input-pill-bg)',
+                border: `0.5px solid ${inputFocused ? 'var(--input-focus-border)' : 'var(--input-pill-border)'}`,
+                boxShadow: inputFocused ? 'var(--input-focus-shadow)' : 'none',
                 transition: 'border-color 180ms ease, box-shadow 180ms ease',
               }}
             >
@@ -942,7 +912,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 rows={1}
                 disabled={isStreaming}
                 className="flex-1 min-w-0 resize-none bg-transparent text-sm focus:outline-none leading-relaxed disabled:opacity-50 placeholder:text-white/30"
-                style={{ color: '#ffffff', maxHeight: '120px' }}
+                style={{ color: 'var(--input-text)', maxHeight: '120px' }}
               />
             </div>
 
@@ -957,8 +927,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   background: '#ef4444',
                   boxShadow: '0 2px 12px rgba(239,68,68,0.4)',
                 } : {
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '0.5px solid rgba(255,255,255,0.10)',
+                  background: 'var(--input-pill-bg)',
+                  border: '0.5px solid var(--input-pill-border)',
                 }}
               >
                 {isRecording ? (
@@ -966,12 +936,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                     <rect x="6" y="6" width="12" height="12" rx="1.5" />
                   </svg>
                 ) : isTranscribing ? (
-                  <svg className="w-4 h-4 animate-spin" style={{ color: '#6080e8' }} fill="none" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 animate-spin" style={{ color: 'var(--accent-mid)' }} fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 ) : (
-                  <svg className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.45)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4" style={{ color: 'var(--util-color)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                   </svg>
                 )}
@@ -986,8 +956,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 aria-label="Send message"
                 className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
                 style={inputText.trim() && !isStreaming ? {
-                  background: 'linear-gradient(135deg, #4060d0, #7040c0)',
-                  boxShadow: '0 2px 12px rgba(64,96,208,0.4)',
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                  boxShadow: '0 2px 12px var(--accent-glow)',
                 } : {
                   background: 'rgba(255,255,255,0.08)',
                   opacity: 0.45,
@@ -1002,7 +972,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
           {/* Bottom utility row */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
+            <span className="text-xs" style={{ color: 'var(--char-count)' }}>
               {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
             </span>
             <div className="flex gap-3 items-center">
@@ -1011,7 +981,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
                   aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
                   className="transition-colors"
-                  style={{ color: listenMode ? '#6080e8' : 'rgba(255,255,255,0.28)' }}
+                  style={{ color: listenMode ? 'var(--accent-mid)' : 'var(--util-color)' }}
                 >
                   <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
@@ -1022,10 +992,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 <button
                   onClick={handleDownloadTranscript}
                   aria-label="Download transcript"
-                  className="transition-colors"
-                  style={{ color: 'rgba(255,255,255,0.28)' }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
+                  className="theme-util-btn transition-colors"
                 >
                   <span className="hidden sm:inline text-xs">{t.downloadTranscript}</span>
                   <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1037,10 +1004,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 <button
                   onClick={handleReset}
                   aria-label="Reset conversation"
-                  className="transition-colors"
-                  style={{ color: 'rgba(255,255,255,0.28)' }}
-                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#f87171'}
-                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
+                  className="theme-util-btn danger transition-colors"
                 >
                   <span className="hidden sm:inline text-xs">{t.reset}</span>
                   <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1058,25 +1022,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <div
               className={`animate-slide-down relative px-4 py-2.5 text-[13px] whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}
               style={{
-                background: 'rgba(28,33,53,0.95)',
-                border: '0.5px solid rgba(255,255,255,0.12)',
+                background: 'var(--reminder-bg)',
+                border: '0.5px solid var(--reminder-border)',
                 borderRadius: 12,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.48)',
+                boxShadow: 'var(--reminder-shadow)',
                 backdropFilter: 'blur(16px)',
                 WebkitBackdropFilter: 'blur(16px)',
-                color: 'rgba(255,255,255,0.75)',
+                color: 'var(--reminder-text)',
               }}
             >
               <div
                 className="absolute -top-[5px] right-4 w-2.5 h-2.5 rotate-45"
                 style={{
-                  background: 'rgba(28,33,53,0.95)',
-                  borderLeft: '0.5px solid rgba(255,255,255,0.12)',
-                  borderTop: '0.5px solid rgba(255,255,255,0.12)',
+                  background: 'var(--reminder-bg)',
+                  borderLeft: '0.5px solid var(--reminder-border)',
+                  borderTop: '0.5px solid var(--reminder-border)',
                 }}
               />
               {t.endReminderPrefix}{' '}
-              <strong style={{ color: '#4ade80', fontWeight: 600 }}>{t.endButtonFull}</strong>{' '}
+              <strong style={{ color: 'var(--success-text)', fontWeight: 600 }}>{t.endButtonFull}</strong>{' '}
               {t.endReminderSuffix}
             </div>
           </div>
@@ -1086,7 +1050,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         <Toast toasts={toasts} onDismiss={dismissToast} />
       </div>
 
-      {/* SPLASH 2 — dark, transparent overlay (Background shows through) */}
+      {/* SPLASH 2 — transparent overlay (Background shows through) */}
       {!chatSplashDone && (
         <div
           ref={s2OverlayRef}
@@ -1145,7 +1109,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <p
               ref={s2NameRef}
               style={{
-                fontSize: 18, fontWeight: 700, color: '#ffffff',
+                fontSize: 18, fontWeight: 700, color: 'var(--splash-name)',
                 letterSpacing: '-0.01em', marginBottom: 0,
                 opacity: 0, transform: 'translateX(-40px)', filter: 'blur(10px)',
               }}
@@ -1158,7 +1122,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               ref={s2WmRef}
               style={{
                 fontSize: 11, fontWeight: 500,
-                color: 'rgba(255,255,255,0.28)',
+                color: 'var(--splash-wm)',
                 letterSpacing: '0.18em', textTransform: 'uppercase',
                 marginTop: 28, opacity: 0,
               }}
@@ -1181,7 +1145,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   animation: 'status-pulse 2s ease-in-out infinite',
                 }}
               />
-              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em' }}>
+              <span style={{ fontSize: 11, color: 'var(--splash-status)', letterSpacing: '0.04em' }}>
                 IA lista · Conectando sesión
               </span>
             </div>

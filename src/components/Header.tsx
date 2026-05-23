@@ -13,8 +13,8 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
     <header
       className="flex items-center gap-2 px-3 py-2.5 shrink-0"
       style={{
-        borderBottom: '0.5px solid rgba(255,255,255,0.08)',
-        background: 'rgba(13,15,20,0.88)',
+        borderBottom: `0.5px solid var(--nav-border)`,
+        background: 'var(--nav-bg)',
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
       }}
@@ -23,19 +23,19 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
         <div
           className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
           style={{
-            background: 'linear-gradient(135deg, #4060d0, #7040c0)',
-            boxShadow: '0 2px 8px rgba(64,96,208,0.35)',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+            boxShadow: '0 2px 8px var(--accent-glow)',
           }}
         >
           <span className="text-white font-bold text-xs">IM</span>
         </div>
-        <span className="font-semibold text-white text-sm truncate" style={{ letterSpacing: '-0.01em' }}>
+        <span className="font-semibold text-sm truncate" style={{ color: 'var(--nav-text)', letterSpacing: '-0.01em' }}>
           InterviewMind
         </span>
       </div>
 
       {(recruiterName || company) && (
-        <div className="hidden sm:flex items-center gap-1 shrink-0" style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)' }}>
+        <div className="hidden sm:flex items-center gap-1 shrink-0" style={{ fontSize: 11, color: 'var(--nav-muted)' }}>
           {recruiterName && <span>{recruiterName}</span>}
           {recruiterName && company && <span>·</span>}
           {company && <span>{company}</span>}

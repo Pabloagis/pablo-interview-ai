@@ -35,6 +35,236 @@
   --radius-xl:  24px;
   --blur-glass: 20px;
   --blur-heavy: 40px;
+
+  /* ── Component tokens (night) ── */
+  --nav-bg:             rgba(13,15,20,0.88);
+  --nav-border:         rgba(255,255,255,0.08);
+  --nav-text:           #ffffff;
+  --nav-muted:          rgba(255,255,255,0.38);
+
+  --input-area-bg:      rgba(13,15,20,0.88);
+  --input-area-border:  rgba(255,255,255,0.08);
+  --input-pill-bg:      rgba(255,255,255,0.05);
+  --input-pill-border:  rgba(255,255,255,0.10);
+  --input-text:         #ffffff;
+  --input-focus-border: rgba(64,96,208,0.55);
+  --input-focus-shadow: 0 0 0 3px rgba(64,96,208,0.14);
+
+  --bubble-pablo-bg:    rgba(255,255,255,0.07);
+  --bubble-pablo-border:rgba(255,255,255,0.10);
+  --bubble-pablo-text:  #ffffff;
+  --bubble-pablo-shadow:inset 0 1px 0 rgba(255,255,255,0.08);
+
+  --modal-bg:           #1c2135;
+  --modal-border:       rgba(255,255,255,0.12);
+  --modal-shadow:       0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08);
+  --modal-title:        #ffffff;
+  --modal-body:         rgba(255,255,255,0.55);
+  --modal-cancel-bg:    rgba(255,255,255,0.07);
+  --modal-cancel-border:rgba(255,255,255,0.12);
+  --modal-cancel-text:  rgba(255,255,255,0.75);
+
+  --chip-bg:            rgba(255,255,255,0.05);
+  --chip-border:        rgba(255,255,255,0.10);
+  --chip-text:          rgba(255,255,255,0.65);
+  --chip-hover-bg:      rgba(64,96,208,0.18);
+  --chip-hover-border:  rgba(64,96,208,0.45);
+  --chip-hover-text:    rgba(180,200,255,0.9);
+
+  --question-bg:        rgba(255,255,255,0.04);
+  --question-border:    rgba(255,255,255,0.09);
+  --question-text:      rgba(255,255,255,0.75);
+  --question-arrow:     rgba(255,255,255,0.28);
+  --question-hover-bg:  rgba(64,96,208,0.14);
+  --question-hover-border:rgba(64,96,208,0.35);
+
+  --reminder-bg:        rgba(28,33,53,0.95);
+  --reminder-border:    rgba(255,255,255,0.12);
+  --reminder-shadow:    0 8px 32px rgba(0,0,0,0.48);
+  --reminder-text:      rgba(255,255,255,0.75);
+
+  --footer-compact-border:rgba(255,255,255,0.06);
+  --footer-compact-bg:  rgba(13,15,20,0.5);
+  --footer-compact-text:rgba(255,255,255,0.22);
+  --footer-compact-brand:rgba(255,255,255,0.35);
+  --footer-sep:         rgba(255,255,255,0.12);
+
+  --avatar-border:      rgba(255,255,255,0.15);
+  --avatar-shadow:      0 2px 8px rgba(0,0,0,0.4);
+  --timestamp:          rgba(255,255,255,0.28);
+
+  --lang-trigger:       rgba(255,255,255,0.38);
+  --lang-trigger-open:  rgba(255,255,255,0.75);
+  --lang-dropdown-bg:   #1c2135;
+  --lang-dropdown-border:rgba(255,255,255,0.12);
+  --lang-dropdown-shadow:0 8px 32px rgba(0,0,0,0.48);
+  --lang-item-hover:    rgba(255,255,255,0.07);
+  --lang-item-active:   rgba(64,96,208,0.22);
+
+  --chips-strip-bg:     rgba(255,255,255,0.02);
+  --chips-strip-border: rgba(255,255,255,0.06);
+
+  --ended-card-bg:      rgba(28,33,53,0.92);
+  --ended-card-border:  rgba(255,255,255,0.10);
+  --ended-title:        #ffffff;
+  --ended-body:         rgba(255,255,255,0.55);
+  --ended-sig:          rgba(255,255,255,0.28);
+
+  --playing-bg:         rgba(64,96,208,0.18);
+  --playing-border:     rgba(64,96,208,0.35);
+  --playing-text:       rgba(180,200,255,0.9);
+
+  --util-color:         rgba(255,255,255,0.28);
+  --char-count:         rgba(255,255,255,0.22);
+
+  --splash-name:        #ffffff;
+  --splash-wm:          rgba(255,255,255,0.28);
+  --splash-role:        rgba(255,255,255,0.55);
+  --splash-status:      rgba(255,255,255,0.45);
+  --splash-tag-bg:      rgba(255,255,255,0.06);
+  --splash-tag-border:  rgba(255,255,255,0.14);
+  --splash-tag-text:    rgba(255,255,255,0.55);
+  --splash-divider:     linear-gradient(90deg, transparent, rgba(100,130,255,0.5), transparent);
+
+  --step-num-bg:        rgba(60,90,200,0.2);
+  --step-num-text:      rgba(120,160,255,0.9);
+  --step-cta-color:     rgba(80,180,120,0.9);
+
+  --btn-disabled-bg:    rgba(255,255,255,0.06);
+  --btn-disabled-color: rgba(255,255,255,0.28);
+  --btn-disabled-border:rgba(255,255,255,0.08);
+
+  --accent-mid:         #6080e8;
+  --success-text:       #4ade80;
+}
+
+/* ─────────────────────────────────────────────
+   DAY MODE TOKENS
+───────────────────────────────────────────── */
+[data-theme="day"] {
+  --bg-base:        #f0eeea;
+  --bg-mid:         #e8e6e2;
+  --bg-surface:     #ffffff;
+  --bg-elevated:    #f5f4f1;
+
+  --glass-1:        rgba(255,255,255,0.55);
+  --glass-2:        rgba(255,255,255,0.75);
+  --glass-3:        rgba(255,255,255,0.92);
+  --glass-border:   rgba(0,0,0,0.07);
+  --glass-border-hi:rgba(0,0,0,0.14);
+
+  --accent-primary: #3a55c0;
+  --accent-purple:  #6030b8;
+  --accent-cyan:    #1a7a96;
+  --accent-glow:    rgba(58,85,192,0.18);
+  --accent-success: #2d6e3a;
+
+  --text-primary:   #0d1117;
+  --text-secondary: rgba(13,17,23,0.68);
+  --text-tertiary:  rgba(13,17,23,0.42);
+  --text-muted:     rgba(13,17,23,0.25);
+  --wordmark-color: rgba(13,17,23,0.32);
+
+  /* Component tokens (day) */
+  --nav-bg:             rgba(255,255,255,0.82);
+  --nav-border:         rgba(0,0,0,0.07);
+  --nav-text:           #0d1117;
+  --nav-muted:          rgba(13,17,23,0.42);
+
+  --input-area-bg:      rgba(240,238,234,0.92);
+  --input-area-border:  rgba(0,0,0,0.07);
+  --input-pill-bg:      rgba(255,255,255,0.8);
+  --input-pill-border:  rgba(0,0,0,0.12);
+  --input-text:         #0d1117;
+  --input-focus-border: rgba(58,85,192,0.5);
+  --input-focus-shadow: 0 0 0 3px rgba(58,85,192,0.10);
+
+  --bubble-pablo-bg:    rgba(255,255,255,0.85);
+  --bubble-pablo-border:rgba(0,0,0,0.08);
+  --bubble-pablo-text:  #0d1117;
+  --bubble-pablo-shadow:0 1px 3px rgba(0,0,0,0.06);
+
+  --modal-bg:           rgba(255,255,255,0.97);
+  --modal-border:       rgba(0,0,0,0.10);
+  --modal-shadow:       0 24px 80px rgba(0,0,0,0.14);
+  --modal-title:        #0d1117;
+  --modal-body:         rgba(13,17,23,0.55);
+  --modal-cancel-bg:    rgba(0,0,0,0.05);
+  --modal-cancel-border:rgba(0,0,0,0.10);
+  --modal-cancel-text:  rgba(13,17,23,0.75);
+
+  --chip-bg:            rgba(255,255,255,0.65);
+  --chip-border:        rgba(0,0,0,0.10);
+  --chip-text:          rgba(13,17,23,0.65);
+  --chip-hover-bg:      rgba(58,85,192,0.10);
+  --chip-hover-border:  rgba(58,85,192,0.35);
+  --chip-hover-text:    rgba(58,85,192,0.9);
+
+  --question-bg:        rgba(255,255,255,0.65);
+  --question-border:    rgba(0,0,0,0.08);
+  --question-text:      rgba(13,17,23,0.75);
+  --question-arrow:     rgba(13,17,23,0.28);
+  --question-hover-bg:  rgba(58,85,192,0.08);
+  --question-hover-border:rgba(58,85,192,0.25);
+
+  --reminder-bg:        rgba(255,255,255,0.97);
+  --reminder-border:    rgba(0,0,0,0.10);
+  --reminder-shadow:    0 8px 32px rgba(0,0,0,0.14);
+  --reminder-text:      rgba(13,17,23,0.75);
+
+  --footer-compact-border:rgba(0,0,0,0.07);
+  --footer-compact-bg:  rgba(240,238,234,0.6);
+  --footer-compact-text:rgba(13,17,23,0.25);
+  --footer-compact-brand:rgba(13,17,23,0.42);
+  --footer-sep:         rgba(0,0,0,0.12);
+
+  --avatar-border:      rgba(0,0,0,0.12);
+  --avatar-shadow:      0 2px 8px rgba(0,0,0,0.12);
+  --timestamp:          rgba(13,17,23,0.35);
+
+  --lang-trigger:       rgba(13,17,23,0.42);
+  --lang-trigger-open:  rgba(13,17,23,0.75);
+  --lang-dropdown-bg:   rgba(255,255,255,0.97);
+  --lang-dropdown-border:rgba(0,0,0,0.10);
+  --lang-dropdown-shadow:0 8px 32px rgba(0,0,0,0.14);
+  --lang-item-hover:    rgba(0,0,0,0.04);
+  --lang-item-active:   rgba(58,85,192,0.10);
+
+  --chips-strip-bg:     rgba(0,0,0,0.02);
+  --chips-strip-border: rgba(0,0,0,0.06);
+
+  --ended-card-bg:      rgba(255,255,255,0.92);
+  --ended-card-border:  rgba(0,0,0,0.08);
+  --ended-title:        #0d1117;
+  --ended-body:         rgba(13,17,23,0.55);
+  --ended-sig:          rgba(13,17,23,0.35);
+
+  --playing-bg:         rgba(58,85,192,0.10);
+  --playing-border:     rgba(58,85,192,0.25);
+  --playing-text:       rgba(58,85,192,0.9);
+
+  --util-color:         rgba(13,17,23,0.35);
+  --char-count:         rgba(13,17,23,0.25);
+
+  --splash-name:        #0d1117;
+  --splash-wm:          rgba(13,17,23,0.32);
+  --splash-role:        rgba(13,17,23,0.55);
+  --splash-status:      rgba(13,17,23,0.45);
+  --splash-tag-bg:      rgba(0,0,0,0.06);
+  --splash-tag-border:  rgba(0,0,0,0.12);
+  --splash-tag-text:    rgba(13,17,23,0.65);
+  --splash-divider:     linear-gradient(90deg, transparent, rgba(58,85,192,0.3), transparent);
+
+  --step-num-bg:        rgba(58,85,192,0.12);
+  --step-num-text:      rgba(58,85,192,0.9);
+  --step-cta-color:     #2d8050;
+
+  --btn-disabled-bg:    rgba(0,0,0,0.05);
+  --btn-disabled-color: rgba(13,17,23,0.28);
+  --btn-disabled-border:rgba(0,0,0,0.08);
+
+  --accent-mid:         rgba(58,85,192,0.85);
+  --success-text:       #1f7a40;
 }
 
 /* ─────────────────────────────────────────────
@@ -74,6 +304,10 @@ next-route-announcer {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
 }
 
+[data-theme="day"] .glass {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 3px rgba(0,0,0,0.06);
+}
+
 /* ─────────────────────────────────────────────
    DARK FORM INPUTS
 ───────────────────────────────────────────── */
@@ -81,18 +315,18 @@ next-route-announcer {
   width: 100%;
   padding: 10px 14px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  border: 0.5px solid rgba(255,255,255,0.12);
-  color: #fff;
+  background: var(--input-pill-bg);
+  border: 0.5px solid var(--input-pill-border);
+  color: var(--input-text);
   font-size: 14px;
   outline: none;
   transition: border-color 180ms ease, box-shadow 180ms ease;
   font-family: inherit;
 }
-.input-glass::placeholder { color: rgba(255,255,255,0.28); }
+.input-glass::placeholder { color: var(--text-muted); }
 .input-glass:focus {
-  border-color: rgba(60,90,200,0.6);
-  box-shadow: 0 0 0 3px rgba(60,90,200,0.14);
+  border-color: var(--input-focus-border);
+  box-shadow: var(--input-focus-shadow);
 }
 .input-glass.error {
   border-color: rgba(220,60,60,0.55);
@@ -107,6 +341,12 @@ next-route-announcer {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+[data-theme="day"] .gradient-text {
+  background: none;
+  -webkit-text-fill-color: var(--text-primary);
+  color: var(--text-primary);
 }
 
 /* ─────────────────────────────────────────────
@@ -177,3 +417,66 @@ next-route-announcer {
   to   { transform: scale(1);   opacity: 1; }
 }
 .animate-scale-in { animation: scale-in 0.2s cubic-bezier(0.22,1,0.36,1) both; }
+
+/* ─────────────────────────────────────────────
+   THEME-AWARE INTERACTIVE ELEMENTS
+───────────────────────────────────────────── */
+.theme-chip {
+  background: var(--chip-bg);
+  border: 0.5px solid var(--chip-border);
+  color: var(--chip-text);
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.theme-chip:not(:disabled):hover {
+  background: var(--chip-hover-bg);
+  border-color: var(--chip-hover-border);
+  color: var(--chip-hover-text);
+}
+
+.theme-question {
+  background: var(--question-bg);
+  border: 0.5px solid var(--question-border);
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.theme-question:not(:disabled):hover {
+  background: var(--question-hover-bg);
+  border-color: var(--question-hover-border);
+}
+.theme-question .q-label { color: var(--question-text); }
+.theme-question .q-arrow { color: var(--question-arrow); }
+
+.theme-modal-cancel {
+  background: var(--modal-cancel-bg);
+  border: 0.5px solid var(--modal-cancel-border);
+  color: var(--modal-cancel-text);
+  transition: filter 150ms ease;
+}
+.theme-modal-cancel:not(:disabled):hover { filter: brightness(0.95); }
+
+.theme-util-btn {
+  color: var(--util-color);
+  transition: color 150ms ease;
+}
+.theme-util-btn:hover { color: var(--nav-text); }
+.theme-util-btn.danger:hover { color: #f87171; }
+
+.lang-item {
+  color: var(--nav-text);
+  background: transparent;
+  transition: background 120ms ease;
+}
+.lang-item.selected { background: var(--lang-item-active); }
+.lang-item:not(.selected):hover { background: var(--lang-item-hover); }
+
+.vision-closing {
+  background: linear-gradient(90deg, rgba(120,160,255,0.9), rgba(160,120,255,0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+[data-theme="day"] .vision-closing {
+  background: linear-gradient(90deg, rgba(58,85,192,0.85), rgba(96,48,184,0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}

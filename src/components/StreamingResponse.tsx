@@ -8,7 +8,7 @@ export default function StreamingResponse({ text, thinkingPhrase }: StreamingRes
     <div className="flex justify-start mb-5 overflow-hidden">
       <div
         className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0"
-        style={{ border: '1.5px solid rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+        style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
       >
         <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
       </div>
@@ -16,11 +16,11 @@ export default function StreamingResponse({ text, thinkingPhrase }: StreamingRes
         <div
           className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
           style={{
-            background: 'rgba(255,255,255,0.07)',
-            border: '0.5px solid rgba(255,255,255,0.10)',
-            color: '#ffffff',
+            background: 'var(--bubble-pablo-bg)',
+            border: '0.5px solid var(--bubble-pablo-border)',
+            color: 'var(--bubble-pablo-text)',
             borderRadius: '4px 16px 16px 16px',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+            boxShadow: 'var(--bubble-pablo-shadow)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
           }}
@@ -30,11 +30,11 @@ export default function StreamingResponse({ text, thinkingPhrase }: StreamingRes
               {text}
               <span
                 className="inline-block w-0.5 h-4 ml-0.5 align-middle animate-pulse"
-                style={{ background: 'rgba(255,255,255,0.5)' }}
+                style={{ background: 'var(--bubble-pablo-text)', opacity: 0.5 }}
               />
             </>
           ) : (
-            <span className="italic" style={{ color: 'rgba(255,255,255,0.38)' }}>
+            <span className="italic" style={{ color: 'var(--text-tertiary)' }}>
               {thinkingPhrase || 'Thinking…'}
             </span>
           )}

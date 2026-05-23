@@ -114,7 +114,7 @@ export default function EndInterviewButton({
         </svg>
       </button>
 
-      {/* Dark glass confirmation modal */}
+      {/* Confirmation modal */}
       {modalOpen && (
         <div
           className="fixed inset-0 z-[60] flex items-center justify-center p-4"
@@ -124,17 +124,17 @@ export default function EndInterviewButton({
           <div
             className="w-full max-w-md p-8 animate-slide-up"
             style={{
-              background: '#1c2135',
-              border: '0.5px solid rgba(255,255,255,0.12)',
+              background: 'var(--modal-bg)',
+              border: '0.5px solid var(--modal-border)',
               borderRadius: 20,
-              boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
+              boxShadow: 'var(--modal-shadow)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 8 }}>
               {t.endModalTitle}
             </h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 24 }}>
               {context.consentToEmail ? t.endModalWithConsent : t.endModalWithoutConsent}
             </p>
 
@@ -146,17 +146,13 @@ export default function EndInterviewButton({
               <button
                 onClick={closeModal}
                 disabled={isSending}
+                className="theme-modal-cancel"
                 style={{
                   padding: '9px 18px', fontSize: 13, fontWeight: 500,
-                  background: 'rgba(255,255,255,0.07)',
-                  border: '0.5px solid rgba(255,255,255,0.12)',
-                  borderRadius: 10, color: 'rgba(255,255,255,0.75)',
+                  borderRadius: 10,
                   cursor: isSending ? 'not-allowed' : 'pointer',
                   opacity: isSending ? 0.5 : 1,
-                  transition: 'background 150ms ease',
                 }}
-                onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
               >
                 {t.endModalCancel}
               </button>
@@ -166,7 +162,7 @@ export default function EndInterviewButton({
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
                   padding: '9px 18px', fontSize: 13, fontWeight: 600,
-                  background: 'linear-gradient(135deg, #4060d0, #7040c0)',
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
                   border: 'none', borderRadius: 10, color: '#ffffff',
                   cursor: isSending ? 'not-allowed' : 'pointer',
                   opacity: isSending ? 0.75 : 1,

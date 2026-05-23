@@ -28,7 +28,7 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
           <button
             onClick={() => setAvatarOpen(true)}
             className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
-            style={{ border: '1.5px solid rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}
+            style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
           >
             <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
           </button>
@@ -38,23 +38,23 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
           <div
             className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
             style={isUser ? {
-              background: '#4060d0',
+              background: 'var(--accent-primary)',
               color: '#ffffff',
               borderRadius: '16px 16px 4px 16px',
-              boxShadow: '0 2px 12px rgba(64,96,208,0.3)',
+              boxShadow: '0 2px 12px var(--accent-glow)',
             } : {
-              background: 'rgba(255,255,255,0.07)',
-              border: '0.5px solid rgba(255,255,255,0.10)',
-              color: '#ffffff',
+              background: 'var(--bubble-pablo-bg)',
+              border: '0.5px solid var(--bubble-pablo-border)',
+              color: 'var(--bubble-pablo-text)',
               borderRadius: '4px 16px 16px 16px',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+              boxShadow: 'var(--bubble-pablo-shadow)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
             }}
           >
             {message.content}
           </div>
-          <span className="text-xs mt-1 px-1" style={{ color: 'rgba(255,255,255,0.28)' }}>
+          <span className="text-xs mt-1 px-1" style={{ color: 'var(--timestamp)' }}>
             {isUser ? 'You' : 'Pablo'} · {formatTimestamp(message.createdAt)}
           </span>
         </div>
@@ -64,7 +64,7 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
             onClick={() => setAvatarOpen(true)}
             className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[13px] ml-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
             style={{
-              background: 'linear-gradient(135deg, #4060d0, #7040c0)',
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
               boxShadow: '0 2px 8px rgba(64,96,208,0.3)',
             }}
           >
@@ -83,7 +83,7 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
             <div
               className="w-32 h-32 rounded-full flex items-center justify-center text-white font-bold text-5xl animate-scale-in"
               style={{
-                background: 'linear-gradient(135deg, #4060d0, #7040c0)',
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
                 boxShadow: '0 0 0 4px rgba(255,255,255,0.12), 0 24px 80px rgba(0,0,0,0.56)',
               }}
             >
