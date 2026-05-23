@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerSupabaseClient();
     const { data: session, error } = await supabase
       .from('sessions')
-      .select('recruiter_name, company, role, email, messages, email_sent_at')
+      .select('recruiter_name, company, role, email, consent_to_email, messages, email_sent_at')
       .eq('id', sessionId)
       .single();
 
@@ -40,26 +40,37 @@ export async function POST(request: NextRequest) {
       .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
       .join('\n\n');
 
-    console.log(`[exit-notify] Sending insights to Pablo for abandoned session ${sessionId}`);
+    // Send to recruiter if they consented; always notify Pablo
+    const sendToRecruiter = !!(session.consent_to_email && session.email);
+    const recipients = sendToRecruiter
+      ? [session.email!, PABLO_EMAIL]
+      : [PABLO_EMAIL];
 
-    const { emailId, html } = await sendFollowUpEmail({
-      to: PABLO_EMAIL,
-      transcript,
-      messages,
-      recruiterName: session.recruiter_name || null,
-      jobTitle: session.role || null,
-      companyName: session.company || null,
-      sessionId,
-      recruiterEmail: session.email || null,
-      bcc: [],
-    });
+    console.log(`[exit-notify] Sending insights for abandoned session ${sessionId} → ${recipients.join(', ')}`);
+
+    let lastHtml = '';
+    for (const recipient of recipients) {
+      const { emailId, html } = await sendFollowUpEmail({
+        to: recipient,
+        transcript,
+        messages,
+        recruiterName: session.recruiter_name || null,
+        jobTitle: session.role || null,
+        companyName: session.company || null,
+        sessionId,
+        recruiterEmail: session.email || null,
+        bcc: [],
+      });
+      lastHtml = html;
+      console.log(`[exit-notify] Sent to ${recipient}, emailId: ${emailId}`);
+    }
 
     await supabase
       .from('sessions')
-      .update({ email_sent_at: new Date().toISOString(), email_html: html })
+      .update({ email_sent_at: new Date().toISOString(), email_html: lastHtml })
       .eq('id', sessionId);
 
-    console.log(`[exit-notify] Done. emailId: ${emailId}`);
+    console.log(`[exit-notify] Done.`);
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('[exit-notify] Error:', err);

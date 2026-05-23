@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import Tooltip from './Tooltip';
@@ -11,8 +11,6 @@ interface EndInterviewButtonProps {
   context: RecruiterContext;
   onInterviewEnded: (emailSent: boolean) => void;
   suppressTooltip?: boolean;
-  forceOpen?: boolean;
-  onForceOpenConsumed?: () => void;
 }
 
 export default function EndInterviewButton({
@@ -21,8 +19,6 @@ export default function EndInterviewButton({
   context,
   onInterviewEnded,
   suppressTooltip = false,
-  forceOpen,
-  onForceOpenConsumed,
 }: EndInterviewButtonProps) {
   const { t } = useLanguage();
   const [modalOpen, setModalOpen] = useState(false);
@@ -30,14 +26,6 @@ export default function EndInterviewButton({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 3;
-
-  useEffect(() => {
-    if (forceOpen && isActive && !modalOpen) {
-      setErrorMsg(null);
-      setModalOpen(true);
-      onForceOpenConsumed?.();
-    }
-  }, [forceOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const openModal = () => {
     if (!isActive) return;
