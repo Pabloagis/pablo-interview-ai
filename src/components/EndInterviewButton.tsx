@@ -71,9 +71,20 @@ export default function EndInterviewButton({
     }
   };
 
+  const btnActive = [
+    'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white transition-all duration-200 whitespace-nowrap',
+    'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30',
+    'hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99]',
+  ].join(' ');
+
+  const btnInactive = [
+    'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white',
+    'bg-[#4d8f6e] opacity-60 cursor-not-allowed',
+  ].join(' ');
+
   return (
     <>
-      {/* Inline trigger — positioned by parent (Header) */}
+      {/* Desktop button with tooltip */}
       <Tooltip
         text={isActive ? t.endTooltipActive : t.endTooltipInactive}
         position="bottom"
@@ -81,21 +92,12 @@ export default function EndInterviewButton({
         disabled={suppressTooltip}
         className="hidden sm:block flex-shrink-0"
       >
-        <button
-          onClick={openModal}
-          disabled={!isActive}
-          className={[
-            'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white transition-all duration-200 whitespace-nowrap',
-            isActive
-              ? 'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30 hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99]'
-              : 'bg-[#4d8f6e] opacity-80 cursor-not-allowed',
-          ].join(' ')}
-        >
+        <button onClick={openModal} disabled={!isActive} className={isActive ? btnActive : btnInactive}>
           Insights
         </button>
       </Tooltip>
 
-      {/* Mobile: icon-only button, no tooltip (touch devices don't hover) */}
+      {/* Mobile icon-only button */}
       <button
         onClick={openModal}
         disabled={!isActive}
@@ -104,7 +106,7 @@ export default function EndInterviewButton({
           'sm:hidden min-h-[36px] w-9 rounded-lg flex items-center justify-center transition-all duration-200',
           isActive
             ? 'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30 active:scale-[0.99]'
-            : 'bg-[#4d8f6e] opacity-80 cursor-not-allowed',
+            : 'bg-[#4d8f6e] opacity-60 cursor-not-allowed',
         ].join(' ')}
       >
         <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -112,37 +114,64 @@ export default function EndInterviewButton({
         </svg>
       </button>
 
-      {/* Confirmation modal */}
+      {/* Dark glass confirmation modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
           onClick={closeModal}
         >
           <div
-            className="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl"
+            className="w-full max-w-md p-8 animate-slide-up"
+            style={{
+              background: '#1c2135',
+              border: '0.5px solid rgba(255,255,255,0.12)',
+              borderRadius: 20,
+              boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-lg font-bold text-gray-900 mb-2">{t.endModalTitle}</h2>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: '#ffffff', marginBottom: 8 }}>
+              {t.endModalTitle}
+            </h2>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: 24 }}>
               {context.consentToEmail ? t.endModalWithConsent : t.endModalWithoutConsent}
             </p>
 
             {errorMsg && (
-              <p className="text-sm text-red-500 mb-4">{errorMsg}</p>
+              <p style={{ fontSize: 13, color: '#f87171', marginBottom: 16 }}>{errorMsg}</p>
             )}
 
-            <div className="flex gap-3 justify-end">
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
               <button
                 onClick={closeModal}
                 disabled={isSending}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors disabled:opacity-50"
+                style={{
+                  padding: '9px 18px', fontSize: 13, fontWeight: 500,
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '0.5px solid rgba(255,255,255,0.12)',
+                  borderRadius: 10, color: 'rgba(255,255,255,0.75)',
+                  cursor: isSending ? 'not-allowed' : 'pointer',
+                  opacity: isSending ? 0.5 : 1,
+                  transition: 'background 150ms ease',
+                }}
+                onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
               >
                 {t.endModalCancel}
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={isSending}
-                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-75"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '9px 18px', fontSize: 13, fontWeight: 600,
+                  background: 'linear-gradient(135deg, #4060d0, #7040c0)',
+                  border: 'none', borderRadius: 10, color: '#ffffff',
+                  cursor: isSending ? 'not-allowed' : 'pointer',
+                  opacity: isSending ? 0.75 : 1,
+                  boxShadow: '0 4px 16px rgba(64,96,208,0.35)',
+                }}
               >
                 {isSending && (
                   <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">

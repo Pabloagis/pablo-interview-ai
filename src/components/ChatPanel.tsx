@@ -10,6 +10,7 @@ import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
 import Tooltip from './Tooltip';
+import Background from './Background';
 import { useLanguage } from '@/context/LanguageContext';
 import Footer from './Footer';
 
@@ -29,6 +30,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [inputText, setInputText] = useState('');
+  const [inputFocused, setInputFocused] = useState(false);
   const [context, setContext] = useState<RecruiterContext>({});
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [interviewEnded, setInterviewEnded] = useState<{ emailSent: boolean } | null>(null);
@@ -41,11 +43,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
   const [chatPageEnter, setChatPageEnter] = useState(false);
+
+  // Splash 2 refs
   const s2OverlayRef = useRef<HTMLDivElement>(null);
   const s2AvRef      = useRef<HTMLDivElement>(null);
-  const s2HaloRef    = useRef<HTMLDivElement>(null);
+  const s2RingRef    = useRef<HTMLDivElement>(null);
+  const s2GlowRef    = useRef<HTMLDivElement>(null);
   const s2NameRef    = useRef<HTMLParagraphElement>(null);
   const s2WmRef      = useRef<HTMLParagraphElement>(null);
+  const s2StatusRef  = useRef<HTMLDivElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -71,14 +77,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
 
-  // SPLASH 2 — skip before first paint on revisit
+  // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
     if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); setChatPageEnter(true); }
   }, [sessionId]);
 
-  // JS rAF animation for splash 2 (first session visit only)
+  // Splash 2 — JS rAF animation (dark theme, first visit only)
   useEffect(() => {
     if (sessionStorage.getItem(`im_s2_${sessionId}`)) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
     const rafs: number[] = [];
     const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
@@ -86,28 +93,51 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
     const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
 
-    function spring(el: HTMLElement, from: number, peak: number, fin: number, dur: number, delay: number) {
+    function springBlur(el: HTMLElement, from: number, peak: number, fin: number, blurFrom: number, dur: number, delay: number) {
       after(() => {
         const s = performance.now(), h = dur * 0.55;
         function f(now: number) {
-          const e = now-s, sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
-          el.style.transform = `scale(${sc.toFixed(4)})`; el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
-          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; }
+          const e = now-s;
+          const sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
+          const bl = Math.max(0, blurFrom*(1-Math.min(e/dur, 1)));
+          el.style.transform = `scale(${sc.toFixed(4)})`;
+          el.style.filter = `blur(${bl.toFixed(1)}px)`;
+          el.style.opacity = Math.min(e/(dur*0.38), 1).toFixed(4);
+          if (e < dur) tick(f);
+          else { el.style.transform='scale(1)'; el.style.opacity='1'; el.style.filter='none'; }
         }
         tick(f);
       }, delay);
     }
+
+    function slideBlurX(el: HTMLElement, xFrom: number, blurFrom: number, dur: number, delay: number, maxOp: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
+          el.style.opacity = (raw*maxOp).toFixed(4);
+          el.style.transform = `translateX(${(xFrom*(1-p)).toFixed(2)}px)`;
+          el.style.filter = `blur(${Math.max(0, blurFrom*(1-raw)).toFixed(1)}px)`;
+          if (raw < 1) tick(f);
+          else { el.style.filter='none'; }
+        }
+        tick(f);
+      }, delay);
+    }
+
     function fadeSlide(el: HTMLElement, yFrom: number, dur: number, delay: number, maxOp: number) {
       after(() => {
         const s = performance.now();
         function f(now: number) {
           const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.opacity = (raw*maxOp).toFixed(4); el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
+          el.style.opacity = (raw*maxOp).toFixed(4);
+          el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
           if (raw < 1) tick(f);
         }
         tick(f);
       }, delay);
     }
+
     function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
       after(() => {
         const s = performance.now();
@@ -120,25 +150,40 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       }, delay);
     }
 
-    const ov=s2OverlayRef.current, av=s2AvRef.current, hl=s2HaloRef.current;
-    const nm=s2NameRef.current, wm=s2WmRef.current;
-    if (!ov||!av||!hl||!nm||!wm) return;
+    const ov=s2OverlayRef.current, av=s2AvRef.current, rg=s2RingRef.current;
+    const gl=s2GlowRef.current, nm=s2NameRef.current, wm=s2WmRef.current, st=s2StatusRef.current;
+    if (!ov||!av||!rg||!gl||!nm||!wm||!st) return;
 
-    spring(av, 0.52, 1.03, 1.0, 560, 0);
-    after(() => { hl.style.animation = '_s2Hb 2.4s ease-in-out infinite'; }, 320);
-    fadeSlide(nm, 14, 340, 260, 1);
-    fadeIn(wm, 380, 480, 0.7);
+    // 0ms: Avatar spring from depth with blur
+    springBlur(av, 0.72, 1.04, 1.0, 14, 820, 0);
 
+    // 440ms: Name assembles from left with blur
+    slideBlurX(nm, -40, 10, 650, 440, 1);
+
+    // 500ms: Ring + glow activate
+    after(() => {
+      rg.style.transition = 'opacity 800ms ease';
+      rg.style.opacity = '1';
+      gl.style.transition = 'opacity 600ms ease';
+      gl.style.opacity = '0.9';
+    }, 500);
+
+    // 820ms: Wordmark fades in
+    fadeIn(wm, 700, 820, 0.55);
+
+    // 1100ms: Status indicator
+    fadeSlide(st, 10, 500, 1100, 0.9);
+
+    // 3600ms: Exit
     after(() => {
       if (!ov) return;
       const _ov = ov;
-      hl.style.animation = 'none';
       const s = performance.now();
       function exit(now: number) {
-        const raw = Math.min((now-s)/480, 1), p = eio4(raw);
+        const raw = Math.min((now-s)/520, 1), p = eio4(raw);
         _ov.style.opacity = (1-p).toFixed(4);
-        _ov.style.transform = `translateY(${(-48*p).toFixed(1)}px) scale(${(1-0.015*p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(5*p).toFixed(1)}px)`;
+        _ov.style.transform = `translateY(${(-52*p).toFixed(1)}px) scale(${(1-0.02*p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(8*p).toFixed(1)}px)`;
         if (raw < 1) tick(exit);
         else {
           setChatSplashDone(true);
@@ -147,12 +192,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       }
       tick(exit);
-    }, 2260);
+    }, 3600);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Load recruiter context from sessionStorage (set by IntakeScreen)
+  // Load recruiter context from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem(`session_${sessionId}`);
     if (!stored) return;
@@ -217,7 +262,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     return () => { if (thinkingIntervalRef.current) clearInterval(thinkingIntervalRef.current); };
   }, [isStreaming]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Scroll management: follow bottom normally; when streaming starts, anchor to top of response
+  // Scroll management
   useEffect(() => {
     if (isStreaming) {
       streamingTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -250,7 +295,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages]);
 
-  // Inactivity reminder: only after 3 user messages and 90s of no activity
+  // Inactivity reminder after 3 user messages and 90s of no activity
   useEffect(() => {
     const interval = setInterval(() => {
       if (userMessageCountRef.current >= 3 && Date.now() - lastActivityRef.current >= 90_000) {
@@ -263,7 +308,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Dismiss the persistent inactivity reminder on any user action
   dismissPersistentReminderRef.current = () => {
     if (!reminderPersistentRef.current) return;
     reminderPersistentRef.current = false;
@@ -325,7 +369,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setIsPlayingAudio(false);
   }, []);
 
-  // Keep refs in sync with latest values so empty-dep effects always see current state
+  // Keep refs in sync
   userMessageCountRef.current = messages.filter(m => m.role === 'user').length;
   isStreamingRef.current = isStreaming;
   messagesLengthRef.current = messages.length;
@@ -333,8 +377,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   langRef.current = lang;
   interviewEndedRef.current = interviewEnded !== null;
 
-  // Greet recruiter after 35s if they haven't typed — uses its own AbortController
-  // so regular sendMessage / check-in cannot accidentally abort this fetch
+  // Auto-intro after 20s if recruiter hasn't typed
   useEffect(() => {
     const introAbort = new AbortController();
     const timer = setTimeout(async () => {
@@ -380,7 +423,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     return () => { clearTimeout(timer); introAbort.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Check-in message after 1m27s of inactivity (only when conversation has started)
   sendCheckInRef.current = async () => {
     if (messages.length === 0 || isStreaming || interviewEnded) return;
     if (messages[messages.length - 1]?.role === 'assistant') return;
@@ -430,7 +472,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Exit trigger: fire when recruiter leaves or hides the tab without clicking End Interview
+  // Exit beacon
   useEffect(() => {
     const fireExitNotify = () => {
       if (exitEmailFiredRef.current) return;
@@ -440,12 +482,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       const payload = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
       navigator.sendBeacon('/api/exit-notify', payload);
     };
-
     const handleBeforeUnload = () => fireExitNotify();
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'hidden') fireExitNotify();
-    };
-
+    const handleVisibilityChange = () => { if (document.visibilityState === 'hidden') fireExitNotify(); };
     window.addEventListener('beforeunload', handleBeforeUnload);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => {
@@ -475,7 +513,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       textareaRef.current.style.height = 'auto';
     }
 
-    // Save user message to Supabase immediately (fire-and-forget)
     fetch('/api/save-message', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -553,7 +590,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       } catch (error) {
         if (error instanceof Error && error.name === 'AbortError') {
-          // User-triggered cancel — clean up silently
+          // User-triggered cancel
         } else {
           console.error('Send message error:', error);
           addToast(t.connectionIssue);
@@ -566,14 +603,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       if (!shouldRetry) return;
     }
 
-    // All retries exhausted
     addToast(lastErrorMessage || t.connectionIssue);
     setStreamingText('');
     setIsStreaming(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    // Send on Enter, allow Shift+Enter for newlines
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
@@ -583,8 +618,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dismissPersistentReminderRef.current?.();
     setInputText(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
-
-    // Auto-grow up to ~5 lines
     const el = e.target;
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
@@ -630,7 +663,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       audioChunksRef.current = [];
       const recorder = new MediaRecorder(stream);
       mediaRecorderRef.current = recorder;
-
       recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
       recorder.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
@@ -651,7 +683,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           setIsTranscribing(false);
         }
       };
-
       recorder.start();
       setIsRecording(true);
     } catch {
@@ -659,130 +690,190 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   };
 
-  const stopRecording = () => {
-    mediaRecorderRef.current?.stop();
-    setIsRecording(false);
-  };
-
+  const stopRecording = () => { mediaRecorderRef.current?.stop(); setIsRecording(false); };
   const toggleRecording = () => { if (isRecording) { stopRecording(); } else { startRecording(); } };
+  const handleDownloadTranscript = () => { window.open(`/api/transcript?sessionId=${sessionId}`, '_blank'); };
 
-  const handleDownloadTranscript = () => {
-    window.open(`/api/transcript?sessionId=${sessionId}`, '_blank');
-  };
-
-  // Success / ended screen — replaces entire chat UI
+  // Dark glass ended screen
   if (interviewEnded !== null) {
     return (
-      <div className="flex flex-col min-h-screen bg-gray-50 items-center justify-center px-4">
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 max-w-md w-full text-center">
-          {interviewEnded.emailSent ? (
-            <>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">{t.allDoneTitle}</h2>
-              <p className="text-gray-500 text-sm leading-relaxed mb-1">{t.allDoneMsg}</p>
-              {context.email && (
-                <p className="text-blue-600 font-medium text-sm mb-6">{context.email}</p>
-              )}
-              <p className="text-gray-400 text-sm italic">{t.allDoneSignature}</p>
-            </>
-          ) : (
-            <>
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-blue-600 font-bold text-2xl">P</span>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-3">{t.interviewEndedTitle}</h2>
-              <p className="text-gray-500 text-sm leading-relaxed">{t.interviewEndedMsg}</p>
-            </>
-          )}
+      <>
+        <Background />
+        <div className="flex flex-col min-h-screen items-center justify-center px-4">
+          <div
+            className="w-full max-w-md text-center p-10"
+            style={{
+              background: 'rgba(28,33,53,0.92)',
+              border: '0.5px solid rgba(255,255,255,0.10)',
+              borderRadius: 20,
+              boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+          >
+            {interviewEnded.emailSent ? (
+              <>
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+                  style={{ background: 'rgba(58,106,64,0.3)', border: '0.5px solid rgba(58,106,64,0.5)' }}
+                >
+                  <svg className="w-8 h-8" style={{ color: '#4ade80' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>{t.allDoneTitle}</h2>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6, marginBottom: 4 }}>{t.allDoneMsg}</p>
+                {context.email && (
+                  <p style={{ fontSize: 13, color: '#6080e8', fontWeight: 500, marginBottom: 24 }}>{context.email}</p>
+                )}
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.28)', fontStyle: 'italic' }}>{t.allDoneSignature}</p>
+              </>
+            ) : (
+              <>
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
+                  style={{ background: 'linear-gradient(135deg, #4060d0, #7040c0)', boxShadow: '0 4px 24px rgba(64,96,208,0.35)' }}
+                >
+                  <span style={{ color: '#fff', fontWeight: 800, fontSize: 22 }}>P</span>
+                </div>
+                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#ffffff', marginBottom: 12 }}>{t.interviewEndedTitle}</h2>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', lineHeight: 1.6 }}>{t.interviewEndedMsg}</p>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
-    <div
-      className="fixed inset-0 flex flex-col bg-gray-50 overflow-hidden"
-      style={{
-        opacity: chatPageEnter ? 1 : 0,
-        transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
-        transition: 'opacity 480ms cubic-bezier(.76,0,.24,1) 220ms, transform 480ms cubic-bezier(.76,0,.24,1) 220ms',
-      }}
-    >
-      <Header
-        recruiterName={context.recruiterName}
-        company={context.company}
-        action={
-          <EndInterviewButton
-            sessionId={sessionId}
-            messages={messages}
-            context={context}
-            onInterviewEnded={handleInterviewEnded}
-            suppressTooltip={reminderState !== 'hidden'}
-          />
-        }
-      />
+    <>
+      <Background />
 
-      {/* Suggested topics strip */}
-      {suggestions.length > 0 && (
-        <div className="border-b bg-[#fafafa] px-3 py-2 shrink-0">
-          <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-            {suggestions.map((topic) => (
+      {/* Main chat UI */}
+      <div
+        className="fixed inset-0 flex flex-col overflow-hidden"
+        style={{
+          opacity: chatPageEnter ? 1 : 0,
+          transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
+          filter: chatPageEnter ? 'blur(0px)' : 'blur(6px)',
+          transition: 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
+        }}
+      >
+        <Header
+          recruiterName={context.recruiterName}
+          company={context.company}
+          action={
+            <EndInterviewButton
+              sessionId={sessionId}
+              messages={messages}
+              context={context}
+              onInterviewEnded={handleInterviewEnded}
+              suppressTooltip={reminderState !== 'hidden'}
+            />
+          }
+        />
+
+        {/* Suggested topics strip */}
+        {suggestions.length > 0 && (
+          <div
+            className="px-3 py-2 shrink-0"
+            style={{
+              borderBottom: '0.5px solid rgba(255,255,255,0.06)',
+              background: 'rgba(255,255,255,0.02)',
+            }}
+          >
+            <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              {suggestions.map((topic) => (
+                <button
+                  key={topic.label}
+                  onClick={() => handleSuggestedQuestion(topic)}
+                  disabled={isStreaming}
+                  className="flex items-center gap-1.5 shrink-0 text-[12px] font-semibold rounded-full px-3 py-1.5 transition-all disabled:opacity-40"
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '0.5px solid rgba(255,255,255,0.10)',
+                    color: 'rgba(255,255,255,0.65)',
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(64,96,208,0.18)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(64,96,208,0.45)';
+                    (e.currentTarget as HTMLElement).style.color = 'rgba(180,200,255,0.9)';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)';
+                    (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.10)';
+                    (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)';
+                  }}
+                >
+                  {topic.label}
+                </button>
+              ))}
               <button
-                key={topic.label}
-                onClick={() => handleSuggestedQuestion(topic)}
+                onClick={refreshSuggestions}
                 disabled={isStreaming}
-                className="flex items-center gap-1.5 shrink-0 text-[12px] font-semibold text-gray-600 bg-white border border-gray-200 rounded-full px-3 py-1.5 shadow-sm hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 hover:shadow-none disabled:opacity-40 transition-all"
+                title="New suggestions"
+                className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full disabled:opacity-40 transition-all ml-0.5"
+                style={{ color: 'rgba(255,255,255,0.28)' }}
+                onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.75)'}
+                onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
               >
-                {topic.label}
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                  <path d="M21 3v5h-5"/>
+                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                  <path d="M8 16H3v5"/>
+                </svg>
               </button>
-            ))}
-            <button
-              onClick={refreshSuggestions}
-              disabled={isStreaming}
-              title="New suggestions"
-              className="shrink-0 w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-blue-500 hover:bg-blue-50 disabled:opacity-40 transition-all ml-0.5"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                <path d="M21 3v5h-5"/>
-                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
-                <path d="M8 16H3v5"/>
-              </svg>
-            </button>
+            </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Message list */}
-      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-4 px-3">
+        {/* Message list */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-4 px-3">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-14 w-full">
               <Tooltip text={t.meetPablo} className="mb-5">
-                <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-200">
+                <div
+                  className="w-14 h-14 rounded-full overflow-hidden mb-5 cursor-pointer transition-transform hover:scale-105"
+                  style={{ border: '1.5px solid rgba(255,255,255,0.18)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}
+                >
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
               </Tooltip>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">{t.emptyGreeting}</h1>
-              <p className="text-gray-400 text-sm text-center leading-relaxed mb-8 max-w-xs">
+              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
+                {t.emptyGreeting}
+              </h1>
+              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>
                 {t.emptySubtitle}
               </p>
-              <div className="w-10 h-px bg-gray-200 mb-6" />
-              <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-4">{t.tryAsking}</p>
+              <div className="w-10 h-px mb-6" style={{ background: 'rgba(255,255,255,0.10)' }} />
+              <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'rgba(255,255,255,0.22)' }}>
+                {t.tryAsking}
+              </p>
               <div className="w-full max-w-sm space-y-2">
                 {[t.q1, t.q2, t.q3].map((q) => (
                   <button
                     key={q}
                     onClick={() => sendMessage(q)}
                     disabled={isStreaming}
-                    className="w-full flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3.5 text-left hover:border-blue-300 hover:bg-blue-50 transition-all group"
+                    className="w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left transition-all disabled:opacity-40"
+                    style={{
+                      background: 'rgba(255,255,255,0.04)',
+                      border: '0.5px solid rgba(255,255,255,0.09)',
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(64,96,208,0.14)';
+                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(64,96,208,0.35)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)';
+                      (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.09)';
+                    }}
                   >
-                    <span className="text-sm text-gray-700 group-hover:text-blue-700">{q}</span>
-                    <span className="text-gray-300 group-hover:text-blue-400 ml-3 shrink-0">↗</span>
+                    <span className="text-sm" style={{ color: 'rgba(255,255,255,0.75)' }}>{q}</span>
+                    <span className="ml-3 shrink-0" style={{ color: 'rgba(255,255,255,0.28)' }}>↗</span>
                   </button>
                 ))}
               </div>
@@ -801,97 +892,126 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           )}
 
           <div ref={messagesEndRef} />
-      </div>
+        </div>
 
-      {/* Input area */}
-      <div className="border-t bg-white p-3 shrink-0">
+        {/* Input area */}
+        <div
+          className="shrink-0 p-3"
+          style={{
+            borderTop: '0.5px solid rgba(255,255,255,0.08)',
+            background: 'rgba(13,15,20,0.88)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
+          }}
+        >
           {/* Playing indicator */}
           {isPlayingAudio && (
             <button
               onClick={stopAudio}
-              className="flex items-center gap-2 text-xs text-blue-600 bg-blue-50 border border-blue-200 rounded-full px-3 py-1.5 mb-2 hover:bg-blue-100 transition-colors"
+              className="flex items-center gap-2 text-xs rounded-full px-3 py-1.5 mb-2 transition-colors"
+              style={{
+                background: 'rgba(64,96,208,0.18)',
+                border: '0.5px solid rgba(64,96,208,0.35)',
+                color: 'rgba(180,200,255,0.9)',
+              }}
             >
-              <span className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shrink-0" />
+              <span className="w-2 h-2 rounded-full animate-pulse shrink-0" style={{ background: '#6080e8' }} />
               {t.playingIndicator}
             </button>
           )}
+
           <div className="flex items-end gap-2 min-w-0">
-            <div className="flex-1 min-w-0 flex items-end bg-gray-50 border border-gray-200 rounded-2xl px-4 py-2.5 focus-within:border-blue-400 focus-within:ring-1 focus-within:ring-blue-400 transition-colors">
+            {/* Pill input */}
+            <div
+              className="flex-1 min-w-0 flex items-end rounded-3xl px-4 py-2.5"
+              style={{
+                background: 'rgba(255,255,255,0.05)',
+                border: `0.5px solid ${inputFocused ? 'rgba(64,96,208,0.55)' : 'rgba(255,255,255,0.10)'}`,
+                boxShadow: inputFocused ? '0 0 0 3px rgba(64,96,208,0.14)' : 'none',
+                transition: 'border-color 180ms ease, box-shadow 180ms ease',
+              }}
+            >
               <textarea
                 ref={textareaRef}
                 value={inputText}
                 onChange={handleTextareaChange}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setInputFocused(true)}
+                onBlur={() => setInputFocused(false)}
                 placeholder={t.inputPlaceholder}
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 min-w-0 resize-none bg-transparent text-base text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed disabled:opacity-50"
-                style={{ maxHeight: '120px' }}
+                className="flex-1 min-w-0 resize-none bg-transparent text-sm focus:outline-none leading-relaxed disabled:opacity-50 placeholder:text-white/30"
+                style={{ color: '#ffffff', maxHeight: '120px' }}
               />
             </div>
 
             {/* Mic button */}
             <Tooltip text={isRecording ? t.stopRecording : t.startVoiceInput} className="shrink-0">
-            <button
-              onClick={toggleRecording}
-              disabled={isStreaming || isTranscribing || isPlayingAudio}
-              aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
-              className={[
-                'w-10 h-10 rounded-xl flex items-center justify-center transition-all',
-                isRecording
-                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                  : isTranscribing
-                  ? 'bg-gray-100 cursor-not-allowed'
-                  : 'bg-gray-100 hover:bg-gray-200',
-              ].join(' ')}
-            >
-              {isRecording ? (
-                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <rect x="6" y="6" width="12" height="12" rx="1.5" />
-                </svg>
-              ) : isTranscribing ? (
-                <svg className="w-4 h-4 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : (
-                <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                </svg>
-              )}
-            </button>
+              <button
+                onClick={toggleRecording}
+                disabled={isStreaming || isTranscribing || isPlayingAudio}
+                aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-40"
+                style={isRecording ? {
+                  background: '#ef4444',
+                  boxShadow: '0 2px 12px rgba(239,68,68,0.4)',
+                } : {
+                  background: 'rgba(255,255,255,0.07)',
+                  border: '0.5px solid rgba(255,255,255,0.10)',
+                }}
+              >
+                {isRecording ? (
+                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                  </svg>
+                ) : isTranscribing ? (
+                  <svg className="w-4 h-4 animate-spin" style={{ color: '#6080e8' }} fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.45)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                  </svg>
+                )}
+              </button>
             </Tooltip>
 
+            {/* Send button */}
             <Tooltip text={t.sendTooltip} className="shrink-0">
-            <button
-              onClick={() => sendMessage()}
-              disabled={!inputText.trim() || isStreaming}
-              aria-label="Send message"
-              className="w-10 h-10 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 disabled:bg-gray-200 text-white rounded-xl flex items-center justify-center transition-colors"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-                />
-              </svg>
-            </button>
+              <button
+                onClick={() => sendMessage()}
+                disabled={!inputText.trim() || isStreaming}
+                aria-label="Send message"
+                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                style={inputText.trim() && !isStreaming ? {
+                  background: 'linear-gradient(135deg, #4060d0, #7040c0)',
+                  boxShadow: '0 2px 12px rgba(64,96,208,0.4)',
+                } : {
+                  background: 'rgba(255,255,255,0.08)',
+                  opacity: 0.45,
+                }}
+              >
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                </svg>
+              </button>
             </Tooltip>
           </div>
 
+          {/* Bottom utility row */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-xs text-gray-300">
+            <span className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>
               {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
             </span>
             <div className="flex gap-3 items-center">
-              {/* Listen mode toggle */}
               <Tooltip text={listenMode ? t.listenModeOn : t.listenModeOff}>
                 <button
                   onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
                   aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
-                  className={listenMode ? 'text-blue-500 hover:text-blue-600 transition-colors' : 'text-gray-400 hover:text-gray-600 transition-colors'}
+                  className="transition-colors"
+                  style={{ color: listenMode ? '#6080e8' : 'rgba(255,255,255,0.28)' }}
                 >
                   <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
@@ -902,7 +1022,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 <button
                   onClick={handleDownloadTranscript}
                   aria-label="Download transcript"
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="transition-colors"
+                  style={{ color: 'rgba(255,255,255,0.28)' }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.65)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
                 >
                   <span className="hidden sm:inline text-xs">{t.downloadTranscript}</span>
                   <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -914,7 +1037,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 <button
                   onClick={handleReset}
                   aria-label="Reset conversation"
-                  className="text-gray-400 hover:text-red-500 transition-colors"
+                  className="transition-colors"
+                  style={{ color: 'rgba(255,255,255,0.28)' }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.color = '#f87171'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.color = 'rgba(255,255,255,0.28)'}
                 >
                   <span className="hidden sm:inline text-xs">{t.reset}</span>
                   <svg className="sm:hidden w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -924,61 +1050,144 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               </Tooltip>
             </div>
           </div>
+        </div>
+
+        {/* End interview reminder */}
+        {reminderState !== 'hidden' && !interviewEnded && (
+          <div className="fixed top-[58px] right-3 z-40 pointer-events-none">
+            <div
+              className={`animate-slide-down relative px-4 py-2.5 text-[13px] whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}
+              style={{
+                background: 'rgba(28,33,53,0.95)',
+                border: '0.5px solid rgba(255,255,255,0.12)',
+                borderRadius: 12,
+                boxShadow: '0 8px 32px rgba(0,0,0,0.48)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                color: 'rgba(255,255,255,0.75)',
+              }}
+            >
+              <div
+                className="absolute -top-[5px] right-4 w-2.5 h-2.5 rotate-45"
+                style={{
+                  background: 'rgba(28,33,53,0.95)',
+                  borderLeft: '0.5px solid rgba(255,255,255,0.12)',
+                  borderTop: '0.5px solid rgba(255,255,255,0.12)',
+                }}
+              />
+              {t.endReminderPrefix}{' '}
+              <strong style={{ color: '#4ade80', fontWeight: 600 }}>{t.endButtonFull}</strong>{' '}
+              {t.endReminderSuffix}
+            </div>
+          </div>
+        )}
+
+        <Footer variant="compact" />
+        <Toast toasts={toasts} onDismiss={dismissToast} />
       </div>
 
-      {/* End interview reminder — anchored below the End Interview button */}
-      {reminderState !== 'hidden' && !interviewEnded && (
-        <div className="fixed top-[58px] right-3 z-40 pointer-events-none">
-          <div className={`animate-slide-down relative bg-white border border-gray-200 shadow-lg rounded-xl px-4 py-2.5 text-[13px] text-gray-600 whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}>
-            {/* Arrow pointing up toward the End Interview button */}
-            <div className="absolute -top-[5px] right-4 w-2.5 h-2.5 bg-white border-l border-t border-gray-200 rotate-45" />
-            {t.endReminderPrefix} <strong className="text-green-700 font-semibold">{t.endButtonFull}</strong> {t.endReminderSuffix}
+      {/* SPLASH 2 — dark, transparent overlay (Background shows through) */}
+      {!chatSplashDone && (
+        <div
+          ref={s2OverlayRef}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            pointerEvents: 'none',
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            {/* Avatar with conic ring + glow */}
+            <div
+              ref={s2AvRef}
+              style={{
+                position: 'relative', width: 72, height: 72,
+                marginBottom: 24, opacity: 0,
+                transform: 'scale(0.72)', filter: 'blur(14px)',
+              }}
+            >
+              {/* Spinning conic ring */}
+              <div
+                ref={s2RingRef}
+                style={{
+                  position: 'absolute', inset: -10, borderRadius: '50%',
+                  background: 'conic-gradient(from 0deg, transparent 0%, rgba(80,110,220,0.9) 35%, rgba(120,80,200,0.7) 65%, transparent 100%)',
+                  opacity: 0,
+                  animation: 'ring-spin 3.5s linear infinite',
+                }}
+              />
+              {/* Glow halo */}
+              <div
+                ref={s2GlowRef}
+                style={{
+                  position: 'absolute', inset: -24, borderRadius: '50%',
+                  background: 'radial-gradient(circle, rgba(64,96,208,0.4) 0%, transparent 70%)',
+                  opacity: 0,
+                }}
+              />
+              {/* Photo */}
+              <div style={{
+                position: 'relative', width: '100%', height: '100%',
+                borderRadius: '50%', overflow: 'hidden',
+                border: '1.5px solid rgba(255,255,255,0.18)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
+              }}>
+                <img
+                  src="/assets/pablo-avatar.jpg"
+                  alt="Pablo Agis"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
+                />
+              </div>
+            </div>
+
+            {/* Name */}
+            <p
+              ref={s2NameRef}
+              style={{
+                fontSize: 18, fontWeight: 700, color: '#ffffff',
+                letterSpacing: '-0.01em', marginBottom: 0,
+                opacity: 0, transform: 'translateX(-40px)', filter: 'blur(10px)',
+              }}
+            >
+              Pablo Agis Burgos
+            </p>
+
+            {/* Wordmark */}
+            <p
+              ref={s2WmRef}
+              style={{
+                fontSize: 11, fontWeight: 500,
+                color: 'rgba(255,255,255,0.28)',
+                letterSpacing: '0.18em', textTransform: 'uppercase',
+                marginTop: 28, opacity: 0,
+              }}
+            >
+              InterviewMind
+            </p>
+
+            {/* Status indicator */}
+            <div
+              ref={s2StatusRef}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                marginTop: 12, opacity: 0, transform: 'translateY(10px)',
+              }}
+            >
+              <div
+                style={{
+                  width: 6, height: 6, borderRadius: '50%',
+                  background: '#3a9d5d', flexShrink: 0,
+                  animation: 'status-pulse 2s ease-in-out infinite',
+                }}
+              />
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', letterSpacing: '0.04em' }}>
+                IA lista · Conectando sesión
+              </span>
+            </div>
           </div>
         </div>
       )}
-
-      <Footer variant="compact" />
-      <Toast toasts={toasts} onDismiss={dismissToast} />
-
-      {/* SPLASH 2 — JS rAF animated, self-contained */}
-      {!chatSplashDone && (
-        <>
-          <style>{`@keyframes _s2Hb{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.15);opacity:.55}}`}</style>
-          <div
-            ref={s2OverlayRef}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 50,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              pointerEvents: 'none', background: '#f0eeea',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <div ref={s2AvRef} style={{ position: 'relative', width: 64, height: 64, marginBottom: 20, opacity: 0, transform: 'scale(0.52)' }}>
-                <div ref={s2HaloRef} style={{
-                  position: 'absolute', borderRadius: '50%',
-                  width: 108, height: 108, top: -22, left: -22,
-                  background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
-                }} />
-                <div style={{
-                  position: 'relative', width: '100%', height: '100%',
-                  borderRadius: '50%', overflow: 'hidden',
-                  border: '1.5px solid rgba(180,185,195,.55)',
-                  boxShadow: '0 4px 16px rgba(0,0,0,.07)',
-                }}>
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
-                </div>
-              </div>
-              <p ref={s2NameRef} style={{ fontSize: 18, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 0, opacity: 0, transform: 'translateY(14px)' }}>
-                Pablo Agis Burgos
-              </p>
-              <p ref={s2WmRef} style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32, opacity: 0 }}>
-                InterviewMind
-              </p>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
+    </>
   );
 }
