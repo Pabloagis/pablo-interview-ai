@@ -117,12 +117,12 @@ export default function EndInterviewButton({
       {/* Confirmation modal */}
       {modalOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
           onClick={closeModal}
         >
           <div
-            className="w-full max-w-md p-8 animate-slide-up"
+            className="w-full max-w-md px-6 py-6 sm:p-8 my-auto animate-slide-up"
             style={{
               background: 'var(--modal-bg)',
               border: '0.5px solid var(--modal-border)',
