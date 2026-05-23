@@ -37,11 +37,11 @@ export default function IntakeScreen() {
       setSplashPhase('done');
       return;
     }
-    const t1 = setTimeout(() => setSplashPhase('fading'), 2200);
+    const t1 = setTimeout(() => setSplashPhase('fading'), 3500);
     const t2 = setTimeout(() => {
       setSplashPhase('done');
       sessionStorage.setItem('im_splash_shown', '1');
-    }, 2950);
+    }, 4150);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -181,7 +181,15 @@ export default function IntakeScreen() {
   const card = 'bg-white rounded-2xl border border-[#e8e5e0] shadow-sm p-5';
 
   return (
-    <div className={`relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden transition-all duration-700 ease-out ${splashPhase === 'hero' ? 'opacity-0 translate-y-3' : 'opacity-100 translate-y-0'}`}>
+    <div
+      className={`relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden ${splashPhase === 'hero' ? 'opacity-0 translate-y-9' : 'opacity-100 translate-y-0'}`}
+      style={splashPhase === 'fading' ? {
+        transitionProperty: 'opacity, transform',
+        transitionDuration: '560ms',
+        transitionDelay: '150ms',
+        transitionTimingFunction: 'cubic-bezier(0.76, 0, 0.24, 1)',
+      } : undefined}
+    >
       <div className="absolute top-3 right-3">
         <LanguageSwitcher />
       </div>
@@ -392,9 +400,9 @@ export default function IntakeScreen() {
           <div className={splashPhase === 'fading' ? 'animate-hero-exit' : undefined}>
             <div className="flex flex-col items-center text-center px-8">
 
-              {/* Avatar with soft glow */}
+              {/* Avatar with breathing glow halo */}
               <div className="relative mb-7 animate-hero-avatar">
-                <div className="absolute inset-0 rounded-full bg-blue-100 scale-[1.35] blur-2xl opacity-70" />
+                <div className="absolute inset-0 rounded-full bg-blue-200 blur-[28px] animate-hero-halo" />
                 <div className="relative w-32 h-32 rounded-full overflow-hidden border-[3px] border-white shadow-2xl">
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
