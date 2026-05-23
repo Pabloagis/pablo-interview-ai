@@ -384,7 +384,7 @@ function generateEmailHTML(
                         </a>
                       </td>
                       <td width="50%" height="150" style="padding-left:5px; vertical-align:top;">
-                        <a href="${BASE_URL}/cv.pdf" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center; height:150px;">
+                        <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center; height:150px;">
                           <table cellpadding="0" cellspacing="0" style="margin:0 auto 12px;"><tr>
                             <td width="38" height="38" bgcolor="#FEE2E2" style="border-radius:8px; font-size:0; line-height:0;">
                               <img src="${BASE_URL}/assets/em-3.png" width="38" height="38" alt="" style="display:block; border-radius:8px;" />
