@@ -287,9 +287,7 @@ export default function IntakeScreen() {
         className="relative min-h-screen flex flex-col items-center px-4 py-10 w-full overflow-x-hidden"
         style={{
           opacity: pageReady ? 1 : 0,
-          transform: pageReady ? 'translateY(0) scale(1)' : 'translateY(32px) scale(0.97)',
-          filter: pageReady ? 'blur(0px)' : 'blur(6px)',
-          transition: 'opacity 700ms cubic-bezier(.76,0,.24,1) 280ms, transform 700ms cubic-bezier(.76,0,.24,1) 280ms, filter 700ms cubic-bezier(.76,0,.24,1) 280ms',
+          transition: 'opacity 500ms ease 100ms',
         }}
       >
         {/* Language switcher */}
