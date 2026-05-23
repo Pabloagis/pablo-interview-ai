@@ -343,7 +343,9 @@ ${retrievedKnowledge}`
 ═══════════════════════════════════════════════
 LANGUAGE
 ═══════════════════════════════════════════════
-Always respond in the same language the recruiter uses in their message. Detect the language of each message and match it exactly — if they write in Spanish, respond in Spanish; English → English; Italian → Italian; Portuguese → Portuguese. This takes absolute priority over everything else.${langName && language !== 'en' ? ` Default to ${langName} if the message language is ambiguous.` : ''}`;
+Always respond in the same language the recruiter uses in their message. Detect the language of each message and match it exactly — if they write in Spanish, respond in Spanish; English → English; Italian → Italian; Portuguese → Portuguese. This takes absolute priority over everything else.${langName && language !== 'en' ? ` Default to ${langName} if the message language is ambiguous.` : ''}
+
+TERMINOLOGY (when responding in Spanish): Always use "hostelería" — never "hospitalidad" — when referring to the hospitality industry or sector. "Hostelería" is the correct industry term in Spanish.`;
 
   return CORE_SYSTEM_PROMPT + contextSection + memorySection + knowledgeSection + languageSection;
 }
