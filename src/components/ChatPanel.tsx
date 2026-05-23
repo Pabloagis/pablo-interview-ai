@@ -72,6 +72,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const messagesLengthRef = useRef(0);
   const contextRef = useRef(context);
   const langRef = useRef(lang);
+  const inputTextRef = useRef('');
   const sendCheckInRef = useRef<() => Promise<void>>();
   const dismissPersistentReminderRef = useRef<() => void>();
   const usedTopicsRef = useRef<Set<string>>(new Set());
@@ -378,7 +379,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   useEffect(() => {
     const introAbort = new AbortController();
     const timer = setTimeout(async () => {
-      if (messagesLengthRef.current > 0 || isStreamingRef.current) return;
+      if (messagesLengthRef.current > 0 || isStreamingRef.current || inputTextRef.current.trim().length > 0) return;
       setStreamingText('');
       setIsStreaming(true);
       try {
@@ -614,7 +615,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dismissPersistentReminderRef.current?.();
-    setInputText(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
+    const newVal = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
+    setInputText(newVal);
+    inputTextRef.current = newVal;
     const el = e.target;
     el.style.height = 'auto';
     el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
