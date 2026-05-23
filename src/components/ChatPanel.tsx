@@ -861,51 +861,70 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <Footer variant="compact" />
       <Toast toasts={toasts} onDismiss={dismissToast} />
 
-      {/* SPLASH 2 */}
+      {/* SPLASH 2 — self-contained, no globals.css dependency */}
       {chatSplashPhase !== 'done' && (
-        <div
-          className={`fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none${chatSplashPhase === 'fading' ? ' animate-hero-exit' : ''}`}
-          style={{ background: '#f0eeea' }}
-        >
-            <div className="flex flex-col items-center text-center">
+        <>
+          <style>{`
+            @keyframes _s2Av { 0%{transform:scale(.52);opacity:0} 65%{transform:scale(1.04);opacity:1} 100%{transform:scale(1);opacity:1} }
+            @keyframes _s2Hi { from{opacity:0} to{opacity:1} }
+            @keyframes _s2Hb { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.18);opacity:.4} }
+            @keyframes _s2Nm { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:1} }
+            @keyframes _s2Br { from{opacity:0} to{opacity:.72} }
+            @keyframes _s2Ex { from{transform:translateY(0) scale(1);filter:blur(0px);opacity:1} to{transform:translateY(-48px) scale(.985);filter:blur(5px);opacity:0} }
+          `}</style>
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 50,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              pointerEvents: 'none', background: '#f0eeea',
+              animation: chatSplashPhase === 'fading' ? '_s2Ex 0.48s cubic-bezier(.76,0,.24,1) both' : undefined,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
 
               {/* Avatar + halo */}
-              <div className="relative mb-5 animate-s2-avatar" style={{ width: 64, height: 64 }}>
-                <div
-                  className="absolute rounded-full"
-                  style={{
-                    width: 108, height: 108,
-                    top: -22, left: -22,
-                    background: 'radial-gradient(circle, rgba(120,130,150,0.22) 0%, transparent 68%)',
-                    animation: 'hero-halo-in 0.3s ease-out 0.08s both, hero-halo-breathe 2.4s ease-in-out 0.32s infinite',
-                  }}
-                />
-                <div
-                  className="relative w-full h-full rounded-full overflow-hidden"
-                  style={{ border: '1.5px solid rgba(180,185,195,0.55)', boxShadow: '0 4px 16px rgba(0,0,0,0.07)' }}
-                >
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+              <div style={{
+                position: 'relative', width: 64, height: 64, marginBottom: 20,
+                animation: '_s2Av .56s cubic-bezier(.34,1.56,.64,1) 0s both',
+              }}>
+                <div style={{
+                  position: 'absolute', borderRadius: '50%',
+                  width: 108, height: 108, top: -22, left: -22,
+                  background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
+                  animation: '_s2Hi .3s ease-out .08s both, _s2Hb 2.4s ease-in-out .32s infinite',
+                }} />
+                <div style={{
+                  position: 'relative', width: '100%', height: '100%',
+                  borderRadius: '50%', overflow: 'hidden',
+                  border: '1.5px solid rgba(180,185,195,.55)',
+                  boxShadow: '0 4px 16px rgba(0,0,0,.07)',
+                }}>
+                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                 </div>
               </div>
 
               {/* Name */}
-              <p
-                className="animate-s2-name"
-                style={{ fontSize: 18, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 0 }}
-              >
+              <p style={{
+                fontSize: 18, fontWeight: 700, color: '#0d1117',
+                letterSpacing: '-0.01em', marginBottom: 0,
+                animation: '_s2Nm .34s cubic-bezier(.33,1,.68,1) .26s both',
+              }}>
                 Pablo Agis Burgos
               </p>
 
               {/* Wordmark */}
-              <p
-                className="animate-s2-brand"
-                style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32 }}
-              >
+              <p style={{
+                fontSize: 11, fontWeight: 500, color: '#a8adb8',
+                letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 32,
+                animation: '_s2Br .38s cubic-bezier(.33,1,.68,1) .48s both',
+              }}>
                 InterviewMind
               </p>
 
             </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

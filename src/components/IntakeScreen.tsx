@@ -397,65 +397,88 @@ export default function IntakeScreen() {
         </div>
       )}
 
-      {/* SPLASH 1 */}
+      {/* SPLASH 1 — self-contained, no globals.css dependency */}
       {splashPhase !== 'done' && (
-        <div
-          className={`fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none${splashPhase === 'fading' ? ' animate-hero-exit' : ''}`}
-          style={{ background: '#f0eeea' }}
-        >
-            <div className="flex flex-col items-center text-center">
+        <>
+          <style>{`
+            @keyframes _s1Av { 0%{transform:scale(.52);opacity:0} 65%{transform:scale(1.04);opacity:1} 100%{transform:scale(1);opacity:1} }
+            @keyframes _s1Hi { from{opacity:0} to{opacity:1} }
+            @keyframes _s1Hb { 0%,100%{transform:scale(1);opacity:.85} 50%{transform:scale(1.18);opacity:.4} }
+            @keyframes _s1Nm { from{transform:translateY(18px);opacity:0} to{transform:translateY(0);opacity:1} }
+            @keyframes _s1Sp { from{transform:scaleX(0);opacity:0} to{transform:scaleX(1);opacity:1} }
+            @keyframes _s1Tg { from{transform:translateY(14px);opacity:0} to{transform:translateY(0);opacity:.8} }
+            @keyframes _s1Br { from{opacity:0} to{opacity:.72} }
+            @keyframes _s1Ex { from{transform:translateY(0) scale(1);filter:blur(0px);opacity:1} to{transform:translateY(-48px) scale(.985);filter:blur(5px);opacity:0} }
+          `}</style>
+          <div
+            style={{
+              position: 'fixed', inset: 0, zIndex: 40,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              pointerEvents: 'none', background: '#f0eeea',
+              animation: splashPhase === 'fading' ? '_s1Ex 0.48s cubic-bezier(.76,0,.24,1) both' : undefined,
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
 
               {/* Avatar + halo */}
-              <div className="relative mb-6 animate-s1-avatar" style={{ width: 88, height: 88 }}>
-                <div
-                  className="absolute rounded-full"
-                  style={{
-                    width: 148, height: 148,
-                    top: -30, left: -30,
-                    background: 'radial-gradient(circle, rgba(120,130,150,0.22) 0%, transparent 68%)',
-                    animation: 'hero-halo-in 0.3s ease-out 0.08s both, hero-halo-breathe 2.8s ease-in-out 0.38s infinite',
-                  }}
-                />
-                <div
-                  className="relative w-full h-full rounded-full overflow-hidden"
-                  style={{ border: '1.5px solid rgba(180,185,195,0.55)', boxShadow: '0 4px 20px rgba(0,0,0,0.07)' }}
-                >
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+              <div style={{
+                position: 'relative', width: 88, height: 88, marginBottom: 24,
+                animation: '_s1Av 0.68s cubic-bezier(.34,1.56,.64,1) 0s both',
+              }}>
+                <div style={{
+                  position: 'absolute', borderRadius: '50%',
+                  width: 148, height: 148, top: -30, left: -30,
+                  background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
+                  animation: '_s1Hi .3s ease-out .08s both, _s1Hb 2.8s ease-in-out .38s infinite',
+                }} />
+                <div style={{
+                  position: 'relative', width: '100%', height: '100%',
+                  borderRadius: '50%', overflow: 'hidden',
+                  border: '1.5px solid rgba(180,185,195,.55)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,.07)',
+                }}>
+                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                 </div>
               </div>
 
               {/* Name */}
-              <p
-                className="animate-s1-name"
-                style={{ fontSize: 22, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 14 }}
-              >
+              <p style={{
+                fontSize: 22, fontWeight: 700, color: '#0d1117',
+                letterSpacing: '-0.01em', marginBottom: 14,
+                animation: '_s1Nm .38s cubic-bezier(.33,1,.68,1) .32s both',
+              }}>
                 Pablo Agis Burgos
               </p>
 
               {/* Divider */}
-              <div
-                className="animate-s1-sep"
-                style={{ width: 110, height: 0.5, background: 'rgba(100,105,115,0.25)', marginBottom: 12 }}
-              />
+              <div style={{
+                width: 110, height: 0.5,
+                background: 'rgba(100,105,115,.25)', marginBottom: 12,
+                transformOrigin: 'center',
+                animation: '_s1Sp .28s cubic-bezier(.33,1,.68,1) .47s both',
+              }} />
 
               {/* Tagline */}
-              <p
-                className="animate-s1-tagline"
-                style={{ fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em' }}
-              >
+              <p style={{
+                fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em',
+                animation: '_s1Tg .42s cubic-bezier(.33,1,.68,1) .61s both',
+              }}>
                 SaaS · Hospitality Tech · Sales
               </p>
 
               {/* Wordmark */}
-              <p
-                className="animate-s1-brand"
-                style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40 }}
-              >
+              <p style={{
+                fontSize: 11, fontWeight: 500, color: '#a8adb8',
+                letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40,
+                animation: '_s1Br .48s cubic-bezier(.33,1,.68,1) .78s both',
+              }}>
                 InterviewMind
               </p>
 
             </div>
-        </div>
+          </div>
+        </>
       )}
     </div>
   );
