@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '@/context/LanguageContext';
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
+const AUTO_ADVANCE_MS = 5000;
 const TYPEWRITER_FULL = 'At HubOS I was a Software Implementation Specialist, leading end-to-end onboarding for hotel clients across Europe…';
 
 interface Props {
@@ -145,6 +146,56 @@ function ConversationScene({ typeText }: { typeText: string }) {
   );
 }
 
+function ReportScene() {
+  const sections = ['Key strengths', 'Culture fit', 'Conversation highlights'];
+  return (
+    <div style={{
+      position: 'absolute', inset: 0,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '34px 18px 14px',
+    }}>
+      <div style={{
+        width: '100%', maxWidth: 272,
+        background: 'rgba(255,255,255,0.04)',
+        border: '0.5px solid rgba(255,255,255,0.1)',
+        borderRadius: 14, padding: '12px',
+      }}>
+        <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(155,185,255,0.8)', marginBottom: 9, letterSpacing: '0.4px', textTransform: 'uppercase' }}>
+          Insights Report
+        </div>
+        {sections.map((s, i) => (
+          <div key={s} style={{
+            background: i === 0 ? 'rgba(64,96,208,0.18)' : 'rgba(255,255,255,0.04)',
+            border: `0.5px solid ${i === 0 ? 'rgba(100,140,255,0.4)' : 'rgba(255,255,255,0.07)'}`,
+            borderRadius: 8, padding: '7px 10px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            marginBottom: 5, fontSize: 11,
+            color: i === 0 ? 'rgba(200,220,255,0.95)' : 'rgba(160,180,255,0.5)',
+          }}>
+            <span>{s}</span>
+            <span style={{ fontSize: 9, opacity: 0.7 }}>{i === 0 ? '▼' : '▶'}</span>
+          </div>
+        ))}
+        <div style={{
+          marginTop: 8, display: 'flex', gap: 5,
+        }}>
+          {['📅 Book call', '📄 Download CV'].map((label) => (
+            <div key={label} style={{
+              flex: 1, background: 'rgba(64,96,208,0.15)',
+              border: '0.5px solid rgba(64,96,208,0.28)',
+              borderRadius: 7, padding: '5px 4px',
+              textAlign: 'center', fontSize: 9.5, fontWeight: 600,
+              color: 'rgba(155,185,255,0.85)',
+            }}>
+              {label}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InsightsScene() {
   return (
     <div style={{
@@ -243,8 +294,15 @@ export default function HowItWorksModal({ onClose }: Props) {
   const prev = () => { if (step > 0) goTo(step - 1); };
   const next = () => { if (step < TOTAL_STEPS - 1) goTo(step + 1); else close(); };
 
-  const titles = [t.hiwStep1Title, t.hiwStep2Title, t.hiwStep3Title, t.hiwStep4Title];
-  const descs  = [t.hiwStep1Desc,  t.hiwStep2Desc,  t.hiwStep3Desc,  t.hiwStep4Desc];
+  // Auto-advance every AUTO_ADVANCE_MS, reset on manual navigation
+  useEffect(() => {
+    const id = setTimeout(() => next(), AUTO_ADVANCE_MS);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  const titles = [t.hiwStep1Title, t.hiwStep2Title, t.hiwStep3Title, t.hiwStep4Title, t.hiwStep5Title];
+  const descs  = [t.hiwStep1Desc,  t.hiwStep2Desc,  t.hiwStep3Desc,  t.hiwStep4Desc,  t.hiwStep5Desc];
 
   return (
     <>
@@ -317,6 +375,7 @@ export default function HowItWorksModal({ onClose }: Props) {
               {step === 1 && <QuestionsScene />}
               {step === 2 && <ConversationScene typeText={typeText} />}
               {step === 3 && <InsightsScene />}
+              {step === 4 && <ReportScene />}
 
               {/* Step badge */}
               <div style={{
@@ -379,7 +438,7 @@ export default function HowItWorksModal({ onClose }: Props) {
                       boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
                     }}
                   >
-                    {step === TOTAL_STEPS - 1 ? t.hiwClose : t.hiwNext}
+                    {step === TOTAL_STEPS - 1 ? t.hiwStep5Cta : t.hiwNext}
                   </button>
                 </div>
               </div>

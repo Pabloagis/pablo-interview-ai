@@ -161,6 +161,9 @@ export type Translations = {
   hiwStep4Desc: string;
   hiwClose: string;
   hiwNext: string;
+  hiwStep5Title: string;
+  hiwStep5Desc: string;
+  hiwStep5Cta: string;
 };
 
 const EN: Translations = {
@@ -336,6 +339,9 @@ const EN: Translations = {
   hiwStep4Desc: "Click Insights when done. Pablo will send his CV and a conversation summary straight to your inbox.",
   hiwClose: 'Got it',
   hiwNext: 'Next',
+  hiwStep5Title: 'Your insights report',
+  hiwStep5Desc: 'After the interview you get a personalised report with key talking points, company fit signals, and quick links to schedule a call or download the CV.',
+  hiwStep5Cta: 'Start now ↗',
 };
 
 const ES: Translations = {
@@ -511,6 +517,9 @@ const ES: Translations = {
   hiwStep4Desc: 'Haz clic en Insights cuando termines. Pablo enviará su CV y un resumen de la conversación a tu email.',
   hiwClose: 'Entendido',
   hiwNext: 'Siguiente',
+  hiwStep5Title: 'Tu informe de insights',
+  hiwStep5Desc: 'Tras la entrevista recibes un informe personalizado con los puntos clave, señales de ajuste con la empresa y accesos directos para agendar una llamada o descargar el CV.',
+  hiwStep5Cta: 'Empezar ahora ↗',
 };
 
 const IT: Translations = {
@@ -686,6 +695,9 @@ const IT: Translations = {
   hiwStep4Desc: "Clicca su Insights quando hai finito. Pablo ti invierà il CV e un riepilogo della conversazione via email.",
   hiwClose: 'Capito',
   hiwNext: 'Avanti',
+  hiwStep5Title: 'Il tuo report di insights',
+  hiwStep5Desc: 'Dopo il colloquio ricevi un report personalizzato con i punti chiave, segnali di affinità con l\'azienda e link rapidi per prenotare una chiamata o scaricare il CV.',
+  hiwStep5Cta: 'Inizia ora ↗',
 };
 
 const PT: Translations = {
@@ -861,6 +873,9 @@ const PT: Translations = {
   hiwStep4Desc: 'Clique em Insights quando terminar. O Pablo enviará o CV e um resumo da conversa para o seu email.',
   hiwClose: 'Entendido',
   hiwNext: 'Próximo',
+  hiwStep5Title: 'O seu relatório de insights',
+  hiwStep5Desc: 'Após a entrevista recebe um relatório personalizado com os pontos-chave, sinais de compatibilidade com a empresa e links rápidos para agendar uma chamada ou descarregar o CV.',
+  hiwStep5Cta: 'Começar agora ↗',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

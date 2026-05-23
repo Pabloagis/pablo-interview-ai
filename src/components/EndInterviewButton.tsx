@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import Tooltip from './Tooltip';
@@ -21,6 +22,7 @@ export default function EndInterviewButton({
   suppressTooltip = false,
 }: EndInterviewButtonProps) {
   const { t } = useLanguage();
+  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -63,7 +65,7 @@ export default function EndInterviewButton({
       }
 
       setModalOpen(false);
-      onInterviewEnded(true);
+      router.push(`/email-preview?id=${sessionId}`);
     } catch (err) {
       console.error('[EndInterview] send-followup failed:', err);
       setErrorMsg(t.endModalError);
