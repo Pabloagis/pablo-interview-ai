@@ -27,7 +27,7 @@ export default function LanguageSwitcher() {
           onClick={() => setOpen((v) => !v)}
           aria-label="Select language"
           className="flex items-center gap-1 px-1 py-1 rounded-lg transition-colors"
-          style={{ color: open ? 'var(--lang-trigger-open)' : 'var(--lang-trigger)' }}
+          style={{ color: 'var(--lang-trigger-open)' }}
         >
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" strokeWidth={2} />
