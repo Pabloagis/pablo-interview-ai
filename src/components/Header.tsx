@@ -29,7 +29,7 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
         >
           <span className="text-white font-bold text-xs">IM</span>
         </div>
-        <span className="font-semibold text-sm truncate" style={{ color: 'var(--nav-text)', letterSpacing: '-0.01em' }}>
+        <span className="font-semibold text-sm truncate max-w-[120px] sm:max-w-none" style={{ color: 'var(--nav-text)', letterSpacing: '-0.01em' }}>
           InterviewMind
         </span>
       </div>

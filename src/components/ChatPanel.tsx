@@ -375,7 +375,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   langRef.current = lang;
   interviewEndedRef.current = interviewEnded !== null;
 
-  // Auto-intro after 20s if recruiter hasn't typed
+  // Auto-intro after 30s if recruiter hasn't typed
   useEffect(() => {
     const introAbort = new AbortController();
     const timer = setTimeout(async () => {
@@ -417,7 +417,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         setStreamingText('');
         setIsStreaming(false);
       }
-    }, 20_000);
+    }, 30_000);
     return () => { clearTimeout(timer); introAbort.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

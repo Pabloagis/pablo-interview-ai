@@ -35,7 +35,7 @@ export default function LanguageSwitcher() {
           </svg>
           <span className="text-sm leading-none">{LANG_FLAGS[lang]}</span>
           <svg
-            className={`w-2.5 h-2.5 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+            className={`hidden sm:block w-2.5 h-2.5 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

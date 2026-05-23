@@ -28,7 +28,8 @@ export default function EndInterviewButton({
   const [modalOpen, setModalOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [hovered, setHovered] = useState(false);
+  const [hovered,  setHovered]  = useState(false);
+  const [pressed,  setPressed]  = useState(false);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
@@ -77,92 +78,59 @@ export default function EndInterviewButton({
     }
   };
 
-  const activeStyle: React.CSSProperties = {
-    padding: '6px 14px',
-    fontSize: 12,
-    fontWeight: 600,
-    fontFamily: 'inherit',
-    color: '#ffffff',
-    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-    border: 'none',
-    borderRadius: 'var(--radius-sm)',
-    boxShadow: hovered ? '0 4px 20px var(--accent-glow)' : '0 2px 12px var(--accent-glow)',
-    transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
-    transition: 'transform 180ms ease, box-shadow 180ms ease',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-  };
-
-  const inactiveStyle: React.CSSProperties = {
-    padding: '6px 14px',
-    fontSize: 12,
-    fontWeight: 600,
-    fontFamily: 'inherit',
-    color: 'var(--text-muted)',
-    background: 'var(--glass-1)',
-    border: '0.5px solid var(--glass-border)',
-    borderRadius: 'var(--radius-sm)',
-    boxShadow: 'none',
-    cursor: 'not-allowed',
-    opacity: 0.5,
-    whiteSpace: 'nowrap',
-  };
-
   return (
     <>
-      {/* Desktop button with tooltip */}
+      {/* Unified Insights trigger — pill on desktop, icon square on mobile */}
       <Tooltip
         text={isActive ? t.endTooltipActive : t.endTooltipInactive}
         position="bottom"
         align="right"
         disabled={suppressTooltip}
-        className="hidden sm:block flex-shrink-0"
+        className="shrink-0"
       >
         <button
           onClick={openModal}
           disabled={!isActive}
           onMouseEnter={() => isActive && setHovered(true)}
-          onMouseLeave={() => setHovered(false)}
-          style={isActive ? activeStyle : inactiveStyle}
+          onMouseLeave={() => { setHovered(false); setPressed(false); }}
+          onMouseDown={() => isActive && setPressed(true)}
+          onMouseUp={() => setPressed(false)}
+          aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
+          className="flex items-center justify-center gap-[6px] shrink-0 w-[34px] h-[34px] p-0 rounded-lg sm:w-auto sm:h-auto sm:px-[14px] sm:py-[6px] sm:rounded-full"
+          style={isActive ? {
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+            border: 'none',
+            color: '#ffffff',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            boxShadow: hovered && !pressed ? '0 4px 20px var(--accent-glow)' : '0 2px 12px var(--accent-glow)',
+            transform: pressed ? 'translateY(0)' : hovered ? 'translateY(-1px)' : 'translateY(0)',
+            transition: 'transform 180ms ease, box-shadow 180ms ease',
+          } : {
+            background: 'var(--glass-1)',
+            border: '0.5px solid var(--glass-border)',
+            color: 'var(--text-muted)',
+            cursor: 'not-allowed',
+            opacity: 0.45,
+            fontFamily: 'inherit',
+          }}
         >
-          {t.endButtonFull}
+          <svg
+            className="shrink-0 w-[16px] h-[16px] sm:w-[14px] sm:h-[14px]"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m1.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+          </svg>
+          <span className="hidden sm:inline" style={{ fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap' }}>
+            {t.endButtonFull}
+          </span>
         </button>
       </Tooltip>
-
-      {/* Mobile icon-only button */}
-      <button
-        onClick={openModal}
-        disabled={!isActive}
-        aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
-        className="sm:hidden"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: 34,
-          height: 34,
-          flexShrink: 0,
-          borderRadius: 'var(--radius-sm)',
-          border: isActive ? 'none' : '0.5px solid var(--glass-border)',
-          background: isActive
-            ? 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))'
-            : 'var(--glass-1)',
-          boxShadow: isActive ? '0 2px 12px var(--accent-glow)' : 'none',
-          cursor: isActive ? 'pointer' : 'not-allowed',
-          opacity: isActive ? 1 : 0.5,
-          transition: 'transform 180ms ease, box-shadow 180ms ease',
-        }}
-      >
-        <svg
-          style={{ width: 16, height: 16, color: isActive ? '#ffffff' : 'var(--text-muted)' }}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          strokeWidth={2.5}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m1.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-        </svg>
-      </button>
 
       {/* Confirmation modal */}
       {modalOpen && (
