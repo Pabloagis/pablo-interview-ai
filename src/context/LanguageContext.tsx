@@ -164,6 +164,18 @@ export type Translations = {
   hiwStep5Title: string;
   hiwStep5Desc: string;
   hiwStep5Cta: string;
+  // HowItWorksModal — scene illustrations
+  hiwTypewriterText: string;
+  hiwInsightsReport: string;
+  hiwKeyStrengths: string;
+  hiwCultureFit: string;
+  hiwConvHighlights: string;
+  hiwBookCall: string;
+  hiwDownloadCV: string;
+  hiwInsightsOnWay: string;
+  hiwSentTo: string;
+  hiwCVAttached: string;
+  hiwTranscriptLabel: string;
 };
 
 const EN: Translations = {
@@ -342,6 +354,17 @@ const EN: Translations = {
   hiwStep5Title: 'Your insights report',
   hiwStep5Desc: 'After the interview you get a personalised report with key talking points, company fit signals, and quick links to schedule a call or download the CV.',
   hiwStep5Cta: 'Start now ↗',
+  hiwTypewriterText: 'At HubOS I was a Software Implementation Specialist, leading end-to-end onboarding for hotel clients across Europe…',
+  hiwInsightsReport: 'Insights Report',
+  hiwKeyStrengths: 'Key strengths',
+  hiwCultureFit: 'Culture fit',
+  hiwConvHighlights: 'Conversation highlights',
+  hiwBookCall: '📅 Book call',
+  hiwDownloadCV: '📄 Download CV',
+  hiwInsightsOnWay: 'Insights on their way',
+  hiwSentTo: 'Sent to',
+  hiwCVAttached: '📄 CV attached',
+  hiwTranscriptLabel: '📋 Transcript',
 };
 
 const ES: Translations = {
@@ -520,6 +543,17 @@ const ES: Translations = {
   hiwStep5Title: 'Tu informe de insights',
   hiwStep5Desc: 'Tras la entrevista recibes un informe personalizado con los puntos clave, señales de ajuste con la empresa y accesos directos para agendar una llamada o descargar el CV.',
   hiwStep5Cta: 'Empezar ahora ↗',
+  hiwTypewriterText: 'En HubOS era Especialista en Implementación de Software, liderando el onboarding de extremo a extremo para clientes hoteleros en Europa…',
+  hiwInsightsReport: 'Informe de insights',
+  hiwKeyStrengths: 'Puntos fuertes',
+  hiwCultureFit: 'Ajuste cultural',
+  hiwConvHighlights: 'Puntos clave',
+  hiwBookCall: '📅 Agendar llamada',
+  hiwDownloadCV: '📄 Descargar CV',
+  hiwInsightsOnWay: 'Insights en camino',
+  hiwSentTo: 'Enviado a',
+  hiwCVAttached: '📄 CV adjunto',
+  hiwTranscriptLabel: '📋 Transcripción',
 };
 
 const IT: Translations = {
@@ -698,6 +732,17 @@ const IT: Translations = {
   hiwStep5Title: 'Il tuo report di insights',
   hiwStep5Desc: 'Dopo il colloquio ricevi un report personalizzato con i punti chiave, segnali di affinità con l\'azienda e link rapidi per prenotare una chiamata o scaricare il CV.',
   hiwStep5Cta: 'Inizia ora ↗',
+  hiwTypewriterText: "In HubOS ero Software Implementation Specialist, guidando l'onboarding end-to-end per clienti alberghieri in Europa…",
+  hiwInsightsReport: 'Report di insights',
+  hiwKeyStrengths: 'Punti di forza',
+  hiwCultureFit: 'Cultura aziendale',
+  hiwConvHighlights: 'Punti salienti',
+  hiwBookCall: '📅 Prenota chiamata',
+  hiwDownloadCV: '📄 Scarica CV',
+  hiwInsightsOnWay: 'Insights in arrivo',
+  hiwSentTo: 'Inviato a',
+  hiwCVAttached: '📄 CV allegato',
+  hiwTranscriptLabel: '📋 Trascrizione',
 };
 
 const PT: Translations = {
@@ -876,6 +921,17 @@ const PT: Translations = {
   hiwStep5Title: 'O seu relatório de insights',
   hiwStep5Desc: 'Após a entrevista recebe um relatório personalizado com os pontos-chave, sinais de compatibilidade com a empresa e links rápidos para agendar uma chamada ou descarregar o CV.',
   hiwStep5Cta: 'Começar agora ↗',
+  hiwTypewriterText: 'Na HubOS era Software Implementation Specialist, liderando o onboarding de ponta a ponta para clientes hoteleiros na Europa…',
+  hiwInsightsReport: 'Relatório de insights',
+  hiwKeyStrengths: 'Pontos fortes',
+  hiwCultureFit: 'Ajuste cultural',
+  hiwConvHighlights: 'Destaques da conversa',
+  hiwBookCall: '📅 Agendar chamada',
+  hiwDownloadCV: '📄 Descarregar CV',
+  hiwInsightsOnWay: 'Insights a caminho',
+  hiwSentTo: 'Enviado para',
+  hiwCVAttached: '📄 CV em anexo',
+  hiwTranscriptLabel: '📋 Transcrição',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

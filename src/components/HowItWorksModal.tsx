@@ -5,7 +5,6 @@ import { useLanguage } from '@/context/LanguageContext';
 
 const TOTAL_STEPS = 5;
 const AUTO_ADVANCE_MS = 5000;
-const TYPEWRITER_FULL = 'At HubOS I was a Software Implementation Specialist, leading end-to-end onboarding for hotel clients across Europe…';
 
 interface Props {
   onClose: () => void;
@@ -14,6 +13,7 @@ interface Props {
 // ── Scene sub-components ──────────────────────────────────────────────────────
 
 function FormScene() {
+  const { t } = useLanguage();
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -28,7 +28,7 @@ function FormScene() {
       }}>
         <div style={{ marginBottom: 8 }}>
           <div style={{ fontSize: 9, color: 'rgba(160,180,255,0.45)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Name
+            {t.labelName}
           </div>
           <div style={{
             background: 'rgba(255,255,255,0.06)', border: '0.5px solid rgba(100,130,255,0.35)',
@@ -45,7 +45,7 @@ function FormScene() {
         </div>
         <div style={{ marginBottom: 12 }}>
           <div style={{ fontSize: 9, color: 'rgba(160,180,255,0.45)', marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Email
+            {t.labelEmail}
           </div>
           <div style={{
             background: 'rgba(255,255,255,0.04)', border: '0.5px solid rgba(255,255,255,0.09)',
@@ -59,7 +59,7 @@ function FormScene() {
           borderRadius: 9, padding: '8px',
           textAlign: 'center', fontSize: 11.5, fontWeight: 700, color: '#fff', letterSpacing: '0.3px',
         }}>
-          Start Interview →
+          {t.buttonStart} →
         </div>
       </div>
     </div>
@@ -67,11 +67,8 @@ function FormScene() {
 }
 
 function QuestionsScene() {
-  const questions = [
-    'What was your role at HubOS?',
-    'Tell me about a difficult client',
-    'Why the move to hospitality tech?',
-  ];
+  const { t } = useLanguage();
+  const questions = [t.q1, t.q2, t.q3];
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -79,7 +76,7 @@ function QuestionsScene() {
       padding: '34px 18px 14px', gap: 7,
     }}>
       <div style={{ fontSize: 9.5, color: 'rgba(160,180,255,0.45)', marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-        Try asking…
+        {t.tryAsking}…
       </div>
       {questions.map((q, i) => (
         <div key={i} style={{
@@ -96,7 +93,8 @@ function QuestionsScene() {
   );
 }
 
-function ConversationScene({ typeText }: { typeText: string }) {
+function ConversationScene({ typeText, typewriterFull }: { typeText: string; typewriterFull: string }) {
+  const { t } = useLanguage();
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -110,7 +108,7 @@ function ConversationScene({ typeText }: { typeText: string }) {
           borderRadius: '11px 11px 4px 11px', padding: '8px 11px',
           fontSize: 11.5, color: 'rgba(255,255,255,0.95)', maxWidth: '78%',
         }}>
-          What was your role at HubOS?
+          {t.q1}
         </div>
       </div>
 
@@ -131,8 +129,8 @@ function ConversationScene({ typeText }: { typeText: string }) {
           fontSize: 11.5, color: 'rgba(220,230,255,0.9)', maxWidth: '84%', lineHeight: 1.5,
           minHeight: 38,
         }}>
-          {typeText || ' '}
-          {typeText.length < TYPEWRITER_FULL.length && typeText.length > 0 && (
+          {typeText || ' '}
+          {typeText.length < typewriterFull.length && typeText.length > 0 && (
             <span style={{
               display: 'inline-block', width: 1.5, height: 11,
               background: 'rgba(100,140,255,0.9)',
@@ -147,7 +145,8 @@ function ConversationScene({ typeText }: { typeText: string }) {
 }
 
 function ReportScene() {
-  const sections = ['Key strengths', 'Culture fit', 'Conversation highlights'];
+  const { t } = useLanguage();
+  const sections = [t.hiwKeyStrengths, t.hiwCultureFit, t.hiwConvHighlights];
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -161,7 +160,7 @@ function ReportScene() {
         borderRadius: 14, padding: '12px',
       }}>
         <div style={{ fontSize: 10, fontWeight: 700, color: 'rgba(155,185,255,0.8)', marginBottom: 9, letterSpacing: '0.4px', textTransform: 'uppercase' }}>
-          Insights Report
+          {t.hiwInsightsReport}
         </div>
         {sections.map((s, i) => (
           <div key={s} style={{
@@ -176,10 +175,8 @@ function ReportScene() {
             <span style={{ fontSize: 9, opacity: 0.7 }}>{i === 0 ? '▼' : '▶'}</span>
           </div>
         ))}
-        <div style={{
-          marginTop: 8, display: 'flex', gap: 5,
-        }}>
-          {['📅 Book call', '📄 Download CV'].map((label) => (
+        <div style={{ marginTop: 8, display: 'flex', gap: 5 }}>
+          {[t.hiwBookCall, t.hiwDownloadCV].map((label) => (
             <div key={label} style={{
               flex: 1, background: 'rgba(64,96,208,0.15)',
               border: '0.5px solid rgba(64,96,208,0.28)',
@@ -197,6 +194,7 @@ function ReportScene() {
 }
 
 function InsightsScene() {
+  const { t } = useLanguage();
   return (
     <div style={{
       position: 'absolute', inset: 0,
@@ -220,8 +218,8 @@ function InsightsScene() {
             </svg>
           </div>
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(230,240,255,0.95)' }}>All done!</div>
-            <div style={{ fontSize: 10, color: 'rgba(160,180,255,0.5)' }}>Insights on their way</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'rgba(230,240,255,0.95)' }}>{t.allDoneTitle}</div>
+            <div style={{ fontSize: 10, color: 'rgba(160,180,255,0.5)' }}>{t.hiwInsightsOnWay}</div>
           </div>
         </div>
 
@@ -229,11 +227,11 @@ function InsightsScene() {
           fontSize: 11, color: 'rgba(160,180,255,0.55)', marginBottom: 12,
           paddingBottom: 12, borderBottom: '0.5px solid rgba(255,255,255,0.07)',
         }}>
-          Sent to <span style={{ color: 'rgba(130,160,255,0.85)' }}>alex@company.com</span>
+          {t.hiwSentTo} <span style={{ color: 'rgba(130,160,255,0.85)' }}>alex@company.com</span>
         </div>
 
         <div style={{ display: 'flex', gap: 6 }}>
-          {['📄 CV attached', '📋 Transcript'].map((label) => (
+          {[t.hiwCVAttached, t.hiwTranscriptLabel].map((label) => (
             <div key={label} style={{
               flex: 1, background: 'rgba(64,96,208,0.15)',
               border: '0.5px solid rgba(64,96,208,0.28)',
@@ -260,6 +258,8 @@ export default function HowItWorksModal({ onClose }: Props) {
   const [typeText, setTypeText] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const typewriterFull = t.hiwTypewriterText;
+
   useEffect(() => {
     const id = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(id);
@@ -272,14 +272,14 @@ export default function HowItWorksModal({ onClose }: Props) {
     setTypeText('');
     const tick = () => {
       i++;
-      setTypeText(TYPEWRITER_FULL.slice(0, i));
-      if (i < TYPEWRITER_FULL.length) {
+      setTypeText(typewriterFull.slice(0, i));
+      if (i < typewriterFull.length) {
         timerRef.current = setTimeout(tick, 22);
       }
     };
     timerRef.current = setTimeout(tick, 700);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [step]);
+  }, [step, typewriterFull]);
 
   const close = useCallback(() => {
     setMounted(false);
@@ -373,7 +373,7 @@ export default function HowItWorksModal({ onClose }: Props) {
 
               {step === 0 && <FormScene />}
               {step === 1 && <QuestionsScene />}
-              {step === 2 && <ConversationScene typeText={typeText} />}
+              {step === 2 && <ConversationScene typeText={typeText} typewriterFull={typewriterFull} />}
               {step === 3 && <InsightsScene />}
               {step === 4 && <ReportScene />}
 
