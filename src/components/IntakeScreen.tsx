@@ -6,6 +6,7 @@ import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import Footer from './Footer';
+import Background from './Background';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -19,74 +20,110 @@ type ResumeState = {
 export default function IntakeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [recruiterName, setRecruiterName] = useState('');
-  const [nameTouched, setNameTouched] = useState(false);
-  const [email, setEmail] = useState('');
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [company, setCompany] = useState('');
-  const [role, setRole] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [resumeSession, setResumeSession] = useState<ResumeState>(null);
-  const [avatarOpen, setAvatarOpen] = useState(false);
-  const [splashDone, setSplashDone] = useState(false);
-  const [pageEnter, setPageEnter] = useState(false);
-  const splashOverlayRef = useRef<HTMLDivElement>(null);
-  const splashAvRef     = useRef<HTMLDivElement>(null);
-  const splashHaloRef   = useRef<HTMLDivElement>(null);
-  const splashNameRef   = useRef<HTMLParagraphElement>(null);
-  const splashDivRef    = useRef<HTMLDivElement>(null);
-  const splashTagRef    = useRef<HTMLParagraphElement>(null);
-  const splashWmRef     = useRef<HTMLParagraphElement>(null);
+  const [recruiterName, setRecruiterName]   = useState('');
+  const [nameTouched,   setNameTouched]     = useState(false);
+  const [email,         setEmail]           = useState('');
+  const [emailTouched,  setEmailTouched]    = useState(false);
+  const [company,       setCompany]         = useState('');
+  const [role,          setRole]            = useState('');
+  const [isLoading,     setIsLoading]       = useState(false);
+  const [error,         setError]           = useState('');
+  const [resumeSession, setResumeSession]   = useState<ResumeState>(null);
+  const [avatarOpen,    setAvatarOpen]      = useState(false);
+  const [splashDone,    setSplashDone]      = useState(false);
+  const [pageReady,     setPageReady]       = useState(false);
 
-  // Skip before first paint for returning visitors
+  // Splash refs
+  const splashOverlayRef = useRef<HTMLDivElement>(null);
+  const splashWmRef      = useRef<HTMLParagraphElement>(null);
+  const splashAvRef      = useRef<HTMLDivElement>(null);
+  const splashRingRef    = useRef<HTMLDivElement>(null);
+  const splashGlowRef    = useRef<HTMLDivElement>(null);
+  const splashNameRef    = useRef<HTMLParagraphElement>(null);
+  const splashRoleRef    = useRef<HTMLParagraphElement>(null);
+  const splashDivRef     = useRef<HTMLDivElement>(null);
+  const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
+
+  // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
-    if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageEnter(true); }
+    if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageReady(true); }
   }, []);
 
-  // JS rAF animation — mirrors the reference HTML exactly
+  // ── Splash 1 — JS rAF animation ──
   useEffect(() => {
     if (sessionStorage.getItem('im_splash_shown')) return;
+
     const timers: ReturnType<typeof setTimeout>[] = [];
     const rafs: number[] = [];
     const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
     const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
     const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
-    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
+    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2,4)/2;
 
-    function spring(el: HTMLElement, from: number, peak: number, fin: number, dur: number, delay: number) {
+    // Spring with optional blur
+    function springBlur(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, dur: number, delay: number) {
       after(() => {
         const s = performance.now(), h = dur * 0.55;
         function f(now: number) {
-          const e = now-s, sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
-          el.style.transform = `scale(${sc.toFixed(4)})`; el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
-          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; }
+          const e = now-s;
+          const sc = e < h ? fromSc+(peakSc-fromSc)*eo3(e/h) : peakSc+(finSc-peakSc)*eo3((e-h)/(dur-h));
+          const bl = fromBlur * Math.max(0, 1 - e/dur);
+          el.style.transform = `scale(${sc.toFixed(4)})`;
+          el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
+          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
+          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; el.style.filter=''; }
         }
         tick(f);
       }, delay);
     }
-    function fadeSlide(el: HTMLElement, yFrom: number, dur: number, delay: number, maxOp: number) {
+
+    // Slide from X with blur
+    function slideBlurX(el: HTMLElement, fromTx: number, fromBlur: number, fromSc: number, toOp: number, dur: number, delay: number) {
       after(() => {
         const s = performance.now();
         function f(now: number) {
           const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.opacity = (raw*maxOp).toFixed(4); el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
-          if (raw < 1) tick(f);
+          el.style.transform = `translateX(${(fromTx*(1-p)).toFixed(2)}px) scale(${(fromSc+(1-fromSc)*p).toFixed(4)})`;
+          el.style.opacity = (raw*toOp).toFixed(4);
+          const bl = fromBlur*(1-p);
+          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
+          if (raw < 1) tick(f); else { el.style.transform=''; el.style.opacity=toOp.toString(); el.style.filter=''; }
         }
         tick(f);
       }, delay);
     }
-    function scaleXAnim(el: HTMLElement, dur: number, delay: number) {
+
+    // Slide from Y with blur
+    function flyUpBlur(el: HTMLElement, fromTy: number, fromBlur: number, toOp: number, dur: number, delay: number) {
       after(() => {
         const s = performance.now();
         function f(now: number) {
           const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.opacity = (raw*0.65).toFixed(4); el.style.transform = `scaleX(${p.toFixed(4)})`;
-          if (raw < 1) tick(f);
+          el.style.transform = `translateY(${(fromTy*(1-p)).toFixed(2)}px)`;
+          el.style.opacity = (raw*toOp).toFixed(4);
+          const bl = fromBlur*(1-p);
+          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
+          if (raw < 1) tick(f); else { el.style.transform=''; el.style.opacity=toOp.toString(); el.style.filter=''; }
         }
         tick(f);
       }, delay);
     }
+
+    // ScaleX (divider)
+    function scaleX(el: HTMLElement, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now();
+        function f(now: number) {
+          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
+          el.style.transform = `scaleX(${p.toFixed(4)})`;
+          el.style.opacity = (raw*0.6).toFixed(4);
+          if (raw < 1) tick(f); else { el.style.transform='scaleX(1)'; el.style.opacity='0.6'; }
+        }
+        tick(f);
+      }, delay);
+    }
+
+    // FadeIn
     function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
       after(() => {
         const s = performance.now();
@@ -99,431 +136,494 @@ export default function IntakeScreen() {
       }, delay);
     }
 
-    const ov=splashOverlayRef.current, av=splashAvRef.current, hl=splashHaloRef.current;
-    const nm=splashNameRef.current, dv=splashDivRef.current, tg=splashTagRef.current, wm=splashWmRef.current;
-    if (!ov||!av||!hl||!nm||!dv||!tg||!wm) return;
+    const ov   = splashOverlayRef.current;
+    const wm   = splashWmRef.current;
+    const av   = splashAvRef.current;
+    const ring = splashRingRef.current;
+    const glow = splashGlowRef.current;
+    const nm   = splashNameRef.current;
+    const rl   = splashRoleRef.current;
+    const dv   = splashDivRef.current;
+    const tags = splashTagsRef.current.filter(Boolean) as HTMLSpanElement[];
+    if (!ov||!wm||!av||!ring||!glow||!nm||!rl||!dv) return;
 
-    spring(av, 0.52, 1.04, 1.0, 680, 0);
-    after(() => { hl.style.animation = '_s1Hb 2.8s ease-in-out infinite'; }, 380);
-    fadeSlide(nm, 18, 380, 320, 1);
-    scaleXAnim(dv, 280, 470);
-    fadeSlide(tg, 14, 420, 610, 0.8);
-    fadeIn(wm, 480, 780, 0.72);
+    // 0ms — wordmark fades in
+    fadeIn(wm, 1400, 0, 0.30);
 
+    // 400ms — avatar springs in (scale 0.68→1.05→1.0, blur 14→0)
+    springBlur(av, 0.68, 1.05, 1.0, 14, 900, 400);
+
+    // 800ms — ring activates (CSS transition via style)
+    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 1000ms ease'; }, 800);
+    after(() => { glow.style.animation = 'glow-pulse 1800ms ease-in-out infinite'; }, 800);
+
+    // 1040ms — name slides from left
+    slideBlurX(nm, -50, 12, 0.86, 1, 750, 1040);
+
+    // 1120ms — role slides from right
+    slideBlurX(rl, 50, 8, 1, 0.75, 680, 1120);
+
+    // 1480ms — divider
+    scaleX(dv, 500, 1480);
+
+    // 2120ms — tags stagger
+    tags.forEach((tag, i) => flyUpBlur(tag, 24, 8, 1, 600, 2120 + i*80));
+
+    // 5000ms — EXIT (overlap with page enter)
     after(() => {
       if (!ov) return;
       const _ov = ov;
-      hl.style.animation = 'none';
+      // Trigger page entrance (CSS transition with 280ms delay)
+      setPageReady(true);
+      ring.style.opacity = '0';
+      glow.style.animation = 'none';
       const s = performance.now();
       function exit(now: number) {
-        const raw = Math.min((now-s)/480, 1), p = eio4(raw);
+        const raw = Math.min((now-s)/650, 1), p = eio4(raw);
         _ov.style.opacity = (1-p).toFixed(4);
-        _ov.style.transform = `translateY(${(-48*p).toFixed(1)}px) scale(${(1-0.015*p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(5*p).toFixed(1)}px)`;
+        _ov.style.transform = `translateY(${(-60*p).toFixed(1)}px) scale(${(1-0.02*p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(10*p).toFixed(1)}px)`;
         if (raw < 1) tick(exit);
         else {
           setSplashDone(true);
           sessionStorage.setItem('im_splash_shown', '1');
-          requestAnimationFrame(() => requestAnimationFrame(() => setPageEnter(true)));
         }
       }
       tick(exit);
-    }, 3260);
+    }, 5000);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Check for an unfinished session in localStorage on mount
+  // ── Check for unfinished session ──
   useEffect(() => {
     try {
       const raw = localStorage.getItem('im_last_session');
       if (!raw) return;
-      const data = JSON.parse(raw) as {
-        sessionId: string;
-        recruiterName?: string;
-        company?: string;
-        ended?: boolean;
-      };
+      const data = JSON.parse(raw) as { sessionId:string; recruiterName?:string; company?:string; ended?:boolean; };
       if (data.ended) return;
       const msgsRaw = localStorage.getItem(`im_chat_${data.sessionId}`);
       const msgs: unknown[] = msgsRaw ? JSON.parse(msgsRaw) : [];
       if (Array.isArray(msgs) && msgs.length > 0) {
-        setResumeSession({
-          sessionId: data.sessionId,
-          recruiterName: data.recruiterName,
-          company: data.company,
-          messageCount: msgs.length,
-        });
+        setResumeSession({ sessionId:data.sessionId, recruiterName:data.recruiterName, company:data.company, messageCount:msgs.length });
       }
-    } catch {
-      localStorage.removeItem('im_last_session');
-    }
+    } catch { localStorage.removeItem('im_last_session'); }
   }, []);
 
   const handleResume = () => {
     try {
       const raw = localStorage.getItem('im_last_session');
       if (!raw) return;
-      const data = JSON.parse(raw) as {
-        sessionId: string;
-        recruiterName?: string;
-        email?: string;
-        company?: string;
-        role?: string;
-        consentToEmail?: boolean;
-      };
-      sessionStorage.setItem(
-        `session_${data.sessionId}`,
-        JSON.stringify({
-          recruiterName: data.recruiterName,
-          email: data.email,
-          company: data.company,
-          role: data.role,
-          consentToEmail: data.consentToEmail,
-        })
-      );
+      const data = JSON.parse(raw) as { sessionId:string; recruiterName?:string; email?:string; company?:string; role?:string; consentToEmail?:boolean; };
+      sessionStorage.setItem(`session_${data.sessionId}`, JSON.stringify({ recruiterName:data.recruiterName, email:data.email, company:data.company, role:data.role, consentToEmail:data.consentToEmail }));
       router.push(`/interview/${data.sessionId}`);
-    } catch {
-      setResumeSession(null);
-    }
+    } catch { setResumeSession(null); }
   };
 
   const handleDismissResume = () => {
     try {
       const raw = localStorage.getItem('im_last_session');
-      if (raw) {
-        const data = JSON.parse(raw) as { sessionId: string };
-        localStorage.removeItem(`im_chat_${data.sessionId}`);
-      }
+      if (raw) { const data = JSON.parse(raw) as { sessionId:string }; localStorage.removeItem(`im_chat_${data.sessionId}`); }
     } catch {}
     localStorage.removeItem('im_last_session');
     setResumeSession(null);
   };
 
-  const isNameValid = recruiterName.trim().length > 0;
-  const showNameError = nameTouched && !isNameValid;
-  const isEmailValid = EMAIL_REGEX.test(email.trim());
-  const showEmailError = emailTouched && email.trim() !== '' && !isEmailValid;
+  const isNameValid      = recruiterName.trim().length > 0;
+  const showNameError    = nameTouched && !isNameValid;
+  const isEmailValid     = EMAIL_REGEX.test(email.trim());
+  const showEmailError   = emailTouched && email.trim() !== '' && !isEmailValid;
   const isNameEmailReady = isNameValid && isEmailValid;
-  const isFullyFilled = isNameEmailReady && company.trim().length > 0 && role.trim().length > 0;
+  const isFullyFilled    = isNameEmailReady && company.trim().length > 0 && role.trim().length > 0;
   const isSubmitDisabled = isLoading || !isNameEmailReady;
 
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
-      const body: SessionCreateRequest & { email: string; consentToEmail: boolean } = {
+      const body: SessionCreateRequest & { email:string; consentToEmail:boolean } = {
         recruiterName: recruiterName.trim(),
         company: company.trim() || undefined,
         role: role.trim() || undefined,
         email: email.trim(),
         consentToEmail: true,
       };
-
-      const response = await fetch('/api/session', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
+      const response = await fetch('/api/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
         setError(data.error || 'Something went wrong. Please try again.');
         setIsLoading(false);
         return;
       }
-
       const { sessionId } = await response.json();
-
-      const sessionContext = {
-        recruiterName: recruiterName.trim(),
-        email: email.trim(),
-        company: company.trim() || undefined,
-        role: role.trim() || undefined,
-        consentToEmail: true,
-      };
-
-      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(sessionContext));
-
-      localStorage.setItem(
-        'im_last_session',
-        JSON.stringify({ sessionId, ...sessionContext })
-      );
-
+      const ctx = { recruiterName:recruiterName.trim(), email:email.trim(), company:company.trim()||undefined, role:role.trim()||undefined, consentToEmail:true };
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(ctx));
+      localStorage.setItem('im_last_session', JSON.stringify({ sessionId, ...ctx }));
       router.push(`/interview/${sessionId}`);
     } catch (err) {
-      console.error('Session creation error:', err);
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setIsLoading(false);
     }
   };
 
-  const inputClass =
-    'w-full px-3 py-2.5 rounded-xl border border-[#ddd] text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2d6cdf] focus:ring-1 focus:ring-[#2d6cdf]/20 transition-colors bg-[#fafafa] focus:bg-white';
+  // Page assembly transition style helper
+  const emerge = (delay: number, extra?: React.CSSProperties): React.CSSProperties => ({
+    opacity: pageReady ? 1 : 0,
+    transform: pageReady ? 'translateY(0)' : 'translateY(20px)',
+    filter: pageReady ? 'blur(0px)' : 'blur(8px)',
+    transition: `opacity 600ms cubic-bezier(.25,1,.5,1) ${delay}ms, transform 600ms cubic-bezier(.25,1,.5,1) ${delay}ms, filter 600ms cubic-bezier(.25,1,.5,1) ${delay}ms`,
+    ...extra,
+  });
 
-  const inputErrorClass =
-    'w-full px-3 py-2.5 rounded-xl border border-red-300 text-base text-gray-800 placeholder-gray-300 focus:outline-none focus:border-red-400 focus:ring-1 focus:ring-red-400/20 transition-colors bg-[#fafafa] focus:bg-white';
-
-  const card = 'bg-white rounded-2xl border border-[#e8e5e0] shadow-sm p-5';
+  const TAGS = ['HubOS', 'Soho House London', '5 idiomas', 'Barcelona'];
 
   return (
-    <div
-      className="relative min-h-screen bg-[#f8f7f4] flex flex-col items-center px-4 py-12 w-full overflow-x-hidden"
-      style={{
-        opacity: pageEnter ? 1 : 0,
-        transform: pageEnter ? 'translateY(0)' : 'translateY(36px)',
-        transition: 'opacity 480ms cubic-bezier(.76,0,.24,1) 220ms, transform 480ms cubic-bezier(.76,0,.24,1) 220ms',
-      }}
-    >
-      <div className="absolute top-3 right-3">
-        <LanguageSwitcher />
-      </div>
+    <>
+      <Background />
 
-      {resumeSession && (
-        <div className="w-full max-w-[440px] sm:max-w-[640px] lg:max-w-[760px] mb-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-start sm:items-center justify-between gap-3">
-            <p className="text-sm text-blue-800">
-              Resume your session
-              {resumeSession.recruiterName && (
-                <span className="font-medium"> with {resumeSession.recruiterName}</span>
-              )}
-              {resumeSession.company && (
-                <span className="text-blue-600"> ({resumeSession.company})</span>
-              )}
-              <span className="text-blue-500 text-xs ml-1">
-                · {resumeSession.messageCount} message{resumeSession.messageCount !== 1 ? 's' : ''}
-              </span>
-            </p>
-            <div className="flex gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={handleResume}
-                className="text-xs font-semibold bg-blue-600 text-white px-3 py-1.5 rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Resume
-              </button>
-              <button
-                type="button"
-                onClick={handleDismissResume}
-                className="text-xs text-blue-500 hover:text-blue-700 px-2 py-1.5 transition-colors"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[640px] lg:max-w-[760px]">
-
-        {/* ── Header ── */}
-        <div className="flex flex-col items-center gap-3 mb-7 text-center">
-          <button
-            type="button"
-            onClick={() => setAvatarOpen(true)}
-            className="w-24 h-24 rounded-full overflow-hidden border-2 border-blue-200 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
-          >
-            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
-          </button>
-          <h1 className="text-[22px] font-bold text-gray-900 tracking-tight">
-            {t.emptyGreeting}
-          </h1>
-          <p className="text-[13px] text-gray-500 leading-snug">{t.intakeSubtitle}</p>
+      {/* ── Main page content ── */}
+      <div
+        className="relative min-h-screen flex flex-col items-center px-4 py-10 w-full overflow-x-hidden"
+        style={{
+          opacity: pageReady ? 1 : 0,
+          transform: pageReady ? 'translateY(0) scale(1)' : 'translateY(32px) scale(0.97)',
+          filter: pageReady ? 'blur(0px)' : 'blur(6px)',
+          transition: 'opacity 700ms cubic-bezier(.76,0,.24,1) 280ms, transform 700ms cubic-bezier(.76,0,.24,1) 280ms, filter 700ms cubic-bezier(.76,0,.24,1) 280ms',
+        }}
+      >
+        {/* Language switcher */}
+        <div className="absolute top-3 right-3 z-10" style={emerge(800)}>
+          <LanguageSwitcher />
         </div>
 
-        {/* ── Vision card ── */}
-        <div className={`${card} mb-3 text-center`}>
-          <p className="text-sm font-bold text-gray-900 leading-snug mb-3">{t.visionTitle}</p>
-          <p className="text-[13.5px] text-gray-500 leading-relaxed mb-3">{t.visionBody}</p>
-          <p className="text-[14px] font-semibold text-[#2d6cdf] italic leading-snug pt-3 border-t border-[#f0ede8]">
-            {t.visionClosing}
-          </p>
-        </div>
-
-        {/* ── Divider ── */}
-        <hr className="border-t border-[#e8e5e0] my-1" />
-
-        {/* ── Time hint ── */}
-        <p className="text-[12.5px] text-gray-400 text-center tracking-[0.1px] my-3">
-          {t.timeHint}
-        </p>
-
-        {/* ── How this works ── */}
-        <div className={`${card} mb-3`}>
-          <p className="text-[10.5px] font-bold text-gray-300 uppercase tracking-[0.8px] mb-3">
-            {t.howItWorksTitle}
-          </p>
-          <div className="flex flex-col gap-3">
-            {([
-              { n: '1', text: t.step1 },
-              { n: '2', text: t.step2 },
-              { n: '3', text: t.step3 },
-              { n: '4', text: (
-                <>{t.step3Label}{' '}
-                  <strong className="text-green-700 font-semibold">{t.endButtonFull}</strong>
-                  {' '}{t.step3Rest}</>
-              )},
-            ] as { n: string; text: React.ReactNode }[]).map(({ n, text }) => (
-              <div key={n} className="flex items-start gap-3">
-                <span className="w-[22px] h-[22px] rounded-full bg-blue-50 text-blue-500 text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
-                  {n}
+        {/* Resume session banner */}
+        {resumeSession && (
+          <div className="w-full max-w-[440px] sm:max-w-[600px] mb-4 mt-2" style={emerge(0)}>
+            <div className="glass rounded-xl px-4 py-3 flex items-start sm:items-center justify-between gap-3 border-[rgba(60,90,200,0.3)]">
+              <p className="text-sm" style={{ color: 'rgba(180,200,255,0.9)' }}>
+                Resume your session
+                {resumeSession.recruiterName && <span className="font-medium"> with {resumeSession.recruiterName}</span>}
+                {resumeSession.company && <span style={{ color:'rgba(180,200,255,0.6)' }}> ({resumeSession.company})</span>}
+                <span className="text-xs ml-1" style={{ color:'rgba(255,255,255,0.35)' }}>
+                  · {resumeSession.messageCount} message{resumeSession.messageCount !== 1 ? 's' : ''}
                 </span>
-                <p className="text-[13.5px] text-gray-600 leading-snug">{text}</p>
+              </p>
+              <div className="flex gap-2 shrink-0">
+                <button type="button" onClick={handleResume}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
+                  style={{ background:'rgba(60,90,200,0.35)', color:'rgba(180,200,255,1)', border:'0.5px solid rgba(60,90,200,0.5)' }}>
+                  Resume
+                </button>
+                <button type="button" onClick={handleDismissResume}
+                  className="text-xs px-2 py-1.5 transition-colors"
+                  style={{ color:'rgba(255,255,255,0.35)' }}>
+                  Dismiss
+                </button>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        {/* ── Intake form fields ── */}
-        <div className={`${card} mb-3`}>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-[0.4px] mb-1">
-                {t.labelName} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                placeholder={t.placeholderName}
-                value={recruiterName}
-                onChange={(e) => setRecruiterName(e.target.value)}
-                onBlur={() => setNameTouched(true)}
-                className={showNameError ? inputErrorClass : inputClass}
-                maxLength={100}
-                autoComplete="given-name"
-                required
-              />
-              {showNameError && (
-                <p className="mt-1 text-xs text-red-500">{t.nameError}</p>
-              )}
+        <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[600px]">
+
+          {/* ── Hero header ── */}
+          <div className="flex flex-col items-center gap-3 mb-7 text-center" style={emerge(100)}>
+            <button type="button" onClick={() => setAvatarOpen(true)}
+              className="relative cursor-zoom-in"
+              style={{ width: 80, height: 80 }}>
+              {/* Conic ring */}
+              <div className="absolute inset-0 rounded-full" style={{
+                background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                animation: 'ring-spin 3.5s linear infinite',
+                padding: 2,
+              }}>
+                <div className="w-full h-full rounded-full" style={{ background:'#0d0f14' }} />
+              </div>
+              {/* Avatar */}
+              <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
+                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+              </div>
+            </button>
+
+            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
+              {t.emptyGreeting}
+            </h1>
+            <p style={{ fontSize: 12, color:'rgba(255,255,255,0.45)', letterSpacing:'0.04em', lineHeight:1.5 }}>
+              {t.intakeSubtitle}
+            </p>
+          </div>
+
+          {/* ── Vision card ── */}
+          <div className="glass p-5 mb-3 text-center" style={emerge(200)}>
+            <p style={{ fontSize:14, fontWeight:600, color:'rgba(255,255,255,0.9)', lineHeight:1.5, marginBottom:10 }}>
+              {t.visionTitle}
+            </p>
+            <p style={{ fontSize:13, color:'rgba(255,255,255,0.52)', lineHeight:1.65, marginBottom:12 }}>
+              {t.visionBody}
+            </p>
+            <p style={{ fontSize:13.5, fontWeight:600, fontStyle:'italic', lineHeight:1.4,
+              background:'linear-gradient(90deg, rgba(120,160,255,0.9), rgba(160,120,255,0.8))',
+              WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+              backgroundClip:'text', paddingTop:12, borderTop:'0.5px solid rgba(255,255,255,0.08)' }}>
+              {t.visionClosing}
+            </p>
+          </div>
+
+          {/* ── Divider + time hint ── */}
+          <div style={{ height:0.5, background:'rgba(255,255,255,0.07)', margin:'6px 0 10px', ...emerge(250) }} />
+          <p className="text-center mb-4" style={{ fontSize:12, color:'rgba(255,255,255,0.28)', letterSpacing:'0.1px', ...emerge(280) }}>
+            {t.timeHint}
+          </p>
+
+          {/* ── Bento grid ── */}
+          <div className="grid grid-cols-2 gap-2.5 mb-2.5" style={emerge(300)}>
+            {/* Cell 1 — Rol actual */}
+            <div className="glass p-4" style={{ transform:'rotate(-0.3deg)' }}>
+              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                Rol actual
+              </p>
+              <p style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.85)', lineHeight:1.4 }}>
+                Implementation Specialist
+              </p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.38)', marginTop:2 }}>
+                HubOS · 2026
+              </p>
             </div>
 
-            <div>
-              <label className="block text-[11px] font-semibold text-gray-400 uppercase tracking-[0.4px] mb-1">
-                {t.labelEmail} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="email"
-                placeholder="alex@company.com"
-                value={email}
-                onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                onBlur={() => setEmailTouched(true)}
-                className={showEmailError ? inputErrorClass : inputClass}
-                maxLength={254}
-                autoComplete="email"
-                required
-              />
-              {showEmailError && (
-                <p className="mt-1 text-xs text-red-500">{t.emailError}</p>
-              )}
+            {/* Cell 2 — Idiomas */}
+            <div className="glass p-4" style={{ transform:'rotate(0.3deg)' }}>
+              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                Idiomas
+              </p>
+              <p style={{ fontSize:13, fontWeight:600, color:'rgba(255,255,255,0.85)' }}>
+                5 languages
+              </p>
+              <p style={{ fontSize:11, color:'rgba(255,255,255,0.38)', marginTop:2, letterSpacing:'0.06em' }}>
+                ES · EN · IT · PT · GL
+              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* Cell 3 — Posicionamiento (full width) */}
+            <div className="glass p-4 col-span-2">
+              <p style={{ fontSize:10, fontWeight:600, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:6 }}>
+                Posicionamiento
+              </p>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,0.72)', lineHeight:1.55 }}>
+                Hospitality-Tech Generalist → Commercial SaaS
+              </p>
+            </div>
+          </div>
+
+          {/* ── How it works ── */}
+          <div className="glass p-5 mb-2.5" style={emerge(360)}>
+            <p style={{ fontSize:10.5, fontWeight:700, color:'rgba(255,255,255,0.28)', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:14 }}>
+              {t.howItWorksTitle}
+            </p>
+            <div className="flex flex-col gap-3">
+              {([
+                { n:'1', text: t.step1 },
+                { n:'2', text: t.step2 },
+                { n:'3', text: t.step3 },
+                { n:'4', text: (
+                  <>{t.step3Label}{' '}
+                    <strong style={{ color:'rgba(80,180,120,0.9)' }}>{t.endButtonFull}</strong>
+                    {' '}{t.step3Rest}</>
+                )},
+              ] as { n:string; text:React.ReactNode }[]).map(({ n, text }) => (
+                <div key={n} className="flex items-start gap-3">
+                  <span className="flex items-center justify-center shrink-0 mt-0.5"
+                    style={{ width:22, height:22, borderRadius:'50%', background:'rgba(60,90,200,0.2)', color:'rgba(120,160,255,0.9)', fontSize:11, fontWeight:700 }}>
+                    {n}
+                  </span>
+                  <p style={{ fontSize:13.5, color:'rgba(255,255,255,0.6)', lineHeight:1.55 }}>{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* ── Form ── */}
+          <div className="glass p-5 mb-2.5" style={emerge(460)}>
+            <div className="flex flex-col gap-3">
               <div>
-                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-[0.4px] mb-1">
-                  {t.labelCompany}
+                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                  {t.labelName} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
                 </label>
                 <input
                   type="text"
-                  value={company}
-                  onChange={(e) => setCompany(e.target.value)}
-                  className={inputClass}
+                  placeholder={t.placeholderName}
+                  value={recruiterName}
+                  onChange={(e) => setRecruiterName(e.target.value)}
+                  onBlur={() => setNameTouched(true)}
+                  className={`input-glass${showNameError ? ' error' : ''}`}
                   maxLength={100}
-                  autoComplete="organization"
+                  autoComplete="given-name"
+                  required
                 />
+                {showNameError && <p style={{ marginTop:4, fontSize:12, color:'rgba(220,80,80,0.85)' }}>{t.nameError}</p>}
               </div>
+
               <div>
-                <label className="block text-[11px] font-semibold text-gray-300 uppercase tracking-[0.4px] mb-1">
-                  {t.labelRole}
+                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.35)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                  {t.labelEmail} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
                 </label>
                 <input
-                  type="text"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  className={inputClass}
-                  maxLength={100}
+                  type="email"
+                  placeholder="alex@company.com"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
+                  onBlur={() => setEmailTouched(true)}
+                  className={`input-glass${showEmailError ? ' error' : ''}`}
+                  maxLength={254}
+                  autoComplete="email"
+                  required
                 />
+                {showEmailError && <p style={{ marginTop:4, fontSize:12, color:'rgba(220,80,80,0.85)' }}>{t.emailError}</p>}
               </div>
-            </div>
-          </div>
-        </div>
 
-        {error &&<p className="text-red-500 text-sm mb-3">{error}</p>}
-
-        {/* ── Start button ── */}
-        <button
-          type="submit"
-          disabled={isSubmitDisabled}
-          className={[
-            'w-full font-bold py-3.5 px-4 rounded-xl transition-all text-[15px]',
-            isSubmitDisabled
-              ? 'bg-[#dde5f5] text-[#8aa5d8] cursor-not-allowed'
-              : isFullyFilled
-              ? 'bg-gradient-to-r from-[#059669] to-[#15803d] text-white shadow-lg shadow-emerald-700/30 hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99] cursor-pointer'
-              : 'bg-[#4d8f6e] text-white hover:opacity-90 active:opacity-80 cursor-pointer',
-          ].join(' ')}
-        >
-          {isLoading ? t.buttonStarting : t.buttonStart}
-        </button>
-
-      </form>
-      <Footer />
-
-      {avatarOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={() => setAvatarOpen(false)}
-        >
-          <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white shadow-2xl animate-scale-in">
-            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
-          </div>
-        </div>
-      )}
-
-      {/* SPLASH 1 — JS rAF animated, self-contained */}
-      {!splashDone && (
-        <>
-          <style>{`@keyframes _s1Hb{0%,100%{transform:scale(1);opacity:.85}50%{transform:scale(1.15);opacity:.55}}`}</style>
-          <div
-            ref={splashOverlayRef}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 40,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              pointerEvents: 'none', background: '#f0eeea',
-            }}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <div ref={splashAvRef} style={{ position: 'relative', width: 88, height: 88, marginBottom: 24, opacity: 0, transform: 'scale(0.52)' }}>
-                <div ref={splashHaloRef} style={{
-                  position: 'absolute', borderRadius: '50%',
-                  width: 148, height: 148, top: -30, left: -30,
-                  background: 'radial-gradient(circle, rgba(120,130,150,.22) 0%, transparent 68%)',
-                }} />
-                <div style={{
-                  position: 'relative', width: '100%', height: '100%',
-                  borderRadius: '50%', overflow: 'hidden',
-                  border: '1.5px solid rgba(180,185,195,.55)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,.07)',
-                }}>
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.22)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                    {t.labelCompany}
+                  </label>
+                  <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="input-glass" maxLength={100} autoComplete="organization" />
+                </div>
+                <div>
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'rgba(255,255,255,0.22)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                    {t.labelRole}
+                  </label>
+                  <input type="text" value={role} onChange={(e) => setRole(e.target.value)} className="input-glass" maxLength={100} />
                 </div>
               </div>
-              <p ref={splashNameRef} style={{ fontSize: 22, fontWeight: 700, color: '#0d1117', letterSpacing: '-0.01em', marginBottom: 14, opacity: 0, transform: 'translateY(18px)' }}>
-                Pablo Agis Burgos
-              </p>
-              <div ref={splashDivRef} style={{ width: 110, height: 0.5, background: 'rgba(100,105,115,.25)', marginBottom: 12, transformOrigin: 'center', opacity: 0, transform: 'scaleX(0)' }} />
-              <p ref={splashTagRef} style={{ fontSize: 11.5, color: '#7a8090', letterSpacing: '0.04em', opacity: 0, transform: 'translateY(14px)' }}>
-                SaaS · Hospitality Tech · Sales
-              </p>
-              <p ref={splashWmRef} style={{ fontSize: 11, fontWeight: 500, color: '#a8adb8', letterSpacing: '0.18em', textTransform: 'uppercase', marginTop: 40, opacity: 0 }}>
-                InterviewMind
-              </p>
             </div>
           </div>
-        </>
+
+          {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginBottom:10 }}>{error}</p>}
+
+          {/* ── CTA Button ── */}
+          <div style={emerge(560)}>
+            <button
+              type="submit"
+              disabled={isSubmitDisabled}
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200"
+              style={isSubmitDisabled ? {
+                background: 'rgba(255,255,255,0.06)',
+                color: 'rgba(255,255,255,0.28)',
+                cursor: 'not-allowed',
+                border: '0.5px solid rgba(255,255,255,0.08)',
+              } : isFullyFilled ? {
+                background: 'linear-gradient(135deg, #3a55c0, #6030b8)',
+                color: '#fff',
+                boxShadow: '0 4px 28px rgba(60,85,192,0.4)',
+                border: 'none',
+              } : {
+                background: 'linear-gradient(135deg, rgba(58,85,192,0.7), rgba(96,48,184,0.7))',
+                color: 'rgba(255,255,255,0.85)',
+                border: 'none',
+              }}
+            >
+              {isLoading ? t.buttonStarting : t.buttonStart}
+            </button>
+            <p className="text-center mt-3" style={{ fontSize:12, color:'rgba(255,255,255,0.22)' }}>
+              {t.timeHint}
+            </p>
+          </div>
+
+        </form>
+
+        <Footer />
+      </div>
+
+      {/* ── Avatar zoom overlay ── */}
+      {avatarOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{ background:'rgba(0,0,0,0.6)' }} onClick={() => setAvatarOpen(false)}>
+          <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl animate-scale-in">
+            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+          </div>
+        </div>
       )}
-    </div>
+
+      {/* ── SPLASH 1 ── */}
+      {!splashDone && (
+        <div
+          ref={splashOverlayRef}
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none"
+        >
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
+
+            {/* Wordmark */}
+            <p ref={splashWmRef} style={{
+              fontSize:10, fontWeight:500, color:'rgba(255,255,255,0.28)',
+              letterSpacing:'0.22em', textTransform:'uppercase',
+              marginBottom:52, opacity:0,
+            }}>
+              INTERVIEWMIND
+            </p>
+
+            {/* Avatar + ring + glow */}
+            <div ref={splashAvRef} style={{ position:'relative', width:88, height:88, marginBottom:24, opacity:0, transform:'scale(0.68)' }}>
+              {/* Glow */}
+              <div ref={splashGlowRef} className="absolute inset-0 rounded-full" style={{ background:'rgba(80,110,220,0.18)' }} />
+              {/* Spinning conic ring */}
+              <div ref={splashRingRef} className="absolute inset-0 rounded-full" style={{
+                background:'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                padding:2, opacity:0,
+                animation:'ring-spin 3.5s linear infinite',
+              }}>
+                <div className="w-full h-full rounded-full" style={{ background:'#0d0f14' }} />
+              </div>
+              {/* Photo */}
+              <div className="absolute rounded-full overflow-hidden" style={{ inset:3 }}>
+                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }} />
+              </div>
+            </div>
+
+            {/* Name */}
+            <p ref={splashNameRef} className="gradient-text" style={{
+              fontSize:28, fontWeight:700, letterSpacing:'-0.025em',
+              marginBottom:6, opacity:0, transform:'translateX(-50px)',
+            }}>
+              Pablo Agis Burgos
+            </p>
+
+            {/* Role */}
+            <p ref={splashRoleRef} style={{
+              fontSize:12.5, color:'rgba(255,255,255,0.55)', letterSpacing:'0.04em',
+              marginBottom:16, opacity:0, transform:'translateX(50px)',
+            }}>
+              SaaS &amp; Hospitality Tech
+            </p>
+
+            {/* Divider */}
+            <div ref={splashDivRef} style={{
+              width:200, height:0.5, marginBottom:20, transformOrigin:'center',
+              background:'linear-gradient(90deg, transparent, rgba(100,130,255,0.5), transparent)',
+              opacity:0, transform:'scaleX(0)',
+            }} />
+
+            {/* Tags */}
+            <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
+              {TAGS.map((tag, i) => (
+                <span
+                  key={tag}
+                  ref={(el) => { splashTagsRef.current[i] = el; }}
+                  style={{
+                    padding:'5px 12px',
+                    borderRadius:999,
+                    background:'rgba(255,255,255,0.06)',
+                    border:'0.5px solid rgba(255,255,255,0.14)',
+                    fontSize:11.5, color:'rgba(255,255,255,0.55)',
+                    opacity:0, transform:'translateY(24px)',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+
+          </div>
+        </div>
+      )}
+    </>
   );
 }
