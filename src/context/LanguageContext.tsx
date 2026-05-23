@@ -136,6 +136,11 @@ export type Translations = {
   endReminderSuffix: string;
   listenModeOn: string;
   listenModeOff: string;
+  // Exit intent modal
+  exitIntentTitle: string;
+  exitIntentBody: string;
+  exitIntentCta: string;
+  exitIntentLeave: string;
 };
 
 const EN: Translations = {
@@ -289,6 +294,10 @@ const EN: Translations = {
   endReminderSuffix: 'when done',
   listenModeOn: 'Listen mode on — click to disable',
   listenModeOff: 'Listen mode off — click to hear all responses',
+  exitIntentTitle: 'Before you go…',
+  exitIntentBody: 'You\'re mid-conversation. Get your insights first — Pablo will send his CV and a summary to your inbox.',
+  exitIntentCta: 'Get insights & leave',
+  exitIntentLeave: 'Leave without insights',
 };
 
 const ES: Translations = {
@@ -442,6 +451,10 @@ const ES: Translations = {
   endReminderSuffix: 'cuando termines',
   listenModeOn: 'Modo escucha activado — haz clic para desactivar',
   listenModeOff: 'Modo escucha desactivado — haz clic para escuchar todas las respuestas',
+  exitIntentTitle: 'Antes de irte…',
+  exitIntentBody: 'Estás a mitad de conversación. Obtén tus insights primero — Pablo te enviará su CV y un resumen.',
+  exitIntentCta: 'Obtener insights y salir',
+  exitIntentLeave: 'Salir sin insights',
 };
 
 const IT: Translations = {
@@ -595,6 +608,10 @@ const IT: Translations = {
   endReminderSuffix: 'quando hai finito',
   listenModeOn: 'Modalità ascolto attiva — clicca per disattivare',
   listenModeOff: 'Modalità ascolto disattiva — clicca per ascoltare tutte le risposte',
+  exitIntentTitle: 'Prima di andare…',
+  exitIntentBody: 'Sei a metà conversazione. Ottieni prima i tuoi insights — Pablo ti invierà il CV e un riepilogo.',
+  exitIntentCta: 'Ottieni insights ed esci',
+  exitIntentLeave: 'Esci senza insights',
 };
 
 const PT: Translations = {
@@ -748,6 +765,10 @@ const PT: Translations = {
   endReminderSuffix: 'quando terminar',
   listenModeOn: 'Modo de escuta ativo — clique para desativar',
   listenModeOff: 'Modo de escuta inativo — clique para ouvir todas as respostas',
+  exitIntentTitle: 'Antes de sair…',
+  exitIntentBody: 'Está a meio da conversa. Obtenha primeiro os seus insights — Pablo enviará o CV e um resumo.',
+  exitIntentCta: 'Obter insights e sair',
+  exitIntentLeave: 'Sair sem insights',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

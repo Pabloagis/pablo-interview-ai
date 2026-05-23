@@ -123,6 +123,21 @@ export default function IntakeScreen() {
       }, delay);
     }
 
+    // Zoom in then back out (breathe pulse)
+    function zoomPulse(el: HTMLElement, peakSc: number, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now(), h = dur / 2;
+        const eic = (t: number) => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
+        function f(now: number) {
+          const e = Math.min(now-s, dur);
+          const sc = e < h ? 1+(peakSc-1)*eic(e/h) : peakSc+(1-peakSc)*eic((e-h)/h);
+          el.style.transform = `scale(${sc.toFixed(4)})`;
+          if (e < dur) tick(f); else { el.style.transform = 'scale(1)'; }
+        }
+        tick(f);
+      }, delay);
+    }
+
     // FadeIn
     function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
       after(() => {
@@ -169,7 +184,10 @@ export default function IntakeScreen() {
     // 2120ms — tags stagger
     tags.forEach((tag, i) => flyUpBlur(tag, 24, 8, 1, 600, 2120 + i*80));
 
-    // 5000ms — EXIT (overlap with page enter)
+    // 3400ms — avatar zoom in/out pulse before exit
+    zoomPulse(av, 1.09, 1400, 3400);
+
+    // 6500ms — EXIT (overlap with page enter)
     after(() => {
       if (!ov) return;
       const _ov = ov;
@@ -190,7 +208,7 @@ export default function IntakeScreen() {
         }
       }
       tick(exit);
-    }, 5000);
+    }, 6500);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -276,7 +294,6 @@ export default function IntakeScreen() {
     ...extra,
   });
 
-  const TAGS = ['HubOS', 'Soho House London', '5 idiomas', 'Barcelona'];
 
   return (
     <>
@@ -366,11 +383,8 @@ export default function IntakeScreen() {
             </p>
           </div>
 
-          {/* ── Divider + time hint ── */}
+          {/* ── Divider ── */}
           <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(250) }} />
-          <p className="text-center mb-4" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px', ...emerge(280) }}>
-            {t.timeHint}
-          </p>
 
           {/* ── How it works ── */}
           <div className="glass p-5 mb-2.5" style={emerge(360)}>
@@ -438,15 +452,15 @@ export default function IntakeScreen() {
                 {showEmailError && <p style={{ marginTop:4, fontSize:12, color:'rgba(220,80,80,0.85)' }}>{t.emailError}</p>}
               </div>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+              <div className="grid grid-cols-2 gap-2.5 items-end">
+                <div className="flex flex-col">
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
                     {t.labelCompany}
                   </label>
                   <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="input-glass" maxLength={100} autoComplete="organization" />
                 </div>
-                <div>
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
+                <div className="flex flex-col">
+                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
                     {t.labelRole}
                   </label>
                   <input type="text" value={role} onChange={(e) => setRole(e.target.value)} className="input-glass" maxLength={100} />
@@ -459,6 +473,9 @@ export default function IntakeScreen() {
 
           {/* ── CTA Button ── */}
           <div style={emerge(560)}>
+            <p className="text-center mb-3" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px' }}>
+              {t.timeHint}
+            </p>
             <button
               type="submit"
               disabled={isSubmitDisabled}
@@ -481,9 +498,6 @@ export default function IntakeScreen() {
             >
               {isLoading ? t.buttonStarting : t.buttonStart}
             </button>
-            <p className="text-center mt-3" style={{ fontSize:12, color:'var(--text-muted)' }}>
-              {t.timeHint}
-            </p>
           </div>
 
         </form>
@@ -558,24 +572,22 @@ export default function IntakeScreen() {
               opacity:0, transform:'scaleX(0)',
             }} />
 
-            {/* Tags */}
-            <div style={{ display:'flex', gap:8, flexWrap:'wrap', justifyContent:'center' }}>
-              {TAGS.map((tag, i) => (
-                <span
-                  key={tag}
-                  ref={(el) => { splashTagsRef.current[i] = el; }}
-                  style={{
-                    padding:'5px 12px',
-                    borderRadius:999,
-                    background:'var(--splash-tag-bg)',
-                    border:'0.5px solid var(--splash-tag-border)',
-                    fontSize:11.5, color:'var(--splash-tag-text)',
-                    opacity:0, transform:'translateY(24px)',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
+            {/* Tag */}
+            <div style={{ display:'flex', justifyContent:'center' }}>
+              <span
+                ref={(el) => { splashTagsRef.current[0] = el; }}
+                style={{
+                  padding:'5px 14px',
+                  borderRadius:999,
+                  background:'var(--splash-tag-bg)',
+                  border:'0.5px solid var(--splash-tag-border)',
+                  fontSize:11.5, color:'var(--splash-tag-text)',
+                  opacity:0, transform:'translateY(24px)',
+                  textAlign:'center',
+                }}
+              >
+                SaaS &amp; Hospitality Tech | Helping hospitality grow through smart solutions
+              </span>
             </div>
 
           </div>
