@@ -380,24 +380,53 @@ export default function IntakeScreen() {
               type="button"
               onClick={() => setHiwOpen(true)}
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '7px 15px', borderRadius: 999,
-                background: 'rgba(64,96,208,0.10)',
-                border: '0.5px solid rgba(64,96,208,0.28)',
-                color: 'var(--accent-primary)',
-                fontSize: 12.5, fontWeight: 600, cursor: 'pointer',
-                transition: 'background 200ms, border-color 200ms',
+                display: 'inline-flex', alignItems: 'center', gap: 7,
+                padding: '7px 14px 7px 10px',
+                borderRadius: 'var(--radius-xl)',
+                background: 'var(--glass-1)',
+                border: '0.5px solid var(--glass-border)',
+                backdropFilter: 'blur(var(--blur-glass))',
+                WebkitBackdropFilter: 'blur(var(--blur-glass))',
+                fontSize: 12, fontWeight: 500,
+                color: 'var(--text-tertiary)',
+                cursor: 'pointer',
+                letterSpacing: '0.01em',
+                transition: 'all 220ms cubic-bezier(0.25,1,0.5,1)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(64,96,208,0.18)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(64,96,208,0.10)'; }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'var(--glass-2)';
+                el.style.borderColor = 'var(--glass-border-hi)';
+                el.style.color = 'var(--text-secondary)';
+                el.style.transform = 'translateY(-1px)';
+                el.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.10), 0 4px 16px rgba(0,0,0,0.08)';
+                const arrow = el.querySelector<HTMLSpanElement>('.hiw-arrow');
+                if (arrow) arrow.style.transform = 'translateX(2px)';
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget;
+                el.style.background = 'var(--glass-1)';
+                el.style.borderColor = 'var(--glass-border)';
+                el.style.color = 'var(--text-tertiary)';
+                el.style.transform = '';
+                el.style.boxShadow = 'inset 0 1px 0 rgba(255,255,255,0.06)';
+                const arrow = el.querySelector<HTMLSpanElement>('.hiw-arrow');
+                if (arrow) arrow.style.transform = '';
+              }}
+              onMouseDown={(e) => {
+                const el = e.currentTarget;
+                el.style.transform = 'translateY(0)';
+                el.style.background = 'var(--glass-1)';
+              }}
             >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.8, flexShrink: 0 }}>
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
               </svg>
               {t.howItWorksChip}
-              <span style={{ opacity: 0.6, fontSize: 11 }}>→</span>
+              <span className="hiw-arrow" style={{ fontSize: 11, color: 'var(--text-muted)', marginLeft: 1, transition: 'transform 220ms ease' }}>→</span>
             </button>
           </div>
 
