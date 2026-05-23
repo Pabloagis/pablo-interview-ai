@@ -76,6 +76,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
+  const s2RanRef          = useRef(false);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -84,6 +85,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   // Splash 2 — JS rAF animation (dark theme, first visit only)
   useEffect(() => {
+    if (s2RanRef.current) return;
+    s2RanRef.current = true;
     if (sessionStorage.getItem(`im_s2_${sessionId}`)) return;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -155,7 +158,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     if (!ov||!av||!rg||!gl||!nm||!wm||!st) return;
 
     // 0ms: Avatar spring from depth with blur
-    springBlur(av, 0.72, 1.04, 1.0, 14, 820, 0);
+    springBlur(av, 0.62, 1.08, 1.0, 15, 1050, 0);
 
     // 440ms: Name assembles from left with blur
     slideBlurX(nm, -40, 10, 650, 440, 1);

@@ -45,6 +45,7 @@ export default function IntakeScreen() {
   const splashRoleRef    = useRef<HTMLParagraphElement>(null);
   const splashDivRef     = useRef<HTMLDivElement>(null);
   const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
+  const splashRanRef     = useRef(false);
 
   // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
@@ -53,6 +54,8 @@ export default function IntakeScreen() {
 
   // ── Splash 1 — JS rAF animation ──
   useEffect(() => {
+    if (splashRanRef.current) return;
+    splashRanRef.current = true;
     if (sessionStorage.getItem('im_splash_shown')) return;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -168,7 +171,7 @@ export default function IntakeScreen() {
     fadeIn(wm, 1400, 0, 0.30);
 
     // 400ms — avatar springs in (scale 0.68→1.05→1.0, blur 14→0)
-    springBlur(av, 0.68, 1.05, 1.0, 14, 900, 400);
+    springBlur(av, 0.60, 1.10, 1.0, 16, 1200, 400);
 
     // 800ms — ring activates (CSS transition via style)
     after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 1000ms ease'; }, 800);
