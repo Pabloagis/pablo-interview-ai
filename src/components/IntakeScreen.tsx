@@ -415,32 +415,6 @@ export default function IntakeScreen() {
           {/* ── Divider ── */}
           <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(250) }} />
 
-          {/* ── How it works ── */}
-          <div className="glass p-5 mb-2.5" style={emerge(360)}>
-            <p style={{ fontSize:10.5, fontWeight:700, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.8px', marginBottom:14 }}>
-              {t.howItWorksTitle}
-            </p>
-            <div className="flex flex-col gap-3">
-              {([
-                { n:'1', text: t.step1 },
-                { n:'2', text: t.step2 },
-                { n:'3', text: t.step3 },
-                { n:'4', text: (
-                  <>{t.step3Label}{' '}
-                    <strong style={{ color:'var(--step-cta-color)' }}>{t.endButtonFull}</strong>
-                    {' '}{t.step3Rest}</>
-                )},
-              ] as { n:string; text:React.ReactNode }[]).map(({ n, text }) => (
-                <div key={n} className="flex items-start gap-3">
-                  <span className="flex items-center justify-center shrink-0 mt-0.5"
-                    style={{ width:22, height:22, borderRadius:'50%', background:'var(--step-num-bg)', color:'var(--step-num-text)', fontSize:11, fontWeight:700 }}>
-                    {n}
-                  </span>
-                  <p style={{ fontSize:13.5, color:'var(--text-secondary)', lineHeight:1.55 }}>{text}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* ── Form ── */}
           <div className="glass p-5 mb-2.5" style={emerge(460)}>
