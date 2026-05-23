@@ -400,10 +400,9 @@ export default function IntakeScreen() {
       {/* SPLASH 1 */}
       {splashPhase !== 'done' && (
         <div
-          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none"
+          className={`fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none${splashPhase === 'fading' ? ' animate-hero-exit' : ''}`}
           style={{ background: '#f0eeea' }}
         >
-          <div className={splashPhase === 'fading' ? 'animate-hero-exit' : undefined}>
             <div className="flex flex-col items-center text-center">
 
               {/* Avatar + halo */}
@@ -456,7 +455,6 @@ export default function IntakeScreen() {
               </p>
 
             </div>
-          </div>
         </div>
       )}
     </div>

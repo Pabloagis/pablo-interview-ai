@@ -864,10 +864,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       {/* SPLASH 2 */}
       {chatSplashPhase !== 'done' && (
         <div
-          className="fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none"
+          className={`fixed inset-0 z-50 flex flex-col items-center justify-center pointer-events-none${chatSplashPhase === 'fading' ? ' animate-hero-exit' : ''}`}
           style={{ background: '#f0eeea' }}
         >
-          <div className={chatSplashPhase === 'fading' ? 'animate-hero-exit' : undefined}>
             <div className="flex flex-col items-center text-center">
 
               {/* Avatar + halo */}
@@ -906,7 +905,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               </p>
 
             </div>
-          </div>
         </div>
       )}
     </div>
