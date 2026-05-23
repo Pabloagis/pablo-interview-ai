@@ -185,7 +185,7 @@ export default function IntakeScreen() {
     tags.forEach((tag, i) => flyUpBlur(tag, 24, 8, 1, 600, 2120 + i*80));
 
     // 3400ms — avatar zoom in/out pulse before exit
-    zoomPulse(av, 1.09, 1400, 3400);
+    zoomPulse(av, 1.22, 1400, 3400);
 
     // 6500ms — EXIT (overlap with page enter)
     after(() => {

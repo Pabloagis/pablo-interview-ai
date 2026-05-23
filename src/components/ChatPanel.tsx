@@ -43,8 +43,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
   const [chatPageEnter, setChatPageEnter] = useState(false);
-  const [exitIntentVisible, setExitIntentVisible] = useState(false);
-  const [forceInsightsOpen, setForceInsightsOpen] = useState(false);
 
   // Splash 2 refs
   const s2OverlayRef = useRef<HTMLDivElement>(null);
@@ -78,7 +76,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
-  const exitIntentFiredRef = useRef(false);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -233,18 +230,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages, sessionId]);
 
-  // Exit-intent: show custom modal when mouse leaves viewport toward browser chrome
-  useEffect(() => {
-    if (messages.length === 0 || interviewEnded !== null || exitIntentFiredRef.current) return;
-    const handler = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !exitIntentFiredRef.current) {
-        exitIntentFiredRef.current = true;
-        setExitIntentVisible(true);
-      }
-    };
-    document.addEventListener('mouseleave', handler);
-    return () => document.removeEventListener('mouseleave', handler);
-  }, [messages.length, interviewEnded]);
 
   // Reset suggestions when language changes
   useEffect(() => {
@@ -778,8 +763,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               context={context}
               onInterviewEnded={handleInterviewEnded}
               suppressTooltip={reminderState !== 'hidden'}
-              forceOpen={forceInsightsOpen}
-              onForceOpenConsumed={() => setForceInsightsOpen(false)}
             />
           }
         />
@@ -1059,48 +1042,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         <Footer variant="compact" />
         <Toast toasts={toasts} onDismiss={dismissToast} />
 
-        {/* Exit-intent modal */}
-        {exitIntentVisible && (
-          <div
-            className="fixed inset-0 z-[70] flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
-          >
-            <div
-              className="w-full max-w-sm animate-slide-up"
-              style={{
-                background: 'var(--modal-bg)',
-                border: '0.5px solid var(--modal-border)',
-                borderRadius: 20,
-                boxShadow: 'var(--modal-shadow)',
-                padding: '32px 28px',
-              }}
-            >
-              <p style={{ fontSize: 13, marginBottom: 6 }}>💡</p>
-              <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 8 }}>
-                {t.exitIntentTitle}
-              </h2>
-              <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 24 }}>
-                {t.exitIntentBody}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button
-                  onClick={() => {
-                    setExitIntentVisible(false);
-                    setForceInsightsOpen(true);
-                  }}
-                  style={{
-                    padding: '10px 18px', fontSize: 13, fontWeight: 600, borderRadius: 10,
-                    background: 'linear-gradient(135deg, #059669, #15803d)',
-                    color: '#fff', border: 'none', cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(5,150,105,0.35)',
-                  }}
-                >
-                  {t.exitIntentCta}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* SPLASH 2 — transparent overlay (Background shows through) */}
