@@ -1097,16 +1097,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 >
                   {t.exitIntentCta}
                 </button>
-                <button
-                  onClick={() => setExitIntentVisible(false)}
-                  style={{
-                    padding: '8px 18px', fontSize: 12, fontWeight: 500, borderRadius: 10,
-                    background: 'transparent', border: 'none', cursor: 'pointer',
-                    color: 'var(--modal-body)', opacity: 0.7,
-                  }}
-                >
-                  {t.exitIntentLeave}
-                </button>
               </div>
             </div>
           </div>
