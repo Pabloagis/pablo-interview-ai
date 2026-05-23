@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const supabase = createServerSupabaseClient();
     const { data: session, error } = await supabase
       .from('sessions')
-      .select('recruiter_name, company, role, email, consent_to_email, messages, email_sent_at')
+      .select('recruiter_name, company, role, email, messages, email_sent_at')
       .eq('id', sessionId)
       .single();
 
@@ -40,10 +40,9 @@ export async function POST(request: NextRequest) {
       .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
       .join('\n\n');
 
-    // Send to recruiter if they consented; always notify Pablo
-    const sendToRecruiter = !!(session.consent_to_email && session.email);
-    const recipients = sendToRecruiter
-      ? [session.email!, PABLO_EMAIL]
+    // Always send to recruiter (if email available) and always notify Pablo
+    const recipients = session.email
+      ? [session.email, PABLO_EMAIL]
       : [PABLO_EMAIL];
 
     console.log(`[exit-notify] Sending insights for abandoned session ${sessionId} → ${recipients.join(', ')}`);
