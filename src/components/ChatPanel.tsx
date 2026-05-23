@@ -185,6 +185,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages, sessionId]);
 
+  // Warn before closing tab/window if conversation is in progress
+  useEffect(() => {
+    if (messages.length === 0 || interviewEnded !== null) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [messages.length, interviewEnded]);
+
   // Reset suggestions when language changes
   useEffect(() => {
     usedTopicsRef.current = new Set();
