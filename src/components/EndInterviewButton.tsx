@@ -11,6 +11,7 @@ interface EndInterviewButtonProps {
   messages: Message[];
   context: RecruiterContext;
   onInterviewEnded: (emailSent: boolean) => void;
+  onLeaving?: () => void;
   suppressTooltip?: boolean;
 }
 
@@ -19,6 +20,7 @@ export default function EndInterviewButton({
   messages,
   context,
   onInterviewEnded,
+  onLeaving,
   suppressTooltip = false,
 }: EndInterviewButtonProps) {
   const { t } = useLanguage();
@@ -26,8 +28,9 @@ export default function EndInterviewButton({
   const [modalOpen, setModalOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [hovered, setHovered] = useState(false);
 
-  const isActive = messages.filter((m) => m.role === 'user').length >= 3;
+  const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
   const openModal = () => {
     if (!isActive) return;
@@ -65,7 +68,8 @@ export default function EndInterviewButton({
       }
 
       setModalOpen(false);
-      router.push(`/email-preview?id=${sessionId}`);
+      onLeaving?.();
+      setTimeout(() => router.push(`/email-preview?id=${sessionId}`), 300);
     } catch (err) {
       console.error('[EndInterview] send-followup failed:', err);
       setErrorMsg(t.endModalError);
@@ -73,16 +77,36 @@ export default function EndInterviewButton({
     }
   };
 
-  const btnActive = [
-    'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white transition-all duration-200 whitespace-nowrap',
-    'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30',
-    'hover:shadow-xl hover:shadow-emerald-700/40 hover:scale-[1.01] active:scale-[0.99]',
-  ].join(' ');
+  const activeStyle: React.CSSProperties = {
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: 600,
+    fontFamily: 'inherit',
+    color: '#ffffff',
+    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+    border: 'none',
+    borderRadius: 'var(--radius-sm)',
+    boxShadow: hovered ? '0 4px 20px var(--accent-glow)' : '0 2px 12px var(--accent-glow)',
+    transform: hovered ? 'translateY(-1px)' : 'translateY(0)',
+    transition: 'transform 180ms ease, box-shadow 180ms ease',
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+  };
 
-  const btnInactive = [
-    'min-h-[36px] px-3 py-1.5 sm:py-2 rounded-lg text-xs font-bold text-white',
-    'bg-[#4d8f6e] opacity-60 cursor-not-allowed',
-  ].join(' ');
+  const inactiveStyle: React.CSSProperties = {
+    padding: '6px 14px',
+    fontSize: 12,
+    fontWeight: 600,
+    fontFamily: 'inherit',
+    color: 'var(--text-muted)',
+    background: 'var(--glass-1)',
+    border: '0.5px solid var(--glass-border)',
+    borderRadius: 'var(--radius-sm)',
+    boxShadow: 'none',
+    cursor: 'not-allowed',
+    opacity: 0.5,
+    whiteSpace: 'nowrap',
+  };
 
   return (
     <>
@@ -94,8 +118,14 @@ export default function EndInterviewButton({
         disabled={suppressTooltip}
         className="hidden sm:block flex-shrink-0"
       >
-        <button onClick={openModal} disabled={!isActive} className={isActive ? btnActive : btnInactive}>
-          Insights
+        <button
+          onClick={openModal}
+          disabled={!isActive}
+          onMouseEnter={() => isActive && setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+          style={isActive ? activeStyle : inactiveStyle}
+        >
+          {t.endButtonFull}
         </button>
       </Tooltip>
 
@@ -104,14 +134,32 @@ export default function EndInterviewButton({
         onClick={openModal}
         disabled={!isActive}
         aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
-        className={[
-          'sm:hidden min-h-[36px] w-9 rounded-lg flex items-center justify-center transition-all duration-200',
-          isActive
-            ? 'bg-gradient-to-r from-[#059669] to-[#15803d] shadow-lg shadow-emerald-700/30 active:scale-[0.99]'
-            : 'bg-[#4d8f6e] opacity-60 cursor-not-allowed',
-        ].join(' ')}
+        className="sm:hidden"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 34,
+          height: 34,
+          flexShrink: 0,
+          borderRadius: 'var(--radius-sm)',
+          border: isActive ? 'none' : '0.5px solid var(--glass-border)',
+          background: isActive
+            ? 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))'
+            : 'var(--glass-1)',
+          boxShadow: isActive ? '0 2px 12px var(--accent-glow)' : 'none',
+          cursor: isActive ? 'pointer' : 'not-allowed',
+          opacity: isActive ? 1 : 0.5,
+          transition: 'transform 180ms ease, box-shadow 180ms ease',
+        }}
       >
-        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+        <svg
+          style={{ width: 16, height: 16, color: isActive ? '#ffffff' : 'var(--text-muted)' }}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2.5}
+        >
           <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m1.343-5.657-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
       </button>
@@ -126,17 +174,17 @@ export default function EndInterviewButton({
           <div
             className="w-full max-w-md px-6 py-6 sm:p-8 my-auto animate-slide-up"
             style={{
-              background: 'var(--modal-bg)',
-              border: '0.5px solid var(--modal-border)',
+              background: 'var(--bg-elevated)',
+              border: '0.5px solid var(--glass-border-hi)',
               borderRadius: 20,
-              boxShadow: 'var(--modal-shadow)',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 8 }}>
+            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
               {t.endModalTitle}
             </h2>
-            <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 24 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
               {context.consentToEmail ? t.endModalWithConsent : t.endModalWithoutConsent}
             </p>
 
@@ -150,7 +198,9 @@ export default function EndInterviewButton({
                 disabled={isSending}
                 className="theme-modal-cancel"
                 style={{
-                  padding: '9px 18px', fontSize: 13, fontWeight: 500,
+                  padding: '9px 18px',
+                  fontSize: 13,
+                  fontWeight: 500,
                   borderRadius: 10,
                   cursor: isSending ? 'not-allowed' : 'pointer',
                   opacity: isSending ? 0.5 : 1,
@@ -162,10 +212,16 @@ export default function EndInterviewButton({
                 onClick={handleConfirm}
                 disabled={isSending}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '9px 18px', fontSize: 13, fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '9px 18px',
+                  fontSize: 13,
+                  fontWeight: 600,
                   background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                  border: 'none', borderRadius: 10, color: '#ffffff',
+                  border: 'none',
+                  borderRadius: 10,
+                  color: '#ffffff',
                   cursor: isSending ? 'not-allowed' : 'pointer',
                   opacity: isSending ? 0.75 : 1,
                   boxShadow: '0 4px 16px rgba(64,96,208,0.35)',

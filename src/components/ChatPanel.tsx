@@ -43,6 +43,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
   const [chatPageEnter, setChatPageEnter] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   // Splash 2 refs
   const s2OverlayRef = useRef<HTMLDivElement>(null);
@@ -750,10 +751,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
-          opacity: chatPageEnter ? 1 : 0,
+          opacity: leaving ? 0 : chatPageEnter ? 1 : 0,
           transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
           filter: chatPageEnter ? 'blur(0px)' : 'blur(6px)',
-          transition: 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
+          transition: leaving
+            ? 'opacity 280ms ease'
+            : 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
         }}
       >
         <Header
@@ -765,6 +768,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               messages={messages}
               context={context}
               onInterviewEnded={handleInterviewEnded}
+              onLeaving={() => setLeaving(true)}
               suppressTooltip={reminderState !== 'hidden'}
             />
           }

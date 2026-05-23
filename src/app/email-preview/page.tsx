@@ -41,20 +41,22 @@ export default async function EmailPreviewPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Background />
-      <Header
-        recruiterName={session.recruiter_name ?? undefined}
-        company={session.company ?? undefined}
-      />
-      <main className="flex-1 w-full">
-        <InteractiveReport
-          report={report}
-          recruiterName={session.recruiter_name}
-          company={session.company}
+    <div style={{ position: 'relative', zIndex: 50, minHeight: '100vh', background: 'var(--bg-base)' }}>
+      <div className="flex flex-col min-h-screen">
+        <Background />
+        <Header
+          recruiterName={session.recruiter_name ?? undefined}
+          company={session.company ?? undefined}
         />
-      </main>
-      <Footer variant="compact" />
+        <main className="flex-1 w-full">
+          <InteractiveReport
+            report={report}
+            recruiterName={session.recruiter_name}
+            company={session.company}
+          />
+        </main>
+        <Footer variant="compact" />
+      </div>
     </div>
   );
 }
