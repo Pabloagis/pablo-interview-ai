@@ -22,6 +22,101 @@ function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
 }
 
+function InsightsOverlay({
+  onClose, fetching, error, report, onRetry,
+  recruiterName, company,
+  backLabel, fetchingLabel, errorLabel, retryLabel,
+}: {
+  onClose: () => void;
+  fetching: boolean;
+  error: string | null;
+  report: ReportData | null;
+  onRetry: () => void;
+  recruiterName: string | null;
+  company: string | null;
+  backLabel: string;
+  fetchingLabel: string;
+  errorLabel: string;
+  retryLabel: string;
+}) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 flex flex-col overflow-hidden"
+      style={{
+        zIndex: 60,
+        background: 'var(--bg-base)',
+        opacity: visible ? 1 : 0,
+        transition: 'opacity 220ms ease',
+      }}
+    >
+      <div
+        className="shrink-0 flex items-center gap-3 px-4"
+        style={{
+          height: 56,
+          borderBottom: '0.5px solid var(--glass-border)',
+          background: 'var(--nav-bg)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+        }}
+      >
+        <button
+          onClick={onClose}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
+            background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+          }}
+        >
+          {backLabel}
+        </button>
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {fetching && (
+          <div className="flex flex-col items-center justify-center gap-4 py-32">
+            <svg className="animate-spin w-8 h-8" style={{ color: 'var(--accent-primary)' }} fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{fetchingLabel}</p>
+          </div>
+        )}
+
+        {error && !fetching && (
+          <div className="flex flex-col items-center justify-center gap-4 py-32">
+            <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{errorLabel}</p>
+            <button
+              onClick={onRetry}
+              style={{
+                padding: '8px 20px', fontSize: 13, fontWeight: 600,
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                border: 'none', borderRadius: 10, color: '#fff', cursor: 'pointer',
+              }}
+            >
+              {retryLabel}
+            </button>
+          </div>
+        )}
+
+        {report && !fetching && (
+          <InteractiveReport
+            report={report}
+            recruiterName={recruiterName}
+            company={company}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
 interface ChatPanelProps {
   sessionId: string;
 }
@@ -1088,72 +1183,19 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       </div>
 
       {/* ── Insights overlay ── */}
-      {insightsOpen && (
-        <div
-          className="fixed inset-0 flex flex-col overflow-hidden"
-          style={{ zIndex: 55, background: 'var(--bg-base)' }}
-        >
-          {/* Header bar */}
-          <div
-            className="shrink-0 flex items-center gap-3 px-4"
-            style={{
-              height: 56,
-              borderBottom: '0.5px solid var(--glass-border)',
-              background: 'var(--header-bg)',
-              backdropFilter: 'blur(20px)',
-              WebkitBackdropFilter: 'blur(20px)',
-            }}
-          >
-            <button
-              onClick={() => setInsightsOpen(false)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
-                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
-              }}
-            >
-              {t.backToChat}
-            </button>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto">
-            {insightsFetching && (
-              <div className="flex flex-col items-center justify-center gap-4 py-32">
-                <svg className="animate-spin w-8 h-8" style={{ color: 'var(--accent-primary)' }} fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{t.generatingInsights}</p>
-              </div>
-            )}
-
-            {insightsError && !insightsFetching && (
-              <div className="flex flex-col items-center justify-center gap-4 py-32">
-                <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{t.insightsErrorMsg}</p>
-                <button
-                  onClick={openInsights}
-                  style={{
-                    padding: '8px 20px', fontSize: 13, fontWeight: 600,
-                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                    border: 'none', borderRadius: 10, color: '#fff', cursor: 'pointer',
-                  }}
-                >
-                  {t.insightsRetry}
-                </button>
-              </div>
-            )}
-
-            {insightsReport && !insightsFetching && (
-              <InteractiveReport
-                report={insightsReport}
-                recruiterName={context.recruiterName ?? null}
-                company={context.company ?? null}
-              />
-            )}
-          </div>
-        </div>
-      )}
+      {insightsOpen && <InsightsOverlay
+        onClose={() => setInsightsOpen(false)}
+        fetching={insightsFetching}
+        error={insightsError}
+        report={insightsReport}
+        onRetry={openInsights}
+        recruiterName={context.recruiterName ?? null}
+        company={context.company ?? null}
+        backLabel={t.backToChat}
+        fetchingLabel={t.generatingInsights}
+        errorLabel={t.insightsErrorMsg}
+        retryLabel={t.insightsRetry}
+      />}
 
       {/* SPLASH 2 — transparent overlay (Background shows through) */}
       {!chatSplashDone && (
