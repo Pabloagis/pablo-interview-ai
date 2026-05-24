@@ -34,17 +34,32 @@ function MoonIcon() {
 export default function Header({ recruiterName, company, action }: HeaderProps) {
   const { isDayMode, toggleTheme, manualOverride, clearOverride } = useTheme();
   const { t } = useLanguage();
-  const mouseDownTime = useRef(0);
+  const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const didLongPress = useRef(false);
 
-  const handleMouseDown = () => { mouseDownTime.current = Date.now(); };
+  const startHold = () => {
+    didLongPress.current = false;
+    holdTimer.current = setTimeout(() => {
+      if (manualOverride) {
+        clearOverride();
+        didLongPress.current = true;
+      }
+    }, 600);
+  };
+
+  const cancelHold = () => {
+    if (holdTimer.current) {
+      clearTimeout(holdTimer.current);
+      holdTimer.current = null;
+    }
+  };
 
   const handleClick = () => {
-    const elapsed = Date.now() - mouseDownTime.current;
-    if (elapsed >= 600 && manualOverride) {
-      clearOverride();
-    } else {
-      toggleTheme();
+    if (didLongPress.current) {
+      didLongPress.current = false;
+      return;
     }
+    toggleTheme();
   };
 
   const tooltipText = isDayMode ? t.switchToNight : t.switchToDay;
@@ -90,7 +105,16 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
         {/* Theme toggle */}
         <Tooltip text={tooltipText} position="bottom" align="right">
           <button
-            onMouseDown={handleMouseDown}
+            onMouseDown={startHold}
+            onMouseUp={cancelHold}
+            onMouseLeave={e => {
+              cancelHold();
+              (e.currentTarget as HTMLButtonElement).style.background = 'var(--glass-1)';
+              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glass-border)';
+            }}
+            onTouchStart={startHold}
+            onTouchEnd={cancelHold}
+            onTouchMove={cancelHold}
             onClick={handleClick}
             aria-label={tooltipText}
             style={{
@@ -104,14 +128,11 @@ export default function Header({ recruiterName, company, action }: HeaderProps) 
               transition: 'background 180ms ease, border-color 180ms ease',
               color: 'var(--text-tertiary)',
               padding: 0,
+              touchAction: 'manipulation',
             }}
             onMouseEnter={e => {
               (e.currentTarget as HTMLButtonElement).style.background = 'var(--glass-2)';
               (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glass-border-hi)';
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLButtonElement).style.background = 'var(--glass-1)';
-              (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--glass-border)';
             }}
           >
             {isDayMode ? <MoonIcon /> : <SunIcon />}
