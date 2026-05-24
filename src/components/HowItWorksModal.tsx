@@ -5,7 +5,7 @@ import { useLanguage } from '@/context/LanguageContext';
 import { useTheme } from '@/context/ThemeContext';
 
 const TOTAL_STEPS = 5;
-const AUTO_ADVANCE_MS = 5000;
+const AUTO_ADVANCE_MS = 9000;
 
 interface Props {
   onClose: () => void;

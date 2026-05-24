@@ -1,10 +1,13 @@
 import { Resend } from 'resend';
-import { getAnthropicClient } from '@/lib/anthropic';
-import { CLAUDE_FALLBACK_MODEL } from '@/lib/constants';
+import { generateReport } from '@/lib/report';
+import type { ReportData } from '@/lib/report';
 
 const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
 const BASE_URL = 'https://interviewmind.one';
+
+type Lang = 'en' | 'es' | 'it' | 'pt';
+const VALID_LANGS: Lang[] = ['en', 'es', 'it', 'pt'];
 
 function getResendClient(): Resend {
   const key = process.env.RESEND_API_KEY;
@@ -12,568 +15,318 @@ function getResendClient(): Resend {
   return new Resend(key);
 }
 
-// Static UI labels per language — extend as needed
-const UI: Record<string, Record<string, string>> = {
-  en: {
-    greeting: 'Hi',
-    greetingFallback: 'there',
-    executiveSummary: 'Executive summary',
-    coreExperience: 'Core experience',
-    conversationInsights: 'Conversation insights',
-    communicationStyle: 'Communication style',
-    topicsDiscussed: 'Topics discussed',
-    recruiterTakeaways: 'Recruiter takeaways',
-    strongMatch: 'Strong match indicators',
-    growthAreas: 'Areas to explore further',
-    scheduleSub: 'Book via Calendly · Google Meet',
-    linkedinLabel: 'View my LinkedIn',
-    linkedinSub: 'Connect with me',
-    cvLabel: 'Download my CV',
-    cvSub: 'Pablo_Agis_Burgos_CV.pdf',
-    bodySummary: 'Below is a summary of what we discussed, along with my CV and professional links.',
-    bodySignoff: "I'd love to stay in touch!",
-    footerText: 'Thanks again for your time and consideration!',
-    transcriptTitle: 'Conversation transcript',
-    recommendLabel: 'Refer Pablo to a colleague',
-    recommendSub: 'Share his profile with another recruiter',
-    recommendSubject: 'Pablo Agis Burgos — worth a conversation',
-    recommendBody: 'Hi,\n\nI recently spoke with Pablo Agis Burgos and thought you might be interested in his profile.\n\nHe has a strong background in hospitality technology — hotel operations, SaaS implementation, and multilingual client management across Europe. You can have a quick AI conversation with him here:\n\nhttps://interviewmind.one\n\n',
-  },
-  es: {
-    greeting: 'Hola',
-    greetingFallback: '',
-    executiveSummary: 'Resumen ejecutivo',
-    coreExperience: 'Experiencia clave',
-    conversationInsights: 'Insights de la conversación',
-    communicationStyle: 'Estilo de comunicación',
-    topicsDiscussed: 'Temas tratados',
-    recruiterTakeaways: 'Valoración del recruiter',
-    strongMatch: 'Puntos fuertes de encaje',
-    growthAreas: 'Áreas a explorar',
-    scheduleSub: 'Reservar en Calendly · Google Meet',
-    linkedinLabel: 'Ver mi LinkedIn',
-    linkedinSub: 'Conectemos',
-    cvLabel: 'Descargar mi CV',
-    cvSub: 'Pablo_Agis_Burgos_CV.pdf',
-    bodySummary: 'A continuación encontrarás un resumen de nuestra conversación, junto con mi CV y mis datos de contacto.',
-    bodySignoff: '¡Me encantaría mantener el contacto!',
-    footerText: '¡Muchas gracias por tu tiempo y consideración!',
-    transcriptTitle: 'Transcripción de la conversación',
-    recommendLabel: 'Recomendar a Pablo a un colega',
-    recommendSub: 'Comparte su perfil con otro recruiter',
-    recommendSubject: 'Pablo Agis Burgos — merece una conversación',
-    recommendBody: 'Hola,\n\nAcabo de hablar con Pablo Agis Burgos y creo que puede ser de tu interés.\n\nTiene un perfil sólido en tecnología hotelera — operaciones, implementación de SaaS y gestión de clientes multilingüe en Europa. Puedes tener una conversación rápida con él aquí:\n\nhttps://interviewmind.one\n\n',
-  },
+// ── Labels (mirrors InteractiveReport) ───────────────────────────────────────
+
+const SECTION_LABELS: Record<string, Record<Lang, string>> = {
+  executiveSummary:    { en: 'Executive Summary',            es: 'Resumen ejecutivo',                 it: 'Sommario esecutivo',                  pt: 'Sumário executivo' },
+  coreExperience:      { en: 'Core Experience',              es: 'Experiencia clave',                 it: 'Esperienza chiave',                   pt: 'Experiência principal' },
+  conversationInsights:{ en: 'Conversation Insights',        es: 'Insights de la conversación',       it: 'Insights della conversazione',        pt: 'Insights da conversa' },
+  recruiterTakeaways:  { en: 'Recruiter Takeaways',          es: 'Puntos clave',                      it: 'Punti chiave',                        pt: 'Pontos-chave' },
+  transcript:          { en: 'Conversation Transcript',      es: 'Transcripción de la conversación',  it: 'Trascrizione della conversazione',    pt: 'Transcrição da conversa' },
 };
 
-function getUI(lang: string): Record<string, string> {
-  return UI[lang] ?? UI['en'];
-}
+const ACTION_LABELS: Record<string, Record<Lang, string>> = {
+  bookCall:   { en: 'Book a call',           es: 'Agenda una llamada',   it: 'Prenota una chiamata',  pt: 'Agendar uma chamada' },
+  downloadCv: { en: 'Download CV',           es: 'Descargar CV',         it: 'Scarica CV',            pt: 'Descarregar CV' },
+  linkedin:   { en: 'View LinkedIn',         es: 'Ver LinkedIn',         it: 'Vedi LinkedIn',         pt: 'Ver LinkedIn' },
+  referPablo: { en: 'Refer Pablo to someone',es: 'Recomendar a Pablo',   it: 'Consiglia Pablo',       pt: 'Recomendar Pablo' },
+};
 
-interface ConversationAnalysis {
-  language: string;
-  opening_line: string;
-  core_experience_chips: string[];
-  communication_style: string[];
-  topics_discussed: string[];
-  strong_match_indicators: string[];
-  growth_areas: string[];
-  executive_summary: string;
-  suggested_subject_line: string;
-  next_step_cta: string;
-}
+const REPORT_BADGE: Record<Lang, string> = {
+  en: 'Insights Report', es: 'Informe de insights', it: 'Report insights', pt: 'Relatório de insights',
+};
 
-async function analyzeConversation(
-  transcript: string,
-  jobTitle?: string | null,
-  companyName?: string | null
-): Promise<ConversationAnalysis> {
-  const prompt = `
-You are generating a follow-up email on behalf of Pablo Agis Burgos after a recruiter interview.
+const GREETING: Record<Lang, string> = { en: 'Hi', es: 'Hola', it: 'Ciao', pt: 'Olá' };
 
-Pablo's background:
-- Hospitality operations background (Soho House London, Axel Hotel Barcelona, Accor)
-- Software Implementation Specialist at HubOS (Early 2026, a few months)
-- Core skills: B2B client relationships, onboarding, multilingual communication (EN/ES/GL/IT/PT)
-- Positioning: Operationally credible hospitality-tech specialist moving into SaaS implementation and commercial roles
+const OPEN_IN_BROWSER: Record<Lang, string> = {
+  en: 'Having trouble viewing this email? Open in browser →',
+  es: '¿Problemas para ver este email? Ábrelo en el navegador →',
+  it: 'Problemi a visualizzare questa email? Aprila nel browser →',
+  pt: 'Problemas a ver este email? Abrir no navegador →',
+};
 
-Job context:
-- Role: ${jobTitle || 'Not specified'}
-- Company: ${companyName || 'Not specified'}
+const FOOTER_TEXT: Record<Lang, string> = {
+  en: 'Thanks again for your time and consideration!',
+  es: '¡Muchas gracias por tu tiempo y consideración!',
+  it: 'Grazie ancora per il tuo tempo e la tua considerazione!',
+  pt: 'Obrigado pelo seu tempo e consideração!',
+};
 
-Full conversation transcript:
----
-${transcript}
----
+const REFER_SUBJECT: Record<Lang, string> = {
+  en: 'You should meet Pablo Agis Burgos',
+  es: 'Te recomiendo conocer a Pablo Agis Burgos',
+  it: 'Ti consiglio di conoscere Pablo Agis Burgos',
+  pt: 'Deves conhecer o Pablo Agis Burgos',
+};
 
-IMPORTANT RULES:
-1. Detect the language of the conversation and write ALL text fields in that exact language.
-2. Write everything in first person (I / my / me). Never refer to "Pablo" in third person.
-3. The "growth_areas" field must be written as positive, forward-looking opportunities — not as red flags or weaknesses. Frame them as areas where there is room to grow or questions worth exploring together. Tone: constructive and optimistic.
+const REFER_BODY: Record<Lang, string> = {
+  en:  `I just had a conversation with Pablo via InterviewMind and thought of you.\n\nhttps://interviewmind.one\n\n`,
+  es:  `Acabo de hablar con Pablo en InterviewMind y he pensado en ti.\n\nhttps://interviewmind.one\n\n`,
+  it:  `Ho appena parlato con Pablo su InterviewMind e ho pensato a te.\n\nhttps://interviewmind.one\n\n`,
+  pt:  `Acabei de falar com o Pablo no InterviewMind e lembrei-me de ti.\n\nhttps://interviewmind.one\n\n`,
+};
 
-Return ONLY a valid JSON object with this exact structure. No markdown, no preamble, just raw JSON:
-
-{
-  "language": "ISO 639-1 code of the conversation language, e.g. 'en' or 'es'",
-  "opening_line": "Warm, specific 1-sentence intro in first person referencing the actual role/company. Max 25 words. Do NOT include the recruiter's name — the greeting above already uses it.",
-  "core_experience_chips": [
-    "Exactly 4 short phrases (3–5 words max) covering key experience topics from the conversation."
-  ],
-  "communication_style": [
-    "3 adjective phrases describing how I came across in THIS conversation. E.g. 'Structured and methodical'"
-  ],
-  "topics_discussed": [
-    "3–4 specific topics from the actual conversation. Concrete, not generic."
-  ],
-  "strong_match_indicators": [
-    "2–4 strengths in first person (I bring / I have / My experience...). Grounded in the conversation."
-  ],
-  "growth_areas": [
-    "1–2 forward-looking, constructive phrases. Frame as growth potential or areas to explore together — never as weaknesses or concerns."
-  ],
-  "executive_summary": "2–3 sentences in first person summarising my seniority signal, communication quality, and fit for the role.",
-  "suggested_subject_line": "Email subject line specific to role and company. Max 10 words.",
-  "next_step_cta": "Short action phrase for the primary CTA button. Keep it open-ended — no specific timeframes like 'next week'. E.g. 'Let's connect' or 'Schedule a call'."
-}
-`;
-
-  const response = await getAnthropicClient().messages.create({
-    model: CLAUDE_FALLBACK_MODEL,
-    max_tokens: 1000,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  const raw = (response.content[0] as { type: string; text: string }).text.trim();
-  const clean = raw.replace(/```json|```/g, '').trim();
-
-  try {
-    return JSON.parse(clean) as ConversationAnalysis;
-  } catch (err) {
-    console.error('[followup-email] Claude analysis parse error:', err);
-    return getFallbackAnalysis(jobTitle, companyName);
-  }
-}
-
-function getFallbackAnalysis(
-  jobTitle?: string | null,
-  companyName?: string | null
-): ConversationAnalysis {
-  return {
-    language: 'en',
-    opening_line: `Thanks for exploring my professional background through InterviewMind${companyName ? ` regarding the opportunity at ${companyName}` : ''}.`,
-    core_experience_chips: [
-      '7+ yrs hospitality ops',
-      'SaaS onboarding & impl.',
-      'B2B client relationships',
-      'Multilingual · 5 languages',
-    ],
-    communication_style: ['Structured and methodical', 'Client-oriented framing', 'Systems thinker'],
-    topics_discussed: [
-      'Hospitality-to-tech transition',
-      'Customer onboarding adoption',
-      'Client communication approach',
-      'Career progression narrative',
-    ],
-    strong_match_indicators: [
-      'I bring high-touch client experience across international markets',
-      'I have hands-on SaaS implementation and onboarding exposure',
-      'I communicate professionally in 5 languages',
-    ],
-    growth_areas: [
-      'Expanding into quota-carrying sales roles',
-      'Deepening technical architecture knowledge',
-    ],
-    executive_summary:
-      'I bring senior hospitality operations experience with a recent pivot into SaaS implementation. My communication style is structured and client-oriented, with strong commercial awareness. I am best suited for Customer Success or Implementation roles with an enterprise hospitality focus.',
-    suggested_subject_line: jobTitle
-      ? `Pablo Agis Burgos · ${jobTitle} follow-up`
-      : 'Pablo Agis Burgos · InterviewMind follow-up',
-    next_step_cta: 'Schedule a conversation',
-  };
-}
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
 type RawMessage = { role: string; content: string };
 
-function formatTranscriptHTML(messages: RawMessage[], recruiterName?: string | null): string {
-  const recruiterLabel = recruiterName?.trim() || 'Recruiter';
-  return messages
-    .map((msg) => {
-      const isPablo = msg.role === 'assistant';
-      const label = isPablo ? 'Pablo' : recruiterLabel;
-      const labelColor = isPablo ? '#2563eb' : '#64748b';
-      const content = msg.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-      return `
-        <tr>
-          <td style="padding:10px 0 4px;">
-            <span style="font-size:11px; font-weight:bold; color:${labelColor}; text-transform:uppercase; letter-spacing:0.07em; font-family:Arial,sans-serif;">${label}</span>
-          </td>
-        </tr>
-        <tr>
-          <td style="padding:0 0 2px; border-bottom:1px solid #f1f5f9;">
-            <span style="font-size:14px; color:#374151; line-height:1.65; font-family:Arial,sans-serif;">${content}</span>
-          </td>
-        </tr>`;
-    })
-    .join('');
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-function generateEmailHTML(
-  analysis: ConversationAnalysis,
-  recruiterName?: string | null,
-  messages?: RawMessage[] | null,
-  previewUrl?: string,
-  recruiterEmail?: string | null,
-  jobTitle?: string | null,
-  companyName?: string | null,
-  exitNotify?: boolean
-): string {
-  const {
-    language,
-    opening_line,
-    core_experience_chips,
-    communication_style,
-    topics_discussed,
-    strong_match_indicators,
-    growth_areas,
-    executive_summary,
-    next_step_cta,
-  } = analysis;
-
-  const ui = getUI(language);
-
-  const greetingName = recruiterName?.trim()
-    ? recruiterName.trim()
-    : ui['greetingFallback'];
-  const greeting = greetingName
-    ? `${ui['greeting']} ${greetingName},`
-    : `${ui['greeting']},`;
-
-  const chipsHTML = core_experience_chips
-    .map(
-      (chip) =>
-        `<span style="display:inline-block; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; padding:6px 12px; font-size:13px; color:#475569; margin:3px 4px 3px 0; white-space:nowrap;">${chip}</span>`
-    )
-    .join('');
-
-  const commStyleHTML = communication_style
-    .map(
-      (item) =>
-        `<li style="margin-bottom:6px; font-size:14px; color:#64748b;">· ${item}</li>`
-    )
-    .join('');
-
-  const topicsHTML = topics_discussed
-    .map(
-      (item) =>
-        `<li style="margin-bottom:6px; font-size:14px; color:#64748b;">· ${item}</li>`
-    )
-    .join('');
-
-  const strengthsHTML = strong_match_indicators
-    .map(
-      (item) => `
-      <tr>
-        <td style="padding:5px 0; font-size:14px; color:#166534; vertical-align:top;">
-          <span style="margin-right:6px;">✓</span>${item}
-        </td>
-      </tr>`
-    )
-    .join('');
-
-  const growthHTML = growth_areas
-    .map(
-      (item) => `
-      <tr>
-        <td style="padding:5px 0; font-size:14px; color:#1d4ed8; vertical-align:top;">
-          <span style="margin-right:6px;">→</span>${item}
-        </td>
-      </tr>`
-    )
-    .join('');
-
-  const chevronHTML = `<span data-chevron style="font-size:18px; color:#94a3b8; font-family:Arial,sans-serif;">&#9660;</span>`;
-  const headerLinkOpen = previewUrl
-    ? `<a href="${previewUrl}" style="display:block; text-decoration:none; color:inherit;">`
-    : '';
-  const headerLinkClose = previewUrl ? `</a>` : '';
-
+function sectionHeader(num: number, label: string): string {
   return `
-<!DOCTYPE html>
-<html lang="${language}">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+      <tr>
+        <td width="30" valign="middle">
+          <div style="width:22px; height:22px; border-radius:50%; background:#4060d0; text-align:center; line-height:22px; display:inline-block;">
+            <span style="font-size:9px; font-weight:800; color:#ffffff; font-family:Arial,sans-serif; line-height:22px;">${String(num).padStart(2, '0')}</span>
+          </div>
+        </td>
+        <td valign="middle">
+          <span style="font-size:10px; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#0f172a; font-family:Arial,sans-serif;">${label}</span>
+        </td>
+      </tr>
+    </table>`;
+}
+
+function divider(): string {
+  return `<div style="height:0.5px; background:#e2e8f0; margin:0 0 16px;"></div>`;
+}
+
+// ── Email HTML (mirrors InteractiveReport layout) ─────────────────────────────
+
+function generateEmailHTML(
+  report: ReportData,
+  recruiterName: string | null,
+  messages: RawMessage[],
+  previewUrl?: string,
+  _jobTitle?: string | null,
+  _companyName?: string | null,
+  exitNotify?: boolean,
+): string {
+  const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
+  const greetingName = recruiterName?.trim() || '';
+  const greeting = greetingName ? `${GREETING[lang]} ${greetingName},` : `${GREETING[lang]},`;
+  const referHref = `mailto:?subject=${encodeURIComponent(REFER_SUBJECT[lang])}&body=${encodeURIComponent(REFER_BODY[lang])}`;
+
+  // ── Section 1: Executive Summary
+  const chipsHTML = (report.executiveSummary.chips ?? []).map(chip =>
+    `<span style="display:inline-block; background:rgba(64,96,208,0.08); border:0.5px solid rgba(64,96,208,0.22); border-radius:999px; padding:3px 11px; font-size:11px; font-weight:600; color:#4060d0; margin:2px 4px 2px 0; font-family:Arial,sans-serif;">${esc(chip)}</span>`
+  ).join('');
+
+  const execPointsHTML = (report.executiveSummary.points ?? []).map(pt =>
+    `<tr><td style="padding:3px 0; font-size:13px; color:#475569; line-height:1.65; font-family:Arial,sans-serif;" valign="top">
+      <span style="color:#4060d0; font-weight:700; margin-right:8px; font-family:Arial,sans-serif;">·</span>${esc(pt)}
+    </td></tr>`
+  ).join('');
+
+  // ── Section 2: Core Experience
+  const coreItemsHTML = report.coreExperience.items.map((item, i) => `
+    ${i > 0 ? `<tr><td style="padding:8px 0;"><div style="height:0.5px; background:#e2e8f0;"></div></td></tr>` : ''}
+    <tr><td style="padding-bottom:3px;">
+      <span style="font-size:11px; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; color:#4060d0; font-family:Arial,sans-serif;">${esc(item.label)}</span>
+    </td></tr>
+    <tr><td>
+      <span style="font-size:13px; color:#475569; line-height:1.65; font-family:Arial,sans-serif;">${esc(item.detail)}</span>
+    </td></tr>`
+  ).join('');
+
+  // ── Section 3: Conversation Insights
+  const insightItemsHTML = report.conversationInsights.items.map(item =>
+    `<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; background:#f5f7ff; border:0.5px solid #c8d4f5; border-left:2.5px solid #4060d0; border-radius:10px;">
+      <tr><td style="padding:10px 14px;">
+        <div style="font-size:10px; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:#4060d0; margin-bottom:4px; font-family:Arial,sans-serif;">${esc(item.title)}</div>
+        <div style="font-size:13px; color:#475569; line-height:1.65; font-family:Arial,sans-serif;">${esc(item.body)}</div>
+      </td></tr>
+    </table>`
+  ).join('');
+
+  // ── Section 4: Recruiter Takeaways
+  const takeawayItemsHTML = report.recruiterTakeaways.items.map(item =>
+    `<tr><td style="padding:4px 0; font-size:13px; color:#475569; line-height:1.65; font-family:Arial,sans-serif;" valign="top">
+      <span style="color:#4060d0; font-weight:700; margin-right:8px; font-family:Arial,sans-serif;">&#8594;</span>${esc(item)}
+    </td></tr>`
+  ).join('');
+
+  // ── Section 5: Transcript
+  const recruiterLabel = recruiterName?.trim() || 'Recruiter';
+  const transcriptHTML = messages.map((msg, i) => {
+    const isPablo = msg.role === 'assistant';
+    const labelColor = isPablo ? '#4060d0' : '#94a3b8';
+    return `
+    ${i > 0 ? `<tr><td style="padding:8px 0;"><div style="height:0.5px; background:#e2e8f0;"></div></td></tr>` : ''}
+    <tr><td style="padding-bottom:4px;">
+      <span style="font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:${labelColor}; font-family:Arial,sans-serif;">${isPablo ? 'Pablo' : recruiterLabel}</span>
+    </td></tr>
+    <tr><td>
+      <span style="font-size:13px; color:#475569; line-height:1.7; font-family:Arial,sans-serif;">${esc(msg.content)}</span>
+    </td></tr>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="${lang}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pablo Agis Burgos — InterviewMind</title>
+  <title>Pablo Agis Burgos — ${REPORT_BADGE[lang]}</title>
 </head>
-<body style="margin:0; padding:0; background-color:#ffffff; font-family: Arial, Helvetica, sans-serif;">
+<body style="margin:0; padding:0; background-color:#f0f2f8; font-family:Arial,Helvetica,sans-serif;">
 
-  ${exitNotify ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border-bottom:2px solid #f59e0b; margin-bottom:0;">
-    <tr>
-      <td style="padding:10px 20px; font-size:12px; color:#92400e; font-family:Arial,Helvetica,sans-serif; text-align:center; letter-spacing:0.02em;">
-        ⚠️ &nbsp;<strong>Sesión abandonada</strong> — el recruiter cerró la pestaña sin ver los insights
-      </td>
-    </tr>
+  ${exitNotify ? `
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border-bottom:2px solid #f59e0b;">
+    <tr><td style="padding:10px 20px; font-size:12px; color:#92400e; font-family:Arial,Helvetica,sans-serif; text-align:center; letter-spacing:0.02em;">
+      &#9888;&#65039; &nbsp;<strong>Sesi&#243;n abandonada</strong> &#8212; el recruiter cerr&#243; la pesta&#241;a sin ver los insights
+    </td></tr>
   </table>` : ''}
 
-  ${previewUrl ? `<p data-previewlink style="text-align:center; margin-bottom:12px;">
-    <a href="${previewUrl}" style="font-size:11px; color:#94a3b8; text-decoration:none; letter-spacing:0.04em;">
-      Having trouble viewing this email? Open in browser →
-    </a>
+  ${previewUrl ? `
+  <p style="text-align:center; padding:14px 0 0; margin:0;">
+    <a href="${previewUrl}" style="font-size:11px; color:#94a3b8; text-decoration:none; letter-spacing:0.04em; font-family:Arial,sans-serif;">${OPEN_IN_BROWSER[lang]}</a>
   </p>` : ''}
 
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; padding: 32px 16px;">
-    <tr>
-      <td align="center">
-        <table data-email-container cellpadding="0" cellspacing="0" style="max-width:600px; width:100%; background:#ffffff; border-radius:12px; overflow:hidden; border:1px solid #e2e8f0;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:20px 16px 52px;">
+    <tr><td align="center">
+      <table cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
 
-          <!-- HEADER -->
-          <tr>
-            <td style="background-color:#ffffff; border-bottom:1px solid #e2e8f0;">
-              <table width="100%" cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="padding:36px 24px 28px; text-align:center;">
-                    ${previewUrl ? `<a href="${previewUrl}" style="display:block; text-decoration:none;">` : ''}
-                    <p style="margin:0 0 20px; font-size:11px; letter-spacing:0.18em; color:#94a3b8; font-family:Arial,sans-serif; text-transform:uppercase;">InterviewMind</p>
-                    <table cellpadding="0" cellspacing="0" style="margin:0 auto 16px;"><tr>
-                      <td width="72" height="72" bgcolor="#e2e8f0" style="border-radius:50%; font-size:0; line-height:0; overflow:hidden;">
-                        <img data-pablo-avatar src="${BASE_URL}/assets/pablo-avatar.jpg" alt="PA" width="72" height="72" style="width:72px; height:72px; border-radius:50%; display:block; object-fit:cover; object-position:top center;" />
-                      </td>
-                    </tr></table>
-                    <h1 style="margin:0; font-size:22px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif; letter-spacing:-0.01em;">Pablo Agis Burgos</h1>
-                    ${previewUrl ? `<p data-previewlink style="font-size:11px; color:#94a3b8; margin-top:10px; text-decoration:none;">↗ Click to open interactive version</p></a>` : ''}
-                  </td>
-                </tr>
-              </table>
-            </td>
-          </tr>
+        <!-- ── HEADER CARD ─────────────────────────────────────────────────── -->
+        <tr><td style="padding-bottom:10px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:20px; overflow:hidden;">
+            <tr><td style="padding:28px 24px 22px; text-align:center;">
 
-          <!-- BODY -->
-          <tr>
-            <td style="padding:28px 24px;">
+              <!-- Report badge -->
+              <div style="display:inline-block; background:rgba(64,96,208,0.10); border:0.5px solid rgba(64,96,208,0.28); border-radius:999px; padding:4px 14px; font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#4060d0; margin-bottom:18px; font-family:Arial,sans-serif;">&#10022; ${REPORT_BADGE[lang]}</div>
 
-              <p style="margin:0 0 16px; font-size:21px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${greeting}</p>
-              <div style="border-left:3px solid #dbeafe; padding-left:18px; margin-bottom:28px;">
-                <p style="margin:0 0 10px; font-size:15px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${opening_line}</p>
-                <p style="margin:0 0 10px; font-size:15px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${ui['bodySummary']}</p>
-                <p style="margin:0 0 10px; font-size:15px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${ui['bodySignoff']}</p>
-                <p style="margin:0; font-size:15px; color:#475569; font-family:Arial,sans-serif;">— Pablo</p>
-              </div>
-
-              <!-- CTAs -->
-              <table data-cta-table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:40px;">
-
-                <!-- PRIMARY: Book a call -->
-                <tr>
-                  <td style="padding-bottom:10px;">
-                    <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 16px; text-align:center;">
-                      <table cellpadding="0" cellspacing="0" style="margin:0 auto 12px;"><tr>
-                        <td width="44" height="44" bgcolor="#DCFCE7" style="border-radius:10px; font-size:0; line-height:0;">
-                          <img src="${BASE_URL}/assets/em-1.png" width="44" height="44" alt="" style="display:block; border-radius:10px;" />
-                        </td>
-                      </tr></table>
-                      <span style="display:block; font-size:16px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${next_step_cta}</span>
-                      <span style="display:block; font-size:12px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px;">${ui['scheduleSub']}</span>
-                    </a>
-                  </td>
-                </tr>
-
-                <!-- SECONDARY: LinkedIn + CV -->
-                <tr>
-                  <td style="padding-bottom:10px;">
-                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td width="50%" height="150" style="padding-right:5px; vertical-align:top;">
-                        <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center; height:150px;">
-                          <table cellpadding="0" cellspacing="0" style="margin:0 auto 12px;"><tr>
-                            <td width="38" height="38" bgcolor="#DBEAFE" style="border-radius:8px; font-size:0; line-height:0;">
-                              <img src="${BASE_URL}/assets/em-2.png" width="38" height="38" alt="" style="display:block; border-radius:8px;" />
-                            </td>
-                          </tr></table>
-                          <span style="display:block; font-size:13px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['linkedinLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['linkedinSub']}</span>
-                        </a>
-                      </td>
-                      <td width="50%" height="150" style="padding-left:5px; vertical-align:top;">
-                        <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 12px; text-align:center; height:150px;">
-                          <table cellpadding="0" cellspacing="0" style="margin:0 auto 12px;"><tr>
-                            <td width="38" height="38" bgcolor="#FEE2E2" style="border-radius:8px; font-size:0; line-height:0;">
-                              <img src="${BASE_URL}/assets/em-3.png" width="38" height="38" alt="" style="display:block; border-radius:8px;" />
-                            </td>
-                          </tr></table>
-                          <span style="display:block; font-size:13px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['cvLabel']}</span>
-                          <span style="display:block; font-size:11px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px; line-height:1.5;">${ui['cvSub']}</span>
-                        </a>
-                      </td>
-                    </tr></table>
-                  </td>
-                </tr>
-
-                <!-- Reply to recruiter (Pablo's notification only) -->
-                ${recruiterEmail ? (() => {
-                  const subject = [jobTitle, companyName].filter(Boolean).join(' at ');
-                  const mailto = `mailto:${recruiterEmail}?subject=${encodeURIComponent(subject ? `Re: ${subject}` : 'Re: InterviewMind conversation')}`;
-                  return `<tr>
-                  <td style="padding-bottom:10px;">
-                    <a href="${mailto}" style="display:block; background:#F0FDF4; border:1px solid #BBF7D0; text-decoration:none; border-radius:14px; padding:16px 20px;">
-                      <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                        <td width="44" style="vertical-align:middle;">
-                          <img src="${BASE_URL}/assets/em-5.png" width="36" height="36" alt="" style="display:block; border-radius:8px;" />
-                        </td>
-                        <td style="vertical-align:middle; padding-left:12px;">
-                          <span style="display:block; font-size:14px; font-weight:700; color:#065F46; font-family:Arial,sans-serif; line-height:1.3;">Reply to recruiter</span>
-                          <span style="display:block; font-size:12px; color:#059669; font-family:Arial,sans-serif; margin-top:3px;">${recruiterEmail}</span>
-                        </td>
-                        <td width="28" style="vertical-align:middle; text-align:right;">
-                          <span style="font-size:18px; color:#6EE7B7; font-family:Arial,sans-serif;">&#8594;</span>
-                        </td>
-                      </tr></table>
-                    </a>
-                  </td>
-                </tr>`;
-                })() : ''}
-
-                <!-- TERTIARY: Refer to a colleague -->
-                <tr>
-                  <td>
-                    <a href="mailto:?subject=${encodeURIComponent(ui['recommendSubject'])}&body=${encodeURIComponent(ui['recommendBody'])}" style="display:block; background:#EFF6FF; border:2px solid #BFDBFE; text-decoration:none; border-radius:14px; padding:22px 16px; text-align:center;">
-                      <table cellpadding="0" cellspacing="0" style="margin:0 auto 12px;"><tr>
-                        <td width="44" height="44" bgcolor="#EDE9FE" style="border-radius:10px; font-size:0; line-height:0;">
-                          <img src="${BASE_URL}/assets/em-4.png" width="44" height="44" alt="" style="display:block; border-radius:10px;" />
-                        </td>
-                      </tr></table>
-                      <span style="display:block; font-size:16px; font-weight:700; color:#1D4ED8; font-family:Arial,sans-serif; line-height:1.3;">${ui['recommendLabel']}</span>
-                      <span style="display:block; font-size:12px; color:#60A5FA; font-family:Arial,sans-serif; margin-top:5px;">${ui['recommendSub']}</span>
-                    </a>
-                  </td>
-                </tr>
-
+              <!-- Avatar -->
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto 14px;">
+                <tr><td width="62" height="62" bgcolor="#e2e8f0" style="border-radius:50%; font-size:0; line-height:0; overflow:hidden; border:2px solid rgba(64,96,208,0.4);">
+                  <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="62" height="62" style="width:62px; height:62px; border-radius:50%; display:block; object-fit:cover;" />
+                </td></tr>
               </table>
 
-              <!-- Section: Executive Summary -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:2px solid #BFDBFE; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td data-accordion-header style="background:#EFF6FF; padding:12px 16px; border-bottom:1px solid #BFDBFE; cursor:pointer;">
-                    ${headerLinkOpen}<table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['executiveSummary']}</span></td>
-                      <td align="right">${chevronHTML}</td>
-                    </tr></table>${headerLinkClose}
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td style="padding:16px 18px; background:#ffffff;">
-                    <p style="margin:0; font-size:14px; line-height:1.75; color:#475569; font-family:Arial,sans-serif;">${executive_summary}</p>
-                  </td>
-                </tr>
-              </table>
+              <!-- Name -->
+              <div style="font-size:17px; font-weight:700; letter-spacing:-0.01em; color:#4060d0; margin-bottom:4px; font-family:Arial,sans-serif;">Pablo Agis Burgos</div>
+              <div style="font-size:11px; color:#94a3b8; margin-bottom:20px; font-family:Arial,sans-serif;">SaaS · Hospitality Tech</div>
 
-              <!-- Section: Core Experience -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:2px solid #BFDBFE; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td data-accordion-header style="background:#EFF6FF; padding:12px 16px; border-bottom:1px solid #BFDBFE; cursor:pointer;">
-                    ${headerLinkOpen}<table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['coreExperience']}</span></td>
-                      <td align="right">${chevronHTML}</td>
-                    </tr></table>${headerLinkClose}
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td style="padding:14px 16px; background:#ffffff;">
-                    <div style="line-height:1.8;">${chipsHTML}</div>
-                  </td>
-                </tr>
-              </table>
+              <!-- Divider -->
+              <div style="height:0.5px; background:#e2e8f0; margin-bottom:18px;"></div>
 
-              <!-- Section: Conversation Insights -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:2px solid #BFDBFE; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td data-accordion-header style="background:#EFF6FF; padding:12px 16px; border-bottom:1px solid #BFDBFE; cursor:pointer;">
-                    ${headerLinkOpen}<table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['conversationInsights']}</span></td>
-                      <td align="right">${chevronHTML}</td>
-                    </tr></table>${headerLinkClose}
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td style="background:#ffffff;">
-                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0;">
-                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['communicationStyle']}</p>
-                        <ul style="margin:0; padding:0; list-style:none;">${commStyleHTML}</ul>
-                      </td>
-                      <td width="50%" style="padding:14px 16px; vertical-align:top;">
-                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; font-family:Arial,sans-serif;">${ui['topicsDiscussed']}</p>
-                        <ul style="margin:0; padding:0; list-style:none;">${topicsHTML}</ul>
-                      </td>
-                    </tr></table>
-                  </td>
-                </tr>
-              </table>
+              <!-- Greeting + Intro -->
+              <p style="margin:0 0 12px; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; text-align:left;">${greeting}</p>
+              <p style="margin:0 0 8px; font-size:13.5px; color:#475569; line-height:1.75; text-align:left; font-family:Arial,sans-serif;">${esc(report.intro)}</p>
+              <p style="margin:0; font-size:12px; color:#94a3b8; font-style:italic; text-align:left; font-family:Arial,sans-serif;">&#8212; Pablo</p>
 
-              <!-- Section: Recruiter Takeaways -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:2px solid #BFDBFE; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td data-accordion-header style="background:#EFF6FF; padding:12px 16px; border-bottom:1px solid #BFDBFE; cursor:pointer;">
-                    ${headerLinkOpen}<table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['recruiterTakeaways']}</span></td>
-                      <td align="right">${chevronHTML}</td>
-                    </tr></table>${headerLinkClose}
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td style="background:#ffffff;">
-                    <table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td width="50%" style="padding:14px 16px; vertical-align:top; border-right:1px solid #e2e8f0; background:#f0fdf4;">
-                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#166534; font-family:Arial,sans-serif;">${ui['strongMatch']}</p>
-                        <table cellpadding="0" cellspacing="0">${strengthsHTML}</table>
-                      </td>
-                      <td width="50%" style="padding:14px 16px; vertical-align:top; background:#eff6ff;">
-                        <p style="margin:0 0 8px; font-size:11px; font-weight:bold; letter-spacing:0.08em; text-transform:uppercase; color:#1d4ed8; font-family:Arial,sans-serif;">${ui['growthAreas']}</p>
-                        <table cellpadding="0" cellspacing="0">${growthHTML}</table>
-                      </td>
-                    </tr></table>
-                  </td>
-                </tr>
-              </table>
+            </td></tr>
+          </table>
+        </td></tr>
 
-              ${messages && messages.length > 0 ? `
-              <!-- Section: Full Transcript -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:10px; border:2px solid #BFDBFE; border-radius:8px; overflow:hidden;">
-                <tr>
-                  <td data-accordion-header style="background:#EFF6FF; padding:12px 16px; border-bottom:1px solid #BFDBFE; cursor:pointer;">
-                    ${headerLinkOpen}<table width="100%" cellpadding="0" cellspacing="0"><tr>
-                      <td><span style="font-size:13px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['transcriptTitle']}</span></td>
-                      <td align="right">${chevronHTML}</td>
-                    </tr></table>${headerLinkClose}
-                  </td>
-                </tr>
-                <tr style="display:none;">
-                  <td style="padding:16px 18px; background:#ffffff;">
-                    <table width="100%" cellpadding="0" cellspacing="0">
-                      ${formatTranscriptHTML(messages, recruiterName)}
-                    </table>
-                  </td>
-                </tr>
-              </table>` : ''}
+        <!-- ── ACTION GRID (2×2) ───────────────────────────────────────────── -->
+        <tr><td style="padding-bottom:18px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td width="50%" style="padding-right:4px; padding-bottom:8px; vertical-align:top;">
+                <a href="https://calendly.com/pabloagisburgos" style="display:block; background:#f5f7ff; border:0.5px solid #c8d4f5; border-radius:12px; padding:16px 12px; text-align:center; text-decoration:none;">
+                  <div style="font-size:22px; line-height:1; margin-bottom:8px;">&#128197;</div>
+                  <span style="display:block; font-size:11.5px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif;">${ACTION_LABELS.bookCall[lang]}</span>
+                </a>
+              </td>
+              <td width="50%" style="padding-left:4px; padding-bottom:8px; vertical-align:top;">
+                <a href="${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf" style="display:block; background:#f5f7ff; border:0.5px solid #c8d4f5; border-radius:12px; padding:16px 12px; text-align:center; text-decoration:none;">
+                  <div style="font-size:22px; line-height:1; margin-bottom:8px;">&#11015;&#65039;</div>
+                  <span style="display:block; font-size:11.5px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif;">${ACTION_LABELS.downloadCv[lang]}</span>
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td width="50%" style="padding-right:4px; vertical-align:top;">
+                <a href="https://www.linkedin.com/in/pablo-agis-burgos" style="display:block; background:#f5f7ff; border:0.5px solid #c8d4f5; border-radius:12px; padding:16px 12px; text-align:center; text-decoration:none;">
+                  <div style="font-size:22px; line-height:1; margin-bottom:8px;">&#128188;</div>
+                  <span style="display:block; font-size:11.5px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif;">${ACTION_LABELS.linkedin[lang]}</span>
+                </a>
+              </td>
+              <td width="50%" style="padding-left:4px; vertical-align:top;">
+                <a href="${referHref}" style="display:block; background:#f5f7ff; border:0.5px solid #c8d4f5; border-radius:12px; padding:16px 12px; text-align:center; text-decoration:none;">
+                  <div style="font-size:22px; line-height:1; margin-bottom:8px;">&#8599;&#65039;</div>
+                  <span style="display:block; font-size:11.5px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif;">${ACTION_LABELS.referPablo[lang]}</span>
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
 
-            </td>
-          </tr>
+        <!-- ── SECTION 1: Executive Summary ──────────────────────────────── -->
+        <tr><td style="padding-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:14px; overflow:hidden;">
+            <tr><td style="padding:16px 18px 20px;">
+              ${sectionHeader(1, SECTION_LABELS.executiveSummary[lang])}
+              ${divider()}
+              <p style="margin:0 0 12px; font-size:14px; font-weight:500; color:#0f172a; line-height:1.6; font-family:Arial,sans-serif;">${esc(report.executiveSummary.headline)}</p>
+              ${chipsHTML ? `<div style="margin-bottom:12px;">${chipsHTML}</div>` : ''}
+              ${execPointsHTML ? `<table width="100%" cellpadding="0" cellspacing="0">${execPointsHTML}</table>` : ''}
+            </td></tr>
+          </table>
+        </td></tr>
 
-          <!-- FOOTER -->
-          <tr>
-            <td style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:24px; text-align:center;">
-              <p style="margin:0 0 8px; font-size:15px; font-weight:700; color:#0f172a; font-family:Arial,sans-serif;">${ui['footerText']}</p>
-              <a href="${BASE_URL}" style="font-size:13px; color:#3b82f6; font-family:Arial,sans-serif; text-decoration:none;">interviewmind.one</a>
-            </td>
-          </tr>
+        <!-- ── SECTION 2: Core Experience ────────────────────────────────── -->
+        <tr><td style="padding-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:14px; overflow:hidden;">
+            <tr><td style="padding:16px 18px 20px;">
+              ${sectionHeader(2, SECTION_LABELS.coreExperience[lang])}
+              ${divider()}
+              <table width="100%" cellpadding="0" cellspacing="0">${coreItemsHTML}</table>
+            </td></tr>
+          </table>
+        </td></tr>
 
-        </table>
-      </td>
-    </tr>
+        <!-- ── SECTION 3: Conversation Insights ──────────────────────────── -->
+        <tr><td style="padding-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:14px; overflow:hidden;">
+            <tr><td style="padding:16px 18px 20px;">
+              ${sectionHeader(3, SECTION_LABELS.conversationInsights[lang])}
+              ${divider()}
+              ${insightItemsHTML}
+            </td></tr>
+          </table>
+        </td></tr>
+
+        <!-- ── SECTION 4: Recruiter Takeaways ────────────────────────────── -->
+        <tr><td style="padding-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:14px; overflow:hidden;">
+            <tr><td style="padding:16px 18px 20px;">
+              ${sectionHeader(4, SECTION_LABELS.recruiterTakeaways[lang])}
+              ${divider()}
+              <table width="100%" cellpadding="0" cellspacing="0">${takeawayItemsHTML}</table>
+            </td></tr>
+          </table>
+        </td></tr>
+
+        ${messages.length > 0 ? `
+        <!-- ── SECTION 5: Transcript ──────────────────────────────────────── -->
+        <tr><td style="padding-bottom:8px;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#ffffff; border:0.5px solid #dde2f2; border-radius:14px; overflow:hidden;">
+            <tr><td style="padding:16px 18px 20px;">
+              ${sectionHeader(5, SECTION_LABELS.transcript[lang])}
+              ${divider()}
+              <table width="100%" cellpadding="0" cellspacing="0">${transcriptHTML}</table>
+            </td></tr>
+          </table>
+        </td></tr>` : ''}
+
+        <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
+        <tr><td style="padding-top:8px; text-align:center;">
+          <p style="margin:0 0 6px; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif;">${FOOTER_TEXT[lang]}</p>
+          <a href="${BASE_URL}" style="font-size:12px; color:#4060d0; font-family:Arial,sans-serif; text-decoration:none;">interviewmind.one</a>
+        </td></tr>
+
+      </table>
+    </td></tr>
   </table>
 
 </body>
-</html>
-  `;
+</html>`;
 }
+
+// ── Public interface ──────────────────────────────────────────────────────────
 
 export interface SendFollowUpEmailParams {
   to: string;
@@ -590,7 +343,6 @@ export interface SendFollowUpEmailParams {
 
 export async function sendFollowUpEmail({
   to,
-  transcript,
   messages,
   recruiterName,
   jobTitle,
@@ -598,22 +350,27 @@ export async function sendFollowUpEmail({
   exitNotify,
   sessionId,
   bcc,
-  recruiterEmail,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
-  const analysis = await analyzeConversation(transcript, jobTitle, companyName);
+  const report = await generateReport({
+    messages,
+    recruiterName: recruiterName ?? null,
+    company: companyName ?? null,
+  });
+
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
-  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl, recruiterEmail, jobTitle, companyName, exitNotify);
+  const html = generateEmailHTML(report, recruiterName ?? null, messages, previewUrl, jobTitle, companyName, exitNotify);
+
   const resend = getResendClient();
+  const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
+  const subject = [jobTitle, companyName].filter(Boolean).length > 0
+    ? `Pablo Agis Burgos · ${[jobTitle, companyName].filter(Boolean).join(' at ')}`
+    : `Pablo Agis Burgos — ${REPORT_BADGE[lang]}`;
 
   const result = await resend.emails.send({
     from: FROM_ADDRESS,
     to: [to],
     bcc: bcc ?? [PABLO_EMAIL],
-    subject: (() => {
-      const parts = [jobTitle, companyName].filter(Boolean);
-      if (parts.length > 0) return `Pablo Agis Burgos · ${parts.join(' at ')}`;
-      return analysis.suggested_subject_line;
-    })(),
+    subject,
     html,
   });
 

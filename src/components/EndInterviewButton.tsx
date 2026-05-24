@@ -100,11 +100,6 @@ export default function EndInterviewButton({
     }
   };
 
-  const shimmerCards = [
-    { label: t.endModalSectionCore,      delay: '0ms' },
-    { label: t.endModalSectionInsights,  delay: '200ms' },
-    { label: t.endModalSectionTakeaways, delay: '400ms' },
-  ];
 
   return (
     <>
@@ -160,225 +155,166 @@ export default function EndInterviewButton({
         </button>
       </Tooltip>
 
-      {/* Insights preview modal — rendered via portal to escape any stacking context */}
+      {/* Insights modal — portal to escape stacking context */}
       {modalOpen && portalRoot && createPortal(
-        <>
-          <style>{`
-            @keyframes imRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-            @keyframes imGlowPulse { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:0.72;transform:scale(1.18)} }
-            @keyframes imShimmer { 0%,100%{opacity:0.15} 50%{opacity:0.38} }
-          `}</style>
+        <div
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
+          style={{
+            background: panelReady ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
+            backdropFilter: 'blur(8px)',
+            WebkitBackdropFilter: 'blur(8px)',
+            transition: 'background 250ms ease',
+          }}
+          onClick={closeModal}
+        >
           <div
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
             style={{
-              background: panelReady ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              transition: 'background 250ms ease',
+              width: 'calc(100% - 32px)',
+              maxWidth: 400,
+              padding: '22px 20px 18px',
+              borderRadius: 22,
+              background: 'var(--bg-elevated)',
+              border: '0.5px solid var(--glass-border-hi)',
+              boxShadow: '0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
+              transform: panelReady ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
+              opacity: panelReady ? 1 : 0,
+              transition: 'transform 380ms cubic-bezier(0.16,1,0.3,1) 60ms, opacity 380ms ease 60ms',
             }}
-            onClick={closeModal}
+            onClick={(e) => e.stopPropagation()}
           >
-            <div
-              style={{
-                width: 'calc(100% - 32px)',
-                maxWidth: 400,
-                padding: '24px 24px 20px',
-                borderRadius: 20,
-                background: 'var(--bg-elevated)',
-                border: '0.5px solid var(--glass-border-hi)',
-                boxShadow: '0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
-                transform: panelReady ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
-                opacity: panelReady ? 1 : 0,
-                transition: 'transform 380ms cubic-bezier(0.16,1,0.3,1) 60ms, opacity 380ms ease 60ms',
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* 1. Wordmark */}
+            {/* Wordmark */}
+            <div style={{
+              textAlign: 'center', fontSize: 9, fontWeight: 500,
+              letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: 'var(--text-muted)', marginBottom: 14,
+            }}>
+              INTERVIEWMIND
+            </div>
+
+            {/* ── Scaled page preview ─────────────────────────────── */}
+            <div style={{
+              borderRadius: 14,
+              border: '0.5px solid var(--glass-border)',
+              background: 'var(--glass-1)',
+              height: 210,
+              overflow: 'hidden',
+              position: 'relative',
+              marginBottom: 14,
+            }}>
+              {/* Content rendered at 660px then scaled to fit */}
               <div style={{
-                textAlign: 'center',
-                fontSize: 9,
-                fontWeight: 500,
-                letterSpacing: '0.2em',
-                textTransform: 'uppercase',
-                color: 'var(--text-muted)',
-                marginBottom: 20,
+                position: 'absolute',
+                top: 12,
+                left: '50%',
+                transform: 'translateX(-50%) scale(0.5)',
+                transformOrigin: 'top center',
+                width: 660,
+                pointerEvents: 'none',
+                padding: '0 16px',
               }}>
-                INTERVIEWMIND
-              </div>
-
-              {/* 2. Avatar block */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: 20 }}>
-                <div style={{ position: 'relative', width: 76, height: 76 }}>
-                  {/* Glow */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: -12,
-                    borderRadius: '50%',
-                    background: 'radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)',
-                    animation: 'imGlowPulse 1800ms ease-in-out infinite',
-                    animationDelay: '400ms',
-                    opacity: panelReady ? 1 : 0,
-                    transition: 'opacity 300ms ease 400ms',
-                    pointerEvents: 'none',
-                  }} />
-                  {/* Spinning ring */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    borderRadius: '50%',
-                    background: 'conic-gradient(from 0deg, var(--accent-primary) 0%, var(--accent-purple) 55%, transparent 55%)',
-                    animation: 'imRingSpin 3.5s linear infinite',
-                    opacity: panelReady ? 1 : 0,
-                    transition: 'opacity 300ms ease 400ms',
-                  }} />
-                  {/* Photo inset */}
-                  <div style={{
-                    position: 'absolute',
-                    inset: 3,
-                    borderRadius: '50%',
-                    background: 'var(--bg-elevated)',
-                    overflow: 'hidden',
-                  }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src="/assets/pablo-avatar.jpg"
-                      alt="Pablo Agis Burgos"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', borderRadius: '50%' }}
-                    />
-                  </div>
-                </div>
-                <div style={{
-                  marginTop: 10,
-                  fontSize: 16,
-                  fontWeight: 700,
-                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                }}>
-                  Pablo Agis Burgos
-                </div>
-                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3 }}>
-                  SaaS · Hospitality Tech · 5 idiomas
-                </div>
-              </div>
-
-              {/* 3. Preview section cards */}
-              <div>
-                {/* Executive Summary — Ready */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 16px', borderRadius: 10, marginBottom: 6,
-                  background: 'var(--glass-1)',
-                  border: '0.5px solid var(--glass-border)',
-                }}>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
-                    textTransform: 'uppercase', color: 'var(--text-muted)',
-                  }}>
-                    {t.endModalSectionExec}
-                  </span>
-                  <span style={{
-                    fontSize: 10, fontWeight: 600,
-                    color: 'var(--accent-primary)',
-                    background: 'rgba(58,85,192,0.12)',
-                    border: '0.5px solid rgba(58,85,192,0.25)',
-                    borderRadius: 6,
-                    padding: '2px 8px',
-                  }}>
-                    {t.endModalReady}
-                  </span>
-                </div>
-
-                {/* Shimmer cards */}
-                {shimmerCards.map(({ label, delay }) => (
-                  <div key={label} style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '12px 16px', borderRadius: 10, marginBottom: 6,
-                    background: 'var(--glass-1)',
-                    border: '0.5px solid var(--glass-border)',
-                  }}>
-                    <span style={{
-                      fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
-                      textTransform: 'uppercase', color: 'var(--text-muted)',
+                {/* 2×2 action cards */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
+                  {[
+                    <svg key="cal" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
+                    <svg key="dl" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
+                    <svg key="li" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12" rx="0.5"/><circle cx="4" cy="4" r="2"/></svg>,
+                    <svg key="ref" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
+                  ].map((icon, i) => (
+                    <div key={i} style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                      padding: '16px 12px', borderRadius: 14,
+                      background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                      color: 'var(--accent-primary)',
                     }}>
-                      {label}
-                    </span>
+                      {icon}
+                      <div style={{ width: 54, height: 7, borderRadius: 3, background: 'var(--glass-border)' }} />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Section accordion headers */}
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div key={i} style={{
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '13px 16px', borderRadius: 12, marginBottom: 6,
+                    background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                  }}>
                     <div style={{
-                      width: 60, height: 6, borderRadius: 3,
+                      width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
                       background: 'var(--glass-border)',
-                      animation: 'imShimmer 1.8s ease-in-out infinite',
-                      animationDelay: delay,
-                    }} />
+                    }}>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-muted)' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <div style={{ flex: 1, height: 7, borderRadius: 3, background: 'var(--glass-border)' }} />
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
+                      <path d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 ))}
               </div>
 
-              {/* 4. Confirm button */}
+              {/* Bottom fade */}
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
+                background: 'linear-gradient(to bottom, transparent, var(--glass-1))',
+                pointerEvents: 'none',
+              }} />
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={handleConfirm}
+              disabled={isSending}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                width: '100%', padding: '13px',
+                fontSize: 14, fontWeight: 600,
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                border: 'none', borderRadius: 12,
+                color: '#ffffff',
+                cursor: isSending ? 'not-allowed' : 'pointer',
+                opacity: isSending ? 0.65 : 1,
+                boxShadow: '0 4px 20px var(--accent-glow)',
+                fontFamily: 'inherit',
+              }}
+            >
+              {isSending && (
+                <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
+              {isSending ? t.endModalSending : t.endModalOpenReport}
+            </button>
+
+            {errorMsg && (
+              <p style={{ fontSize: 12, color: '#f87171', marginTop: 10, textAlign: 'center' }}>
+                {errorMsg}
+              </p>
+            )}
+
+            <div style={{ textAlign: 'center', marginTop: 10 }}>
               <button
-                onClick={handleConfirm}
+                onClick={closeModal}
                 disabled={isSending}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 8,
-                  width: '100%',
-                  marginTop: 16,
-                  padding: '13px',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                  border: 'none',
-                  borderRadius: 12,
-                  color: '#ffffff',
+                  fontSize: 12, color: 'var(--text-tertiary)',
                   cursor: isSending ? 'not-allowed' : 'pointer',
-                  opacity: isSending ? 0.65 : 1,
-                  boxShadow: '0 4px 20px var(--accent-glow)',
-                  fontFamily: 'inherit',
+                  background: 'none', border: 'none', padding: 0,
+                  fontFamily: 'inherit', opacity: isSending ? 0.5 : 1,
+                  transition: 'color 150ms ease',
                 }}
+                onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
               >
-                {isSending && (
-                  <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                )}
-                {isSending ? t.endModalSending : t.endModalOpenReport}
+                {t.endModalBackToChat}
               </button>
-
-              {/* Error message */}
-              {errorMsg && (
-                <p style={{ fontSize: 12, color: '#f87171', marginTop: 10, textAlign: 'center' }}>
-                  {errorMsg}
-                </p>
-              )}
-
-              {/* 5. Back to conversation link */}
-              <div style={{ textAlign: 'center', marginTop: 10 }}>
-                <button
-                  onClick={closeModal}
-                  disabled={isSending}
-                  style={{
-                    fontSize: 12,
-                    color: 'var(--text-tertiary)',
-                    cursor: isSending ? 'not-allowed' : 'pointer',
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    fontFamily: 'inherit',
-                    transition: 'color 150ms ease',
-                    opacity: isSending ? 0.5 : 1,
-                  }}
-                  onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
-                >
-                  {t.endModalBackToChat}
-                </button>
-              </div>
             </div>
           </div>
-        </>,
+        </div>,
         portalRoot
       )}
     </>
