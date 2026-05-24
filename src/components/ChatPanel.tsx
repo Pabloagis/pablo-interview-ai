@@ -884,8 +884,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
           opacity: chatPageEnter ? 1 : 0,
-          transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
-          filter: chatPageEnter ? 'blur(0px)' : 'blur(6px)',
+          transform: chatPageEnter ? undefined : 'translateY(36px)',
+          filter: chatPageEnter ? undefined : 'blur(6px)',
           transition: 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
         }}
       >
