@@ -9,12 +9,14 @@ import MessageBubble from './MessageBubble';
 import StreamingResponse from './StreamingResponse';
 import Toast from './Toast';
 import EndInterviewButton from './EndInterviewButton';
+import InteractiveReport from './InteractiveReport';
 import Tooltip from './Tooltip';
 import Background from './Background';
 import { useLanguage } from '@/context/LanguageContext';
 import Footer from './Footer';
 
 import type { Topic } from '@/context/LanguageContext';
+import type { ReportData } from '@/lib/report';
 
 function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
@@ -43,7 +45,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
   const [chatPageEnter, setChatPageEnter] = useState(false);
-  const [leaving, setLeaving] = useState(false);
+  const [insightsOpen, setInsightsOpen] = useState(false);
+  const [insightsReport, setInsightsReport] = useState<ReportData | null>(null);
+  const [insightsFetching, setInsightsFetching] = useState(false);
+  const [insightsError, setInsightsError] = useState<string | null>(null);
+  const [insightsUnlocked, setInsightsUnlocked] = useState(false);
+  const insightsCacheRef = useRef<{ report: ReportData; msgCount: number } | null>(null);
 
   // Splash 2 refs
   const s2OverlayRef = useRef<HTMLDivElement>(null);
@@ -334,6 +341,33 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       }
     } catch {
       // ignore
+    }
+  }, [sessionId]);
+
+  const openInsights = useCallback(async () => {
+    setInsightsUnlocked(true);
+    setInsightsOpen(true);
+    setInsightsError(null);
+
+    const userMsgCount = messagesLengthRef.current;
+    if (insightsCacheRef.current?.msgCount === userMsgCount && insightsCacheRef.current.report) {
+      setInsightsReport(insightsCacheRef.current.report);
+      setInsightsFetching(false);
+      return;
+    }
+
+    setInsightsFetching(true);
+    setInsightsReport(null);
+    try {
+      const res = await fetch(`/api/report?id=${sessionId}`);
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json() as ReportData;
+      insightsCacheRef.current = { report: data, msgCount: userMsgCount };
+      setInsightsReport(data);
+    } catch {
+      setInsightsError('error');
+    } finally {
+      setInsightsFetching(false);
     }
   }, [sessionId]);
 
@@ -754,12 +788,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
-          opacity: leaving ? 0 : chatPageEnter ? 1 : 0,
+          opacity: chatPageEnter ? 1 : 0,
           transform: chatPageEnter ? 'translateY(0)' : 'translateY(36px)',
           filter: chatPageEnter ? 'blur(0px)' : 'blur(6px)',
-          transition: leaving
-            ? 'opacity 280ms ease'
-            : 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
+          transition: 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
         }}
       >
         <Header
@@ -771,7 +803,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               messages={messages}
               context={context}
               onInterviewEnded={handleInterviewEnded}
-              onLeaving={() => setLeaving(true)}
+              onOpenInsights={openInsights}
+              skipModal={insightsUnlocked}
               suppressTooltip={reminderState !== 'hidden'}
             />
           }
@@ -1053,6 +1086,74 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         <Toast toasts={toasts} onDismiss={dismissToast} />
 
       </div>
+
+      {/* ── Insights overlay ── */}
+      {insightsOpen && (
+        <div
+          className="fixed inset-0 flex flex-col overflow-hidden"
+          style={{ zIndex: 55, background: 'var(--bg-base)' }}
+        >
+          {/* Header bar */}
+          <div
+            className="shrink-0 flex items-center gap-3 px-4"
+            style={{
+              height: 56,
+              borderBottom: '0.5px solid var(--glass-border)',
+              background: 'var(--header-bg)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+            }}
+          >
+            <button
+              onClick={() => setInsightsOpen(false)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)',
+                background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0',
+              }}
+            >
+              {t.backToChat}
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto">
+            {insightsFetching && (
+              <div className="flex flex-col items-center justify-center gap-4 py-32">
+                <svg className="animate-spin w-8 h-8" style={{ color: 'var(--accent-primary)' }} fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{t.generatingInsights}</p>
+              </div>
+            )}
+
+            {insightsError && !insightsFetching && (
+              <div className="flex flex-col items-center justify-center gap-4 py-32">
+                <p style={{ fontSize: 14, color: 'var(--text-secondary)' }}>{t.insightsErrorMsg}</p>
+                <button
+                  onClick={openInsights}
+                  style={{
+                    padding: '8px 20px', fontSize: 13, fontWeight: 600,
+                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                    border: 'none', borderRadius: 10, color: '#fff', cursor: 'pointer',
+                  }}
+                >
+                  {t.insightsRetry}
+                </button>
+              </div>
+            )}
+
+            {insightsReport && !insightsFetching && (
+              <InteractiveReport
+                report={insightsReport}
+                recruiterName={context.recruiterName ?? null}
+                company={context.company ?? null}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* SPLASH 2 — transparent overlay (Background shows through) */}
       {!chatSplashDone && (

@@ -148,6 +148,11 @@ export type Translations = {
   resumeBannerMsgs: string;
   resumeBtn: string;
   dismissBtn: string;
+  // Insights overlay
+  backToChat: string;
+  generatingInsights: string;
+  insightsErrorMsg: string;
+  insightsRetry: string;
   // HowItWorksModal
   howItWorksChip: string;
   hiwStep: string;
@@ -339,6 +344,10 @@ const EN: Translations = {
   resumeBannerMsgs: 'messages',
   resumeBtn: 'Resume',
   dismissBtn: 'Dismiss',
+  backToChat: '← Back to chat',
+  generatingInsights: 'Generating your insights…',
+  insightsErrorMsg: 'Could not generate insights. Please try again.',
+  insightsRetry: 'Retry',
   howItWorksChip: 'See how it works',
   hiwStep: 'Step',
   hiwStep1Title: 'Introduce yourself',
@@ -528,6 +537,10 @@ const ES: Translations = {
   resumeBannerMsgs: 'mensajes',
   resumeBtn: 'Retomar',
   dismissBtn: 'Descartar',
+  backToChat: '← Volver al chat',
+  generatingInsights: 'Generando tus insights…',
+  insightsErrorMsg: 'No se pudieron generar los insights. Por favor inténtalo de nuevo.',
+  insightsRetry: 'Reintentar',
   howItWorksChip: 'Ver cómo funciona',
   hiwStep: 'Paso',
   hiwStep1Title: 'Preséntate',
@@ -717,6 +730,10 @@ const IT: Translations = {
   resumeBannerMsgs: 'messaggi',
   resumeBtn: 'Riprendi',
   dismissBtn: 'Ignora',
+  backToChat: '← Torna alla chat',
+  generatingInsights: 'Generazione insights in corso…',
+  insightsErrorMsg: 'Impossibile generare gli insights. Per favore riprova.',
+  insightsRetry: 'Riprova',
   howItWorksChip: 'Scopri come funziona',
   hiwStep: 'Passo',
   hiwStep1Title: 'Presentati',
@@ -906,6 +923,10 @@ const PT: Translations = {
   resumeBannerMsgs: 'mensagens',
   resumeBtn: 'Retomar',
   dismissBtn: 'Dispensar',
+  backToChat: '← Voltar ao chat',
+  generatingInsights: 'A gerar os seus insights…',
+  insightsErrorMsg: 'Não foi possível gerar os insights. Por favor tente novamente.',
+  insightsRetry: 'Tentar novamente',
   howItWorksChip: 'Ver como funciona',
   hiwStep: 'Passo',
   hiwStep1Title: 'Apresente-se',

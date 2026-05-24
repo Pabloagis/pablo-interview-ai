@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import Tooltip from './Tooltip';
@@ -11,7 +10,8 @@ interface EndInterviewButtonProps {
   messages: Message[];
   context: RecruiterContext;
   onInterviewEnded: (emailSent: boolean) => void;
-  onLeaving?: () => void;
+  onOpenInsights?: () => void;
+  skipModal?: boolean;
   suppressTooltip?: boolean;
 }
 
@@ -20,23 +20,27 @@ export default function EndInterviewButton({
   messages,
   context,
   onInterviewEnded,
-  onLeaving,
+  onOpenInsights,
+  skipModal = false,
   suppressTooltip = false,
 }: EndInterviewButtonProps) {
   const { t } = useLanguage();
-  const router = useRouter();
   const [modalOpen, setModalOpen] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [hovered,  setHovered]  = useState(false);
-  const [pressed,  setPressed]  = useState(false);
+  const [hovered, setHovered] = useState(false);
+  const [pressed, setPressed] = useState(false);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
-  const openModal = () => {
+  const handleButtonClick = () => {
     if (!isActive) return;
-    setErrorMsg(null);
-    setModalOpen(true);
+    if (skipModal && onOpenInsights) {
+      onOpenInsights();
+    } else {
+      setErrorMsg(null);
+      setModalOpen(true);
+    }
   };
 
   const closeModal = () => {
@@ -51,7 +55,11 @@ export default function EndInterviewButton({
 
     if (!context.consentToEmail) {
       setModalOpen(false);
-      onInterviewEnded(false);
+      if (onOpenInsights) {
+        onOpenInsights();
+      } else {
+        onInterviewEnded(false);
+      }
       return;
     }
 
@@ -69,8 +77,11 @@ export default function EndInterviewButton({
       }
 
       setModalOpen(false);
-      onLeaving?.();
-      setTimeout(() => router.push(`/email-preview?id=${sessionId}`), 300);
+      if (onOpenInsights) {
+        onOpenInsights();
+      } else {
+        onInterviewEnded(true);
+      }
     } catch (err) {
       console.error('[EndInterview] send-followup failed:', err);
       setErrorMsg(t.endModalError);
@@ -89,7 +100,7 @@ export default function EndInterviewButton({
         className="shrink-0"
       >
         <button
-          onClick={openModal}
+          onClick={handleButtonClick}
           disabled={!isActive}
           onMouseEnter={() => isActive && setHovered(true)}
           onMouseLeave={() => { setHovered(false); setPressed(false); }}
