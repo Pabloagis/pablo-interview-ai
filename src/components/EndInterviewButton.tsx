@@ -32,7 +32,15 @@ export default function EndInterviewButton({
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
   const [portalRoot, setPortalRoot] = useState<Element | null>(null);
+  const [panelReady, setPanelReady] = useState(false);
+
   useEffect(() => { setPortalRoot(document.body); }, []);
+
+  useEffect(() => {
+    if (!modalOpen) { setPanelReady(false); return; }
+    const id = requestAnimationFrame(() => setPanelReady(true));
+    return () => cancelAnimationFrame(id);
+  }, [modalOpen]);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
@@ -92,6 +100,12 @@ export default function EndInterviewButton({
     }
   };
 
+  const shimmerCards = [
+    { label: t.endModalSectionCore,      delay: '0ms' },
+    { label: t.endModalSectionInsights,  delay: '200ms' },
+    { label: t.endModalSectionTakeaways, delay: '400ms' },
+  ];
+
   return (
     <>
       {/* Unified Insights trigger — pill on desktop, icon square on mobile */}
@@ -146,67 +160,182 @@ export default function EndInterviewButton({
         </button>
       </Tooltip>
 
-      {/* Confirmation modal — rendered via portal to escape any stacking context */}
+      {/* Insights preview modal — rendered via portal to escape any stacking context */}
       {modalOpen && portalRoot && createPortal(
-        <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
-          style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
-          onClick={closeModal}
-        >
+        <>
+          <style>{`
+            @keyframes imRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+            @keyframes imGlowPulse { 0%,100%{opacity:0.35;transform:scale(1)} 50%{opacity:0.72;transform:scale(1.18)} }
+            @keyframes imShimmer { 0%,100%{opacity:0.15} 50%{opacity:0.38} }
+          `}</style>
           <div
-            className="w-full max-w-md px-6 py-6 sm:p-8 my-auto animate-slide-up"
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
             style={{
-              background: 'var(--bg-elevated)',
-              border: '0.5px solid var(--glass-border-hi)',
-              borderRadius: 20,
-              boxShadow: '0 24px 80px rgba(0,0,0,0.56), inset 0 1px 0 rgba(255,255,255,0.08)',
+              background: panelReady ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              transition: 'background 250ms ease',
             }}
-            onClick={(e) => e.stopPropagation()}
+            onClick={closeModal}
           >
-            <h2 style={{ fontSize: 17, fontWeight: 700, color: 'var(--text-primary)', marginBottom: 8 }}>
-              {t.endModalTitle}
-            </h2>
-            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: 24 }}>
-              {context.consentToEmail ? t.endModalWithConsent : t.endModalWithoutConsent}
-            </p>
+            <div
+              style={{
+                width: 'calc(100% - 32px)',
+                maxWidth: 400,
+                padding: '24px 24px 20px',
+                borderRadius: 20,
+                background: 'var(--bg-elevated)',
+                border: '0.5px solid var(--glass-border-hi)',
+                boxShadow: '0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
+                transform: panelReady ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
+                opacity: panelReady ? 1 : 0,
+                transition: 'transform 380ms cubic-bezier(0.16,1,0.3,1) 60ms, opacity 380ms ease 60ms',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* 1. Wordmark */}
+              <div style={{
+                textAlign: 'center',
+                fontSize: 9,
+                fontWeight: 500,
+                letterSpacing: '0.2em',
+                textTransform: 'uppercase',
+                color: 'var(--text-muted)',
+                marginBottom: 20,
+              }}>
+                INTERVIEWMIND
+              </div>
 
-            {errorMsg && (
-              <p style={{ fontSize: 13, color: '#f87171', marginBottom: 16 }}>{errorMsg}</p>
-            )}
+              {/* 2. Avatar block */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+                <div style={{ position: 'relative', width: 76, height: 76 }}>
+                  {/* Glow */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: -12,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)',
+                    animation: 'imGlowPulse 1800ms ease-in-out infinite',
+                    animationDelay: '400ms',
+                    opacity: panelReady ? 1 : 0,
+                    transition: 'opacity 300ms ease 400ms',
+                    pointerEvents: 'none',
+                  }} />
+                  {/* Spinning ring */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: '50%',
+                    background: 'conic-gradient(from 0deg, var(--accent-primary) 0%, var(--accent-purple) 55%, transparent 55%)',
+                    animation: 'imRingSpin 3.5s linear infinite',
+                    opacity: panelReady ? 1 : 0,
+                    transition: 'opacity 300ms ease 400ms',
+                  }} />
+                  {/* Photo inset */}
+                  <div style={{
+                    position: 'absolute',
+                    inset: 3,
+                    borderRadius: '50%',
+                    background: 'var(--bg-elevated)',
+                    overflow: 'hidden',
+                  }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="/assets/pablo-avatar.jpg"
+                      alt="Pablo Agis Burgos"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                    />
+                  </div>
+                </div>
+                <div style={{
+                  marginTop: 10,
+                  fontSize: 16,
+                  fontWeight: 700,
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                }}>
+                  Pablo Agis Burgos
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginTop: 3 }}>
+                  SaaS · Hospitality Tech · 5 idiomas
+                </div>
+              </div>
 
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <button
-                onClick={closeModal}
-                disabled={isSending}
-                className="theme-modal-cancel"
-                style={{
-                  padding: '9px 18px',
-                  fontSize: 13,
-                  fontWeight: 500,
-                  borderRadius: 10,
-                  cursor: isSending ? 'not-allowed' : 'pointer',
-                  opacity: isSending ? 0.5 : 1,
-                }}
-              >
-                {t.endModalCancel}
-              </button>
+              {/* 3. Preview section cards */}
+              <div>
+                {/* Executive Summary — Ready */}
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '12px 16px', borderRadius: 10, marginBottom: 6,
+                  background: 'var(--glass-1)',
+                  border: '0.5px solid var(--glass-border)',
+                }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+                    textTransform: 'uppercase', color: 'var(--text-muted)',
+                  }}>
+                    {t.endModalSectionExec}
+                  </span>
+                  <span style={{
+                    fontSize: 10, fontWeight: 600,
+                    color: 'var(--accent-primary)',
+                    background: 'rgba(58,85,192,0.12)',
+                    border: '0.5px solid rgba(58,85,192,0.25)',
+                    borderRadius: 6,
+                    padding: '2px 8px',
+                  }}>
+                    {t.endModalReady}
+                  </span>
+                </div>
+
+                {/* Shimmer cards */}
+                {shimmerCards.map(({ label, delay }) => (
+                  <div key={label} style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '12px 16px', borderRadius: 10, marginBottom: 6,
+                    background: 'var(--glass-1)',
+                    border: '0.5px solid var(--glass-border)',
+                  }}>
+                    <span style={{
+                      fontSize: 10, fontWeight: 600, letterSpacing: '0.06em',
+                      textTransform: 'uppercase', color: 'var(--text-muted)',
+                    }}>
+                      {label}
+                    </span>
+                    <div style={{
+                      width: 60, height: 6, borderRadius: 3,
+                      background: 'var(--glass-border)',
+                      animation: 'imShimmer 1.8s ease-in-out infinite',
+                      animationDelay: delay,
+                    }} />
+                  </div>
+                ))}
+              </div>
+
+              {/* 4. Confirm button */}
               <button
                 onClick={handleConfirm}
                 disabled={isSending}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 8,
-                  padding: '9px 18px',
-                  fontSize: 13,
+                  width: '100%',
+                  marginTop: 16,
+                  padding: '13px',
+                  fontSize: 14,
                   fontWeight: 600,
                   background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
                   border: 'none',
-                  borderRadius: 10,
+                  borderRadius: 12,
                   color: '#ffffff',
                   cursor: isSending ? 'not-allowed' : 'pointer',
-                  opacity: isSending ? 0.75 : 1,
-                  boxShadow: '0 4px 16px rgba(64,96,208,0.35)',
+                  opacity: isSending ? 0.65 : 1,
+                  boxShadow: '0 4px 20px var(--accent-glow)',
+                  fontFamily: 'inherit',
                 }}
               >
                 {isSending && (
@@ -215,11 +344,41 @@ export default function EndInterviewButton({
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
                 )}
-                {isSending ? t.endModalSending : t.endModalConfirm}
+                {isSending ? t.endModalSending : t.endModalOpenReport}
               </button>
+
+              {/* Error message */}
+              {errorMsg && (
+                <p style={{ fontSize: 12, color: '#f87171', marginTop: 10, textAlign: 'center' }}>
+                  {errorMsg}
+                </p>
+              )}
+
+              {/* 5. Back to conversation link */}
+              <div style={{ textAlign: 'center', marginTop: 10 }}>
+                <button
+                  onClick={closeModal}
+                  disabled={isSending}
+                  style={{
+                    fontSize: 12,
+                    color: 'var(--text-tertiary)',
+                    cursor: isSending ? 'not-allowed' : 'pointer',
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
+                    fontFamily: 'inherit',
+                    transition: 'color 150ms ease',
+                    opacity: isSending ? 0.5 : 1,
+                  }}
+                  onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
+                >
+                  {t.endModalBackToChat}
+                </button>
+              </div>
             </div>
           </div>
-        </div>,
+        </>,
         portalRoot
       )}
     </>

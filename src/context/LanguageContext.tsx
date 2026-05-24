@@ -100,6 +100,13 @@ export type Translations = {
   endModalConfirm: string;
   endModalSending: string;
   endModalError: string;
+  endModalOpenReport: string;
+  endModalBackToChat: string;
+  endModalSectionExec: string;
+  endModalSectionCore: string;
+  endModalSectionInsights: string;
+  endModalSectionTakeaways: string;
+  endModalReady: string;
   // Footer
   footerPrivacy: string;
   footerContact: string;
@@ -280,6 +287,13 @@ const EN: Translations = {
   endModalConfirm: 'Yes, send insights',
   endModalSending: 'Sending…',
   endModalError: 'Something went wrong. Please try again.',
+  endModalOpenReport: 'Open my insights report →',
+  endModalBackToChat: '← Back to conversation',
+  endModalSectionExec: 'Executive Summary',
+  endModalSectionCore: 'Core Experience',
+  endModalSectionInsights: 'Conversation Insights',
+  endModalSectionTakeaways: 'Recruiter Takeaways',
+  endModalReady: 'Ready',
   footerPrivacy: 'Privacy',
   footerContact: 'Contact',
   footerPrivateNote: 'All conversations remain private and are never shared externally.',
@@ -473,6 +487,13 @@ const ES: Translations = {
   endModalConfirm: 'Sí, enviar insights',
   endModalSending: 'Enviando…',
   endModalError: 'Algo salió mal. Por favor inténtalo de nuevo.',
+  endModalOpenReport: 'Abrir mi informe de insights →',
+  endModalBackToChat: '← Volver a la conversación',
+  endModalSectionExec: 'Resumen ejecutivo',
+  endModalSectionCore: 'Experiencia clave',
+  endModalSectionInsights: 'Insights de la conversación',
+  endModalSectionTakeaways: 'Puntos clave',
+  endModalReady: 'Listo',
   footerPrivacy: 'Privacidad',
   footerContact: 'Contacto',
   footerPrivateNote: 'Todas las conversaciones son privadas y nunca se comparten externamente.',
@@ -666,6 +687,13 @@ const IT: Translations = {
   endModalConfirm: 'Sì, invia insights',
   endModalSending: 'Invio…',
   endModalError: 'Qualcosa è andato storto. Per favore riprova.',
+  endModalOpenReport: 'Apri il mio report →',
+  endModalBackToChat: '← Torna alla conversazione',
+  endModalSectionExec: 'Sommario esecutivo',
+  endModalSectionCore: 'Esperienza chiave',
+  endModalSectionInsights: 'Insights conversazione',
+  endModalSectionTakeaways: 'Punti chiave',
+  endModalReady: 'Pronto',
   footerPrivacy: 'Privacy',
   footerContact: 'Contatto',
   footerPrivateNote: 'Tutte le conversazioni rimangono private e non vengono mai condivise esternamente.',
@@ -859,6 +887,13 @@ const PT: Translations = {
   endModalConfirm: 'Sim, enviar insights',
   endModalSending: 'A enviar…',
   endModalError: 'Algo correu mal. Por favor tente novamente.',
+  endModalOpenReport: 'Abrir o meu relatório →',
+  endModalBackToChat: '← Voltar à conversa',
+  endModalSectionExec: 'Sumário executivo',
+  endModalSectionCore: 'Experiência principal',
+  endModalSectionInsights: 'Insights da conversa',
+  endModalSectionTakeaways: 'Pontos-chave',
+  endModalReady: 'Pronto',
   footerPrivacy: 'Privacidade',
   footerContact: 'Contacto',
   footerPrivateNote: 'Todas as conversas são privadas e nunca partilhadas externamente.',
