@@ -24,6 +24,10 @@ const SECTION_LABELS: Record<string, Record<Lang, string>> = {
     en: 'Recruiter Takeaways', es: 'Puntos clave',
     it: 'Punti chiave', pt: 'Pontos-chave',
   },
+  transcript: {
+    en: 'Conversation Transcript', es: 'Transcripción de la conversación',
+    it: 'Trascrizione della conversazione', pt: 'Transcrição da conversa',
+  },
 };
 
 const ACTION_LABELS: Record<string, Record<Lang, string>> = {
@@ -44,6 +48,7 @@ interface Props {
   report: ReportData;
   recruiterName: string | null;
   company: string | null;
+  messages?: Array<{ role: string; content: string }>;
 }
 
 // ── Icons (currentColor so callers can tint them) ─────────────────────────────
@@ -114,11 +119,12 @@ const SECTION_ACCENTS = [
   'rgba(96,48,180,0.9)',
   'rgba(64,120,220,0.85)',
   'rgba(130,70,200,0.85)',
+  'rgba(80,100,160,0.8)',
 ];
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function InteractiveReport({ report }: Props) {
+export default function InteractiveReport({ report, recruiterName, messages = [] }: Props) {
   const lang: Lang = VALID_LANGS.includes(report.language as Lang)
     ? (report.language as Lang)
     : 'en';
@@ -171,6 +177,7 @@ export default function InteractiveReport({ report }: Props) {
     'coreExperience',
     'conversationInsights',
     'recruiterTakeaways',
+    'transcript',
   ] as const;
 
   const renderSectionContent = (key: typeof sections[number]) => {
@@ -261,6 +268,34 @@ export default function InteractiveReport({ report }: Props) {
                 <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{item}</span>
               </div>
             ))}
+          </div>
+        );
+      }
+      case 'transcript': {
+        const speakerLabel = recruiterName || 'Recruiter';
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {messages.map((msg, i) => {
+              const isPablo = msg.role === 'assistant';
+              return (
+                <div key={i}>
+                  {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '12px 0' }} />}
+                  <div>
+                    <span style={{
+                      display: 'inline-block',
+                      fontSize: 9, fontWeight: 700, letterSpacing: '0.1em',
+                      textTransform: 'uppercase', marginBottom: 5,
+                      color: isPablo ? 'var(--accent-primary)' : 'var(--text-muted)',
+                    }}>
+                      {isPablo ? 'Pablo' : speakerLabel}
+                    </span>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                      {msg.content}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         );
       }

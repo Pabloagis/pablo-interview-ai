@@ -53,6 +53,7 @@ export default async function EmailPreviewPage({ searchParams }: PageProps) {
             report={report}
             recruiterName={session.recruiter_name}
             company={session.company}
+            messages={messages}
           />
         </main>
         <Footer variant="compact" />
