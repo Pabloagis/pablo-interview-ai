@@ -467,7 +467,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
                   background: isOpen ? accent : 'var(--glass-border)',
                   transition: 'background 220ms ease',
                 }}>
-                  <span style={{ fontSize: 9, fontWeight: 800, color: isOpen ? '#fff' : 'var(--text-muted)' }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: isOpen ? '#ffffff' : 'var(--text-muted)' }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                 </div>

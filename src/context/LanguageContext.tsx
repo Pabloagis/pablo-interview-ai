@@ -107,6 +107,9 @@ export type Translations = {
   endModalSectionInsights: string;
   endModalSectionTakeaways: string;
   endModalReady: string;
+  // Theme toggle
+  switchToDay: string;
+  switchToNight: string;
   // Footer
   footerPrivacy: string;
   footerContact: string;
@@ -294,6 +297,8 @@ const EN: Translations = {
   endModalSectionInsights: 'Conversation Insights',
   endModalSectionTakeaways: 'Recruiter Takeaways',
   endModalReady: 'Ready',
+  switchToDay: 'Day mode',
+  switchToNight: 'Night mode',
   footerPrivacy: 'Privacy',
   footerContact: 'Contact',
   footerPrivateNote: 'All conversations remain private and are never shared externally.',
@@ -494,6 +499,8 @@ const ES: Translations = {
   endModalSectionInsights: 'Insights de la conversación',
   endModalSectionTakeaways: 'Puntos clave',
   endModalReady: 'Listo',
+  switchToDay: 'Modo día',
+  switchToNight: 'Modo noche',
   footerPrivacy: 'Privacidad',
   footerContact: 'Contacto',
   footerPrivateNote: 'Todas las conversaciones son privadas y nunca se comparten externamente.',
@@ -694,6 +701,8 @@ const IT: Translations = {
   endModalSectionInsights: 'Insights conversazione',
   endModalSectionTakeaways: 'Punti chiave',
   endModalReady: 'Pronto',
+  switchToDay: 'Modalità giorno',
+  switchToNight: 'Modalità notte',
   footerPrivacy: 'Privacy',
   footerContact: 'Contatto',
   footerPrivateNote: 'Tutte le conversazioni rimangono private e non vengono mai condivise esternamente.',
@@ -894,6 +903,8 @@ const PT: Translations = {
   endModalSectionInsights: 'Insights da conversa',
   endModalSectionTakeaways: 'Pontos-chave',
   endModalReady: 'Pronto',
+  switchToDay: 'Modo dia',
+  switchToNight: 'Modo noite',
   footerPrivacy: 'Privacidade',
   footerContact: 'Contacto',
   footerPrivateNote: 'Todas as conversas são privadas e nunca partilhadas externamente.',
