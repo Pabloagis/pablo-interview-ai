@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const messages = (session.messages ?? []) as Array<{ role: string; content: string }>;
     const userMessages = messages.filter((m) => m.role === 'user');
 
-    if (userMessages.length < 3) {
+    if (userMessages.length < 1) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
@@ -40,29 +40,22 @@ export async function POST(request: NextRequest) {
       .map((m) => `${m.role === 'user' ? 'Recruiter' : 'Pablo'}: ${m.content}`)
       .join('\n\n');
 
-    // Always send to recruiter (if email available) and always notify Pablo
-    const recipients = session.email
-      ? [session.email, PABLO_EMAIL]
-      : [PABLO_EMAIL];
+    console.log(`[exit-notify] Sending abandoned-session notification for ${sessionId} → ${PABLO_EMAIL}`);
 
-    console.log(`[exit-notify] Sending insights for abandoned session ${sessionId} → ${recipients.join(', ')}`);
+    const { emailId, html: lastHtml } = await sendFollowUpEmail({
+      to: PABLO_EMAIL,
+      transcript,
+      messages,
+      recruiterName: session.recruiter_name || null,
+      jobTitle: session.role || null,
+      companyName: session.company || null,
+      sessionId,
+      recruiterEmail: session.email || null,
+      exitNotify: true,
+      bcc: [],
+    });
 
-    let lastHtml = '';
-    for (const recipient of recipients) {
-      const { emailId, html } = await sendFollowUpEmail({
-        to: recipient,
-        transcript,
-        messages,
-        recruiterName: session.recruiter_name || null,
-        jobTitle: session.role || null,
-        companyName: session.company || null,
-        sessionId,
-        recruiterEmail: session.email || null,
-        bcc: [],
-      });
-      lastHtml = html;
-      console.log(`[exit-notify] Sent to ${recipient}, emailId: ${emailId}`);
-    }
+    console.log(`[exit-notify] Sent to ${PABLO_EMAIL}, emailId: ${emailId}`);
 
     await supabase
       .from('sessions')

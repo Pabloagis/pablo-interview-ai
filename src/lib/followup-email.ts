@@ -224,7 +224,8 @@ function generateEmailHTML(
   previewUrl?: string,
   recruiterEmail?: string | null,
   jobTitle?: string | null,
-  companyName?: string | null
+  companyName?: string | null,
+  exitNotify?: boolean
 ): string {
   const {
     language,
@@ -305,6 +306,14 @@ function generateEmailHTML(
   <title>Pablo Agis Burgos — InterviewMind</title>
 </head>
 <body style="margin:0; padding:0; background-color:#ffffff; font-family: Arial, Helvetica, sans-serif;">
+
+  ${exitNotify ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7; border-bottom:2px solid #f59e0b; margin-bottom:0;">
+    <tr>
+      <td style="padding:10px 20px; font-size:12px; color:#92400e; font-family:Arial,Helvetica,sans-serif; text-align:center; letter-spacing:0.02em;">
+        ⚠️ &nbsp;<strong>Sesión abandonada</strong> — el recruiter cerró la pestaña sin ver los insights
+      </td>
+    </tr>
+  </table>` : ''}
 
   ${previewUrl ? `<p data-previewlink style="text-align:center; margin-bottom:12px;">
     <a href="${previewUrl}" style="font-size:11px; color:#94a3b8; text-decoration:none; letter-spacing:0.04em;">
@@ -573,6 +582,7 @@ export interface SendFollowUpEmailParams {
   recruiterName?: string | null;
   jobTitle?: string | null;
   companyName?: string | null;
+  exitNotify?: boolean;
   sessionId?: string | null;
   bcc?: string[];
   recruiterEmail?: string | null;
@@ -585,13 +595,14 @@ export async function sendFollowUpEmail({
   recruiterName,
   jobTitle,
   companyName,
+  exitNotify,
   sessionId,
   bcc,
   recruiterEmail,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const analysis = await analyzeConversation(transcript, jobTitle, companyName);
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
-  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl, recruiterEmail, jobTitle, companyName);
+  const html = generateEmailHTML(analysis, recruiterName, messages, previewUrl, recruiterEmail, jobTitle, companyName, exitNotify);
   const resend = getResendClient();
 
   const result = await resend.emails.send({

@@ -1,9 +1,7 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReportData } from '@/lib/report';
-import Toast from './Toast';
-import type { ToastMessage } from '@/lib/types';
 
 type Lang = 'en' | 'es' | 'it' | 'pt';
 
@@ -29,10 +27,10 @@ const SECTION_LABELS: Record<string, Record<Lang, string>> = {
 };
 
 const ACTION_LABELS: Record<string, Record<Lang, string>> = {
-  bookCall:   { en: 'Book a call',      es: 'Agenda una llamada',    it: 'Prenota una chiamata',  pt: 'Agendar uma chamada' },
-  downloadCv: { en: 'Download CV',       es: 'Descargar CV',          it: 'Scarica CV',            pt: 'Descarregar CV' },
-  linkedin:   { en: 'View LinkedIn',     es: 'Ver LinkedIn',          it: 'Vedi LinkedIn',         pt: 'Ver LinkedIn' },
-  referPablo: { en: 'Share report',      es: 'Compartir informe',     it: 'Condividi report',      pt: 'Partilhar relatório' },
+  bookCall:   { en: 'Book a call',              es: 'Agenda una llamada',      it: 'Prenota una chiamata',      pt: 'Agendar uma chamada' },
+  downloadCv: { en: 'Download CV',               es: 'Descargar CV',            it: 'Scarica CV',                pt: 'Descarregar CV' },
+  linkedin:   { en: 'View LinkedIn',             es: 'Ver LinkedIn',            it: 'Vedi LinkedIn',             pt: 'Ver LinkedIn' },
+  referPablo: { en: 'Refer Pablo to someone',    es: 'Recomendar a Pablo',      it: 'Consiglia Pablo',           pt: 'Recomendar Pablo' },
 };
 
 const REPORT_BADGE: Record<Lang, string> = {
@@ -129,17 +127,6 @@ export default function InteractiveReport({ report }: Props) {
     new Set(['executiveSummary'])
   );
   const [visible, setVisible] = useState(false);
-  const [toasts, setToasts] = useState<ToastMessage[]>([]);
-
-  const addToast = useCallback((message: string, type: ToastMessage['type'] = 'success') => {
-    const id = Math.random().toString(36).slice(2);
-    setToasts(prev => [...prev, { id, message, type }]);
-  }, []);
-
-  const dismissToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
-  }, []);
-
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
     return () => cancelAnimationFrame(id);
@@ -162,19 +149,21 @@ export default function InteractiveReport({ report }: Props) {
     });
   };
 
-  const handleShareReport = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      addToast(
-        lang === 'es' ? 'Enlace copiado' :
-        lang === 'it' ? 'Link copiato' :
-        lang === 'pt' ? 'Link copiado' :
-        'Link copied!',
-        'success'
-      );
-    } catch {
-      addToast('Could not copy link', 'error');
-    }
+  const getReferHref = () => {
+    const url = typeof window !== 'undefined' ? window.location.href : BASE_URL;
+    const subjects: Record<Lang, string> = {
+      en: 'You should meet Pablo Agis Burgos',
+      es: 'Te recomiendo conocer a Pablo Agis Burgos',
+      it: 'Ti consiglio di conoscere Pablo Agis Burgos',
+      pt: 'Deves conhecer o Pablo Agis Burgos',
+    };
+    const bodies: Record<Lang, string> = {
+      en: `I just had a conversation with Pablo via InterviewMind and thought of you. Check out his insights report here:\n\n${url}`,
+      es: `Acabo de tener una conversación con Pablo a través de InterviewMind y he pensado en ti. Aquí tienes su informe de insights:\n\n${url}`,
+      it: `Ho appena avuto una conversazione con Pablo tramite InterviewMind e ho pensato a te. Ecco il suo report di insights:\n\n${url}`,
+      pt: `Acabei de ter uma conversa com o Pablo via InterviewMind e lembrei-me de ti. Aqui está o seu relatório de insights:\n\n${url}`,
+    };
+    return `mailto:?subject=${encodeURIComponent(subjects[lang])}&body=${encodeURIComponent(bodies[lang])}`;
   };
 
   const sections = [
@@ -187,7 +176,11 @@ export default function InteractiveReport({ report }: Props) {
   return (
     <>
       <style>{`
-        @keyframes irRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes irRingSpinOnce {
+          0%   { transform: rotate(0deg);   opacity: 1; }
+          75%  { opacity: 1; }
+          100% { transform: rotate(360deg); opacity: 0; }
+        }
         @keyframes irGlow { 0%,100%{opacity:0.4} 50%{opacity:0.75} }
       `}</style>
 
@@ -240,7 +233,7 @@ export default function InteractiveReport({ report }: Props) {
                 <div style={{
                   position: 'absolute', inset: 0, borderRadius: '50%',
                   background: 'conic-gradient(from 0deg, var(--accent-primary) 0%, var(--accent-purple) 55%, transparent 55%)',
-                  animation: 'irRingSpin 3.5s linear infinite',
+                  animation: 'irRingSpinOnce 2s cubic-bezier(0.4,0,0.6,1) 1 forwards',
                 }} />
                 <div style={{
                   position: 'absolute', inset: 3, borderRadius: '50%',
@@ -266,7 +259,7 @@ export default function InteractiveReport({ report }: Props) {
               Pablo Agis Burgos
             </div>
             <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 20 }}>
-              SaaS · Hospitality Tech · 5 idiomas
+              SaaS · Hospitality Tech
             </div>
 
             {/* Divider */}
@@ -293,14 +286,14 @@ export default function InteractiveReport({ report }: Props) {
             padding: '15px 20px',
             marginBottom: 8,
             borderRadius: 14, textDecoration: 'none',
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-            boxShadow: '0 4px 20px var(--accent-glow)',
-            color: '#fff',
+            background: 'var(--glass-1)',
+            border: '0.5px solid rgba(58,85,192,0.35)',
+            color: 'var(--accent-primary)',
           }}
         >
-          <div style={{ color: '#fff' }}><CalendarIcon /></div>
+          <CalendarIcon />
           <span style={{ fontSize: 13, fontWeight: 700 }}>{ACTION_LABELS.bookCall[lang]}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 15, opacity: 0.75 }}>→</span>
+          <span style={{ marginLeft: 'auto', fontSize: 15, opacity: 0.5 }}>→</span>
         </a>
 
         {/* ── Secondary actions — 2-col ──────────────────────────────────────── */}
@@ -340,23 +333,22 @@ export default function InteractiveReport({ report }: Props) {
           </a>
         </div>
 
-        {/* ── Tertiary — Share ───────────────────────────────────────────────── */}
-        <button
-          onClick={handleShareReport}
+        {/* ── Tertiary — Refer Pablo ─────────────────────────────────────────── */}
+        <a
+          href={getReferHref()}
           style={{
             ...stagger(4),
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             width: '100%', padding: '11px 16px', marginBottom: 20,
-            borderRadius: 14, cursor: 'pointer',
+            borderRadius: 14, textDecoration: 'none',
             background: 'var(--glass-1)',
             border: '0.5px solid var(--glass-border)',
             color: 'var(--text-secondary)',
-            fontFamily: 'inherit',
           }}
         >
           <div style={{ color: 'var(--accent-primary)' }}><ReferIcon /></div>
           <span style={{ fontSize: 12, fontWeight: 600 }}>{ACTION_LABELS.referPablo[lang]}</span>
-        </button>
+        </a>
 
         {/* ── Collapsible report sections ────────────────────────────────────── */}
         {sections.map(({ key, content }, i) => {
@@ -434,7 +426,6 @@ export default function InteractiveReport({ report }: Props) {
         })}
       </div>
 
-      <Toast toasts={toasts} onDismiss={dismissToast} />
     </>
   );
 }

@@ -604,7 +604,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     const fireExitNotify = () => {
       if (exitEmailFiredRef.current) return;
       if (interviewEndedRef.current) return;
-      if (userMessageCountRef.current < 3) return;
+      if (userMessageCountRef.current < 1) return;
       exitEmailFiredRef.current = true;
       const payload = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
       navigator.sendBeacon('/api/exit-notify', payload);
