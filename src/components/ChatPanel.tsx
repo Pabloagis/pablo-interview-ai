@@ -180,7 +180,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const sendCheckInRef = useRef<() => Promise<void>>();
   const dismissPersistentReminderRef = useRef<() => void>();
   const usedTopicsRef = useRef<Set<string>>(new Set());
-  const exitEmailFiredRef = useRef(false);
   const interviewEndedRef = useRef(false);
   const s2RanRef          = useRef(false);
 
@@ -601,25 +600,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     return () => clearInterval(interval);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Exit beacon
-  useEffect(() => {
-    const fireExitNotify = () => {
-      if (exitEmailFiredRef.current) return;
-      if (interviewEndedRef.current) return;
-      if (userMessageCountRef.current < 1) return;
-      exitEmailFiredRef.current = true;
-      const payload = new Blob([JSON.stringify({ sessionId })], { type: 'application/json' });
-      navigator.sendBeacon('/api/exit-notify', payload);
-    };
-    const handleBeforeUnload = () => fireExitNotify();
-    const handleVisibilityChange = () => { if (document.visibilityState === 'hidden') fireExitNotify(); };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const sendMessage = async (overrideText?: string) => {
     const trimmed = (overrideText ?? inputText).trim();
