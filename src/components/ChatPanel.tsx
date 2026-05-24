@@ -24,7 +24,7 @@ function pickRandom<T>(pool: T[], n: number): T[] {
 
 function InsightsOverlay({
   onClose, fetching, error, report, onRetry,
-  recruiterName, company,
+  recruiterName, company, messages,
   backLabel, fetchingLabel, errorLabel, retryLabel,
 }: {
   onClose: () => void;
@@ -34,6 +34,7 @@ function InsightsOverlay({
   onRetry: () => void;
   recruiterName: string | null;
   company: string | null;
+  messages: Array<{ role: string; content: string }>;
   backLabel: string;
   fetchingLabel: string;
   errorLabel: string;
@@ -110,6 +111,7 @@ function InsightsOverlay({
             report={report}
             recruiterName={recruiterName}
             company={company}
+            messages={messages}
           />
         )}
       </div>
@@ -1191,6 +1193,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         onRetry={openInsights}
         recruiterName={context.recruiterName ?? null}
         company={context.company ?? null}
+        messages={messages}
         backLabel={t.backToChat}
         fetchingLabel={t.generatingInsights}
         errorLabel={t.insightsErrorMsg}
