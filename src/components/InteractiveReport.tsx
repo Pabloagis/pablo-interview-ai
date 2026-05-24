@@ -35,6 +35,11 @@ const ACTION_LABELS: Record<string, Record<Lang, string>> = {
   referPablo: { en: 'Share report',      es: 'Compartir informe',     it: 'Condividi report',      pt: 'Partilhar relatório' },
 };
 
+const REPORT_BADGE: Record<Lang, string> = {
+  en: 'Insights Report', es: 'Informe de insights',
+  it: 'Report insights', pt: 'Relatório de insights',
+};
+
 const BASE_URL = 'https://interviewmind.one';
 
 interface Props {
@@ -43,11 +48,11 @@ interface Props {
   company: string | null;
 }
 
-// ── Icons ────────────────────────────────────────────────────────────────────
+// ── Icons (currentColor so callers can tint them) ─────────────────────────────
 
 function CalendarIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="3" />
       <line x1="16" y1="2" x2="16" y2="6" />
       <line x1="8" y1="2" x2="8" y2="6" />
@@ -58,7 +63,7 @@ function CalendarIcon() {
 
 function DownloadIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
       <polyline points="7 10 12 15 17 10" />
       <line x1="12" y1="15" x2="12" y2="3" />
@@ -68,7 +73,7 @@ function DownloadIcon() {
 
 function LinkedInIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="var(--accent-primary)">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
       <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z" />
       <rect x="2" y="9" width="4" height="12" rx="0.5" />
       <circle cx="4" cy="4" r="2" />
@@ -78,11 +83,12 @@ function LinkedInIcon() {
 
 function ReferIcon() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
-      <circle cx="9" cy="7" r="4" />
-      <line x1="23" y1="11" x2="17" y2="11" />
-      <line x1="20" y1="8" x2="20" y2="14" />
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3" />
+      <circle cx="6" cy="12" r="3" />
+      <circle cx="18" cy="19" r="3" />
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
     </svg>
   );
 }
@@ -90,20 +96,27 @@ function ReferIcon() {
 function ChevronIcon({ open }: { open: boolean }) {
   return (
     <svg
-      width="14" height="14" viewBox="0 0 24 24"
+      width="13" height="13" viewBox="0 0 24 24"
       fill="none" stroke="currentColor" strokeWidth={2.5}
       strokeLinecap="round" strokeLinejoin="round"
       style={{
-        color: 'var(--text-muted)',
         flexShrink: 0,
         transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-        transition: 'transform 200ms ease',
+        transition: 'transform 220ms ease',
       }}
     >
       <path d="M19 9l-7 7-7-7" />
     </svg>
   );
 }
+
+// Section accent colours (index-matched)
+const SECTION_ACCENTS = [
+  'var(--accent-primary)',
+  'rgba(96,48,180,0.9)',
+  'rgba(64,120,220,0.85)',
+  'rgba(130,70,200,0.85)',
+];
 
 // ── Main component ────────────────────────────────────────────────────────────
 
@@ -134,35 +147,17 @@ export default function InteractiveReport({ report }: Props) {
 
   const stagger = (i: number): React.CSSProperties => ({
     opacity: visible ? 1 : 0,
-    transform: visible ? 'translateY(0)' : 'translateY(32px)',
-    filter: visible ? 'blur(0px)' : 'blur(6px)',
+    transform: visible ? 'translateY(0)' : 'translateY(28px)',
     transition: [
-      `opacity 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-      `transform 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-      `filter 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
+      `opacity 620ms cubic-bezier(0.16,1,0.3,1) ${i * 75}ms`,
+      `transform 620ms cubic-bezier(0.16,1,0.3,1) ${i * 75}ms`,
     ].join(', '),
   });
-
-  // Stagger with persistent card rotation — combines translateY entrance + tilt
-  const actionStagger = (i: number, cardIndex: number): React.CSSProperties => {
-    const tilt = cardIndex % 2 === 0 ? 'rotate(-0.25deg)' : 'rotate(0.25deg)';
-    return {
-      opacity: visible ? 1 : 0,
-      transform: visible ? tilt : `translateY(32px) ${tilt}`,
-      filter: visible ? 'blur(0px)' : 'blur(6px)',
-      transition: [
-        `opacity 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-        `transform 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-        `filter 700ms cubic-bezier(0.16,1,0.3,1) ${i * 80}ms`,
-      ].join(', '),
-    };
-  };
 
   const toggle = (key: string) => {
     setOpenSections(prev => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      if (next.has(key)) next.delete(key); else next.add(key);
       return next;
     });
   };
@@ -170,41 +165,17 @@ export default function InteractiveReport({ report }: Props) {
   const handleShareReport = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
-      addToast(lang === 'es' ? 'Enlace copiado' : lang === 'it' ? 'Link copiato' : lang === 'pt' ? 'Link copiado' : 'Link copied!', 'success');
+      addToast(
+        lang === 'es' ? 'Enlace copiado' :
+        lang === 'it' ? 'Link copiato' :
+        lang === 'pt' ? 'Link copiado' :
+        'Link copied!',
+        'success'
+      );
     } catch {
       addToast('Could not copy link', 'error');
     }
   };
-
-  const actionCards: Array<{
-    key: string;
-    Icon: () => React.JSX.Element;
-    href?: string;
-    download?: boolean;
-    onClick?: () => void;
-  }> = [
-    {
-      key: 'bookCall',
-      Icon: CalendarIcon,
-      href: 'https://calendly.com/pabloagisburgos',
-    },
-    {
-      key: 'downloadCv',
-      Icon: DownloadIcon,
-      href: `${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf`,
-      download: true,
-    },
-    {
-      key: 'linkedin',
-      Icon: LinkedInIcon,
-      href: 'https://www.linkedin.com/in/pablo-agis-burgos',
-    },
-    {
-      key: 'referPablo',
-      Icon: ReferIcon,
-      onClick: handleShareReport,
-    },
-  ];
 
   const sections = [
     { key: 'executiveSummary',     content: report.executiveSummary },
@@ -215,125 +186,255 @@ export default function InteractiveReport({ report }: Props) {
 
   return (
     <>
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '32px 16px 48px' }}>
+      <style>{`
+        @keyframes irRingSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes irGlow { 0%,100%{opacity:0.4} 50%{opacity:0.75} }
+      `}</style>
 
-      {/* ── Intro card ──────────────────────────────────────────────────────── */}
-      <div
-        className="glass"
-        style={{
-          ...stagger(0),
-          padding: '20px 24px',
-          marginBottom: 16,
-          borderLeft: '2px solid var(--accent-primary)',
-        }}
-      >
-        <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7, marginBottom: 8 }}>
-          {report.intro}
-        </p>
-        <p style={{ fontSize: 13, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-          — Pablo
-        </p>
-      </div>
+      <div style={{ maxWidth: 660, margin: '0 auto', padding: '24px 16px 52px' }}>
 
-      {/* ── Action cards — 2-col bento grid ─────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
-        {actionCards.map(({ key, Icon, href, download, onClick }, i) => {
-          const sharedStyle: React.CSSProperties = {
-            ...actionStagger(i + 1, i),
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px 12px',
-            minHeight: 90,
-          };
-          const label = (
-            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginTop: 8, textAlign: 'center' }}>
-              {ACTION_LABELS[key][lang]}
+        {/* ── Report header card ─────────────────────────────────────────────── */}
+        <div
+          style={{
+            ...stagger(0),
+            padding: '28px 24px 22px',
+            marginBottom: 12,
+            background: 'var(--bg-elevated)',
+            border: '0.5px solid var(--glass-border-hi)',
+            borderRadius: 20,
+            position: 'relative',
+            overflow: 'hidden',
+            textAlign: 'center',
+          }}
+        >
+          {/* Ambient glow */}
+          <div style={{
+            position: 'absolute', top: -50, left: '50%',
+            transform: 'translateX(-50%)',
+            width: 300, height: 200,
+            background: 'radial-gradient(circle, var(--accent-glow) 0%, transparent 70%)',
+            pointerEvents: 'none',
+            animation: 'irGlow 3s ease-in-out infinite',
+          }} />
+
+          <div style={{ position: 'relative' }}>
+            {/* Report badge */}
+            <div style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '4px 14px', borderRadius: 999,
+              background: 'rgba(58,85,192,0.10)',
+              border: '0.5px solid rgba(58,85,192,0.28)',
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+              textTransform: 'uppercase', color: 'var(--accent-primary)',
+              marginBottom: 18,
+            }}>
+              <svg width="7" height="7" viewBox="0 0 8 8" fill="var(--accent-primary)">
+                <path d="M4 0l.97 2.93H8L5.52 4.74l.97 2.93L4 5.96l-2.49 1.71.97-2.93L0 2.93h3.03z"/>
+              </svg>
+              {REPORT_BADGE[lang]}
+            </div>
+
+            {/* Avatar with ring */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
+              <div style={{ position: 'relative', width: 62, height: 62 }}>
+                <div style={{
+                  position: 'absolute', inset: 0, borderRadius: '50%',
+                  background: 'conic-gradient(from 0deg, var(--accent-primary) 0%, var(--accent-purple) 55%, transparent 55%)',
+                  animation: 'irRingSpin 3.5s linear infinite',
+                }} />
+                <div style={{
+                  position: 'absolute', inset: 3, borderRadius: '50%',
+                  background: 'var(--bg-elevated)', overflow: 'hidden',
+                }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/assets/pablo-avatar.jpg"
+                    alt="Pablo Agis Burgos"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', borderRadius: '50%' }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Name + subtitle */}
+            <div style={{
+              fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em',
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text', marginBottom: 4,
+            }}>
+              Pablo Agis Burgos
+            </div>
+            <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 20 }}>
+              SaaS · Hospitality Tech · 5 idiomas
+            </div>
+
+            {/* Divider */}
+            <div style={{ height: '0.5px', background: 'var(--glass-border)', marginBottom: 18 }} />
+
+            {/* Intro quote */}
+            <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.75, textAlign: 'left' }}>
+              {report.intro}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--text-tertiary)', fontStyle: 'italic', textAlign: 'left', marginTop: 10 }}>
+              — Pablo
+            </p>
+          </div>
+        </div>
+
+        {/* ── Primary CTA — Book a call ──────────────────────────────────────── */}
+        <a
+          href="https://calendly.com/pabloagisburgos"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            ...stagger(1),
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            padding: '15px 20px',
+            marginBottom: 8,
+            borderRadius: 14, textDecoration: 'none',
+            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+            boxShadow: '0 4px 20px var(--accent-glow)',
+            color: '#fff',
+          }}
+        >
+          <div style={{ color: '#fff' }}><CalendarIcon /></div>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>{ACTION_LABELS.bookCall[lang]}</span>
+          <span style={{ marginLeft: 'auto', fontSize: 15, opacity: 0.75 }}>→</span>
+        </a>
+
+        {/* ── Secondary actions — 2-col ──────────────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+          <a
+            href={`${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf`}
+            download
+            style={{
+              ...stagger(2),
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              padding: '16px 12px', borderRadius: 14, textDecoration: 'none',
+              background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+              color: 'var(--accent-primary)',
+            }}
+          >
+            <DownloadIcon />
+            <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+              {ACTION_LABELS.downloadCv[lang]}
             </span>
-          );
-          if (onClick) {
-            return (
-              <button key={key} onClick={onClick} className="glass" style={{ ...sharedStyle, border: 'none', cursor: 'pointer', width: '100%' }}>
-                <Icon />
-                {label}
-              </button>
-            );
-          }
+          </a>
+          <a
+            href="https://www.linkedin.com/in/pablo-agis-burgos"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              ...stagger(3),
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+              padding: '16px 12px', borderRadius: 14, textDecoration: 'none',
+              background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+              color: 'var(--accent-primary)',
+            }}
+          >
+            <LinkedInIcon />
+            <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+              {ACTION_LABELS.linkedin[lang]}
+            </span>
+          </a>
+        </div>
+
+        {/* ── Tertiary — Share ───────────────────────────────────────────────── */}
+        <button
+          onClick={handleShareReport}
+          style={{
+            ...stagger(4),
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            width: '100%', padding: '11px 16px', marginBottom: 20,
+            borderRadius: 14, cursor: 'pointer',
+            background: 'var(--glass-1)',
+            border: '0.5px solid var(--glass-border)',
+            color: 'var(--text-secondary)',
+            fontFamily: 'inherit',
+          }}
+        >
+          <div style={{ color: 'var(--accent-primary)' }}><ReferIcon /></div>
+          <span style={{ fontSize: 12, fontWeight: 600 }}>{ACTION_LABELS.referPablo[lang]}</span>
+        </button>
+
+        {/* ── Collapsible report sections ────────────────────────────────────── */}
+        {sections.map(({ key, content }, i) => {
+          const isOpen = openSections.has(key);
+          const accent = SECTION_ACCENTS[i];
           return (
-            <a
+            <div
               key={key}
-              href={href}
-              target={download ? undefined : '_blank'}
-              rel="noopener noreferrer"
-              download={download ? true : undefined}
-              className="glass"
-              style={{ ...sharedStyle, textDecoration: 'none' }}
+              style={{
+                ...stagger(i + 5),
+                marginBottom: 8,
+                borderRadius: 14,
+                overflow: 'hidden',
+                background: 'var(--glass-1)',
+                border: `0.5px solid ${isOpen ? 'var(--glass-border-hi)' : 'var(--glass-border)'}`,
+                transition: 'border-color 200ms ease',
+              }}
             >
-              <Icon />
-              {label}
-            </a>
+              <button
+                onClick={() => toggle(key)}
+                style={{
+                  width: '100%',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '14px 18px',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', textAlign: 'left',
+                }}
+              >
+                {/* Numbered accent dot */}
+                <div style={{
+                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isOpen ? accent : 'var(--glass-border)',
+                  transition: 'background 220ms ease',
+                }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, color: isOpen ? '#fff' : 'var(--text-muted)' }}>
+                    {String(i + 1).padStart(2, '0')}
+                  </span>
+                </div>
+
+                <span style={{
+                  fontSize: 10.5, fontWeight: 700, letterSpacing: '0.05em',
+                  textTransform: 'uppercase',
+                  color: isOpen ? 'var(--text-primary)' : 'var(--text-muted)',
+                  flex: 1,
+                  transition: 'color 200ms ease',
+                }}>
+                  {SECTION_LABELS[key]?.[lang] ?? key}
+                </span>
+
+                <div style={{ color: isOpen ? 'var(--text-secondary)' : 'var(--text-muted)' }}>
+                  <ChevronIcon open={isOpen} />
+                </div>
+              </button>
+
+              <div style={{
+                maxHeight: isOpen ? 1400 : 0,
+                overflow: 'hidden',
+                opacity: isOpen ? 1 : 0,
+                transition: 'max-height 380ms cubic-bezier(0.16,1,0.3,1), opacity 220ms ease',
+              }}>
+                <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 18px' }} />
+                <div
+                  style={{
+                    padding: '16px 18px 18px 52px',
+                    fontSize: 13.5,
+                    color: 'var(--text-secondary)',
+                    lineHeight: 1.78,
+                  }}
+                  dangerouslySetInnerHTML={{ __html: content }}
+                />
+              </div>
+            </div>
           );
         })}
       </div>
 
-      {/* ── Collapsible sections ─────────────────────────────────────────────── */}
-      {sections.map(({ key, content }, i) => {
-        const isOpen = openSections.has(key);
-        return (
-          <div
-            key={key}
-            className="glass"
-            style={{ ...stagger(i + 5), marginBottom: 8, overflow: 'hidden' }}
-          >
-            <button
-              onClick={() => toggle(key)}
-              style={{
-                width: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '14px 18px',
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                textAlign: 'left',
-              }}
-            >
-              <span style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase',
-                color: 'var(--text-muted)',
-              }}>
-                {SECTION_LABELS[key]?.[lang] ?? key}
-              </span>
-              <ChevronIcon open={isOpen} />
-            </button>
-
-            <div style={{
-              maxHeight: isOpen ? 1400 : 0,
-              overflow: 'hidden',
-              opacity: isOpen ? 1 : 0,
-              transition: 'max-height 350ms cubic-bezier(0.16,1,0.3,1), opacity 200ms ease',
-            }}>
-              <div
-                style={{
-                  padding: '0 18px 18px',
-                  fontSize: 13.5,
-                  color: 'var(--text-secondary)',
-                  lineHeight: 1.75,
-                }}
-                dangerouslySetInnerHTML={{ __html: content }}
-              />
-            </div>
-          </div>
-        );
-      })}
-    </div>
-
-    <Toast toasts={toasts} onDismiss={dismissToast} />
+      <Toast toasts={toasts} onDismiss={dismissToast} />
     </>
   );
 }

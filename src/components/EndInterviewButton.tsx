@@ -207,7 +207,7 @@ export default function EndInterviewButton({
               </div>
 
               {/* 2. Avatar block */}
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: 20 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', marginBottom: 20 }}>
                 <div style={{ position: 'relative', width: 76, height: 76 }}>
                   {/* Glow */}
                   <div style={{
@@ -243,7 +243,7 @@ export default function EndInterviewButton({
                     <img
                       src="/assets/pablo-avatar.jpg"
                       alt="Pablo Agis Burgos"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', borderRadius: '50%' }}
                     />
                   </div>
                 </div>
