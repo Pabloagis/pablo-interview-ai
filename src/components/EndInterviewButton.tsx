@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import Tooltip from './Tooltip';
@@ -30,6 +31,8 @@ export default function EndInterviewButton({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [hovered, setHovered] = useState(false);
   const [pressed, setPressed] = useState(false);
+  const [portalRoot, setPortalRoot] = useState<Element | null>(null);
+  useEffect(() => { setPortalRoot(document.body); }, []);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
@@ -143,10 +146,10 @@ export default function EndInterviewButton({
         </button>
       </Tooltip>
 
-      {/* Confirmation modal */}
-      {modalOpen && (
+      {/* Confirmation modal — rendered via portal to escape any stacking context */}
+      {modalOpen && portalRoot && createPortal(
         <div
-          className="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
           style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
           onClick={closeModal}
         >
@@ -216,7 +219,8 @@ export default function EndInterviewButton({
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        portalRoot
       )}
     </>
   );
