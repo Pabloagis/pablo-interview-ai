@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -33,6 +33,7 @@ export default function EndInterviewButton({
   const [pressed, setPressed] = useState(false);
   const [portalRoot, setPortalRoot] = useState<Element | null>(null);
   const [panelReady, setPanelReady] = useState(false);
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { setPortalRoot(document.body); }, []);
 
@@ -40,6 +41,34 @@ export default function EndInterviewButton({
     if (!modalOpen) { setPanelReady(false); return; }
     const id = requestAnimationFrame(() => setPanelReady(true));
     return () => cancelAnimationFrame(id);
+  }, [modalOpen]);
+
+  useEffect(() => {
+    if (!modalOpen) return;
+    let rafId: number;
+    let pos = 0;
+    let running = false;
+    const startId = setTimeout(() => { running = true; }, 700);
+
+    const tick = () => {
+      if (running) {
+        const el = previewRef.current;
+        if (el) {
+          pos += 0.45;
+          const half = el.offsetHeight / 2;
+          if (half > 0 && pos >= half) pos = 0;
+          el.style.transform = `translateY(-${pos}px)`;
+        }
+      }
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    return () => {
+      clearTimeout(startId);
+      cancelAnimationFrame(rafId);
+      if (previewRef.current) previewRef.current.style.transform = '';
+    };
   }, [modalOpen]);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
@@ -170,96 +199,163 @@ export default function EndInterviewButton({
           <div
             style={{
               width: 'calc(100% - 32px)',
-              maxWidth: 400,
-              padding: '22px 20px 18px',
-              borderRadius: 22,
+              maxWidth: 390,
+              padding: '14px 14px 14px',
+              borderRadius: 26,
               background: 'var(--bg-elevated)',
               border: '0.5px solid var(--glass-border-hi)',
-              boxShadow: '0 24px 80px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)',
+              boxShadow: '0 32px 100px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
               transform: panelReady ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
               opacity: panelReady ? 1 : 0,
               transition: 'transform 380ms cubic-bezier(0.16,1,0.3,1) 60ms, opacity 380ms ease 60ms',
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Wordmark */}
+            {/* ── Live scrolling report preview ───────────────────── */}
             <div style={{
-              textAlign: 'center', fontSize: 9, fontWeight: 500,
-              letterSpacing: '0.2em', textTransform: 'uppercase',
-              color: 'var(--text-muted)', marginBottom: 14,
-            }}>
-              INTERVIEWMIND
-            </div>
-
-            {/* ── Scaled page preview ─────────────────────────────── */}
-            <div style={{
-              borderRadius: 14,
-              border: '0.5px solid var(--glass-border)',
-              background: 'var(--glass-1)',
-              height: 210,
+              borderRadius: 18,
+              height: 240,
               overflow: 'hidden',
               position: 'relative',
-              marginBottom: 14,
+              background: 'var(--bg-base)',
+              border: '0.5px solid var(--glass-border)',
+              marginBottom: 12,
             }}>
-              {/* Content rendered at 660px then scaled to fit */}
-              <div style={{
-                position: 'absolute',
-                top: 12,
-                left: '50%',
-                transform: 'translateX(-50%) scale(0.5)',
-                transformOrigin: 'top center',
-                width: 660,
-                pointerEvents: 'none',
-                padding: '0 16px',
-              }}>
-                {/* 2×2 action cards */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 10 }}>
-                  {[
-                    <svg key="cal" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>,
-                    <svg key="dl" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>,
-                    <svg key="li" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12" rx="0.5"/><circle cx="4" cy="4" r="2"/></svg>,
-                    <svg key="ref" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>,
-                  ].map((icon, i) => (
-                    <div key={i} style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-                      padding: '16px 12px', borderRadius: 14,
-                      background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-                      color: 'var(--accent-primary)',
-                    }}>
-                      {icon}
-                      <div style={{ width: 54, height: 7, borderRadius: 3, background: 'var(--glass-border)' }} />
-                    </div>
-                  ))}
-                </div>
+              {/* Scrolling content — duplicated for seamless RAF loop */}
+              <div ref={previewRef} style={{ willChange: 'transform', pointerEvents: 'none' }}>
+                {[0, 1].map((copy) => (
+                  <div key={copy} style={{ padding: '22px 16px 0' }}>
 
-                {/* Section accordion headers */}
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <div key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '13px 16px', borderRadius: 12, marginBottom: 6,
-                    background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-                  }}>
-                    <div style={{
-                      width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: 'var(--glass-border)',
-                    }}>
-                      <span style={{ fontSize: 9, fontWeight: 800, color: 'var(--text-muted)' }}>
-                        {String(i + 1).padStart(2, '0')}
+                    {/* Badge */}
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '3px 11px', borderRadius: 999,
+                        background: 'rgba(58,85,192,0.09)',
+                        border: '0.5px solid rgba(58,85,192,0.24)',
+                        fontSize: 8.5, fontWeight: 700, letterSpacing: '0.12em',
+                        textTransform: 'uppercase', color: 'var(--accent-primary)',
+                      }}>
+                        <svg width="6" height="6" viewBox="0 0 8 8" fill="var(--accent-primary)">
+                          <path d="M4 0l.97 2.93H8L5.52 4.74l.97 2.93L4 5.96l-2.49 1.71.97-2.93L0 2.93h3.03z"/>
+                        </svg>
+                        Insights Report
                       </span>
                     </div>
-                    <div style={{ flex: 1, height: 7, borderRadius: 3, background: 'var(--glass-border)' }} />
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', flexShrink: 0 }}>
-                      <path d="M19 9l-7 7-7-7" />
-                    </svg>
+
+                    {/* Name + subtitle */}
+                    <div style={{ textAlign: 'center', marginBottom: 12 }}>
+                      <div style={{
+                        fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em',
+                        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                      }}>
+                        Pablo Agis Burgos
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
+                        SaaS · Hospitality Tech
+                      </div>
+                    </div>
+
+                    {/* Divider + intro */}
+                    <div style={{ height: '0.5px', background: 'var(--glass-border)', marginBottom: 10 }} />
+                    <p style={{ margin: '0 0 4px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                      7 years bridging hotel operations and SaaS — from front desk to enterprise implementation.
+                    </p>
+                    <p style={{ margin: '0 0 14px', fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+                      — Pablo
+                    </p>
+
+                    {/* 2×2 action cards */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 12 }}>
+                      {([
+                        { label: 'Book a call', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+                        { label: 'Download CV', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> },
+                        { label: 'LinkedIn', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12" rx="0.5"/><circle cx="4" cy="4" r="2"/></svg> },
+                        { label: 'Refer Pablo', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> },
+                      ] as Array<{ label: string; icon: React.ReactNode }>).map(({ label, icon }) => (
+                        <div key={label} style={{
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                          padding: '12px 10px', borderRadius: 10,
+                          background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                          color: 'var(--accent-primary)',
+                        }}>
+                          {icon}
+                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+                            {label}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Executive Summary — open */}
+                    <div style={{ marginBottom: 6, borderRadius: 10, overflow: 'hidden', background: 'var(--glass-1)', border: '0.5px solid var(--glass-border-hi)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px' }}>
+                        <div style={{
+                          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'var(--accent-primary)', fontSize: 8, fontWeight: 800, color: '#fff',
+                        }}>01</div>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', flex: 1, color: 'var(--text-primary)' }}>
+                          Executive Summary
+                        </span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', transform: 'rotate(180deg)', flexShrink: 0 }}><path d="M19 9l-7 7-7-7"/></svg>
+                      </div>
+                      <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 13px' }} />
+                      <div style={{ padding: '10px 13px 12px' }}>
+                        <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
+                          Hospitality technology professional combining operational hotel expertise with SaaS implementation experience and a growing focus on integrations and commercial growth.
+                        </p>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+                          {['Opera PMS', 'Salesforce', 'SaaS', '5 languages'].map((chip) => (
+                            <span key={chip} style={{
+                              padding: '2px 8px', borderRadius: 999, fontSize: 10, fontWeight: 600,
+                              background: 'rgba(58,85,192,0.08)', border: '0.5px solid rgba(58,85,192,0.22)',
+                              color: 'var(--accent-primary)',
+                            }}>{chip}</span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Sections 2–4 collapsed */}
+                    {[
+                      { num: '02', label: 'Core Experience' },
+                      { num: '03', label: 'Conversation Insights' },
+                      { num: '04', label: 'Recruiter Takeaways' },
+                    ].map(({ num, label }) => (
+                      <div key={num} style={{
+                        display: 'flex', alignItems: 'center', gap: 9,
+                        padding: '9px 13px', borderRadius: 10, marginBottom: 6,
+                        background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                      }}>
+                        <div style={{
+                          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: 'var(--glass-border)', fontSize: 8, fontWeight: 800, color: 'var(--text-muted)',
+                        }}>{num}</div>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', flex: 1, color: 'var(--text-muted)' }}>
+                          {label}
+                        </span>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', flexShrink: 0 }}><path d="M19 9l-7 7-7-7"/></svg>
+                      </div>
+                    ))}
+
+                    <div style={{ height: 24 }} />
                   </div>
                 ))}
               </div>
 
-              {/* Bottom fade */}
+              {/* Top + bottom fades */}
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: 40,
+                background: 'linear-gradient(to bottom, var(--bg-base), transparent)',
+                pointerEvents: 'none',
+              }} />
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-                background: 'linear-gradient(to bottom, transparent, var(--glass-1))',
+                background: 'linear-gradient(to bottom, transparent, var(--bg-base))',
                 pointerEvents: 'none',
               }} />
             </div>
@@ -273,7 +369,7 @@ export default function EndInterviewButton({
                 width: '100%', padding: '13px',
                 fontSize: 14, fontWeight: 600,
                 background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                border: 'none', borderRadius: 12,
+                border: 'none', borderRadius: 13,
                 color: '#ffffff',
                 cursor: isSending ? 'not-allowed' : 'pointer',
                 opacity: isSending ? 0.65 : 1,
