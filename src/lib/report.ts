@@ -4,10 +4,20 @@ import { CLAUDE_FALLBACK_MODEL } from './constants';
 export interface ReportData {
   language: string;
   intro: string;
-  executiveSummary: string;
-  coreExperience: string;
-  conversationInsights: string;
-  recruiterTakeaways: string;
+  executiveSummary: {
+    headline: string;
+    chips: string[];
+    points: string[];
+  };
+  coreExperience: {
+    items: Array<{ label: string; detail: string }>;
+  };
+  conversationInsights: {
+    items: Array<{ title: string; body: string }>;
+  };
+  recruiterTakeaways: {
+    items: string[];
+  };
 }
 
 export async function generateReport(params: {
@@ -31,27 +41,43 @@ Context:
 - Transcript:
 ${transcript}
 
-Return a JSON object. Detect the language of the recruiter's messages and write all content in that language:
+Detect the language of the recruiter's messages and write ALL content fields in that language.
+
+Return ONLY this exact JSON structure. No markdown fences. No extra text.
 
 {
   "language": "en",
-  "intro": "1-2 sentences: warm personal message from Pablo, referencing something specific from this conversation",
-  "executiveSummary": "<p>...</p><p>...</p> — 2-3 HTML paragraphs on Pablo's positioning and fit for this recruiter's context",
-  "coreExperience": "<p>...</p><p>...</p> — 2-3 HTML paragraphs on Pablo's most relevant experience from what was discussed",
-  "conversationInsights": "<p>...</p><p>...</p> — key themes and observations from this specific conversation",
-  "recruiterTakeaways": "<ul><li>...</li></ul> — 4-5 HTML list items: concrete things to remember about Pablo"
+  "intro": "1-2 sentences: warm personal message from Pablo referencing something specific from this conversation",
+  "executiveSummary": {
+    "headline": "One bold sentence summarising Pablo's fit for this recruiter's context",
+    "chips": ["3-5 short keyword tags: skills, traits, or strengths relevant to this role"],
+    "points": ["3 concise bullet points — each max 15 words — on Pablo's positioning for this role"]
+  },
+  "coreExperience": {
+    "items": [
+      { "label": "Company · Role", "detail": "One sentence on what Pablo did and why it matters here" }
+    ]
+  },
+  "conversationInsights": {
+    "items": [
+      { "title": "Short theme title (3-5 words)", "body": "1-2 sentences on this theme from the conversation" }
+    ]
+  },
+  "recruiterTakeaways": {
+    "items": ["4-5 short actionable takeaways — each max 12 words"]
+  }
 }
 
 Rules:
 - language: "es" if Spanish, "it" if Italian, "pt" if Portuguese, "en" otherwise
-- Write all fields except language in the detected language
 - Be specific to THIS conversation — reference actual topics, questions, and moments
-- Use Pablo's authentic voice: grounded, honest, operationally specific, not corporate
-- Return ONLY valid JSON. No markdown fences. No extra text.`;
+- chips: short (1-3 words each), scannable, no duplicates
+- points and items: concrete, not generic — no "Pablo has experience in X" unless tied to a real moment
+- Return ONLY valid JSON`;
 
   const response = await anthropic.messages.create({
     model: CLAUDE_FALLBACK_MODEL,
-    max_tokens: 1600,
+    max_tokens: 2000,
     messages: [{ role: 'user', content: prompt }],
   });
 

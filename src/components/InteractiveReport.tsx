@@ -167,11 +167,105 @@ export default function InteractiveReport({ report }: Props) {
   };
 
   const sections = [
-    { key: 'executiveSummary',     content: report.executiveSummary },
-    { key: 'coreExperience',       content: report.coreExperience },
-    { key: 'conversationInsights', content: report.conversationInsights },
-    { key: 'recruiterTakeaways',   content: report.recruiterTakeaways },
-  ];
+    'executiveSummary',
+    'coreExperience',
+    'conversationInsights',
+    'recruiterTakeaways',
+  ] as const;
+
+  const renderSectionContent = (key: typeof sections[number]) => {
+    switch (key) {
+      case 'executiveSummary': {
+        const { headline, chips, points } = report.executiveSummary;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.6 }}>
+              {headline}
+            </p>
+            {chips?.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {chips.map((chip, i) => (
+                  <span key={i} style={{
+                    padding: '3px 11px', borderRadius: 999, fontSize: 11, fontWeight: 600,
+                    background: 'rgba(58,85,192,0.08)',
+                    border: '0.5px solid rgba(58,85,192,0.22)',
+                    color: 'var(--accent-primary)',
+                  }}>{chip}</span>
+                ))}
+              </div>
+            )}
+            {points?.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {points.map((pt, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                    <span style={{ color: 'var(--accent-primary)', fontWeight: 700, fontSize: 13, flexShrink: 0, marginTop: 1 }}>·</span>
+                    <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{pt}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      }
+      case 'coreExperience': {
+        const { items } = report.coreExperience;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {items.map(({ label, detail }, i) => (
+              <div key={i}>
+                {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '12px 0' }} />}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+                    textTransform: 'uppercase', color: 'var(--accent-primary)',
+                  }}>{label}</span>
+                  <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{detail}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'conversationInsights': {
+        const { items } = report.conversationInsights;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {items.map(({ title, body }, i) => (
+              <div key={i} style={{
+                padding: '10px 14px',
+                borderRadius: 10,
+                background: 'var(--glass-1)',
+                border: '0.5px solid var(--glass-border)',
+                borderLeft: '2.5px solid var(--accent-primary)',
+              }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: '0.07em',
+                  textTransform: 'uppercase', color: 'var(--accent-primary)', marginBottom: 4,
+                }}>{title}</div>
+                <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{body}</div>
+              </div>
+            ))}
+          </div>
+        );
+      }
+      case 'recruiterTakeaways': {
+        const { items } = report.recruiterTakeaways;
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+            {items.map((item, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{
+                  color: 'var(--accent-primary)', fontWeight: 700, fontSize: 12,
+                  flexShrink: 0, marginTop: 2,
+                }}>→</span>
+                <span style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.65 }}>{item}</span>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    }
+  };
 
   return (
     <>
@@ -275,83 +369,38 @@ export default function InteractiveReport({ report }: Props) {
           </div>
         </div>
 
-        {/* ── Primary CTA — Book a call ──────────────────────────────────────── */}
-        <a
-          href="https://calendly.com/pabloagisburgos"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            ...stagger(1),
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-            padding: '15px 20px',
-            marginBottom: 8,
-            borderRadius: 14, textDecoration: 'none',
-            background: 'var(--glass-1)',
-            border: '0.5px solid rgba(58,85,192,0.35)',
-            color: 'var(--accent-primary)',
-          }}
-        >
-          <CalendarIcon />
-          <span style={{ fontSize: 13, fontWeight: 700 }}>{ACTION_LABELS.bookCall[lang]}</span>
-          <span style={{ marginLeft: 'auto', fontSize: 15, opacity: 0.5 }}>→</span>
-        </a>
-
-        {/* ── Secondary actions — 2-col ──────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-          <a
-            href={`${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf`}
-            download
-            style={{
-              ...stagger(2),
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-              padding: '16px 12px', borderRadius: 14, textDecoration: 'none',
-              background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-              color: 'var(--accent-primary)',
-            }}
-          >
-            <DownloadIcon />
-            <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
-              {ACTION_LABELS.downloadCv[lang]}
-            </span>
-          </a>
-          <a
-            href="https://www.linkedin.com/in/pablo-agis-burgos"
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              ...stagger(3),
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-              padding: '16px 12px', borderRadius: 14, textDecoration: 'none',
-              background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-              color: 'var(--accent-primary)',
-            }}
-          >
-            <LinkedInIcon />
-            <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
-              {ACTION_LABELS.linkedin[lang]}
-            </span>
-          </a>
+        {/* ── Action cards — uniform 2×2 grid ───────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 20 }}>
+          {([
+            { key: 'bookCall',   href: 'https://calendly.com/pabloagisburgos', target: '_blank', Icon: CalendarIcon,  i: 1 },
+            { key: 'downloadCv', href: `${BASE_URL}/assets/Pablo_Agis_Burgos_CV.pdf`, download: true, Icon: DownloadIcon,  i: 2 },
+            { key: 'linkedin',   href: 'https://www.linkedin.com/in/pablo-agis-burgos', target: '_blank', Icon: LinkedInIcon,  i: 3 },
+            { key: 'referPablo', href: getReferHref(), Icon: ReferIcon, i: 4 },
+          ] as Array<{ key: string; href: string; target?: string; download?: boolean; Icon: () => React.JSX.Element; i: number }>).map(({ key, href, target, download, Icon, i }) => (
+            <a
+              key={key}
+              href={href}
+              target={target}
+              rel={target ? 'noopener noreferrer' : undefined}
+              download={download}
+              style={{
+                ...stagger(i),
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+                padding: '16px 12px', borderRadius: 14, textDecoration: 'none',
+                background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                color: 'var(--accent-primary)',
+              }}
+            >
+              <Icon />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
+                {ACTION_LABELS[key][lang]}
+              </span>
+            </a>
+          ))}
         </div>
 
-        {/* ── Tertiary — Refer Pablo ─────────────────────────────────────────── */}
-        <a
-          href={getReferHref()}
-          style={{
-            ...stagger(4),
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            width: '100%', padding: '11px 16px', marginBottom: 20,
-            borderRadius: 14, textDecoration: 'none',
-            background: 'var(--glass-1)',
-            border: '0.5px solid var(--glass-border)',
-            color: 'var(--text-secondary)',
-          }}
-        >
-          <div style={{ color: 'var(--accent-primary)' }}><ReferIcon /></div>
-          <span style={{ fontSize: 12, fontWeight: 600 }}>{ACTION_LABELS.referPablo[lang]}</span>
-        </a>
-
         {/* ── Collapsible report sections ────────────────────────────────────── */}
-        {sections.map(({ key, content }, i) => {
+        {sections.map((key, i) => {
           const isOpen = openSections.has(key);
           const accent = SECTION_ACCENTS[i];
           return (
@@ -377,7 +426,6 @@ export default function InteractiveReport({ report }: Props) {
                   cursor: 'pointer', textAlign: 'left',
                 }}
               >
-                {/* Numbered accent dot */}
                 <div style={{
                   width: 22, height: 22, borderRadius: '50%', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -411,15 +459,9 @@ export default function InteractiveReport({ report }: Props) {
                 transition: 'max-height 380ms cubic-bezier(0.16,1,0.3,1), opacity 220ms ease',
               }}>
                 <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 18px' }} />
-                <div
-                  style={{
-                    padding: '16px 18px 18px 52px',
-                    fontSize: 13.5,
-                    color: 'var(--text-secondary)',
-                    lineHeight: 1.78,
-                  }}
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
+                <div style={{ padding: '16px 18px 20px' }}>
+                  {renderSectionContent(key)}
+                </div>
               </div>
             </div>
           );
