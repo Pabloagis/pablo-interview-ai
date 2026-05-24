@@ -33,9 +33,8 @@ export default function LanguageSwitcher() {
             <circle cx="12" cy="12" r="10" strokeWidth={2} />
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
           </svg>
-          <span className="text-sm leading-none">{LANG_FLAGS[lang]}</span>
           <svg
-            className={`hidden sm:block w-2.5 h-2.5 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+            className={`w-2.5 h-2.5 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

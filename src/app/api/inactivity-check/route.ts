@@ -11,9 +11,8 @@ const MAX_PER_RUN = 20;
 export async function GET(request: NextRequest) {
   // Verify Vercel cron secret
   const auth = request.headers.get('authorization');
-  const secret = process.env.CRON_SECRET;
-  if (secret && auth !== `Bearer ${secret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
   }
 
   const supabase = createServerSupabaseClient();
