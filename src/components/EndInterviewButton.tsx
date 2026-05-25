@@ -138,16 +138,10 @@ export default function EndInterviewButton({
           onMouseDown={() => isActive && setPressed(true)}
           onMouseUp={() => setPressed(false)}
           aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
-          className="flex items-center justify-center gap-[6px] shrink-0 w-[34px] h-[34px] p-0 rounded-lg sm:w-auto sm:h-auto sm:px-[14px] sm:py-[6px] sm:rounded-full"
+          className={`flex items-center justify-center gap-[6px] shrink-0 w-[34px] h-[34px] p-0 rounded-lg sm:w-auto sm:h-auto sm:px-[14px] sm:py-[6px] sm:rounded-full${isActive ? ' btn-primary-cta' : ''}`}
           style={isActive ? {
-            background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-            border: 'none',
-            color: '#ffffff',
             cursor: 'pointer',
             fontFamily: 'inherit',
-            boxShadow: hovered && !pressed ? '0 4px 20px var(--accent-glow)' : '0 2px 12px var(--accent-glow)',
-            transform: pressed ? 'translateY(0)' : hovered ? 'translateY(-1px)' : 'translateY(0)',
-            transition: 'transform 180ms ease, box-shadow 180ms ease',
           } : {
             background: 'var(--glass-1)',
             border: '0.5px solid var(--glass-border)',
@@ -205,16 +199,14 @@ export default function EndInterviewButton({
             <button
               onClick={handleConfirm}
               disabled={isSending}
+              className="btn-primary-cta"
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 width: '100%', padding: '13px',
                 fontSize: 14, fontWeight: 600,
-                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                border: 'none', borderRadius: 13,
-                color: '#ffffff',
+                borderRadius: 13,
                 cursor: isSending ? 'not-allowed' : 'pointer',
                 opacity: isSending ? 0.65 : 1,
-                boxShadow: '0 4px 20px var(--accent-glow)',
                 fontFamily: 'inherit',
                 marginBottom: 12,
               }}

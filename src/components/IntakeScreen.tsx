@@ -471,21 +471,14 @@ export default function IntakeScreen() {
             <button
               type="submit"
               disabled={isSubmitDisabled}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200"
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200${!isSubmitDisabled ? ' btn-primary-cta' : ''}`}
               style={isSubmitDisabled ? {
                 background: 'var(--btn-disabled-bg)',
                 color: 'var(--btn-disabled-color)',
                 cursor: 'not-allowed',
                 border: '0.5px solid var(--btn-disabled-border)',
-              } : isFullyFilled ? {
-                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                color: '#fff',
-                boxShadow: '0 4px 28px var(--accent-glow)',
-                border: 'none',
               } : {
-                background: 'linear-gradient(135deg, rgba(58,85,192,0.7), rgba(96,48,184,0.7))',
-                color: 'rgba(255,255,255,0.85)',
-                border: 'none',
+                cursor: 'pointer',
               }}
             >
               {isLoading ? t.buttonStarting : t.buttonStart}

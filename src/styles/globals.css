@@ -456,6 +456,50 @@ next-route-announcer {
 .theme-question .q-label { color: var(--question-text); }
 .theme-question .q-arrow { color: var(--question-arrow); }
 
+/* ── Primary CTA — 3 navigation milestones ─────────────────────────────────
+   Iniciar entrevista · Insights · Abrir mi informe de insights
+   Deliberately more vivid than the muted accent palette to guide the eye.
+───────────────────────────────────────────── */
+@keyframes cta-shimmer {
+  0%,  60% { transform: translateX(-160%); }
+  85%, 100% { transform: translateX(280%); }
+}
+
+.btn-primary-cta {
+  background: linear-gradient(135deg, #4B6FFF 0%, #A040F0 100%) !important;
+  border: none !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 22px rgba(100, 80, 255, 0.45) !important;
+  position: relative !important;
+  overflow: hidden !important;
+  transition: transform 180ms ease, box-shadow 180ms ease !important;
+}
+.btn-primary-cta::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 55%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.22), transparent);
+  transform: translateX(-160%);
+  animation: cta-shimmer 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+.btn-primary-cta:not(:disabled):hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 7px 32px rgba(100, 80, 255, 0.55) !important;
+}
+.btn-primary-cta:not(:disabled):active {
+  transform: translateY(0) !important;
+}
+
+[data-theme="day"] .btn-primary-cta {
+  background: linear-gradient(135deg, #3B58F2 0%, #9030D8 100%) !important;
+  box-shadow: 0 4px 22px rgba(70, 80, 230, 0.32) !important;
+}
+[data-theme="day"] .btn-primary-cta:not(:disabled):hover {
+  box-shadow: 0 7px 32px rgba(70, 80, 230, 0.44) !important;
+}
+
 .theme-modal-cancel {
   background: var(--modal-cancel-bg);
   border: 0.5px solid var(--modal-cancel-border);
