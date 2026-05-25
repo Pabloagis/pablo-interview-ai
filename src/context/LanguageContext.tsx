@@ -152,6 +152,7 @@ export type Translations = {
   endReminderSuffix: string;
   listenModeOn: string;
   listenModeOff: string;
+  playMessage: string;
   // Exit intent modal
   exitIntentTitle: string;
   exitIntentBody: string;
@@ -365,6 +366,7 @@ const EN: Translations = {
   endReminderSuffix: 'when done',
   listenModeOn: 'Listen mode on — click to disable',
   listenModeOff: 'Listen mode off — click to hear all responses',
+  playMessage: 'Listen to this response',
   exitIntentTitle: 'Before you go…',
   exitIntentBody: 'You\'re mid-conversation. Get your insights first — Pablo will send his CV and a summary to your inbox.',
   exitIntentCta: 'Get insights & leave',
@@ -573,6 +575,7 @@ const ES: Translations = {
   endReminderSuffix: 'cuando termines',
   listenModeOn: 'Modo escucha activado — haz clic para desactivar',
   listenModeOff: 'Modo escucha desactivado — haz clic para escuchar todas las respuestas',
+  playMessage: 'Escuchar esta respuesta',
   exitIntentTitle: 'Antes de irte…',
   exitIntentBody: 'Estás a mitad de conversación. Obtén tus insights primero — Pablo te enviará su CV y un resumen.',
   exitIntentCta: 'Obtener insights y salir',
@@ -781,6 +784,7 @@ const IT: Translations = {
   endReminderSuffix: 'quando hai finito',
   listenModeOn: 'Modalità ascolto attiva — clicca per disattivare',
   listenModeOff: 'Modalità ascolto disattiva — clicca per ascoltare tutte le risposte',
+  playMessage: 'Ascolta questa risposta',
   exitIntentTitle: 'Prima di andare…',
   exitIntentBody: 'Sei a metà conversazione. Ottieni prima i tuoi insights — Pablo ti invierà il CV e un riepilogo.',
   exitIntentCta: 'Ottieni insights ed esci',
@@ -1029,6 +1033,7 @@ const PT: Translations = {
   hiwSentTo: 'Enviado para',
   hiwCVAttached: '📄 CV em anexo',
   hiwTranscriptLabel: '📋 Transcrição',
+  playMessage: 'Ouvir esta resposta',
 };
 
 const TRANSLATIONS: Record<Lang, Translations> = { en: EN, es: ES, it: IT, pt: PT };

@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { Message } from '@/lib/types';
 import { formatTimestamp } from '@/lib/utils';
+import { useLanguage } from '@/context/LanguageContext';
+import Tooltip from './Tooltip';
 
 interface MessageBubbleProps {
   message: Message;
@@ -23,6 +25,7 @@ function getInitials(name?: string): string {
 export default function MessageBubble({ message, recruiterName, onPlay, isPlaying, onStop }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const [avatarOpen, setAvatarOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <>
@@ -60,23 +63,30 @@ export default function MessageBubble({ message, recruiterName, onPlay, isPlayin
           <span className="text-xs mt-1 px-1 flex items-center gap-1.5" style={{ color: 'var(--timestamp)' }}>
             {isUser ? 'You' : 'Pablo'} · {formatTimestamp(message.createdAt)}
             {!isUser && onPlay && (
-              <button
-                onClick={isPlaying ? onStop : onPlay}
-                aria-label={isPlaying ? 'Stop audio' : 'Play audio'}
-                className="flex items-center transition-opacity opacity-40 hover:opacity-80 active:scale-90"
-                style={{ color: isPlaying ? 'var(--accent-mid)' : 'inherit' }}
-              >
-                {isPlaying ? (
-                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
-                    <rect x="6" y="5" width="4" height="14" rx="1" />
-                    <rect x="14" y="5" width="4" height="14" rx="1" />
-                  </svg>
-                ) : (
-                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
-                  </svg>
-                )}
-              </button>
+              <Tooltip text={isPlaying ? t.playingIndicator : t.playMessage} position="top">
+                <button
+                  onClick={isPlaying ? onStop : onPlay}
+                  aria-label={isPlaying ? 'Stop audio' : 'Play audio'}
+                  className="flex items-center justify-center rounded-full transition-all active:scale-90"
+                  style={{
+                    width: 22, height: 22,
+                    background: isPlaying ? 'var(--accent-primary)' : 'var(--bubble-pablo-border)',
+                    color: isPlaying ? '#fff' : 'var(--accent-mid)',
+                    boxShadow: isPlaying ? '0 0 0 3px var(--accent-glow)' : 'none',
+                  }}
+                >
+                  {isPlaying ? (
+                    <svg width="9" height="9" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="5" y="4" width="5" height="16" rx="1.5" />
+                      <rect x="14" y="4" width="5" height="16" rx="1.5" />
+                    </svg>
+                  ) : (
+                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
+                    </svg>
+                  )}
+                </button>
+              </Tooltip>
             )}
           </span>
         </div>

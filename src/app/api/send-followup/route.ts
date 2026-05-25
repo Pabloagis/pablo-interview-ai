@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const { data: session, error: fetchError } = await supabase
       .from('sessions')
-      .select('id, recruiter_name, company, role, email, consent_to_email, messages, email_sent_at, email_msg_count')
+      .select('id, recruiter_name, company, role, email, consent_to_email, messages, email_sent_at')
       .eq('id', sessionId)
       .single();
 
@@ -37,15 +37,12 @@ export async function POST(request: NextRequest) {
     }
 
     const messages = session.messages as Array<{ role: string; content: string }> | null;
-    const currentMsgCount = (messages ?? []).filter(m => m.role === 'user').length;
 
-    // Skip if already sent and no new user messages since last send
+    // Skip if already sent — client-side localStorage guard handles the "no new messages"
+    // case; this is the server-side safety net for any bypass (e.g. page refresh clearing state)
     if (session.email_sent_at) {
-      const prevCount = (session as { email_msg_count?: number }).email_msg_count ?? 0;
-      if (currentMsgCount <= prevCount) {
-        console.log(`[send-followup] Skipped — no new content (${currentMsgCount} msgs, last sent at ${prevCount})`);
-        return NextResponse.json({ success: true, skipped: true });
-      }
+      console.log(`[send-followup] Skipped — already sent at ${session.email_sent_at}`);
+      return NextResponse.json({ success: true, skipped: true });
     }
 
     const transcript =
@@ -73,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     await supabase
       .from('sessions')
-      .update({ email_sent_at: new Date().toISOString(), email_html: html, email_msg_count: currentMsgCount })
+      .update({ email_sent_at: new Date().toISOString(), email_html: html })
       .eq('id', sessionId);
 
     console.log(`[send-followup] Done. emailId: ${emailId}`);
