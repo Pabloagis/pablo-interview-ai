@@ -394,7 +394,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [messages, isStreaming]);
 
-  // Page-load reminder: auto-dismisses after 4s
+  // Page-load reminder: auto-dismisses after 6s
   useEffect(() => {
     const timer = setTimeout(() => {
       if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
@@ -403,7 +403,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       reminderDismissRef.current = setTimeout(() => {
         setReminderState('fading');
         setTimeout(() => setReminderState('hidden'), 350);
-      }, 4000);
+      }, 6000);
     }, 600);
     return () => {
       clearTimeout(timer);
