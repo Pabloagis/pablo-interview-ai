@@ -1,3 +1,7 @@
+'use client';
+
+import { useRef, useState } from 'react';
+
 interface TooltipProps {
   text: string;
   position?: 'top' | 'bottom';
@@ -15,6 +19,21 @@ export default function Tooltip({
   className = '',
   children,
 }: TooltipProps) {
+  const [visible, setVisible] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const show = () => {
+    if (disabled) return;
+    setVisible(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => setVisible(false), 2000);
+  };
+
+  const hide = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setVisible(false);
+  };
+
   const bubbleAlign =
     align === 'right'
       ? 'right-0'
@@ -30,7 +49,11 @@ export default function Tooltip({
       : 'left-1/2 -translate-x-1/2';
 
   return (
-    <div className={`relative group ${className}`}>
+    <div
+      className={`relative ${className}`}
+      onMouseEnter={show}
+      onMouseLeave={hide}
+    >
       {children}
       {!disabled && (
         <div
@@ -41,10 +64,13 @@ export default function Tooltip({
             'px-2.5 py-1.5',
             'bg-gray-800 text-white text-[11px] font-medium leading-tight whitespace-nowrap',
             'rounded-lg shadow-xl',
-            'opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100',
             'transition-all duration-150 ease-out',
             position === 'top' ? 'bottom-full mb-2.5' : 'top-full mt-2.5',
           ].join(' ')}
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? 'scale(1)' : 'scale(0.95)',
+          }}
         >
           {text}
           <span
