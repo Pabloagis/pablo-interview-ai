@@ -133,79 +133,90 @@ export default function IntakeScreen() {
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
 
-    // 0ms — Vignette (night only)
-    if (!dayMode && vig) {
-      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 0, eIO);
+    // ── Phase 1: Vision phrase leads (0–1700ms) ──────────────────────────────
+
+    const vision = splashVisionRef.current;
+    if (vision) {
+      // 0ms — blur + scale in from center
+      animate(p => {
+        vision.style.opacity = p.toFixed(4);
+        vision.style.filter  = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
+        vision.style.transform = `scale(${(0.92 + 0.08 * p).toFixed(4)})`;
+      }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = ''; });
+
+      // 1300ms — fade out before Pablo identity appears
+      animate(p => {
+        vision.style.opacity   = (1 - p).toFixed(4);
+        vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
+        vision.style.transform = `scale(${(1 - 0.04 * p).toFixed(4)})`;
+      }, 400, 1300, eIO, () => { vision.style.display = 'none'; });
     }
 
-    // 200ms — Wordmark: blur + tracking compression
+    // ── Phase 2: Pablo identity (all original timings + 1600ms) ──────────────
+
+    // 1600ms — Vignette (night only)
+    if (!dayMode && vig) {
+      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 1600, eIO);
+    }
+
+    // 1800ms — Wordmark: blur + tracking compression
     const wmTargetOp = dayMode ? 0.30 : 0.28;
     animate(p => {
       const tracking = 0.32 - (0.32 - 0.22) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
       wm.style.opacity = (p * wmTargetOp).toFixed(4);
       wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
-    }, 1000, 200, eO);
+    }, 1000, 1800, eO);
 
-    // 500ms — Light sweep (night only)
+    // 2100ms — Light sweep (night only)
     if (!dayMode && sweep) {
       animate(p => {
         const sw = p < 0.5 ? p * 2 : (1 - p) * 2;
         sweep.style.opacity = (sw * 0.8).toFixed(4);
         sweep.style.transform = `translateX(${(-100 + p * 200).toFixed(1)}%)`;
-      }, 600, 500, t => t);
+      }, 600, 2100, t => t);
     }
 
-    // 600ms — Avatar springs from depth with weight
-    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 600);
+    // 2200ms — Avatar springs from depth with weight
+    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 2200);
 
-    // 1000ms — Ring activates
-    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 1000);
+    // 2600ms — Ring activates
+    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 2600);
 
-    // 1100ms — Glow pulse begins
-    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 1100);
+    // 2700ms — Glow pulse begins
+    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 2700);
 
-    // 1200ms — Name assembles from left
+    // 2800ms — Name assembles from left
     animate(p => {
       nm.style.opacity = p.toFixed(4);
       nm.style.transform = `translateX(${(-40 * (1 - p)).toFixed(2)}px) scale(${(0.94 + 0.06 * p).toFixed(4)})`;
       nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
-    }, 700, 1200, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
+    }, 700, 2800, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
 
-    // 1550ms — Role from right
+    // 3150ms — Role from right
     const roleOp = dayMode ? 0.65 : 0.72;
     animate(p => {
       rl.style.opacity = (p * roleOp).toFixed(4);
       rl.style.transform = `translateX(${(35 * (1 - p)).toFixed(2)}px)`;
       rl.style.filter = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-    }, 600, 1550, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
+    }, 600, 3150, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
 
-    // 1850ms — Divider reveals from center
+    // 3450ms — Divider reveals from center
     animate(p => {
       dv.style.transform = `scaleX(${p.toFixed(4)})`;
       dv.style.opacity = (p * 0.55).toFixed(4);
-    }, 500, 1850, eOC);
+    }, 500, 3450, eOC);
 
-    // 2200ms — Tags stagger in
+    // 3800ms — Tags stagger in
     tags.forEach((tag, i) => {
       animate(p => {
         tag.style.opacity = p.toFixed(4);
         tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.9 + 0.1 * p).toFixed(4)})`;
         tag.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
-      }, 500, 2200 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
+      }, 500, 3800 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
     });
 
-    // 2800ms — Vision phrase fades in below tags
-    const vision = splashVisionRef.current;
-    if (vision) {
-      animate(p => {
-        vision.style.opacity = (p * 0.52).toFixed(4);
-        vision.style.transform = `translateY(${(10 * (1 - p)).toFixed(2)}px)`;
-        vision.style.filter = `blur(${(4 * (1 - p)).toFixed(1)}px)`;
-      }, 700, 2800, eO, () => { vision.style.transform = ''; vision.style.filter = ''; });
-    }
-
-    // 4500ms — Cinematic EXIT (two-step)
+    // 5200ms — Cinematic EXIT (two-step)
     after(() => {
       if (!ov) return;
       const _ov = ov;
@@ -229,7 +240,7 @@ export default function IntakeScreen() {
         setSplashDone(true);
         sessionStorage.setItem('im_splash_shown', '1');
       });
-    }, 4500);
+    }, 5200);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -629,6 +640,26 @@ export default function IntakeScreen() {
             opacity:0, transform:'translateX(-100%)',
           }} />
 
+          {/* Vision phrase — HERO, shown first, absolutely centered */}
+          <p ref={splashVisionRef} style={{
+            position: 'absolute',
+            top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            fontSize: 19,
+            fontWeight: 600,
+            color: 'var(--text-primary)',
+            letterSpacing: '-0.01em',
+            lineHeight: 1.55,
+            maxWidth: 300,
+            width: '80%',
+            textAlign: 'center',
+            opacity: 0,
+            pointerEvents: 'none',
+            zIndex: 2,
+          }}>
+            {t.visionTitle}
+          </p>
+
           <div style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
 
             {/* Wordmark */}
@@ -641,7 +672,7 @@ export default function IntakeScreen() {
             </p>
 
             {/* Avatar + ring + glow */}
-            <div ref={splashAvRef} style={{ position:'relative', width:88, height:88, marginBottom:24, opacity:0, transform:'translateY(8px) scale(0.55)' }}>
+            <div ref={splashAvRef} style={{ position:'relative', width:112, height:112, marginBottom:24, opacity:0, transform:'translateY(8px) scale(0.55)' }}>
               {/* Glow */}
               <div ref={splashGlowRef} className="absolute inset-0 rounded-full" style={{ background:'rgba(80,110,220,0.18)' }} />
               {/* Spinning conic ring */}
@@ -654,7 +685,7 @@ export default function IntakeScreen() {
               </div>
               {/* Photo */}
               <div className="absolute rounded-full overflow-hidden" style={{ inset:3 }}>
-                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }} />
+                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center 15%', display:'block' }} />
               </div>
             </div>
 
@@ -700,21 +731,6 @@ export default function IntakeScreen() {
                 </span>
               ))}
             </div>
-
-            {/* Vision phrase */}
-            <p ref={splashVisionRef} style={{
-              fontSize: 10.5,
-              color: 'var(--splash-role)',
-              letterSpacing: '0.02em',
-              lineHeight: 1.6,
-              maxWidth: 260,
-              marginTop: 22,
-              opacity: 0,
-              textAlign: 'center',
-              fontStyle: 'italic',
-            }}>
-              {t.visionTitle}
-            </p>
 
           </div>
         </div>
