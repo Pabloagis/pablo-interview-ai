@@ -27,62 +27,70 @@ function getIsInDayHours(): boolean {
   return h >= DAY_START_HOUR && h < DAY_END_HOUR;
 }
 
+// No-op if theme already matches — prevents unnecessary transitions
 function applyTheme(dayMode: boolean) {
+  const target = dayMode ? 'day' : 'night';
+  if (document.documentElement.getAttribute('data-theme') === target) return;
   document.documentElement.classList.add('theme-transitioning');
-  document.documentElement.setAttribute('data-theme', dayMode ? 'day' : 'night');
-  setTimeout(() => {
-    document.documentElement.classList.remove('theme-transitioning');
-  }, 500);
+  document.documentElement.setAttribute('data-theme', target);
+  setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 500);
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isInDayHours, setIsInDayHours]       = useState(() =>
-    typeof window !== 'undefined' ? getIsInDayHours() : false
-  );
-  const [manualOverride, setManualOverride]    = useState<'day' | 'night' | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('im_theme_override') as 'day' | 'night' | null;
-  });
+  // SSR-safe default; corrected from DOM on mount (see effect below)
+  const [isDayMode, setIsDayMode] = useState(false);
+  const [manualOverride, setManualOverride] = useState<'day' | 'night' | null>(null);
+  const overrideRef = useRef<'day' | 'night' | null>(null);
   const isFirstRender = useRef(true);
 
-  useEffect(() => {
-    setIsInDayHours(getIsInDayHours());
-
-    const interval = setInterval(() => setIsInDayHours(getIsInDayHours()), 60_000);
-
-    return () => {
-      clearInterval(interval);
-    };
-  }, []);
-
-  const resolvedIsDayMode = manualOverride
-    ? manualOverride === 'day'
-    : isInDayHours;
-
+  // Apply theme to DOM on every isDayMode change — but skip the very first
+  // render so we never clobber the data-theme the <head> script already set.
   useEffect(() => {
     if (isFirstRender.current) {
-      document.documentElement.setAttribute('data-theme', resolvedIsDayMode ? 'day' : 'night');
       isFirstRender.current = false;
       return;
     }
-    applyTheme(resolvedIsDayMode);
-  }, [resolvedIsDayMode]);
+    applyTheme(isDayMode);
+  }, [isDayMode]);
+
+  useEffect(() => {
+    // Clear any stale localStorage override from previous sessions so a fresh
+    // load always starts from the time-based theme.
+    try { localStorage.removeItem('im_theme_override'); } catch {}
+
+    // Sync React state with what the <head> blocking script already set.
+    const domTheme = document.documentElement.getAttribute('data-theme');
+    setIsDayMode(domTheme === 'day');
+
+    // Hourly auto-update (only when no manual override for this session)
+    const interval = setInterval(() => {
+      if (!overrideRef.current) {
+        setIsDayMode(getIsInDayHours());
+      }
+    }, 60_000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const toggleTheme = () => {
-    const next: 'day' | 'night' = resolvedIsDayMode ? 'night' : 'day';
+    const next: 'day' | 'night' = isDayMode ? 'night' : 'day';
+    overrideRef.current = next;
     setManualOverride(next);
-    localStorage.setItem('im_theme_override', next);
+    setIsDayMode(next === 'day');
+    // Intentionally NOT persisting to localStorage — override is session-only.
+    // Fresh page load always uses the time-based rule.
   };
 
   const clearOverride = () => {
+    overrideRef.current = null;
     setManualOverride(null);
-    localStorage.removeItem('im_theme_override');
+    setIsDayMode(getIsInDayHours());
   };
 
   return (
     <ThemeContext.Provider value={{
-      isDayMode: resolvedIsDayMode,
-      theme: resolvedIsDayMode ? 'day' : 'night',
+      isDayMode,
+      theme: isDayMode ? 'day' : 'night',
       toggleTheme,
       manualOverride,
       clearOverride,
