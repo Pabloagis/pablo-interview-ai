@@ -1101,57 +1101,53 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             </div>
 
             {/* Mic button */}
-            <Tooltip text={isRecording ? t.stopRecording : t.startVoiceInput} className="shrink-0">
-              <button
-                onClick={toggleRecording}
-                disabled={isStreaming || isTranscribing || isPlayingAudio}
-                aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-40"
-                style={isRecording ? {
-                  background: '#ef4444',
-                  boxShadow: '0 2px 12px rgba(239,68,68,0.4)',
-                } : {
-                  background: 'var(--input-pill-bg)',
-                  border: '0.5px solid var(--input-pill-border)',
-                }}
-              >
-                {isRecording ? (
-                  <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <rect x="6" y="6" width="12" height="12" rx="1.5" />
-                  </svg>
-                ) : isTranscribing ? (
-                  <svg className="w-4 h-4 animate-spin" style={{ color: 'var(--accent-mid)' }} fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                ) : (
-                  <svg className="w-4 h-4" style={{ color: 'var(--util-color)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
-                )}
-              </button>
-            </Tooltip>
+            <button
+              onClick={toggleRecording}
+              disabled={isStreaming || isTranscribing || isPlayingAudio}
+              aria-label={isRecording ? 'Stop recording' : 'Start voice input'}
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all disabled:opacity-40 shrink-0"
+              style={isRecording ? {
+                background: '#ef4444',
+                boxShadow: '0 2px 12px rgba(239,68,68,0.4)',
+              } : {
+                background: 'var(--input-pill-bg)',
+                border: '0.5px solid var(--input-pill-border)',
+              }}
+            >
+              {isRecording ? (
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                </svg>
+              ) : isTranscribing ? (
+                <svg className="w-4 h-4 animate-spin" style={{ color: 'var(--accent-mid)' }} fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" style={{ color: 'var(--util-color)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                </svg>
+              )}
+            </button>
 
             {/* Send button */}
-            <Tooltip text={t.sendTooltip} className="shrink-0">
-              <button
-                onClick={() => sendMessage()}
-                disabled={!inputText.trim() || isStreaming}
-                aria-label="Send message"
-                className="w-10 h-10 rounded-xl flex items-center justify-center transition-all"
-                style={inputText.trim() && !isStreaming ? {
-                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                  boxShadow: '0 2px 12px var(--accent-glow)',
-                } : {
-                  background: 'linear-gradient(135deg, rgba(75,111,255,0.38), rgba(160,64,240,0.38))',
-                  opacity: 0.7,
-                }}
-              >
-                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
-              </button>
-            </Tooltip>
+            <button
+              onClick={() => sendMessage()}
+              disabled={!inputText.trim() || isStreaming}
+              aria-label="Send message"
+              className="w-10 h-10 rounded-xl flex items-center justify-center transition-all shrink-0"
+              style={inputText.trim() && !isStreaming ? {
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                boxShadow: '0 2px 12px var(--accent-glow)',
+              } : {
+                background: 'linear-gradient(135deg, rgba(75,111,255,0.38), rgba(160,64,240,0.38))',
+                opacity: 0.7,
+              }}
+            >
+              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
           </div>
 
           {/* Bottom utility row */}

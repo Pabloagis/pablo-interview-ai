@@ -6,6 +6,7 @@ import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import { HowItWorksCard } from './HowItWorksModal';
+import WhatItIsModal from './WhatItIsModal';
 import Footer from './Footer';
 import Background from './Background';
 
@@ -34,6 +35,7 @@ export default function IntakeScreen() {
   const [splashDone,    setSplashDone]      = useState(false);
   const [pageReady,     setPageReady]       = useState(false);
   const [showContextWarn, setShowContextWarn] = useState(false);
+  const [whatItIsOpen,   setWhatItIsOpen]    = useState(false);
   const companyInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -390,6 +392,9 @@ export default function IntakeScreen() {
             <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
               {t.intakeSubtitle}
             </p>
+            <p style={{ fontSize: 13, fontWeight: 500, color:'var(--text-secondary)', lineHeight: 1.6, maxWidth: 320, ...emerge(290, { ty: 14, blur: 5, dur: 500 }) }}>
+              {t.visionTitle}
+            </p>
           </div>
 
           {/* ── How it works ── */}
@@ -397,18 +402,40 @@ export default function IntakeScreen() {
             <HowItWorksCard />
           </div>
 
-          {/* ── Vision card ── */}
-          <div className="glass p-5 mb-3 text-center" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
-            <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, marginBottom:10 }}>
-              {t.visionTitle}
-            </p>
-            <p style={{ fontSize:13, color:'var(--text-secondary)', lineHeight:1.65, marginBottom:12 }}>
-              {t.visionBody}
-            </p>
-            <p className="vision-closing" style={{ fontSize:13.5, fontWeight:600, fontStyle:'italic', lineHeight:1.4,
-              paddingTop:12, borderTop:'0.5px solid var(--glass-border)' }}>
-              {t.visionClosing}
-            </p>
+          {/* ── What it is trigger ── */}
+          <div className="mb-3" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
+            <button
+              type="button"
+              onClick={() => setWhatItIsOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', padding: '11px 14px 11px 16px',
+                background: 'var(--modal-bg)',
+                border: '0.5px solid var(--modal-border)',
+                borderRadius: 22,
+                cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="var(--accent-primary)" strokeWidth={1.8}
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0, opacity: 0.75 }}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--modal-title)', letterSpacing: '0.01em' }}>
+                {t.whatItIsLabel}
+              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="var(--text-tertiary)" strokeWidth={2}
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
           </div>
 
           {/* ── Divider ── */}
@@ -498,8 +525,21 @@ export default function IntakeScreen() {
 
         </form>
 
+        <p className="vision-closing text-center" style={{
+          fontSize: 13, fontWeight: 600, fontStyle: 'italic',
+          lineHeight: 1.5, color: 'var(--text-secondary)',
+          padding: '18px 8px 6px',
+        }}>
+          {t.visionClosing}
+        </p>
+
         <Footer />
       </div>
+
+      {/* ── What it is modal ── */}
+      {whatItIsOpen && (
+        <WhatItIsModal body={t.visionBody} onClose={() => setWhatItIsOpen(false)} />
+      )}
 
       {/* ── Avatar zoom overlay ── */}
       {avatarOpen && (

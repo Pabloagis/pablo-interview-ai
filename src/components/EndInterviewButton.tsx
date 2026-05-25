@@ -128,7 +128,7 @@ export default function EndInterviewButton({
           onMouseDown={() => isActive && setPressed(true)}
           onMouseUp={() => setPressed(false)}
           aria-label={isActive ? t.endTooltipActive : t.endTooltipInactive}
-          className={`flex items-center justify-center gap-[6px] shrink-0 w-[34px] h-[34px] p-0 rounded-lg sm:w-auto sm:h-auto sm:px-[14px] sm:py-[6px] sm:rounded-full${isActive ? ' btn-primary-cta' : ''}`}
+          className={`flex items-center justify-center gap-[6px] shrink-0 w-10 h-10 p-0 rounded-xl sm:w-auto sm:h-auto sm:px-[14px] sm:py-[6px] sm:rounded-full${isActive ? ' btn-primary-cta' : ''}`}
           style={isActive ? {
             cursor: 'pointer',
             fontFamily: 'inherit',

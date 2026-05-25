@@ -90,13 +90,23 @@ export default function Header({ recruiterName, company, role, action }: HeaderP
             {recruiterName}
           </span>
         )}
-        {(company || role) && (
+        {company && (
           <span className="truncate" style={{
             fontSize: 11,
             lineHeight: 1.3,
             color: 'var(--text-tertiary)',
           }}>
-            {[company, role].filter(Boolean).join(' · ')}
+            {company}
+          </span>
+        )}
+        {role && (
+          <span className="truncate" style={{
+            fontSize: 11,
+            lineHeight: 1.3,
+            color: 'var(--text-tertiary)',
+            opacity: 0.7,
+          }}>
+            {role}
           </span>
         )}
       </div>

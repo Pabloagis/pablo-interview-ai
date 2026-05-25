@@ -58,6 +58,7 @@ export type Translations = {
   emailError: string;
   nameError: string;
   intakeSubtitle: string;
+  whatItIsLabel: string;
   timeHint: string;
   contextWarningTitle: string;
   contextWarningBody: string;
@@ -235,6 +236,7 @@ const EN: Translations = {
   emailError: 'Please enter a valid email address',
   nameError: 'Please enter your name',
   intakeSubtitle: 'SaaS & Hospitality Tech | Helping hospitality grow through smart solutions',
+  whatItIsLabel: 'What it is?',
   timeHint: '⏱ Usually takes 3–5 minutes',
   contextWarningTitle: 'Missing context',
   contextWarningBody: 'Without company and role Pablo can\'t tailor his answers to your specific search.',
@@ -444,6 +446,7 @@ const ES: Translations = {
   emailError: 'Por favor introduce un email válido',
   nameError: 'Por favor introduce tu nombre',
   intakeSubtitle: 'SaaS y Tecnología Hotelera | Ayudando a la hostelería a crecer con soluciones inteligentes',
+  whatItIsLabel: '¿Qué es esto?',
   timeHint: '⏱ Suele durar entre 3 y 5 minutos',
   contextWarningTitle: 'Contexto incompleto',
   contextWarningBody: 'Sin empresa y rol Pablo no puede personalizar sus respuestas a tu búsqueda concreta.',
@@ -653,6 +656,7 @@ const IT: Translations = {
   emailError: "Inserisci un indirizzo email valido",
   nameError: 'Inserisci il tuo nome',
   intakeSubtitle: 'SaaS e Tecnologia Alberghiera | Aiutare l\'ospitalità a crescere con soluzioni intelligenti',
+  whatItIsLabel: 'Cos\'è?',
   timeHint: '⏱ Di solito dura 3–5 minuti',
   contextWarningTitle: 'Contesto mancante',
   contextWarningBody: 'Senza azienda e ruolo Pablo non può personalizzare le risposte alla tua ricerca.',
@@ -862,6 +866,7 @@ const PT: Translations = {
   emailError: 'Por favor introduza um endereço de email válido',
   nameError: 'Por favor introduza o seu nome',
   intakeSubtitle: 'SaaS e Tecnologia Hoteleira | Ajudando a hotelaria a crescer com soluções inteligentes',
+  whatItIsLabel: 'O que é?',
   timeHint: '⏱ Geralmente demora 3–5 minutos',
   contextWarningTitle: 'Contexto incompleto',
   contextWarningBody: 'Sem empresa e cargo Pablo não consegue personalizar as respostas à sua pesquisa.',
