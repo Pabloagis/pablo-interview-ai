@@ -137,18 +137,18 @@ export default function IntakeScreen() {
 
     const vision = splashVisionRef.current;
     if (vision) {
-      // 0ms — blur + scale in from center
+      // 0ms — blur + scale in from center (translate kept every frame)
       animate(p => {
-        vision.style.opacity = p.toFixed(4);
-        vision.style.filter  = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-        vision.style.transform = `scale(${(0.92 + 0.08 * p).toFixed(4)})`;
-      }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = ''; });
+        vision.style.opacity   = p.toFixed(4);
+        vision.style.filter    = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
+        vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
+      }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
 
       // 1300ms — fade out before Pablo identity appears
       animate(p => {
         vision.style.opacity   = (1 - p).toFixed(4);
         vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
-        vision.style.transform = `scale(${(1 - 0.04 * p).toFixed(4)})`;
+        vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
       }, 400, 1300, eIO, () => { vision.style.display = 'none'; });
     }
 
