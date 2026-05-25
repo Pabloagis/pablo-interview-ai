@@ -34,7 +34,6 @@ export default function EndInterviewButton({
   const [portalRoot, setPortalRoot] = useState<Element | null>(null);
   const [panelReady, setPanelReady] = useState(false);
   const [previewSlide, setPreviewSlide] = useState(0);
-  const [openSection, setOpenSection] = useState(-1);
 
   useEffect(() => { setPortalRoot(document.body); }, []);
 
@@ -51,15 +50,6 @@ export default function EndInterviewButton({
     return () => clearInterval(id);
   }, [modalOpen]);
 
-  // On slide 2, animate section rows opening one by one
-  useEffect(() => {
-    if (previewSlide !== 2) { setOpenSection(-1); return; }
-    setOpenSection(0);
-    const t1 = setTimeout(() => setOpenSection(1), 620);
-    const t2 = setTimeout(() => setOpenSection(2), 1240);
-    const t3 = setTimeout(() => setOpenSection(3), 1860);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [previewSlide]);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
@@ -299,62 +289,51 @@ export default function EndInterviewButton({
                 </div>
               </div>
 
-              {/* ── Slide 2: Sections unfolding ── */}
+              {/* ── Slide 2: Report sections — all open, staggered fade-in ── */}
               <div style={{
                 position: 'absolute', inset: 0,
                 display: 'flex', flexDirection: 'column', justifyContent: 'center',
                 padding: '10px 14px', gap: 5,
-                opacity: previewSlide === 2 ? 1 : 0,
-                transform: previewSlide === 2 ? 'translateY(0)' : 'translateY(10px)',
-                transition: 'opacity 380ms ease, transform 380ms ease',
                 pointerEvents: 'none',
               }}>
                 {[
-                  { num: '01', label: t.endModalSectionExec, accent: 'var(--accent-primary)', snippet: 'Opera PMS · Salesforce · SaaS · 5 idiomas' },
-                  { num: '02', label: t.endModalSectionCore, accent: 'rgba(96,48,180,0.9)', snippet: 'HubOS · Accor · Soho House · London' },
-                  { num: '03', label: t.endModalSectionInsights, accent: 'rgba(64,120,220,0.85)', snippet: 'Comunicación · Adaptabilidad · Tech mindset' },
-                  { num: '04', label: t.endModalSectionTakeaways, accent: 'rgba(130,70,200,0.85)', snippet: 'Customer Success · Implementation · Intl. roles' },
-                ].map(({ num, label, accent, snippet }, i) => {
-                  const isOpen = openSection >= i;
-                  return (
-                    <div key={num} style={{
-                      borderRadius: 9, overflow: 'hidden',
-                      background: 'var(--glass-1)',
-                      border: `0.5px solid ${isOpen ? 'var(--glass-border-hi)' : 'var(--glass-border)'}`,
-                      transition: 'border-color 220ms ease',
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px' }}>
-                        <div style={{
-                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: isOpen ? accent : 'var(--glass-border)',
-                          transition: 'background 300ms ease',
-                          fontSize: 7.5, fontWeight: 800,
-                          color: isOpen ? '#fff' : 'var(--text-muted)',
-                        }}>{num}</div>
-                        <span style={{
-                          fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
-                          textTransform: 'uppercase', flex: 1,
-                          color: isOpen ? 'var(--text-primary)' : 'var(--text-muted)',
-                          transition: 'color 220ms ease',
-                        }}>{label}</span>
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
-                          style={{ color: 'var(--text-muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 220ms ease', flexShrink: 0 }}>
-                          <path d="M19 9l-7 7-7-7"/>
-                        </svg>
-                      </div>
+                  { num: '01', label: t.endModalSectionExec,      accent: 'var(--accent-primary)',     snippet: 'Opera PMS · Salesforce · SaaS · 5 idiomas' },
+                  { num: '02', label: t.endModalSectionCore,       accent: 'rgba(96,48,180,0.9)',        snippet: 'HubOS · Accor · Soho House · London' },
+                  { num: '03', label: t.endModalSectionInsights,   accent: 'rgba(64,120,220,0.85)',      snippet: 'Comunicación · Adaptabilidad · Tech mindset' },
+                  { num: '04', label: t.endModalSectionTakeaways,  accent: 'rgba(130,70,200,0.85)',      snippet: 'Customer Success · Implementation · Intl. roles' },
+                ].map(({ num, label, accent, snippet }, i) => (
+                  <div key={num} style={{
+                    borderRadius: 9, overflow: 'hidden',
+                    background: 'var(--glass-1)',
+                    border: '0.5px solid var(--glass-border-hi)',
+                    opacity: previewSlide === 2 ? 1 : 0,
+                    transform: previewSlide === 2 ? 'translateY(0)' : 'translateY(8px)',
+                    transition: previewSlide === 2
+                      ? `opacity 260ms ease ${60 + i * 65}ms, transform 260ms ease ${60 + i * 65}ms`
+                      : 'opacity 140ms ease, transform 140ms ease',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px' }}>
                       <div style={{
-                        maxHeight: isOpen ? 28 : 0, overflow: 'hidden',
-                        transition: 'max-height 340ms cubic-bezier(0.16,1,0.3,1)',
-                      }}>
-                        <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 11px' }} />
-                        <p style={{ margin: 0, padding: '5px 11px 6px', fontSize: 9.5, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
-                          {snippet}
-                        </p>
-                      </div>
+                        width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: accent, fontSize: 7.5, fontWeight: 800, color: '#fff',
+                      }}>{num}</div>
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
+                        textTransform: 'uppercase', flex: 1, color: 'var(--text-primary)',
+                      }}>{label}</span>
+                      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}
+                        strokeLinecap="round" strokeLinejoin="round"
+                        style={{ color: 'var(--text-muted)', transform: 'rotate(180deg)', flexShrink: 0 }}>
+                        <path d="M19 9l-7 7-7-7"/>
+                      </svg>
                     </div>
-                  );
-                })}
+                    <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 11px' }} />
+                    <p style={{ margin: 0, padding: '4px 11px 6px', fontSize: 9.5, color: 'var(--text-tertiary)', lineHeight: 1.4 }}>
+                      {snippet}
+                    </p>
+                  </div>
+                ))}
               </div>
 
               {/* Slide indicator dots */}

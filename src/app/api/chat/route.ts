@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { getAnthropicClient } from '@/lib/anthropic';
-import { buildSystemPrompt } from '@/lib/prompts';
+import { CORE_SYSTEM_PROMPT, buildDynamicPrompt } from '@/lib/prompts';
 import { retrieveKnowledge, detectTone, logRetrieval } from '@/lib/retrieval';
 import {
   CLAUDE_MODEL,
@@ -14,6 +14,8 @@ import {
   MEMORY_TIMEOUT_MS,
   EMBEDDING_MODEL,
   EMBEDDING_DIMENSIONS,
+  HISTORY_MAX_MESSAGES,
+  MEMORY_MIN_HISTORY,
 } from '@/lib/constants';
 import { ChatRequest, AnthropicMessage, MemorySearchResult } from '@/lib/types';
 
@@ -156,7 +158,9 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        const conversationHistory: AnthropicMessage[] = (session.messages || []) as AnthropicMessage[];
+        const rawHistory: AnthropicMessage[] = (session.messages || []) as AnthropicMessage[];
+        // Cap history to avoid unbounded token growth; pgvector memory covers the gap for earlier turns
+        const conversationHistory = rawHistory.slice(-HISTORY_MAX_MESSAGES);
         const userTurn = autoIntro
           ? `[SYSTEM TRIGGER — not from the recruiter] The recruiter opened the interview page but hasn't typed yet. Send a brief, warm greeting${context?.recruiterName ? ` addressing them as ${context.recruiterName}` : ''}. 1–2 sentences max. Natural and human — no bullet lists, no topic menus, just a genuine opening that makes them feel welcome to start.`
           : autoCheckIn
@@ -165,10 +169,13 @@ export async function POST(request: NextRequest) {
         const newUserMessage: AnthropicMessage = { role: 'user', content: userTurn };
         const messagesForClaude: AnthropicMessage[] = [...conversationHistory, newUserMessage];
 
-        // Semantic memory search — non-blocking if embedding fails
+        // Semantic memory search — non-blocking if embedding fails.
+        // Skip injecting results into the prompt while history is short: the full conversation
+        // is already being sent, so memory would just duplicate it. Once history gets truncated
+        // (rawHistory.length >= MEMORY_MIN_HISTORY), memory bridges the gap for earlier turns.
         const embedding = await generateEmbedding(message);
         let relevantMemories: MemorySearchResult[] = [];
-        if (embedding) {
+        if (embedding && rawHistory.length >= MEMORY_MIN_HISTORY) {
           relevantMemories = await searchMemory(supabase, sessionId, embedding);
         }
 
@@ -187,14 +194,19 @@ export async function POST(request: NextRequest) {
           tone: context?.tone || detectedTone,
         };
 
-        const systemPrompt = buildSystemPrompt(enrichedContext, relevantMemories, retrieved.formattedText);
+        // Two-block system: static core is cached by Anthropic (5-min TTL, 10% cost on cache hit),
+        // dynamic block carries per-request context and is never cached.
+        const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+          { type: 'text', text: CORE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+          { type: 'text', text: buildDynamicPrompt(enrichedContext, relevantMemories, retrieved.formattedText) },
+        ];
         const anthropic = getAnthropicClient();
         let fullResponse = '';
         let tokensSent = false;
 
         const runStream = async (model: string) => {
           const claudeStream = anthropic.messages.stream(
-            { model, max_tokens: MAX_TOKENS, system: systemPrompt, messages: messagesForClaude },
+            { model, max_tokens: MAX_TOKENS, system: systemBlocks, messages: messagesForClaude },
             { signal: abortController.signal }
           );
           for await (const event of claudeStream) {

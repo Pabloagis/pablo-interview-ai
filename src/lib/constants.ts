@@ -10,6 +10,11 @@ export const API_TIMEOUT_MS = 30_000;
 export const MEMORY_SEARCH_LIMIT = 5;
 export const MEMORY_TIMEOUT_MS = 8000;
 
+// Conversation history cap — older turns beyond this are dropped (memory covers the gap)
+export const HISTORY_MAX_MESSAGES = 14;
+// Only inject pgvector memory results into the prompt once history is long enough to need it
+export const MEMORY_MIN_HISTORY = 12;
+
 // UI
 export const TOAST_DURATION_MS = 5000;
 export const MAX_MESSAGE_LENGTH = 2000;
