@@ -185,7 +185,7 @@ export default function IntakeScreen() {
       },
     };
 
-    // ── Phase 1: Vision phrase leads (0–3000ms) ──────────────────────────────
+    // ── Phase 1: Vision phrase leads (0–3300ms) ──────────────────────────────
 
     const vision = splashVisionRef.current;
     if (vision) {
@@ -196,79 +196,79 @@ export default function IntakeScreen() {
         vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
       }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
 
-      // 3000ms — fade out, leaving enough time to read
+      // 3300ms — fade out, leaving enough time to read
       animate(p => {
         vision.style.opacity   = (1 - p).toFixed(4);
         vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
         vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
-      }, 400, 3000, eIO, () => { vision.style.display = 'none'; });
+      }, 400, 3300, eIO, () => { vision.style.display = 'none'; });
     }
 
-    // ── Phase 2: Pablo identity (all timings shifted +1200ms from original) ──
+    // ── Phase 2: Pablo identity ───────────────────────────────────────────────
 
-    // 2800ms — Vignette (night only)
+    // 3100ms — Vignette (night only)
     if (!dayMode && vig) {
-      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 2800, eIO);
+      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 3100, eIO);
     }
 
-    // 3000ms — Wordmark: blur + tracking compression
+    // 3300ms — Wordmark: blur + tracking compression
     const wmTargetOp = dayMode ? 0.30 : 0.28;
     animate(p => {
       const tracking = 0.32 - (0.32 - 0.22) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
       wm.style.opacity = (p * wmTargetOp).toFixed(4);
       wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
-    }, 1000, 3000, eO);
+    }, 1000, 3300, eO);
 
-    // 3300ms — Light sweep (night only)
+    // 3600ms — Light sweep (night only)
     if (!dayMode && sweep) {
       animate(p => {
         const sw = p < 0.5 ? p * 2 : (1 - p) * 2;
         sweep.style.opacity = (sw * 0.8).toFixed(4);
         sweep.style.transform = `translateX(${(-100 + p * 200).toFixed(1)}%)`;
-      }, 600, 3300, t => t);
+      }, 600, 3600, t => t);
     }
 
-    // 3400ms — Avatar springs from depth with weight
-    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 3400);
+    // 3700ms — Avatar springs from depth with weight
+    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 3700);
 
-    // 3800ms — Ring activates
-    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 3800);
+    // 4100ms — Ring activates
+    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 4100);
 
-    // 3900ms — Glow pulse begins
-    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 3900);
+    // 4200ms — Glow pulse begins
+    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 4200);
 
-    // 4000ms — Name assembles from left
+    // 4300ms — Name assembles from left
     animate(p => {
       nm.style.opacity = p.toFixed(4);
       nm.style.transform = `translateX(${(-40 * (1 - p)).toFixed(2)}px) scale(${(0.94 + 0.06 * p).toFixed(4)})`;
       nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
-    }, 700, 4000, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
+    }, 700, 4300, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
 
-    // 4350ms — Role from right
+    // 4650ms — Role from right
     const roleOp = dayMode ? 0.65 : 0.72;
     animate(p => {
       rl.style.opacity = (p * roleOp).toFixed(4);
       rl.style.transform = `translateX(${(35 * (1 - p)).toFixed(2)}px)`;
       rl.style.filter = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-    }, 600, 4350, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
+    }, 600, 4650, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
 
-    // 4650ms — Divider reveals from center
+    // 4950ms — Divider reveals from center
     animate(p => {
       dv.style.transform = `scaleX(${p.toFixed(4)})`;
       dv.style.opacity = (p * 0.55).toFixed(4);
-    }, 500, 4650, eOC);
+    }, 500, 4950, eOC);
 
-    // 5000ms — Tags stagger in
+    // 5300ms — Tags stagger in
     tags.forEach((tag, i) => {
       animate(p => {
         tag.style.opacity = p.toFixed(4);
         tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.9 + 0.1 * p).toFixed(4)})`;
         tag.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
-      }, 500, 5000 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
+      }, 500, 5300 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
     });
 
-    // 6400ms — Cinematic EXIT (two-step)
+    // 6700ms — Cinematic EXIT (two-step)
     after(() => {
       if (!ov) return;
       const _ov = ov;
@@ -292,7 +292,7 @@ export default function IntakeScreen() {
         setSplashDone(true);
         sessionStorage.setItem('im_splash_shown', '1');
       });
-    }, 6400);
+    }, 6700);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
