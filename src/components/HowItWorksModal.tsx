@@ -567,6 +567,7 @@ export function HowItWorksCard() {
               <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
                 {Array.from({ length: TOTAL_STEPS }, (_, i) => (
                   <button
+                    type="button"
                     key={i}
                     onClick={() => goTo(i)}
                     aria-label={`Go to step ${i + 1}`}
@@ -583,6 +584,7 @@ export function HowItWorksCard() {
               <div style={{ display: 'flex', gap: 8 }}>
                 {step > 0 && (
                   <button
+                    type="button"
                     onClick={prev}
                     className="theme-modal-cancel"
                     style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
@@ -591,6 +593,7 @@ export function HowItWorksCard() {
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={next}
                   style={{
                     padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
