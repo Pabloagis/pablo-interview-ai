@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useLanguage, Lang, LANG_FLAGS } from '@/context/LanguageContext';
+import { useLanguage, Lang } from '@/context/LanguageContext';
 import Tooltip from './Tooltip';
 
 const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
@@ -58,9 +58,9 @@ export default function LanguageSwitcher() {
               key={l}
               onClick={() => { setLang(l); setOpen(false); }}
               aria-label={l}
-              className={`lang-item flex items-center justify-center w-full px-3 py-2 text-base leading-none${lang === l ? ' selected' : ''}`}
+              className={`lang-item flex items-center justify-center w-full px-3 py-2 text-[11px] font-semibold leading-none tracking-wide${lang === l ? ' selected' : ''}`}
             >
-              {LANG_FLAGS[l]}
+              {l.toUpperCase()}
             </button>
           ))}
         </div>

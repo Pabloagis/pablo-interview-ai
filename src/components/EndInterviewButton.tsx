@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
@@ -33,7 +33,8 @@ export default function EndInterviewButton({
   const [pressed, setPressed] = useState(false);
   const [portalRoot, setPortalRoot] = useState<Element | null>(null);
   const [panelReady, setPanelReady] = useState(false);
-  const previewRef = useRef<HTMLDivElement>(null);
+  const [previewSlide, setPreviewSlide] = useState(0);
+  const [openSection, setOpenSection] = useState(-1);
 
   useEffect(() => { setPortalRoot(document.body); }, []);
 
@@ -43,33 +44,22 @@ export default function EndInterviewButton({
     return () => cancelAnimationFrame(id);
   }, [modalOpen]);
 
+  // Cycle slides 0 → 1 → 2 → 0 …
   useEffect(() => {
-    if (!modalOpen) return;
-    let rafId: number;
-    let pos = 0;
-    let running = false;
-    const startId = setTimeout(() => { running = true; }, 700);
-
-    const tick = () => {
-      if (running) {
-        const el = previewRef.current;
-        if (el) {
-          pos += 0.45;
-          const half = el.offsetHeight / 2;
-          if (half > 0 && pos >= half) pos = 0;
-          el.style.transform = `translateY(-${pos}px)`;
-        }
-      }
-      rafId = requestAnimationFrame(tick);
-    };
-    rafId = requestAnimationFrame(tick);
-
-    return () => {
-      clearTimeout(startId);
-      cancelAnimationFrame(rafId);
-      if (previewRef.current) previewRef.current.style.transform = '';
-    };
+    if (!modalOpen) { setPreviewSlide(0); return; }
+    const id = setInterval(() => setPreviewSlide(s => (s + 1) % 3), 2800);
+    return () => clearInterval(id);
   }, [modalOpen]);
+
+  // On slide 2, animate section rows opening one by one
+  useEffect(() => {
+    if (previewSlide !== 2) { setOpenSection(-1); return; }
+    setOpenSection(0);
+    const t1 = setTimeout(() => setOpenSection(1), 620);
+    const t2 = setTimeout(() => setOpenSection(2), 1240);
+    const t3 = setTimeout(() => setOpenSection(3), 1860);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+  }, [previewSlide]);
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
 
@@ -211,153 +201,157 @@ export default function EndInterviewButton({
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ── Live scrolling report preview ───────────────────── */}
+            {/* ── 3-part preview ────────────────────────────────── */}
             <div style={{
-              borderRadius: 18,
-              height: 240,
-              overflow: 'hidden',
-              position: 'relative',
-              background: 'var(--bg-base)',
-              border: '0.5px solid var(--glass-border)',
-              marginBottom: 12,
+              borderRadius: 18, height: 220, overflow: 'hidden',
+              position: 'relative', background: 'var(--bg-base)',
+              border: '0.5px solid var(--glass-border)', marginBottom: 12,
             }}>
-              {/* Scrolling content — duplicated for seamless RAF loop */}
-              <div ref={previewRef} style={{ willChange: 'transform', pointerEvents: 'none' }}>
-                {[0, 1].map((copy) => (
-                  <div key={copy} style={{ padding: '22px 16px 0' }}>
 
-                    {/* Badge */}
-                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
-                      <span style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 5,
-                        padding: '3px 11px', borderRadius: 999,
-                        background: 'rgba(58,85,192,0.09)',
-                        border: '0.5px solid rgba(58,85,192,0.24)',
-                        fontSize: 8.5, fontWeight: 700, letterSpacing: '0.12em',
-                        textTransform: 'uppercase', color: 'var(--accent-primary)',
-                      }}>
-                        <svg width="6" height="6" viewBox="0 0 8 8" fill="var(--accent-primary)">
-                          <path d="M4 0l.97 2.93H8L5.52 4.74l.97 2.93L4 5.96l-2.49 1.71.97-2.93L0 2.93h3.03z"/>
-                        </svg>
-                        Insights Report
-                      </span>
-                    </div>
-
-                    {/* Name + subtitle */}
-                    <div style={{ textAlign: 'center', marginBottom: 12 }}>
-                      <div style={{
-                        fontSize: 16, fontWeight: 700, letterSpacing: '-0.02em',
-                        background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                      }}>
-                        Pablo Agis Burgos
-                      </div>
-                      <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 3 }}>
-                        SaaS · Hospitality Tech
-                      </div>
-                    </div>
-
-                    {/* Divider + intro */}
-                    <div style={{ height: '0.5px', background: 'var(--glass-border)', marginBottom: 10 }} />
-                    <p style={{ margin: '0 0 4px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                      7 years bridging hotel operations and SaaS — from front desk to enterprise implementation.
-                    </p>
-                    <p style={{ margin: '0 0 14px', fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
-                      — Pablo
-                    </p>
-
-                    {/* 2×2 action cards */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginBottom: 12 }}>
-                      {([
-                        { label: 'Book a call', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
-                        { label: 'Download CV', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> },
-                        { label: 'LinkedIn', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12" rx="0.5"/><circle cx="4" cy="4" r="2"/></svg> },
-                        { label: 'Refer Pablo', icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> },
-                      ] as Array<{ label: string; icon: React.ReactNode }>).map(({ label, icon }) => (
-                        <div key={label} style={{
-                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-                          padding: '12px 10px', borderRadius: 10,
-                          background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-                          color: 'var(--accent-primary)',
-                        }}>
-                          {icon}
-                          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', textAlign: 'center' }}>
-                            {label}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Executive Summary — open */}
-                    <div style={{ marginBottom: 6, borderRadius: 10, overflow: 'hidden', background: 'var(--glass-1)', border: '0.5px solid var(--glass-border-hi)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '9px 13px' }}>
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'var(--accent-primary)', fontSize: 8, fontWeight: 800, color: '#fff',
-                        }}>01</div>
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', flex: 1, color: 'var(--text-primary)' }}>
-                          Executive Summary
-                        </span>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', transform: 'rotate(180deg)', flexShrink: 0 }}><path d="M19 9l-7 7-7-7"/></svg>
-                      </div>
-                      <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 13px' }} />
-                      <div style={{ padding: '10px 13px 12px' }}>
-                        <p style={{ margin: '0 0 8px', fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.65 }}>
-                          Hospitality technology professional combining operational hotel expertise with SaaS implementation experience and a growing focus on integrations and commercial growth.
-                        </p>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
-                          {['Opera PMS', 'Salesforce', 'SaaS', '5 languages'].map((chip) => (
-                            <span key={chip} style={{
-                              padding: '2px 8px', borderRadius: 999, fontSize: 10, fontWeight: 600,
-                              background: 'rgba(58,85,192,0.08)', border: '0.5px solid rgba(58,85,192,0.22)',
-                              color: 'var(--accent-primary)',
-                            }}>{chip}</span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Sections 2–4 collapsed */}
-                    {[
-                      { num: '02', label: 'Core Experience' },
-                      { num: '03', label: 'Conversation Insights' },
-                      { num: '04', label: 'Recruiter Takeaways' },
-                    ].map(({ num, label }) => (
-                      <div key={num} style={{
-                        display: 'flex', alignItems: 'center', gap: 9,
-                        padding: '9px 13px', borderRadius: 10, marginBottom: 6,
-                        background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
-                      }}>
-                        <div style={{
-                          width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          background: 'var(--glass-border)', fontSize: 8, fontWeight: 800, color: 'var(--text-muted)',
-                        }}>{num}</div>
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', flex: 1, color: 'var(--text-muted)' }}>
-                          {label}
-                        </span>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)', flexShrink: 0 }}><path d="M19 9l-7 7-7-7"/></svg>
-                      </div>
-                    ))}
-
-                    <div style={{ height: 24 }} />
+              {/* ── Slide 0: Header ── */}
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                padding: '16px 20px', gap: 8,
+                opacity: previewSlide === 0 ? 1 : 0,
+                transform: previewSlide === 0 ? 'translateY(0)' : previewSlide < 1 ? 'translateY(-10px)' : 'translateY(10px)',
+                transition: 'opacity 380ms ease, transform 380ms ease',
+                pointerEvents: 'none',
+              }}>
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '3px 10px', borderRadius: 999,
+                  background: 'rgba(58,85,192,0.09)', border: '0.5px solid rgba(58,85,192,0.24)',
+                  fontSize: 8, fontWeight: 700, letterSpacing: '0.12em',
+                  textTransform: 'uppercase', color: 'var(--accent-primary)',
+                }}>
+                  <svg width="6" height="6" viewBox="0 0 8 8" fill="var(--accent-primary)"><path d="M4 0l.97 2.93H8L5.52 4.74l.97 2.93L4 5.96l-2.49 1.71.97-2.93L0 2.93h3.03z"/></svg>
+                  Insights Report
+                </span>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', position: 'relative' }}>
+                  <div style={{
+                    position: 'absolute', inset: 0, borderRadius: '50%',
+                    background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                    animation: 'ring-spin 3.5s linear infinite',
+                  }} />
+                  <div style={{ position: 'absolute', inset: 2.5, borderRadius: '50%', background: 'var(--bg-base)', overflow: 'hidden' }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/assets/pablo-avatar.jpg" alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%' }} />
                   </div>
-                ))}
+                </div>
+                <div style={{
+                  fontSize: 15, fontWeight: 700, letterSpacing: '-0.02em',
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text',
+                }}>Pablo Agis Burgos</div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-muted)' }}>SaaS · Hospitality Tech · 5 idiomas</div>
               </div>
 
-              {/* Top + bottom fades */}
+              {/* ── Slide 1: Action links ── */}
               <div style={{
-                position: 'absolute', top: 0, left: 0, right: 0, height: 40,
-                background: 'linear-gradient(to bottom, var(--bg-base), transparent)',
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                padding: '14px 16px',
+                opacity: previewSlide === 1 ? 1 : 0,
+                transform: previewSlide === 1 ? 'translateY(0)' : previewSlide < 1 ? 'translateY(-10px)' : 'translateY(10px)',
+                transition: 'opacity 380ms ease, transform 380ms ease',
                 pointerEvents: 'none',
-              }} />
+              }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 7 }}>
+                  {([
+                    { label: t.bookCallLabel ?? 'Book a call', grad: true,
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> },
+                    { label: t.downloadCvLabel ?? 'Download CV', grad: false,
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> },
+                    { label: 'LinkedIn', grad: false,
+                      icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6z"/><rect x="2" y="9" width="4" height="12" rx="0.5"/><circle cx="4" cy="4" r="2"/></svg> },
+                  ] as Array<{ label: string; grad: boolean; icon: React.ReactNode }>).map(({ label, grad, icon }) => (
+                    <div key={label} style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      padding: '8px 12px', borderRadius: 9,
+                      background: grad ? 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))' : 'var(--glass-1)',
+                      border: grad ? 'none' : '0.5px solid var(--glass-border)',
+                      color: grad ? '#fff' : 'var(--accent-primary)',
+                    }}>
+                      {icon}
+                      <span style={{ fontSize: 11.5, fontWeight: 600, color: grad ? '#fff' : 'var(--text-primary)', flex: 1 }}>{label}</span>
+                      <span style={{ fontSize: 11, opacity: 0.5 }}>→</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Slide 2: Sections unfolding ── */}
               <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
-                background: 'linear-gradient(to bottom, transparent, var(--bg-base))',
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                padding: '10px 14px', gap: 5,
+                opacity: previewSlide === 2 ? 1 : 0,
+                transform: previewSlide === 2 ? 'translateY(0)' : 'translateY(10px)',
+                transition: 'opacity 380ms ease, transform 380ms ease',
                 pointerEvents: 'none',
-              }} />
+              }}>
+                {[
+                  { num: '01', label: t.endModalSectionExec, accent: 'var(--accent-primary)', snippet: 'Opera PMS · Salesforce · SaaS · 5 idiomas' },
+                  { num: '02', label: t.endModalSectionCore, accent: 'rgba(96,48,180,0.9)', snippet: 'HubOS · Accor · Soho House · London' },
+                  { num: '03', label: t.endModalSectionInsights, accent: 'rgba(64,120,220,0.85)', snippet: 'Comunicación · Adaptabilidad · Tech mindset' },
+                  { num: '04', label: t.endModalSectionTakeaways, accent: 'rgba(130,70,200,0.85)', snippet: 'Customer Success · Implementation · Intl. roles' },
+                ].map(({ num, label, accent, snippet }, i) => {
+                  const isOpen = openSection >= i;
+                  return (
+                    <div key={num} style={{
+                      borderRadius: 9, overflow: 'hidden',
+                      background: 'var(--glass-1)',
+                      border: `0.5px solid ${isOpen ? 'var(--glass-border-hi)' : 'var(--glass-border)'}`,
+                      transition: 'border-color 220ms ease',
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 11px' }}>
+                        <div style={{
+                          width: 18, height: 18, borderRadius: '50%', flexShrink: 0,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          background: isOpen ? accent : 'var(--glass-border)',
+                          transition: 'background 300ms ease',
+                          fontSize: 7.5, fontWeight: 800,
+                          color: isOpen ? '#fff' : 'var(--text-muted)',
+                        }}>{num}</div>
+                        <span style={{
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.05em',
+                          textTransform: 'uppercase', flex: 1,
+                          color: isOpen ? 'var(--text-primary)' : 'var(--text-muted)',
+                          transition: 'color 220ms ease',
+                        }}>{label}</span>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"
+                          style={{ color: 'var(--text-muted)', transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 220ms ease', flexShrink: 0 }}>
+                          <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                      </div>
+                      <div style={{
+                        maxHeight: isOpen ? 28 : 0, overflow: 'hidden',
+                        transition: 'max-height 340ms cubic-bezier(0.16,1,0.3,1)',
+                      }}>
+                        <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 11px' }} />
+                        <p style={{ margin: 0, padding: '5px 11px 6px', fontSize: 9.5, color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+                          {snippet}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Slide indicator dots */}
+              <div style={{
+                position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)',
+                display: 'flex', gap: 5, pointerEvents: 'none',
+              }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{
+                    width: i === previewSlide ? 16 : 5, height: 5, borderRadius: 3,
+                    background: i === previewSlide ? 'var(--accent-primary)' : 'var(--glass-border)',
+                    transition: 'width 300ms cubic-bezier(0.25,1,0.5,1), background 300ms ease',
+                  }} />
+                ))}
+              </div>
             </div>
 
             {/* CTA */}
