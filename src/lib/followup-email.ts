@@ -53,17 +53,17 @@ const FOOTER_TEXT: Record<Lang, string> = {
 };
 
 const REFER_SUBJECT: Record<Lang, string> = {
-  en: 'You should meet Pablo Agis Burgos',
-  es: 'Te recomiendo conocer a Pablo Agis Burgos',
-  it: 'Ti consiglio di conoscere Pablo Agis Burgos',
-  pt: 'Deves conhecer o Pablo Agis Burgos',
+  en: 'Meet Pablo Agis Burgos — Hospitality Tech & SaaS Professional',
+  es: 'Te presento a Pablo Agis Burgos — Hospitality Tech & SaaS',
+  it: 'Ti presento Pablo Agis Burgos — Hospitality Tech & SaaS',
+  pt: 'Apresento-te Pablo Agis Burgos — Hospitality Tech & SaaS',
 };
 
 const REFER_BODY: Record<Lang, string> = {
-  en:  `I just had a conversation with Pablo via InterviewMind and thought of you.\n\nhttps://interviewmind.one\n\n`,
-  es:  `Acabo de hablar con Pablo en InterviewMind y he pensado en ti.\n\nhttps://interviewmind.one\n\n`,
-  it:  `Ho appena parlato con Pablo su InterviewMind e ho pensato a te.\n\nhttps://interviewmind.one\n\n`,
-  pt:  `Acabei de falar com o Pablo no InterviewMind e lembrei-me de ti.\n\nhttps://interviewmind.one\n\n`,
+  en:  `Hi,\n\nI wanted to introduce you to Pablo Agis Burgos — a hospitality technology professional I'd genuinely recommend.\n\nPablo brings 6+ years of hotel operations (Soho House London, Accor) combined with SaaS implementation experience at HubOS. He's strong on Opera, Salesforce, and channel management ecosystems, and he approaches every problem with real operational depth.\n\nHe's currently open to roles in SaaS implementation, customer success, or hospitality tech.\n\nYou can talk to him directly via his AI interview simulator:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
+  es:  `Hola,\n\nQuería presentarte a Pablo Agis Burgos — un profesional de hospitality tech que te recomiendo con total confianza.\n\nPablo combina más de 6 años de operaciones hoteleras (Soho House Londres, Accor) con experiencia en implementación SaaS en HubOS. Domina Opera, Salesforce y ecosistemas de channel management, y aporta una visión operacional real a cada proyecto.\n\nEstá buscando oportunidades en implementación SaaS, customer success o tecnología hotelera.\n\nPuedes hablar con él directamente a través de su simulador de entrevista con IA:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
+  it:  `Ciao,\n\nVolevo presentarti Pablo Agis Burgos — un professionista dell'hospitality tech che ti consiglio con entusiasmo.\n\nPablo unisce 6+ anni di operazioni alberghiere (Soho House Londra, Accor) a esperienza nell'implementazione SaaS presso HubOS. Conosce Opera, Salesforce e gli ecosistemi di channel management, e affronta ogni sfida con una prospettiva operativa concreta.\n\nSta cercando opportunità nel SaaS implementation, customer success o hospitality tech.\n\nPuoi parlare direttamente con lui tramite il suo simulatore di colloquio AI:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
+  pt:  `Olá,\n\nQueria apresentar-te o Pablo Agis Burgos — um profissional de hospitality tech que recomendo com toda a confiança.\n\nO Pablo combina 6+ anos de operações hoteleiras (Soho House Londres, Accor) com experiência em implementação SaaS na HubOS. Domina Opera, Salesforce e ecossistemas de channel management, e aborda cada desafio com uma perspetiva operacional sólida.\n\nEstá à procura de oportunidades em SaaS implementation, customer success ou hospitality tech.\n\nPodes falar com ele diretamente através do seu simulador de entrevista com IA:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
 };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -200,7 +200,7 @@ function generateEmailHTML(
               <!-- Avatar -->
               <table cellpadding="0" cellspacing="0" style="margin:0 auto 14px;">
                 <tr><td width="62" height="62" bgcolor="#e2e8f0" style="border-radius:50%; font-size:0; line-height:0; overflow:hidden; border:2px solid rgba(64,96,208,0.4);">
-                  <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="62" height="62" style="width:62px; height:62px; border-radius:50%; display:block; object-fit:cover;" />
+                  <img src="${BASE_URL}/assets/pablo-avatar.jpg" alt="Pablo Agis Burgos" width="62" height="62" style="width:62px; height:62px; border-radius:50%; display:block; object-fit:cover; object-position:center 15%;" />
                 </td></tr>
               </table>
 

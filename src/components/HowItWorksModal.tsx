@@ -378,6 +378,156 @@ function InsightsScene({ th }: { th: SceneTheme }) {
   );
 }
 
+// ── Inline card (no backdrop, no close button) ────────────────────────────────
+
+export function HowItWorksCard() {
+  const { t } = useLanguage();
+  const { isDayMode } = useTheme();
+  const th = isDayMode ? dayTheme() : nightTheme();
+
+  const [step, setStep] = useState(0);
+  const [sceneVisible, setSceneVisible] = useState(true);
+  const [typeText, setTypeText] = useState('');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const typewriterFull = t.hiwTypewriterText;
+
+  useEffect(() => {
+    if (step !== 2) { setTypeText(''); return; }
+    let i = 0;
+    setTypeText('');
+    const tick = () => {
+      i++;
+      setTypeText(typewriterFull.slice(0, i));
+      if (i < typewriterFull.length) {
+        timerRef.current = setTimeout(tick, 22);
+      }
+    };
+    timerRef.current = setTimeout(tick, 700);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [step, typewriterFull]);
+
+  const goTo = useCallback((newStep: number) => {
+    setSceneVisible(false);
+    setTimeout(() => { setStep(newStep); setSceneVisible(true); }, 190);
+  }, []);
+
+  const prev = () => { if (step > 0) goTo(step - 1); };
+  const next = () => goTo((step + 1) % TOTAL_STEPS);
+
+  useEffect(() => {
+    const id = setTimeout(() => next(), AUTO_ADVANCE_MS);
+    return () => clearTimeout(id);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
+
+  const titles = [t.hiwStep1Title, t.hiwStep2Title, t.hiwStep3Title, t.hiwStep4Title, t.hiwStep5Title];
+  const descs  = [t.hiwStep1Desc,  t.hiwStep2Desc,  t.hiwStep3Desc,  t.hiwStep4Desc,  t.hiwStep5Desc];
+
+  return (
+    <>
+      <style>{`
+        @keyframes hiwCursor { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes hiwGlow { 0%,100%{box-shadow:0 0 0 0 rgba(64,96,208,0.35)} 50%{box-shadow:0 0 0 5px rgba(64,96,208,0)} }
+      `}</style>
+
+      <div style={{
+        background: 'var(--modal-bg)',
+        border: '0.5px solid var(--modal-border)',
+        borderRadius: 22,
+        boxShadow: 'var(--modal-shadow)',
+        overflow: 'hidden',
+        width: '100%',
+      }}>
+        {/* Scene */}
+        <div style={{
+          height: 210,
+          background: th.sceneBg,
+          position: 'relative',
+          overflow: 'hidden',
+          opacity: sceneVisible ? 1 : 0,
+          transition: 'opacity 190ms ease',
+        }}>
+          <div style={{
+            position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+            background: `radial-gradient(circle, ${th.glow} 0%, transparent 70%)`,
+            filter: 'blur(50px)', top: -40, left: '50%', transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }} />
+
+          {step === 0 && <FormScene th={th} />}
+          {step === 1 && <QuestionsScene th={th} />}
+          {step === 2 && <ConversationScene th={th} typeText={typeText} typewriterFull={typewriterFull} />}
+          {step === 3 && <InsightsScene th={th} />}
+          {step === 4 && <ReportScene th={th} />}
+
+          <div style={{
+            position: 'absolute', top: 13, left: 13,
+            padding: '3px 10px', borderRadius: 999,
+            background: th.badgeBg,
+            border: `0.5px solid ${th.badgeBorder}`,
+            fontSize: 9.5, fontWeight: 700, color: th.badgeText,
+            letterSpacing: '0.5px', textTransform: 'uppercase',
+          }}>
+            {t.hiwStep} {step + 1}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: '18px 22px 22px' }}>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 6 }}>
+            {titles[step]}
+          </h3>
+          <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 18 }}>
+            {descs[step]}
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+              {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => goTo(i)}
+                  aria-label={`Go to step ${i + 1}`}
+                  style={{
+                    width: i === step ? 18 : 6,
+                    height: 6, borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
+                    background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                    transition: 'width 260ms cubic-bezier(.25,1,.5,1), background 260ms ease',
+                  }}
+                />
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              {step > 0 && (
+                <button
+                  onClick={prev}
+                  className="theme-modal-cancel"
+                  style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
+                >
+                  ←
+                </button>
+              )}
+              <button
+                onClick={next}
+                style={{
+                  padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
+                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                  border: 'none', color: '#fff', cursor: 'pointer',
+                  boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
+                }}
+              >
+                {t.hiwNext}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
 // ── Main modal ────────────────────────────────────────────────────────────────
 
 export default function HowItWorksModal({ onClose }: Props) {
