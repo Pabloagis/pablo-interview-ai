@@ -968,20 +968,28 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0 pt-4 px-3">
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
-            <div className="flex flex-col items-center px-6 py-14 w-full">
-              <Tooltip text={t.meetPablo} className="mb-5">
-                <div
-                  className="w-14 h-14 rounded-full overflow-hidden mb-5 cursor-pointer transition-transform hover:scale-105"
-                  style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)', ...emerge2(160, { sc: 0.84, blur: 6, dur: 520 }) }}
-                >
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
+            <div className="flex flex-col items-center px-6 py-10 w-full">
+              {/* Avatar with spinning ring */}
+              <div
+                className="relative mb-5"
+                style={{ width: 96, height: 96, ...emerge2(60, { sc: 0.85, blur: 6, dur: 550 }) }}
+              >
+                <div className="absolute inset-0 rounded-full" style={{
+                  background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                  animation: 'ring-spin 3.5s linear infinite',
+                  padding: 2,
+                }}>
+                  <div className="w-full h-full rounded-full" style={{ background: 'var(--bg-base)' }} />
                 </div>
-              </Tooltip>
-              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...emerge2(240, { tx: -22, blur: 7, dur: 520 }) }}>
+                <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
+                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
+                </div>
+              </div>
+              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...emerge2(160, { tx: -22, blur: 7, dur: 520 }) }}>
                 {t.emptyGreeting}
               </h1>
-              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'var(--text-tertiary)', ...emerge2(320, { tx: 18, blur: 5, dur: 480, maxOp: 0.55 }) }}>
-                {t.emptySubtitle}
+              <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, ...emerge2(240, { ty: 12, blur: 5, dur: 480, maxOp: 0.7 }) }}>
+                {t.intakeSubtitle}
               </p>
               <div className="w-10 h-px mb-6" style={{ background: 'var(--glass-border)' }} />
               <p className="text-xs font-semibold uppercase tracking-widest mb-4" style={{ color: 'var(--text-muted)' }}>
