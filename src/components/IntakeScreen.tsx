@@ -51,7 +51,7 @@ export default function IntakeScreen() {
   const splashRoleRef    = useRef<HTMLParagraphElement>(null);
   const splashDivRef     = useRef<HTMLDivElement>(null);
   const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
-  const splashVisionRef  = useRef<HTMLParagraphElement>(null);
+  const splashVisionRef  = useRef<HTMLDivElement>(null);
   const vignetteRef  = useRef<HTMLDivElement>(null);
   const lightSweepRef = useRef<HTMLDivElement>(null);
   const splashRanRef     = useRef(false);
@@ -144,12 +144,12 @@ export default function IntakeScreen() {
         vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
       }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
 
-      // 1300ms — fade out before Pablo identity appears
+      // 1800ms — fade out before Pablo identity appears (500ms later than before)
       animate(p => {
         vision.style.opacity   = (1 - p).toFixed(4);
         vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
         vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
-      }, 400, 1300, eIO, () => { vision.style.display = 'none'; });
+      }, 400, 1800, eIO, () => { vision.style.display = 'none'; });
     }
 
     // ── Phase 2: Pablo identity (all original timings + 1600ms) ──────────────
@@ -641,24 +641,49 @@ export default function IntakeScreen() {
           }} />
 
           {/* Vision phrase — HERO, shown first, absolutely centered */}
-          <p ref={splashVisionRef} style={{
+          <div ref={splashVisionRef} style={{
             position: 'absolute',
             top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            fontSize: 19,
-            fontWeight: 600,
-            color: 'var(--text-primary)',
-            letterSpacing: '-0.01em',
-            lineHeight: 1.55,
-            maxWidth: 300,
-            width: '80%',
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            maxWidth: 300, width: '82%',
             textAlign: 'center',
             opacity: 0,
             pointerEvents: 'none',
             zIndex: 2,
           }}>
-            {t.visionTitle}
-          </p>
+            {/* Micro wordmark — orients the viewer */}
+            <span style={{
+              fontSize: 8.5,
+              fontWeight: 600,
+              letterSpacing: '0.28em',
+              textTransform: 'uppercase',
+              color: 'var(--splash-wm)',
+              marginBottom: 12,
+            }}>
+              InterviewMind
+            </span>
+
+            {/* Accent line */}
+            <span style={{
+              display: 'block',
+              width: 32, height: 1,
+              background: 'linear-gradient(90deg, transparent, var(--accent-primary), transparent)',
+              marginBottom: 16,
+              opacity: 0.7,
+            }} />
+
+            {/* Main phrase — gradient treatment matching the name */}
+            <p className="gradient-text" style={{
+              fontSize: 17,
+              fontWeight: 700,
+              letterSpacing: '-0.02em',
+              lineHeight: 1.45,
+              margin: 0,
+            }}>
+              {t.visionTitle}
+            </p>
+          </div>
 
           <div style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
 
