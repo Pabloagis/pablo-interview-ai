@@ -59,6 +59,10 @@ export type Translations = {
   nameError: string;
   intakeSubtitle: string;
   timeHint: string;
+  contextWarningTitle: string;
+  contextWarningBody: string;
+  contextWarningConfirm: string;
+  contextWarningCancel: string;
   // ChatPanel
   emptyGreeting: string;
   emptySubtitle: string;
@@ -231,6 +235,10 @@ const EN: Translations = {
   nameError: 'Please enter your name',
   intakeSubtitle: 'SaaS & Hospitality Tech | Helping hospitality grow through smart solutions',
   timeHint: '⏱ Usually takes 3–5 minutes',
+  contextWarningTitle: 'Missing context',
+  contextWarningBody: 'Without company and role Pablo can\'t tailor his answers to your specific search.',
+  contextWarningConfirm: 'Continue anyway',
+  contextWarningCancel: 'Add details',
   emptyGreeting: "Hi, I'm Pablo Agis.",
   emptySubtitle: 'Ask me anything!',
   tryAsking: 'Try asking',
@@ -435,6 +443,10 @@ const ES: Translations = {
   nameError: 'Por favor introduce tu nombre',
   intakeSubtitle: 'SaaS y Tecnología Hotelera | Ayudando a la hostelería a crecer con soluciones inteligentes',
   timeHint: '⏱ Suele durar entre 3 y 5 minutos',
+  contextWarningTitle: 'Contexto incompleto',
+  contextWarningBody: 'Sin empresa y rol Pablo no puede personalizar sus respuestas a tu búsqueda concreta.',
+  contextWarningConfirm: 'Continuar de todas formas',
+  contextWarningCancel: 'Añadir detalles',
   emptyGreeting: 'Hola, soy Pablo Agis.',
   emptySubtitle: '¡Pregúntame lo que quieras!',
   tryAsking: 'Prueba preguntando',
@@ -639,6 +651,10 @@ const IT: Translations = {
   nameError: 'Inserisci il tuo nome',
   intakeSubtitle: 'SaaS e Tecnologia Alberghiera | Aiutare l\'ospitalità a crescere con soluzioni intelligenti',
   timeHint: '⏱ Di solito dura 3–5 minuti',
+  contextWarningTitle: 'Contesto mancante',
+  contextWarningBody: 'Senza azienda e ruolo Pablo non può personalizzare le risposte alla tua ricerca.',
+  contextWarningConfirm: 'Continua comunque',
+  contextWarningCancel: 'Aggiungi dettagli',
   emptyGreeting: 'Ciao, sono Pablo Agis.',
   emptySubtitle: 'Chiedimi quello che vuoi!',
   tryAsking: 'Prova a chiedere',
@@ -843,6 +859,10 @@ const PT: Translations = {
   nameError: 'Por favor introduza o seu nome',
   intakeSubtitle: 'SaaS e Tecnologia Hoteleira | Ajudando a hotelaria a crescer com soluções inteligentes',
   timeHint: '⏱ Geralmente demora 3–5 minutos',
+  contextWarningTitle: 'Contexto incompleto',
+  contextWarningBody: 'Sem empresa e cargo Pablo não consegue personalizar as respostas à sua pesquisa.',
+  contextWarningConfirm: 'Continuar mesmo assim',
+  contextWarningCancel: 'Adicionar detalhes',
   emptyGreeting: 'Olá, sou o Pablo Agis.',
   emptySubtitle: 'Pergunte o que quiser!',
   tryAsking: 'Experimente perguntar',

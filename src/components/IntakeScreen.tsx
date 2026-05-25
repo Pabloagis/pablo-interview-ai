@@ -33,6 +33,8 @@ export default function IntakeScreen() {
   const [avatarOpen,    setAvatarOpen]      = useState(false);
   const [splashDone,    setSplashDone]      = useState(false);
   const [pageReady,     setPageReady]       = useState(false);
+  const [showContextWarn, setShowContextWarn] = useState(false);
+  const companyInputRef = useRef<HTMLInputElement>(null);
 
   // Splash refs
   const splashOverlayRef = useRef<HTMLDivElement>(null);
@@ -261,6 +263,13 @@ export default function IntakeScreen() {
   const handleStart = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Gate: require company + role if not already confirmed
+    if (!showContextWarn && (!company.trim() || !role.trim())) {
+      setShowContextWarn(true);
+      return;
+    }
+    setShowContextWarn(false);
     setIsLoading(true);
     try {
       const body: SessionCreateRequest & { email:string; consentToEmail:boolean } = {
@@ -449,19 +458,80 @@ export default function IntakeScreen() {
                   <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
                     {t.labelCompany}
                   </label>
-                  <input type="text" value={company} onChange={(e) => setCompany(e.target.value)} className="input-glass" maxLength={100} autoComplete="organization" />
+                  <input ref={companyInputRef} type="text" value={company} onChange={(e) => { setCompany(e.target.value); if (showContextWarn) setShowContextWarn(false); }} className="input-glass" maxLength={100} autoComplete="organization" />
                 </div>
                 <div className="flex flex-col">
                   <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
                     {t.labelRole}
                   </label>
-                  <input type="text" value={role} onChange={(e) => setRole(e.target.value)} className="input-glass" maxLength={100} />
+                  <input type="text" value={role} onChange={(e) => { setRole(e.target.value); if (showContextWarn) setShowContextWarn(false); }} className="input-glass" maxLength={100} />
                 </div>
               </div>
             </div>
           </div>
 
           {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginBottom:10 }}>{error}</p>}
+
+          {/* ── Context warning ── */}
+          <div style={{
+            maxHeight: showContextWarn ? 120 : 0,
+            overflow: 'hidden',
+            transition: 'max-height 320ms cubic-bezier(0.25,1,0.5,1)',
+          }}>
+            <div style={{
+              marginBottom: 12,
+              padding: '11px 14px',
+              borderRadius: 12,
+              background: 'rgba(240,160,0,0.08)',
+              border: '0.5px solid rgba(240,160,0,0.28)',
+              display: 'flex', flexDirection: 'column', gap: 8,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="rgba(200,130,0,0.9)" strokeWidth={2}
+                  strokeLinecap="round" strokeLinejoin="round"
+                  style={{ flexShrink: 0, marginTop: 1 }}
+                >
+                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                </svg>
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 2 }}>
+                    {t.contextWarningTitle}
+                  </p>
+                  <p style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                    {t.contextWarningBody}
+                  </p>
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowContextWarn(false);
+                    setTimeout(() => companyInputRef.current?.focus(), 50);
+                  }}
+                  style={{
+                    padding: '5px 12px', fontSize: 12, fontWeight: 500, borderRadius: 8, cursor: 'pointer',
+                    background: 'var(--glass-1)', border: '0.5px solid var(--glass-border)',
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  {t.contextWarningCancel}
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '5px 12px', fontSize: 12, fontWeight: 600, borderRadius: 8, cursor: 'pointer',
+                    background: 'rgba(200,130,0,0.15)', border: '0.5px solid rgba(200,130,0,0.35)',
+                    color: 'rgba(180,110,0,0.95)',
+                  }}
+                >
+                  {t.contextWarningConfirm}
+                </button>
+              </div>
+            </div>
+          </div>
 
           {/* ── CTA Button ── */}
           <div style={emerge(820, { sc: 0.9, blur: 4, dur: 500 })}>
