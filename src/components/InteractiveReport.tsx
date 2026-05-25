@@ -305,11 +305,6 @@ export default function InteractiveReport({ report, recruiterName, messages = []
   return (
     <>
       <style>{`
-        @keyframes irRingSpinOnce {
-          0%   { transform: rotate(0deg);   opacity: 1; }
-          75%  { opacity: 1; }
-          100% { transform: rotate(360deg); opacity: 0; }
-        }
         @keyframes irGlow { 0%,100%{opacity:0.4} 50%{opacity:0.75} }
       `}</style>
 
@@ -358,37 +353,31 @@ export default function InteractiveReport({ report, recruiterName, messages = []
 
             {/* Avatar with ring */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-              <div style={{ position: 'relative', width: 62, height: 62 }}>
-                <div style={{
-                  position: 'absolute', inset: 0, borderRadius: '50%',
-                  background: 'conic-gradient(from 0deg, var(--accent-primary) 0%, var(--accent-purple) 55%, transparent 55%)',
-                  animation: 'irRingSpinOnce 2s cubic-bezier(0.4,0,0.6,1) 1 forwards',
-                }} />
-                <div style={{
-                  position: 'absolute', inset: 3, borderRadius: '50%',
-                  background: 'var(--bg-elevated)', overflow: 'hidden',
+              <div style={{ position: 'relative', width: 96, height: 96 }}>
+                <div className="absolute inset-0 rounded-full" style={{
+                  background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                  animation: 'ring-spin 3.5s linear infinite',
+                  padding: 2,
                 }}>
+                  <div className="w-full h-full rounded-full" style={{ background: 'var(--bg-elevated)' }} />
+                </div>
+                <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/assets/pablo-avatar.jpg"
                     alt="Pablo Agis Burgos"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 15%', borderRadius: '50%' }}
+                    className="w-full h-full object-cover object-top"
                   />
                 </div>
               </div>
             </div>
 
             {/* Name + subtitle */}
-            <div style={{
-              fontSize: 17, fontWeight: 700, letterSpacing: '-0.01em',
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-              WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text', marginBottom: 4,
-            }}>
+            <h2 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', marginBottom: 4 }}>
               Pablo Agis Burgos
-            </div>
-            <div style={{ fontSize: 11, color: 'var(--text-tertiary)', marginBottom: 20 }}>
-              SaaS · Hospitality Tech
+            </h2>
+            <div style={{ fontSize: 12, color: 'var(--splash-status)', letterSpacing: '0.04em', marginBottom: 20 }}>
+              SaaS · Hospitality Tech · 5 idiomas
             </div>
 
             {/* Divider */}
