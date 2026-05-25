@@ -85,7 +85,7 @@ export default function Footer({ variant = 'full' }: FooterProps) {
           </a>
         </div>
 
-        <p style={{ fontSize: 11.5, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 16, lineHeight: 1.6, opacity: 0.7 }}>
+        <p style={{ fontSize: 13, fontStyle: 'italic', fontWeight: 500, color: 'var(--text-secondary)', marginTop: 20, lineHeight: 1.65 }}>
           {t.visionClosing}
         </p>
       </footer>
