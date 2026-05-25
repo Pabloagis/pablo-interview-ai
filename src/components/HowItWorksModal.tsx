@@ -385,12 +385,26 @@ export function HowItWorksCard() {
   const { isDayMode } = useTheme();
   const th = isDayMode ? dayTheme() : nightTheme();
 
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return localStorage.getItem('im_hiw_collapsed') === '1';
+  });
+
   const [step, setStep] = useState(0);
   const [sceneVisible, setSceneVisible] = useState(true);
   const [typeText, setTypeText] = useState('');
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const typewriterFull = t.hiwTypewriterText;
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    try {
+      if (next) localStorage.setItem('im_hiw_collapsed', '1');
+      else localStorage.removeItem('im_hiw_collapsed');
+    } catch {}
+  };
 
   useEffect(() => {
     if (step !== 2) { setTypeText(''); return; }
@@ -415,11 +429,13 @@ export function HowItWorksCard() {
   const prev = () => { if (step > 0) goTo(step - 1); };
   const next = () => goTo((step + 1) % TOTAL_STEPS);
 
+  // Pause auto-advance while collapsed
   useEffect(() => {
+    if (collapsed) return;
     const id = setTimeout(() => next(), AUTO_ADVANCE_MS);
     return () => clearTimeout(id);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [step]);
+  }, [step, collapsed]);
 
   const titles = [t.hiwStep1Title, t.hiwStep2Title, t.hiwStep3Title, t.hiwStep4Title, t.hiwStep5Title];
   const descs  = [t.hiwStep1Desc,  t.hiwStep2Desc,  t.hiwStep3Desc,  t.hiwStep4Desc,  t.hiwStep5Desc];
@@ -435,94 +451,161 @@ export function HowItWorksCard() {
         background: 'var(--modal-bg)',
         border: '0.5px solid var(--modal-border)',
         borderRadius: 22,
-        boxShadow: 'var(--modal-shadow)',
+        boxShadow: collapsed ? 'none' : 'var(--modal-shadow)',
         overflow: 'hidden',
         width: '100%',
+        transition: 'box-shadow 300ms ease',
       }}>
-        {/* Scene */}
-        <div style={{
-          height: 210,
-          background: th.sceneBg,
-          position: 'relative',
-          overflow: 'hidden',
-          opacity: sceneVisible ? 1 : 0,
-          transition: 'opacity 190ms ease',
-        }}>
-          <div style={{
-            position: 'absolute', width: 200, height: 200, borderRadius: '50%',
-            background: `radial-gradient(circle, ${th.glow} 0%, transparent 70%)`,
-            filter: 'blur(50px)', top: -40, left: '50%', transform: 'translateX(-50%)',
-            pointerEvents: 'none',
-          }} />
 
-          {step === 0 && <FormScene th={th} />}
-          {step === 1 && <QuestionsScene th={th} />}
-          {step === 2 && <ConversationScene th={th} typeText={typeText} typewriterFull={typewriterFull} />}
-          {step === 3 && <InsightsScene th={th} />}
-          {step === 4 && <ReportScene th={th} />}
+        {/* ── Collapse toggle header ── */}
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          aria-label={collapsed ? 'Expand demo' : 'Minimise demo'}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            width: '100%', padding: '11px 14px 11px 16px',
+            background: 'none', border: 'none', cursor: 'pointer',
+            textAlign: 'left',
+            borderBottom: collapsed ? 'none' : '0.5px solid var(--modal-border)',
+          }}
+        >
+          {/* Info icon */}
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke="var(--accent-primary)" strokeWidth={1.8}
+            strokeLinecap="round" strokeLinejoin="round"
+            style={{ flexShrink: 0, opacity: 0.75 }}
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
 
-          <div style={{
-            position: 'absolute', top: 13, left: 13,
-            padding: '3px 10px', borderRadius: 999,
-            background: th.badgeBg,
-            border: `0.5px solid ${th.badgeBorder}`,
-            fontSize: 9.5, fontWeight: 700, color: th.badgeText,
-            letterSpacing: '0.5px', textTransform: 'uppercase',
-          }}>
-            {t.hiwStep} {step + 1}
-          </div>
-        </div>
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--modal-title)', letterSpacing: '0.01em' }}>
+            {t.howItWorksTitle}
+          </span>
 
-        {/* Content */}
-        <div style={{ padding: '18px 22px 22px' }}>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 6 }}>
-            {titles[step]}
-          </h3>
-          <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 18 }}>
-            {descs[step]}
-          </p>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+          {/* Step dots — visible when collapsed so the user sees progress */}
+          {collapsed && (
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginRight: 6 }}>
               {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  aria-label={`Go to step ${i + 1}`}
-                  style={{
-                    width: i === step ? 18 : 6,
-                    height: 6, borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
-                    background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
-                    transition: 'width 260ms cubic-bezier(.25,1,.5,1), background 260ms ease',
-                  }}
-                />
+                <span key={i} style={{
+                  width: i === step ? 14 : 5, height: 5, borderRadius: 3,
+                  background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                  display: 'inline-block',
+                  transition: 'width 260ms ease',
+                }} />
               ))}
             </div>
+          )}
 
-            <div style={{ display: 'flex', gap: 8 }}>
-              {step > 0 && (
+          {/* Chevron */}
+          <svg
+            width="14" height="14" viewBox="0 0 24 24" fill="none"
+            stroke="var(--text-tertiary)" strokeWidth={2}
+            strokeLinecap="round" strokeLinejoin="round"
+            style={{
+              flexShrink: 0,
+              transform: collapsed ? 'rotate(0deg)' : 'rotate(180deg)',
+              transition: 'transform 300ms cubic-bezier(0.25,1,0.5,1)',
+            }}
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+
+        {/* ── Collapsible body ── */}
+        <div style={{
+          maxHeight: collapsed ? 0 : 520,
+          overflow: 'hidden',
+          transition: 'max-height 380ms cubic-bezier(0.25,1,0.5,1)',
+        }}>
+          {/* Scene */}
+          <div style={{
+            height: 210,
+            background: th.sceneBg,
+            position: 'relative',
+            overflow: 'hidden',
+            opacity: sceneVisible ? 1 : 0,
+            transition: 'opacity 190ms ease',
+          }}>
+            <div style={{
+              position: 'absolute', width: 200, height: 200, borderRadius: '50%',
+              background: `radial-gradient(circle, ${th.glow} 0%, transparent 70%)`,
+              filter: 'blur(50px)', top: -40, left: '50%', transform: 'translateX(-50%)',
+              pointerEvents: 'none',
+            }} />
+
+            {step === 0 && <FormScene th={th} />}
+            {step === 1 && <QuestionsScene th={th} />}
+            {step === 2 && <ConversationScene th={th} typeText={typeText} typewriterFull={typewriterFull} />}
+            {step === 3 && <InsightsScene th={th} />}
+            {step === 4 && <ReportScene th={th} />}
+
+            <div style={{
+              position: 'absolute', top: 13, left: 13,
+              padding: '3px 10px', borderRadius: 999,
+              background: th.badgeBg,
+              border: `0.5px solid ${th.badgeBorder}`,
+              fontSize: 9.5, fontWeight: 700, color: th.badgeText,
+              letterSpacing: '0.5px', textTransform: 'uppercase',
+            }}>
+              {t.hiwStep} {step + 1}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div style={{ padding: '18px 22px 22px' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 6 }}>
+              {titles[step]}
+            </h3>
+            <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 18 }}>
+              {descs[step]}
+            </p>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                {Array.from({ length: TOTAL_STEPS }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goTo(i)}
+                    aria-label={`Go to step ${i + 1}`}
+                    style={{
+                      width: i === step ? 18 : 6,
+                      height: 6, borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
+                      background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                      transition: 'width 260ms cubic-bezier(.25,1,.5,1), background 260ms ease',
+                    }}
+                  />
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: 8 }}>
+                {step > 0 && (
+                  <button
+                    onClick={prev}
+                    className="theme-modal-cancel"
+                    style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
+                  >
+                    ←
+                  </button>
+                )}
                 <button
-                  onClick={prev}
-                  className="theme-modal-cancel"
-                  style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
+                  onClick={next}
+                  style={{
+                    padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
+                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                    border: 'none', color: '#fff', cursor: 'pointer',
+                    boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
+                  }}
                 >
-                  ←
+                  {t.hiwNext}
                 </button>
-              )}
-              <button
-                onClick={next}
-                style={{
-                  padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
-                  background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                  border: 'none', color: '#fff', cursor: 'pointer',
-                  boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
-                }}
-              >
-                {t.hiwNext}
-              </button>
+              </div>
             </div>
           </div>
         </div>
+
       </div>
     </>
   );
