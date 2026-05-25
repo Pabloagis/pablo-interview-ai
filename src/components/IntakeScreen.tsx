@@ -30,6 +30,7 @@ export default function IntakeScreen() {
   const [isLoading,     setIsLoading]       = useState(false);
   const [error,         setError]           = useState('');
   const [resumeSession, setResumeSession]   = useState<ResumeState>(null);
+  const [avatarOpen,    setAvatarOpen]      = useState(false);
   const [splashDone,    setSplashDone]      = useState(false);
   const [pageReady,     setPageReady]       = useState(false);
 
@@ -315,10 +316,11 @@ export default function IntakeScreen() {
 
       {/* ── Main page content ── */}
       <div
-        className="relative min-h-screen flex flex-col items-center px-4 py-10 w-full overflow-x-hidden"
+        className="relative min-h-screen flex flex-col items-center px-4 py-10 w-full max-w-full overflow-x-hidden"
         style={{
           opacity: pageReady ? 1 : 0,
           transition: 'opacity 500ms ease 100ms',
+          contain: 'layout',
         }}
       >
         {/* Language switcher */}
@@ -356,13 +358,37 @@ export default function IntakeScreen() {
 
         <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[600px]">
 
+          {/* ── Hero header ── */}
+          <div className="flex flex-col items-center gap-3 mb-7 text-center">
+            <button type="button" onClick={() => setAvatarOpen(true)}
+              className="relative cursor-zoom-in"
+              style={{ width: 112, height: 112, ...emerge(60, { sc: 0.85, blur: 6, dur: 550 }) }}>
+              <div className="absolute inset-0 rounded-full" style={{
+                background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
+                animation: 'ring-spin 3.5s linear infinite',
+                padding: 2,
+              }}>
+                <div className="w-full h-full rounded-full" style={{ background:'var(--bg-base)' }} />
+              </div>
+              <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
+                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
+              </div>
+            </button>
+            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...emerge(140, { tx: -24, blur: 8, dur: 550 }) }}>
+              {t.emptyGreeting}
+            </h1>
+            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
+              {t.intakeSubtitle}
+            </p>
+          </div>
+
           {/* ── How it works ── */}
-          <div className="mb-5" style={emerge(40, { sc: 0.88, blur: 4, dur: 450 })}>
+          <div className="mb-5" style={emerge(300, { sc: 0.88, blur: 4, dur: 450 })}>
             <HowItWorksCard />
           </div>
 
           {/* ── Vision card ── */}
-          <div className="glass p-5 mb-3 text-center" style={emerge(120, { ty: 24, blur: 8, dur: 580 })}>
+          <div className="glass p-5 mb-3 text-center" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
             <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, marginBottom:10 }}>
               {t.visionTitle}
             </p>
@@ -376,11 +402,11 @@ export default function IntakeScreen() {
           </div>
 
           {/* ── Divider ── */}
-          <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(200, { sc: 0.9, blur: 2, dur: 400 }) }} />
+          <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(460, { sc: 0.9, blur: 2, dur: 400 }) }} />
 
 
           {/* ── Form ── */}
-          <div className="glass p-5 mb-2.5" style={emerge(320, { ty: 28, blur: 8, dur: 560 })}>
+          <div className="glass p-5 mb-2.5" style={emerge(720, { ty: 28, blur: 8, dur: 560 })}>
             <div className="flex flex-col gap-3">
               <div>
                 <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
@@ -438,7 +464,7 @@ export default function IntakeScreen() {
           {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginBottom:10 }}>{error}</p>}
 
           {/* ── CTA Button ── */}
-          <div style={emerge(420, { sc: 0.9, blur: 4, dur: 500 })}>
+          <div style={emerge(820, { sc: 0.9, blur: 4, dur: 500 })}>
             <p className="text-center mb-3" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px' }}>
               {t.timeHint}
             </p>
@@ -470,6 +496,15 @@ export default function IntakeScreen() {
 
         <Footer />
       </div>
+
+      {/* ── Avatar zoom overlay ── */}
+      {avatarOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{ background:'rgba(0,0,0,0.6)' }} onClick={() => setAvatarOpen(false)}>
+          <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl animate-scale-in">
+            <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
+          </div>
+        </div>
+      )}
 
       {/* ── SPLASH 1 ── */}
       {!splashDone && (

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     const { data: session, error: fetchError } = await supabase
       .from('sessions')
-      .select('id, recruiter_name, company, role, email, consent_to_email, messages')
+      .select('id, recruiter_name, company, role, email, consent_to_email, messages, email_sent_at, email_msg_count')
       .eq('id', sessionId)
       .single();
 
@@ -37,6 +37,17 @@ export async function POST(request: NextRequest) {
     }
 
     const messages = session.messages as Array<{ role: string; content: string }> | null;
+    const currentMsgCount = (messages ?? []).filter(m => m.role === 'user').length;
+
+    // Skip if already sent and no new user messages since last send
+    if (session.email_sent_at) {
+      const prevCount = (session as { email_msg_count?: number }).email_msg_count ?? 0;
+      if (currentMsgCount <= prevCount) {
+        console.log(`[send-followup] Skipped — no new content (${currentMsgCount} msgs, last sent at ${prevCount})`);
+        return NextResponse.json({ success: true, skipped: true });
+      }
+    }
+
     const transcript =
       messages && messages.length > 0
         ? messages
@@ -62,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     await supabase
       .from('sessions')
-      .update({ email_sent_at: new Date().toISOString(), email_html: html })
+      .update({ email_sent_at: new Date().toISOString(), email_html: html, email_msg_count: currentMsgCount })
       .eq('id', sessionId);
 
     console.log(`[send-followup] Done. emailId: ${emailId}`);

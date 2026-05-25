@@ -110,6 +110,10 @@ ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_sent_at TIMESTAMPTZ;
 -- Added: email preview HTML storage (2026-05-21)
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_html TEXT;
 
+-- Added: user message count at time of last email send (2026-05-25)
+-- Used to skip resending if no new messages since last email
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS email_msg_count INTEGER;
+
 -- Added: per-message event log for real-time monitoring (2026-05-22)
 -- Stores every message as it is sent, with denormalized session context.
 CREATE TABLE IF NOT EXISTS message_events (

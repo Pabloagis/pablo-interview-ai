@@ -146,7 +146,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [insightsReport, setInsightsReport] = useState<ReportData | null>(null);
   const [insightsFetching, setInsightsFetching] = useState(false);
   const [insightsError, setInsightsError] = useState<string | null>(null);
-  const [insightsUnlocked, setInsightsUnlocked] = useState(false);
+  const [insightsUnlocked, setInsightsUnlocked] = useState(() => {
+    try { return !!localStorage.getItem(`im_insights_${sessionId}`); } catch { return false; }
+  });
   const insightsCacheRef = useRef<{ report: ReportData; msgCount: number } | null>(null);
 
   // Splash 2 refs
@@ -462,6 +464,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const openInsights = useCallback(async () => {
     setInsightsUnlocked(true);
+    try { localStorage.setItem(`im_insights_${sessionId}`, '1'); } catch {}
     setInsightsOpen(true);
     setInsightsError(null);
 
@@ -904,11 +907,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       <div
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
+          height: '100dvh',
           opacity: chatPageEnter ? 1 : 0,
           transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1) 60ms',
         }}
       >
-        <div style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
+        <div className="shrink-0" style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
           <Header
             recruiterName={context.recruiterName}
             company={context.company}
