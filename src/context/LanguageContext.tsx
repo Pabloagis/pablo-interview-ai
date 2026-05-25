@@ -242,7 +242,7 @@ const EN: Translations = {
   contextWarningBody: 'Without company and role Pablo can\'t tailor his answers to your specific search.',
   contextWarningConfirm: 'Continue anyway',
   contextWarningCancel: 'Add details',
-  emptyGreeting: "Hi, I'm Pablo Agis.",
+  emptyGreeting: "Hi, I'm Pablo Agis",
   emptySubtitle: 'Ask me anything!',
   tryAsking: 'Try asking',
   q1: 'What was your most recent role?',

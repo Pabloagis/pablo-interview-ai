@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
+import ThemeToggleButton from './ThemeToggleButton';
 import HowItWorksModal from './HowItWorksModal';
 import WhatItIsModal from './WhatItIsModal';
 import Footer from './Footer';
@@ -411,8 +412,9 @@ export default function IntakeScreen() {
           contain: 'layout',
         }}
       >
-        {/* Language switcher */}
-        <div className="absolute top-3 right-3 z-10" style={emerge(0, { ty: -20, blur: 5, dur: 500 })}>
+        {/* Top-right controls */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5" style={emerge(0, { ty: -20, blur: 5, dur: 500 })}>
+          <ThemeToggleButton />
           <LanguageSwitcher />
         </div>
 
