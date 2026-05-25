@@ -138,7 +138,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [listenMode, setListenMode] = useState(false);
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
   const [chatPageEnter, setChatPageEnter] = useState(false);
@@ -490,12 +490,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     }
   }, [sessionId]);
 
-  const playResponse = useCallback(async (text: string) => {
+  const playResponse = useCallback(async (text: string, messageId?: string) => {
     if (currentAudioRef.current) {
       currentAudioRef.current.pause();
       currentAudioRef.current = null;
     }
     setIsPlayingAudio(true);
+    if (messageId) setPlayingMessageId(messageId);
     try {
       const res = await fetch('/api/tts', {
         method: 'POST',
@@ -507,17 +508,19 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       const url = URL.createObjectURL(blob);
       const audio = new Audio(url);
       currentAudioRef.current = audio;
-      audio.onended = () => { URL.revokeObjectURL(url); setIsPlayingAudio(false); currentAudioRef.current = null; };
-      audio.onerror = () => { setIsPlayingAudio(false); currentAudioRef.current = null; };
+      audio.onended = () => { URL.revokeObjectURL(url); setIsPlayingAudio(false); setPlayingMessageId(null); currentAudioRef.current = null; };
+      audio.onerror = () => { setIsPlayingAudio(false); setPlayingMessageId(null); currentAudioRef.current = null; };
       await audio.play();
     } catch {
       setIsPlayingAudio(false);
+      setPlayingMessageId(null);
     }
   }, []);
 
   const stopAudio = useCallback(() => {
     if (currentAudioRef.current) { currentAudioRef.current.pause(); currentAudioRef.current = null; }
     setIsPlayingAudio(false);
+    setPlayingMessageId(null);
   }, []);
 
   // Keep refs in sync
@@ -701,9 +704,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               setMessages((prev) => [...prev, assistantMessage]);
               setStreamingText('');
               setIsStreaming(false);
-              if (voiceTriggeredRef.current || listenMode) {
+              if (voiceTriggeredRef.current) {
                 voiceTriggeredRef.current = false;
-                playResponse(accumulated);
+                playResponse(accumulated, assistantMessage.id);
               }
               return;
             } else if (event.type === 'error' && event.message) {
@@ -1017,7 +1020,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           )}
 
           {messages.map((msg) => (
-            <MessageBubble key={msg.id} message={msg} recruiterName={context.recruiterName} />
+            <MessageBubble
+              key={msg.id}
+              message={msg}
+              recruiterName={context.recruiterName}
+              onPlay={msg.role === 'assistant' ? () => playResponse(msg.content, msg.id) : undefined}
+              isPlaying={playingMessageId === msg.id}
+              onStop={stopAudio}
+            />
           ))}
 
           {isStreaming && (
@@ -1143,18 +1153,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
             </span>
             <div className="flex gap-3 items-center">
-              <Tooltip text={listenMode ? t.listenModeOn : t.listenModeOff}>
-                <button
-                  onClick={() => { if (listenMode && isPlayingAudio) stopAudio(); setListenMode((v) => !v); }}
-                  aria-label={listenMode ? 'Disable listen mode' : 'Enable listen mode'}
-                  className="transition-colors"
-                  style={{ color: listenMode ? 'var(--accent-mid)' : 'var(--util-color)' }}
-                >
-                  <svg className="w-4 h-4" fill={listenMode ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
-                  </svg>
-                </button>
-              </Tooltip>
               <Tooltip text={t.downloadTranscript}>
                 <button
                   onClick={handleDownloadTranscript}

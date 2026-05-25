@@ -7,6 +7,9 @@ import { formatTimestamp } from '@/lib/utils';
 interface MessageBubbleProps {
   message: Message;
   recruiterName?: string;
+  onPlay?: () => void;
+  isPlaying?: boolean;
+  onStop?: () => void;
 }
 
 function getInitials(name?: string): string {
@@ -17,7 +20,7 @@ function getInitials(name?: string): string {
     : (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export default function MessageBubble({ message, recruiterName }: MessageBubbleProps) {
+export default function MessageBubble({ message, recruiterName, onPlay, isPlaying, onStop }: MessageBubbleProps) {
   const isUser = message.role === 'user';
   const [avatarOpen, setAvatarOpen] = useState(false);
 
@@ -54,8 +57,27 @@ export default function MessageBubble({ message, recruiterName }: MessageBubbleP
           >
             {message.content}
           </div>
-          <span className="text-xs mt-1 px-1" style={{ color: 'var(--timestamp)' }}>
+          <span className="text-xs mt-1 px-1 flex items-center gap-1.5" style={{ color: 'var(--timestamp)' }}>
             {isUser ? 'You' : 'Pablo'} · {formatTimestamp(message.createdAt)}
+            {!isUser && onPlay && (
+              <button
+                onClick={isPlaying ? onStop : onPlay}
+                aria-label={isPlaying ? 'Stop audio' : 'Play audio'}
+                className="flex items-center transition-opacity opacity-40 hover:opacity-80 active:scale-90"
+                style={{ color: isPlaying ? 'var(--accent-mid)' : 'inherit' }}
+              >
+                {isPlaying ? (
+                  <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="5" width="4" height="14" rx="1" />
+                    <rect x="14" y="5" width="4" height="14" rx="1" />
+                  </svg>
+                ) : (
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
+                  </svg>
+                )}
+              </button>
+            )}
           </span>
         </div>
 
