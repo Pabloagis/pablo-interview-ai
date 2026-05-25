@@ -150,7 +150,6 @@ export type Translations = {
   // ChatPanel extras
   endReminderPrefix: string;
   endReminderSuffix: string;
-  reminderDismiss: string;
   listenModeOn: string;
   listenModeOff: string;
   // Exit intent modal
@@ -364,7 +363,6 @@ const EN: Translations = {
   privacyContactP: 'For any privacy-related questions, reach out directly:',
   endReminderPrefix: 'Click',
   endReminderSuffix: 'when done — get Pablo\'s CV & a full summary sent to your inbox.',
-  reminderDismiss: 'Continue chatting',
   listenModeOn: 'Listen mode on — click to disable',
   listenModeOff: 'Listen mode off — click to hear all responses',
   exitIntentTitle: 'Before you go…',
@@ -573,7 +571,6 @@ const ES: Translations = {
   privacyContactP: 'Para cualquier consulta relacionada con la privacidad, contacta directamente:',
   endReminderPrefix: 'Haz clic en',
   endReminderSuffix: 'cuando termines — recibe el CV de Pablo y un resumen completo en tu correo.',
-  reminderDismiss: 'Continuar conversando',
   listenModeOn: 'Modo escucha activado — haz clic para desactivar',
   listenModeOff: 'Modo escucha desactivado — haz clic para escuchar todas las respuestas',
   exitIntentTitle: 'Antes de irte…',
@@ -782,7 +779,6 @@ const IT: Translations = {
   privacyContactP: 'Per qualsiasi domanda relativa alla privacy, contatta direttamente:',
   endReminderPrefix: 'Clicca su',
   endReminderSuffix: 'quando hai finito — ricevi il CV di Pablo e un riepilogo completo nella tua casella.',
-  reminderDismiss: 'Continua a chattare',
   listenModeOn: 'Modalità ascolto attiva — clicca per disattivare',
   listenModeOff: 'Modalità ascolto disattiva — clicca per ascoltare tutte le risposte',
   exitIntentTitle: 'Prima di andare…',
@@ -991,7 +987,6 @@ const PT: Translations = {
   privacyContactP: 'Para qualquer questão relacionada com a privacidade, contacte diretamente:',
   endReminderPrefix: 'Clique em',
   endReminderSuffix: 'quando terminar — receba o CV de Pablo e um resumo completo no seu e-mail.',
-  reminderDismiss: 'Continuar conversando',
   listenModeOn: 'Modo de escuta ativo — clique para desativar',
   listenModeOff: 'Modo de escuta inativo — clique para ouvir todas as respostas',
   exitIntentTitle: 'Antes de sair…',

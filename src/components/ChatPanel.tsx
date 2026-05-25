@@ -433,15 +433,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   dismissPersistentReminderRef.current = () => {
     if (!reminderPersistentRef.current) return;
-    dismissReminder();
-  };
-
-  const dismissReminder = useCallback(() => {
-    if (reminderDismissRef.current) clearTimeout(reminderDismissRef.current);
     reminderPersistentRef.current = false;
     setReminderState('fading');
-    setTimeout(() => setReminderState('hidden'), 300);
-  }, []);
+    setTimeout(() => setReminderState('hidden'), 350);
+  };
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     const id = generateId();
@@ -1186,56 +1181,32 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           </div>
         </div>
 
-        {/* Insights reminder modal */}
+        {/* End interview reminder */}
         {reminderState !== 'hidden' && !interviewEnded && (
-          <div
-            className={`fixed inset-0 z-40 flex items-center justify-center transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-            style={{ background: 'rgba(0,0,0,0.42)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
-            onClick={dismissReminder}
-          >
+          <div className="fixed top-[58px] right-3 z-40 pointer-events-none">
             <div
-              className="mx-5 w-full max-w-sm rounded-2xl p-6"
+              className={`animate-slide-down relative px-4 py-2.5 text-[13px] leading-snug max-w-[260px] transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}
               style={{
-                background: 'var(--modal-bg)',
-                border: '0.5px solid var(--modal-border)',
-                boxShadow: 'var(--modal-shadow)',
+                background: 'var(--reminder-bg)',
+                border: '0.5px solid var(--reminder-border)',
+                borderRadius: 12,
+                boxShadow: 'var(--reminder-shadow)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                color: 'var(--reminder-text)',
               }}
-              onClick={(e) => e.stopPropagation()}
             >
-              {/* Icon */}
-              <div className="flex justify-center mb-4">
-                <div
-                  className="w-12 h-12 rounded-full flex items-center justify-center"
-                  style={{ background: 'linear-gradient(135deg, rgba(75,111,255,0.12), rgba(160,64,240,0.12))' }}
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{ color: 'var(--accent-primary)' }}>
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Body */}
-              <p className="text-center text-sm leading-relaxed mb-5" style={{ color: 'var(--modal-body)' }}>
-                {t.endReminderPrefix}{' '}
-                <strong style={{ color: 'var(--success-text)', fontWeight: 600 }}>{t.endButtonFull}</strong>{' '}
-                {t.endReminderSuffix}
-              </p>
-
-              {/* Actions */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => { dismissReminder(); openInsights(); }}
-                  className="btn-primary-cta w-full py-2.5 rounded-xl text-sm font-semibold"
-                >
-                  {t.endModalOpenReport}
-                </button>
-                <button
-                  onClick={dismissReminder}
-                  className="theme-modal-cancel w-full py-2.5 rounded-xl text-sm"
-                >
-                  {t.reminderDismiss}
-                </button>
-              </div>
+              <div
+                className="absolute -top-[5px] right-4 w-2.5 h-2.5 rotate-45"
+                style={{
+                  background: 'var(--reminder-bg)',
+                  borderLeft: '0.5px solid var(--reminder-border)',
+                  borderTop: '0.5px solid var(--reminder-border)',
+                }}
+              />
+              {t.endReminderPrefix}{' '}
+              <strong style={{ color: 'var(--success-text)', fontWeight: 600 }}>{t.endButtonFull}</strong>{' '}
+              {t.endReminderSuffix}
             </div>
           </div>
         )}
