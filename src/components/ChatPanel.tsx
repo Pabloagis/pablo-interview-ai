@@ -1088,8 +1088,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 placeholder={t.inputPlaceholder}
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 min-w-0 resize-none bg-transparent text-sm focus:outline-none leading-relaxed disabled:opacity-50 placeholder:text-white/30"
-                style={{ color: 'var(--input-text)', maxHeight: '120px' }}
+                className="flex-1 min-w-0 resize-none bg-transparent focus:outline-none leading-relaxed disabled:opacity-50 placeholder:text-white/30"
+                style={{ color: 'var(--input-text)', maxHeight: '120px', fontSize: 16 }}
               />
             </div>
 
@@ -1185,7 +1185,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         {reminderState !== 'hidden' && !interviewEnded && (
           <div className="fixed top-[58px] right-3 z-40 pointer-events-none">
             <div
-              className={`animate-slide-down relative px-4 py-2.5 text-[13px] whitespace-nowrap transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}
+              className={`animate-slide-down relative px-4 py-2.5 text-[13px] leading-snug max-w-[260px] transition-opacity duration-300 ${reminderState === 'fading' ? 'opacity-0' : 'opacity-100'}`}
               style={{
                 background: 'var(--reminder-bg)',
                 border: '0.5px solid var(--reminder-border)',
@@ -1240,7 +1240,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             position: 'fixed', inset: 0, zIndex: 50,
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
-            pointerEvents: 'none',
+            pointerEvents: 'none', overflow: 'hidden',
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>

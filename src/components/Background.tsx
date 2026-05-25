@@ -17,12 +17,13 @@ export default function Background() {
     let W = window.innerWidth, H = window.innerHeight;
     canvas.width = W; canvas.height = H;
 
-    const COLORS = isDayMode
+    const currentDayMode = document.documentElement.getAttribute('data-theme') === 'day';
+    const COLORS = currentDayMode
       ? [[80,110,200],[120,90,180]] as [number,number,number][]
       : [[120,150,255],[180,140,255]] as [number,number,number][];
     const COUNT = 65;
-    const opMin = isDayMode ? 0.02 : 0.05;
-    const opRange = isDayMode ? 0.16 : 0.23;
+    const opMin = currentDayMode ? 0.02 : 0.05;
+    const opRange = currentDayMode ? 0.16 : 0.23;
 
     const particles: Particle[] = Array.from({ length: COUNT }, () => ({
       x: Math.random()*W, y: Math.random()*H,
@@ -52,25 +53,12 @@ export default function Background() {
     return () => { cancelAnimationFrame(rafId); window.removeEventListener('resize', handleResize); };
   }, [isDayMode]);
 
-  const blobA = isDayMode
-    ? 'radial-gradient(circle, rgba(58,85,192,0.10) 0%, transparent 70%)'
-    : 'radial-gradient(circle, rgba(60,90,200,0.28) 0%, transparent 70%)';
-  const blobB = isDayMode
-    ? 'radial-gradient(circle, rgba(96,48,184,0.08) 0%, transparent 70%)'
-    : 'radial-gradient(circle, rgba(100,60,180,0.22) 0%, transparent 70%)';
-  const blobC = isDayMode
-    ? 'radial-gradient(circle, rgba(26,122,150,0.07) 0%, transparent 70%)'
-    : 'radial-gradient(circle, rgba(40,130,160,0.18) 0%, transparent 70%)';
-  const baseGrad = isDayMode
-    ? 'linear-gradient(145deg, #f0eeea 0%, #ebe9e4 45%, #edeae6 100%)'
-    : 'linear-gradient(145deg, #0d0f14 0%, #111520 45%, #0a0e18 100%)';
-
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none" aria-hidden="true">
-      <div className="absolute inset-0" style={{ background: baseGrad }} />
-      <div className="absolute rounded-full" style={{ width:340, height:340, top:-80, left:-80, background:blobA, filter:'blur(70px)', animation:'blob-a 28s ease-in-out infinite' }} />
-      <div className="absolute rounded-full" style={{ width:280, height:280, bottom:-60, right:-60, background:blobB, filter:'blur(80px)', animation:'blob-b 35s ease-in-out infinite' }} />
-      <div className="absolute rounded-full" style={{ width:200, height:200, top:'35%', right:'15%', background:blobC, filter:'blur(90px)', animation:'blob-c 24s ease-in-out infinite' }} />
+      <div className="absolute inset-0" style={{ background: 'var(--bg-gradient)' }} />
+      <div className="absolute rounded-full" style={{ width:340, height:340, top:-80, left:-80, background:'radial-gradient(circle, var(--blob-a) 0%, transparent 70%)', filter:'blur(70px)', animation:'blob-a 28s ease-in-out infinite' }} />
+      <div className="absolute rounded-full" style={{ width:280, height:280, bottom:-60, right:-60, background:'radial-gradient(circle, var(--blob-b) 0%, transparent 70%)', filter:'blur(80px)', animation:'blob-b 35s ease-in-out infinite' }} />
+      <div className="absolute rounded-full" style={{ width:200, height:200, top:'35%', right:'15%', background:'radial-gradient(circle, var(--blob-c) 0%, transparent 70%)', filter:'blur(90px)', animation:'blob-c 24s ease-in-out infinite' }} />
       <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
     </div>
   );

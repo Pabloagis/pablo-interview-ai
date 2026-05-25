@@ -20,6 +20,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
+  interactiveWidget: 'resizes-visual',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -28,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var h=new Date().getHours();document.documentElement.setAttribute('data-theme',h>=6&&h<20?'day':'night')})()`,
+            __html: `(function(){var t=new Date().getHours()*60+new Date().getMinutes();document.documentElement.setAttribute('data-theme',t>=420&&t<1200?'day':'night')})()`,
           }}
         />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF8DPHQC5E" />

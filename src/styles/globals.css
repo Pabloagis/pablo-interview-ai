@@ -271,13 +271,19 @@
 
   --accent-mid:         rgba(58,85,192,0.85);
   --success-text:       #1f7a40;
+
+  --bg-gradient:  linear-gradient(145deg,#f0eeea 0%,#ebe9e4 45%,#edeae6 100%);
+  --blob-a:       rgba(58,85,192,0.10);
+  --blob-b:       rgba(96,48,184,0.08);
+  --blob-c:       rgba(26,122,150,0.07);
 }
 
 /* ─────────────────────────────────────────────
    GLOBAL RESETS
 ───────────────────────────────────────────── */
 *,*::before,*::after { box-sizing: border-box; }
-html,body { width:100%; max-width:100%; overflow-x:hidden; }
+html { width:100%; max-width:100%; overflow-x:clip; }
+body { width:100%; max-width:100%; overflow-x:hidden; position:relative; }
 
 next-route-announcer {
   position:absolute!important; inset:0!important;
@@ -335,7 +341,7 @@ next-route-announcer {
   background: var(--input-pill-bg);
   border: 0.5px solid var(--input-pill-border);
   color: var(--input-text);
-  font-size: 14px;
+  font-size: 16px;
   outline: none;
   transition: border-color 180ms ease, box-shadow 180ms ease;
   font-family: inherit;

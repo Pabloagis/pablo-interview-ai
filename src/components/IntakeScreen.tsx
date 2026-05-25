@@ -573,7 +573,7 @@ export default function IntakeScreen() {
       {!splashDone && (
         <div
           ref={splashOverlayRef}
-          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none"
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none overflow-hidden"
         >
           {/* Vignette (night mode only) */}
           <div ref={vignetteRef} style={{
