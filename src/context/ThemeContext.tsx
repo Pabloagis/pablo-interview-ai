@@ -37,7 +37,6 @@ function applyTheme(dayMode: boolean) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isInDayHours, setIsInDayHours]       = useState(false);
-  const [systemPrefersDark, setSystemPrefersDark] = useState(false);
   const [manualOverride, setManualOverride]    = useState<'day' | 'night' | null>(() => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('im_theme_override') as 'day' | 'night' | null;
@@ -47,23 +46,16 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setIsInDayHours(getIsInDayHours());
 
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    setSystemPrefersDark(mq.matches);
-
-    const handleMqChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
-    mq.addEventListener('change', handleMqChange);
-
     const interval = setInterval(() => setIsInDayHours(getIsInDayHours()), 60_000);
 
     return () => {
-      mq.removeEventListener('change', handleMqChange);
       clearInterval(interval);
     };
   }, []);
 
   const resolvedIsDayMode = manualOverride
     ? manualOverride === 'day'
-    : isInDayHours && !systemPrefersDark;
+    : isInDayHours;
 
   useEffect(() => {
     if (isFirstRender.current) {

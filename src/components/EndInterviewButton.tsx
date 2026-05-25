@@ -201,11 +201,38 @@ export default function EndInterviewButton({
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* CTA */}
+            <button
+              onClick={handleConfirm}
+              disabled={isSending}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                width: '100%', padding: '13px',
+                fontSize: 14, fontWeight: 600,
+                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+                border: 'none', borderRadius: 13,
+                color: '#ffffff',
+                cursor: isSending ? 'not-allowed' : 'pointer',
+                opacity: isSending ? 0.65 : 1,
+                boxShadow: '0 4px 20px var(--accent-glow)',
+                fontFamily: 'inherit',
+                marginBottom: 12,
+              }}
+            >
+              {isSending && (
+                <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              )}
+              {isSending ? t.endModalSending : t.endModalOpenReport}
+            </button>
+
             {/* ── 3-part preview ────────────────────────────────── */}
             <div style={{
               borderRadius: 18, height: 220, overflow: 'hidden',
               position: 'relative', background: 'var(--bg-base)',
-              border: '0.5px solid var(--glass-border)', marginBottom: 12,
+              border: '0.5px solid var(--glass-border)', marginBottom: 0,
             }}>
 
               {/* ── Slide 0: Header ── */}
@@ -354,39 +381,13 @@ export default function EndInterviewButton({
               </div>
             </div>
 
-            {/* CTA */}
-            <button
-              onClick={handleConfirm}
-              disabled={isSending}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                width: '100%', padding: '13px',
-                fontSize: 14, fontWeight: 600,
-                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                border: 'none', borderRadius: 13,
-                color: '#ffffff',
-                cursor: isSending ? 'not-allowed' : 'pointer',
-                opacity: isSending ? 0.65 : 1,
-                boxShadow: '0 4px 20px var(--accent-glow)',
-                fontFamily: 'inherit',
-              }}
-            >
-              {isSending && (
-                <svg className="animate-spin h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              )}
-              {isSending ? t.endModalSending : t.endModalOpenReport}
-            </button>
-
             {errorMsg && (
-              <p style={{ fontSize: 12, color: '#f87171', marginTop: 10, textAlign: 'center' }}>
+              <p style={{ fontSize: 12, color: '#f87171', marginTop: 8, textAlign: 'center' }}>
                 {errorMsg}
               </p>
             )}
 
-            <div style={{ textAlign: 'center', marginTop: 10 }}>
+            <div style={{ textAlign: 'center', marginTop: 8 }}>
               <button
                 onClick={closeModal}
                 disabled={isSending}
