@@ -150,13 +150,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const insightsCacheRef = useRef<{ report: ReportData; msgCount: number } | null>(null);
 
   // Splash 2 refs
-  const s2OverlayRef = useRef<HTMLDivElement>(null);
-  const s2AvRef      = useRef<HTMLDivElement>(null);
-  const s2RingRef    = useRef<HTMLDivElement>(null);
-  const s2GlowRef    = useRef<HTMLDivElement>(null);
-  const s2NameRef    = useRef<HTMLParagraphElement>(null);
-  const s2WmRef      = useRef<HTMLParagraphElement>(null);
-  const s2StatusRef  = useRef<HTMLDivElement>(null);
+  const s2OverlayRef    = useRef<HTMLDivElement>(null);
+  const s2AvRef         = useRef<HTMLDivElement>(null);
+  const s2RingRef       = useRef<HTMLDivElement>(null);
+  const s2GlowRef       = useRef<HTMLDivElement>(null);
+  const s2NameRef       = useRef<HTMLParagraphElement>(null);
+  const s2WmRef         = useRef<HTMLParagraphElement>(null);
+  const s2StatusDotRef  = useRef<HTMLDivElement>(null);
+  const s2StatusTextRef = useRef<HTMLSpanElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -188,7 +189,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); setChatPageEnter(true); }
   }, [sessionId]);
 
-  // Splash 2 — JS rAF animation (dark theme, first visit only)
+  // Splash 2 — cinematic JS rAF animation (first visit only)
   useEffect(() => {
     if (s2RanRef.current) return;
     s2RanRef.current = true;
@@ -198,100 +199,119 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     const rafs: number[] = [];
     const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
     const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
-    const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
-    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
 
-    function springBlur(el: HTMLElement, from: number, peak: number, fin: number, blurFrom: number, dur: number, delay: number) {
+    const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const eOC = (t: number) => 1 - Math.pow(1 - t, 3);
+    const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
+
+    function animate(fn: (p: number) => void, duration: number, delay: number, easing: (t: number) => number, onDone?: () => void) {
       after(() => {
-        const s = performance.now(), h = dur * 0.55;
-        function f(now: number) {
-          const e = now-s;
-          const sc = e < h ? from+(peak-from)*eo3(e/h) : peak+(fin-peak)*eo3((e-h)/(dur-h));
-          const bl = Math.max(0, blurFrom*(1-Math.min(e/dur, 1)));
-          el.style.transform = `scale(${sc.toFixed(4)})`;
-          el.style.filter = `blur(${bl.toFixed(1)}px)`;
-          el.style.opacity = Math.min(e/(dur*0.38), 1).toFixed(4);
-          if (e < dur) tick(f);
-          else { el.style.transform='scale(1)'; el.style.opacity='1'; el.style.filter='none'; }
-        }
-        tick(f);
+        const start = performance.now();
+        const frame = (now: number) => {
+          const raw = Math.min((now - start) / duration, 1);
+          fn(easing(raw));
+          if (raw < 1) tick(frame);
+          else if (onDone) onDone();
+        };
+        tick(frame);
       }, delay);
     }
 
-    function slideBlurX(el: HTMLElement, xFrom: number, blurFrom: number, dur: number, delay: number, maxOp: number) {
+    function springAv(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, fromTy: number, peakTy: number, dur: number, delay: number) {
       after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.opacity = (raw*maxOp).toFixed(4);
-          el.style.transform = `translateX(${(xFrom*(1-p)).toFixed(2)}px)`;
-          el.style.filter = `blur(${Math.max(0, blurFrom*(1-raw)).toFixed(1)}px)`;
-          if (raw < 1) tick(f);
-          else { el.style.filter='none'; }
-        }
-        tick(f);
+        const s = performance.now(), h = dur * 0.55, opDur = dur * 0.38;
+        const frame = (now: number) => {
+          const elapsed = now - s;
+          const e = Math.min(elapsed, dur);
+          let sc: number, ty: number;
+          if (e < h) {
+            const p = eO(e / h);
+            sc = fromSc + (peakSc - fromSc) * p;
+            ty = fromTy + (peakTy - fromTy) * p;
+          } else {
+            const p = eOC((e - h) / (dur - h));
+            sc = peakSc + (finSc - peakSc) * p;
+            ty = peakTy * (1 - p);
+          }
+          const bl = fromBlur * Math.max(0, 1 - Math.min(elapsed / dur, 1));
+          el.style.transform = `translateY(${ty.toFixed(2)}px) scale(${sc.toFixed(4)})`;
+          el.style.opacity = Math.min(elapsed / opDur, 1).toFixed(4);
+          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
+          if (elapsed < dur) tick(frame);
+          else { el.style.transform = 'none'; el.style.opacity = '1'; el.style.filter = ''; }
+        };
+        tick(frame);
       }, delay);
     }
 
-    function fadeSlide(el: HTMLElement, yFrom: number, dur: number, delay: number, maxOp: number) {
+    const ov  = s2OverlayRef.current, av = s2AvRef.current, rg = s2RingRef.current;
+    const gl  = s2GlowRef.current, nm = s2NameRef.current, wm = s2WmRef.current;
+    const dot = s2StatusDotRef.current, txt = s2StatusTextRef.current;
+    if (!ov || !av || !rg || !gl || !nm || !wm) return;
+
+    const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
+
+    // 0ms: Avatar springs from depth with translateY
+    springAv(av, 0.60, 1.06, 1.0, 18, 6, -1, 680, 0);
+
+    // 360ms: Name assembles from left
+    animate(p => {
+      nm.style.opacity = p.toFixed(4);
+      nm.style.transform = `translateX(${(-36 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
+      nm.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
+    }, 600, 360, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
+
+    // 380ms: Ring activates
+    after(() => { rg.style.transition = 'opacity 700ms ease'; rg.style.opacity = '1'; }, 380);
+
+    // 420ms: Glow activates
+    after(() => { gl.style.transition = 'opacity 600ms ease'; gl.style.opacity = '0.9'; }, 420);
+
+    // 700ms: Wordmark with tracking compression
+    const wmTargetOp = dayMode ? 0.48 : 0.52;
+    animate(p => {
+      const tracking = 0.28 - (0.28 - 0.20) * p;
+      wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
+      wm.style.opacity = (p * wmTargetOp).toFixed(4);
+      wm.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
+    }, 650, 700, eO);
+
+    // 1000ms: Status dot spring
+    if (dot) {
       after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.opacity = (raw*maxOp).toFixed(4);
-          el.style.transform = `translateY(${(yFrom*(1-p)).toFixed(2)}px)`;
-          if (raw < 1) tick(f);
-        }
-        tick(f);
-      }, delay);
+        const s = performance.now(), dur = 400, h = dur * 0.55;
+        const frame = (now: number) => {
+          const elapsed = now - s;
+          const e = Math.min(elapsed, dur);
+          const sc = e < h ? eO(e / h) * 1.2 : 1.2 - 0.2 * eOC((e - h) / (dur - h));
+          dot.style.opacity = Math.min(elapsed / (dur * 0.4), 1).toFixed(4);
+          dot.style.transform = `scale(${sc.toFixed(4)})`;
+          if (elapsed < dur) tick(frame);
+          else { dot.style.transform = 'scale(1)'; dot.style.opacity = '1'; }
+        };
+        tick(frame);
+      }, 1000);
     }
 
-    function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
-      after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1);
-          el.style.opacity = (raw*maxOp).toFixed(4);
-          if (raw < 1) tick(f);
-        }
-        tick(f);
-      }, delay);
+    // 1080ms: Status text slides in
+    if (txt) {
+      animate(p => {
+        txt.style.opacity = (p * 0.65).toFixed(4);
+        txt.style.transform = `translateX(${(-12 * (1 - p)).toFixed(2)}px)`;
+        txt.style.filter = `blur(${(4 * (1 - p)).toFixed(1)}px)`;
+      }, 450, 1080, eO, () => { txt.style.transform = ''; txt.style.filter = ''; });
     }
 
-    const ov=s2OverlayRef.current, av=s2AvRef.current, rg=s2RingRef.current;
-    const gl=s2GlowRef.current, nm=s2NameRef.current, wm=s2WmRef.current, st=s2StatusRef.current;
-    if (!ov||!av||!rg||!gl||!nm||!wm||!st) return;
-
-    // 0ms: Avatar spring from depth with blur
-    springBlur(av, 0.62, 1.08, 1.0, 15, 1050, 0);
-
-    // 440ms: Name assembles from left with blur
-    slideBlurX(nm, -40, 10, 650, 440, 1);
-
-    // 500ms: Ring + glow activate
-    after(() => {
-      rg.style.transition = 'opacity 800ms ease';
-      rg.style.opacity = '1';
-      gl.style.transition = 'opacity 600ms ease';
-      gl.style.opacity = '0.9';
-    }, 500);
-
-    // 820ms: Wordmark fades in
-    fadeIn(wm, 700, 820, 0.55);
-
-    // 1100ms: Status indicator
-    fadeSlide(st, 10, 500, 1100, 0.9);
-
-    // 3600ms: Exit
+    // 3050ms: Cinematic exit
     after(() => {
       if (!ov) return;
       const _ov = ov;
       const s = performance.now();
       function exit(now: number) {
-        const raw = Math.min((now-s)/520, 1), p = eio4(raw);
-        _ov.style.opacity = (1-p).toFixed(4);
-        _ov.style.transform = `translateY(${(-52*p).toFixed(1)}px) scale(${(1-0.02*p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(8*p).toFixed(1)}px)`;
+        const raw = Math.min((now - s) / 550, 1), p = eIO(raw);
+        _ov.style.opacity = (1 - p).toFixed(4);
+        _ov.style.transform = `translateY(${(-48 * p).toFixed(1)}px) scale(${(1 - 0.016 * p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(9 * p).toFixed(1)}px)`;
         if (raw < 1) tick(exit);
         else {
           setChatSplashDone(true);
@@ -300,7 +320,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       }
       tick(exit);
-    }, 3600);
+    }, 3050);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -805,6 +825,25 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const toggleRecording = () => { if (isRecording) { stopRecording(); } else { startRecording(); } };
   const handleDownloadTranscript = () => { window.open(`/api/transcript?sessionId=${sessionId}`, '_blank'); };
 
+  // Page 2 assembly — per-element directional entrance
+  const emerge2 = (
+    delay: number,
+    from: { tx?: number; ty?: number; sc?: number; blur?: number; maxOp?: number; dur?: number } = {}
+  ): React.CSSProperties => {
+    const { tx = 0, ty = 0, sc = 1, blur = 5, maxOp = 1, dur = 500 } = from;
+    const parts: string[] = [];
+    if (tx !== 0) parts.push(`translateX(${tx}px)`);
+    if (ty !== 0) parts.push(`translateY(${ty}px)`);
+    if (sc !== 1) parts.push(`scale(${sc})`);
+    const notReady = parts.length ? parts.join(' ') : 'none';
+    return {
+      opacity: chatPageEnter ? maxOp : 0,
+      transform: chatPageEnter ? 'none' : notReady,
+      filter: chatPageEnter ? 'none' : `blur(${blur}px)`,
+      transition: `opacity ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, filter ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+    };
+  };
+
   // Ended screen
   if (interviewEnded !== null) {
     return (
@@ -866,26 +905,26 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{
           opacity: chatPageEnter ? 1 : 0,
-          transform: chatPageEnter ? undefined : 'translateY(36px)',
-          filter: chatPageEnter ? undefined : 'blur(6px)',
-          transition: 'opacity 500ms cubic-bezier(.22,1,.36,1) 80ms, transform 500ms cubic-bezier(.22,1,.36,1) 80ms, filter 500ms cubic-bezier(.22,1,.36,1) 80ms',
+          transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1) 60ms',
         }}
       >
-        <Header
-          recruiterName={context.recruiterName}
-          company={context.company}
-          action={
-            <EndInterviewButton
-              sessionId={sessionId}
-              messages={messages}
-              context={context}
-              onInterviewEnded={handleInterviewEnded}
-              onOpenInsights={openInsights}
-              skipModal={insightsUnlocked}
-              suppressTooltip={reminderState !== 'hidden'}
-            />
-          }
-        />
+        <div style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
+          <Header
+            recruiterName={context.recruiterName}
+            company={context.company}
+            action={
+              <EndInterviewButton
+                sessionId={sessionId}
+                messages={messages}
+                context={context}
+                onInterviewEnded={handleInterviewEnded}
+                onOpenInsights={openInsights}
+                skipModal={insightsUnlocked}
+                suppressTooltip={reminderState !== 'hidden'}
+              />
+            }
+          />
+        </div>
 
         {/* Suggested topics strip */}
         {suggestions.length > 0 && (
@@ -894,6 +933,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             style={{
               borderBottom: '0.5px solid var(--chips-strip-border)',
               background: 'var(--chips-strip-bg)',
+              ...emerge2(80, { ty: 12, blur: 4, dur: 460 }),
             }}
           >
             <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
@@ -932,15 +972,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               <Tooltip text={t.meetPablo} className="mb-5">
                 <div
                   className="w-14 h-14 rounded-full overflow-hidden mb-5 cursor-pointer transition-transform hover:scale-105"
-                  style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
+                  style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)', ...emerge2(160, { sc: 0.84, blur: 6, dur: 520 }) }}
                 >
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover object-top" />
                 </div>
               </Tooltip>
-              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...emerge2(240, { tx: -22, blur: 7, dur: 520 }) }}>
                 {t.emptyGreeting}
               </h1>
-              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'var(--text-tertiary)' }}>
+              <p className="text-sm text-center leading-relaxed mb-8 max-w-xs" style={{ color: 'var(--text-tertiary)', ...emerge2(320, { tx: 18, blur: 5, dur: 480, maxOp: 0.55 }) }}>
                 {t.emptySubtitle}
               </p>
               <div className="w-10 h-px mb-6" style={{ background: 'var(--glass-border)' }} />
@@ -948,12 +988,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 {t.tryAsking}
               </p>
               <div className="w-full max-w-sm space-y-2">
-                {[t.q1, t.q2, t.q3].map((q) => (
+                {[t.q1, t.q2, t.q3].map((q, i) => (
                   <button
                     key={q}
                     onClick={() => sendMessage(q)}
                     disabled={isStreaming}
                     className="theme-question w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left disabled:opacity-40"
+                    style={emerge2(420 + i * 80, { ty: 20, blur: 6, dur: 460 })}
                   >
                     <span className="q-label text-sm">{q}</span>
                     <span className="q-arrow ml-3 shrink-0">↗</span>
@@ -985,6 +1026,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             background: 'var(--input-area-bg)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
+            ...emerge2(680, { ty: 14, blur: 4, dur: 460 }),
           }}
         >
           {/* Playing indicator */}
@@ -1198,7 +1240,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               style={{
                 position: 'relative', width: 72, height: 72,
                 marginBottom: 24, opacity: 0,
-                transform: 'scale(0.72)', filter: 'blur(14px)',
+                transform: 'translateY(6px) scale(0.60)', filter: 'blur(18px)',
               }}
             >
               {/* Spinning conic ring */}
@@ -1241,7 +1283,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               style={{
                 fontSize: 18, fontWeight: 700, color: 'var(--splash-name)',
                 letterSpacing: '-0.01em', marginBottom: 0,
-                opacity: 0, transform: 'translateX(-40px)', filter: 'blur(10px)',
+                opacity: 0, transform: 'translateX(-36px)', filter: 'blur(12px)',
               }}
             >
               Pablo Agis Burgos
@@ -1253,29 +1295,31 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               style={{
                 fontSize: 11, fontWeight: 500,
                 color: 'var(--splash-wm)',
-                letterSpacing: '0.18em', textTransform: 'uppercase',
-                marginTop: 28, opacity: 0,
+                letterSpacing: '0.28em', textTransform: 'uppercase',
+                marginTop: 28, opacity: 0, filter: 'blur(6px)',
               }}
             >
               InterviewMind
             </p>
 
-            {/* Status indicator */}
-            <div
-              ref={s2StatusRef}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                marginTop: 12, opacity: 0, transform: 'translateY(10px)',
-              }}
-            >
+            {/* Status indicator — dot and text animated separately */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12 }}>
               <div
+                ref={s2StatusDotRef}
                 style={{
                   width: 6, height: 6, borderRadius: '50%',
                   background: '#3a9d5d', flexShrink: 0,
                   animation: 'status-pulse 2s ease-in-out infinite',
+                  opacity: 0, transform: 'scale(0)',
                 }}
               />
-              <span style={{ fontSize: 11, color: 'var(--splash-status)', letterSpacing: '0.04em' }}>
+              <span
+                ref={s2StatusTextRef}
+                style={{
+                  fontSize: 11, color: 'var(--splash-status)', letterSpacing: '0.04em',
+                  opacity: 0, transform: 'translateX(-12px)', filter: 'blur(4px)',
+                }}
+              >
                 IA lista · Conectando sesión
               </span>
             </div>

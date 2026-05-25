@@ -45,6 +45,8 @@ export default function IntakeScreen() {
   const splashRoleRef    = useRef<HTMLParagraphElement>(null);
   const splashDivRef     = useRef<HTMLDivElement>(null);
   const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
+  const vignetteRef  = useRef<HTMLDivElement>(null);
+  const lightSweepRef = useRef<HTMLDivElement>(null);
   const splashRanRef     = useRef(false);
 
   // ── Skip before first paint for returning visitors ──
@@ -52,7 +54,7 @@ export default function IntakeScreen() {
     if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageReady(true); }
   }, []);
 
-  // ── Splash 1 — JS rAF animation ──
+  // ── Splash 1 — cinematic JS rAF animation ──
   useEffect(() => {
     if (splashRanRef.current) return;
     splashRanRef.current = true;
@@ -62,158 +64,155 @@ export default function IntakeScreen() {
     const rafs: number[] = [];
     const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
     const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
-    const eo3  = (t: number) => 1 - Math.pow(1-t, 3);
-    const eio4 = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2,4)/2;
 
-    // Spring with optional blur
-    function springBlur(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, dur: number, delay: number) {
+    const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);           // easeOutExpo
+    const eOC = (t: number) => 1 - Math.pow(1 - t, 3);                             // easeOutCubic
+    const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;  // easeInOutQuart
+
+    // Universal animate helper
+    function animate(fn: (p: number) => void, duration: number, delay: number, easing: (t: number) => number, onDone?: () => void) {
       after(() => {
-        const s = performance.now(), h = dur * 0.55;
-        function f(now: number) {
-          const e = now-s;
-          const sc = e < h ? fromSc+(peakSc-fromSc)*eo3(e/h) : peakSc+(finSc-peakSc)*eo3((e-h)/(dur-h));
-          const bl = fromBlur * Math.max(0, 1 - e/dur);
-          el.style.transform = `scale(${sc.toFixed(4)})`;
-          el.style.opacity = Math.min(e/(dur*0.38),1).toFixed(4);
+        const start = performance.now();
+        const frame = (now: number) => {
+          const raw = Math.min((now - start) / duration, 1);
+          fn(easing(raw));
+          if (raw < 1) tick(frame);
+          else if (onDone) onDone();
+        };
+        tick(frame);
+      }, delay);
+    }
+
+    // Spring with blur + translateY — for avatar entrance
+    function springAv(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, fromTy: number, peakTy: number, dur: number, delay: number) {
+      after(() => {
+        const s = performance.now(), h = dur * 0.55, opDur = dur * 0.38;
+        const frame = (now: number) => {
+          const elapsed = now - s;
+          const e = Math.min(elapsed, dur);
+          let sc: number, ty: number;
+          if (e < h) {
+            const p = eO(e / h);
+            sc = fromSc + (peakSc - fromSc) * p;
+            ty = fromTy + (peakTy - fromTy) * p;
+          } else {
+            const p = eOC((e - h) / (dur - h));
+            sc = peakSc + (finSc - peakSc) * p;
+            ty = peakTy * (1 - p);
+          }
+          const bl = fromBlur * Math.max(0, 1 - Math.min(elapsed / dur, 1));
+          el.style.transform = `translateY(${ty.toFixed(2)}px) scale(${sc.toFixed(4)})`;
+          el.style.opacity = Math.min(elapsed / opDur, 1).toFixed(4);
           el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
-          if (e < dur) tick(f); else { el.style.transform='scale(1)'; el.style.opacity='1'; el.style.filter=''; }
-        }
-        tick(f);
+          if (elapsed < dur) tick(frame);
+          else { el.style.transform = 'none'; el.style.opacity = '1'; el.style.filter = ''; }
+        };
+        tick(frame);
       }, delay);
     }
 
-    // Slide from X with blur
-    function slideBlurX(el: HTMLElement, fromTx: number, fromBlur: number, fromSc: number, toOp: number, dur: number, delay: number) {
-      after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.transform = `translateX(${(fromTx*(1-p)).toFixed(2)}px) scale(${(fromSc+(1-fromSc)*p).toFixed(4)})`;
-          el.style.opacity = (raw*toOp).toFixed(4);
-          const bl = fromBlur*(1-p);
-          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
-          if (raw < 1) tick(f); else { el.style.transform=''; el.style.opacity=toOp.toString(); el.style.filter=''; }
-        }
-        tick(f);
-      }, delay);
+    const ov    = splashOverlayRef.current;
+    const wm    = splashWmRef.current;
+    const av    = splashAvRef.current;
+    const ring  = splashRingRef.current;
+    const glow  = splashGlowRef.current;
+    const nm    = splashNameRef.current;
+    const rl    = splashRoleRef.current;
+    const dv    = splashDivRef.current;
+    const vig   = vignetteRef.current;
+    const sweep = lightSweepRef.current;
+    const tags  = splashTagsRef.current.filter(Boolean) as HTMLSpanElement[];
+    if (!ov || !wm || !av || !ring || !glow || !nm || !rl || !dv) return;
+
+    const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
+
+    // 0ms — Vignette (night only)
+    if (!dayMode && vig) {
+      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 0, eIO);
     }
 
-    // Slide from Y with blur
-    function flyUpBlur(el: HTMLElement, fromTy: number, fromBlur: number, toOp: number, dur: number, delay: number) {
-      after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.transform = `translateY(${(fromTy*(1-p)).toFixed(2)}px)`;
-          el.style.opacity = (raw*toOp).toFixed(4);
-          const bl = fromBlur*(1-p);
-          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
-          if (raw < 1) tick(f); else { el.style.transform=''; el.style.opacity=toOp.toString(); el.style.filter=''; }
-        }
-        tick(f);
-      }, delay);
+    // 200ms — Wordmark: blur + tracking compression
+    const wmTargetOp = dayMode ? 0.30 : 0.28;
+    animate(p => {
+      const tracking = 0.32 - (0.32 - 0.22) * p;
+      wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
+      wm.style.opacity = (p * wmTargetOp).toFixed(4);
+      wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
+    }, 1000, 200, eO);
+
+    // 500ms — Light sweep (night only)
+    if (!dayMode && sweep) {
+      animate(p => {
+        const sw = p < 0.5 ? p * 2 : (1 - p) * 2;
+        sweep.style.opacity = (sw * 0.8).toFixed(4);
+        sweep.style.transform = `translateX(${(-100 + p * 200).toFixed(1)}%)`;
+      }, 600, 500, t => t);
     }
 
-    // ScaleX (divider)
-    function scaleX(el: HTMLElement, dur: number, delay: number) {
-      after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1), p = eo3(raw);
-          el.style.transform = `scaleX(${p.toFixed(4)})`;
-          el.style.opacity = (raw*0.6).toFixed(4);
-          if (raw < 1) tick(f); else { el.style.transform='scaleX(1)'; el.style.opacity='0.6'; }
-        }
-        tick(f);
-      }, delay);
-    }
+    // 600ms — Avatar springs from depth with weight
+    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 600);
 
-    // Zoom in then back out (breathe pulse)
-    function zoomPulse(el: HTMLElement, peakSc: number, dur: number, delay: number) {
-      after(() => {
-        const s = performance.now(), h = dur / 2;
-        const eic = (t: number) => t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2;
-        function f(now: number) {
-          const e = Math.min(now-s, dur);
-          const sc = e < h ? 1+(peakSc-1)*eic(e/h) : peakSc+(1-peakSc)*eic((e-h)/h);
-          el.style.transform = `scale(${sc.toFixed(4)})`;
-          if (e < dur) tick(f); else { el.style.transform = 'scale(1)'; }
-        }
-        tick(f);
-      }, delay);
-    }
+    // 1000ms — Ring activates
+    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 1000);
 
-    // FadeIn
-    function fadeIn(el: HTMLElement, dur: number, delay: number, maxOp: number) {
-      after(() => {
-        const s = performance.now();
-        function f(now: number) {
-          const raw = Math.min((now-s)/dur, 1);
-          el.style.opacity = (raw*maxOp).toFixed(4);
-          if (raw < 1) tick(f);
-        }
-        tick(f);
-      }, delay);
-    }
+    // 1100ms — Glow pulse begins
+    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 1100);
 
-    const ov   = splashOverlayRef.current;
-    const wm   = splashWmRef.current;
-    const av   = splashAvRef.current;
-    const ring = splashRingRef.current;
-    const glow = splashGlowRef.current;
-    const nm   = splashNameRef.current;
-    const rl   = splashRoleRef.current;
-    const dv   = splashDivRef.current;
-    const tags = splashTagsRef.current.filter(Boolean) as HTMLSpanElement[];
-    if (!ov||!wm||!av||!ring||!glow||!nm||!rl||!dv) return;
+    // 1200ms — Name assembles from left
+    animate(p => {
+      nm.style.opacity = p.toFixed(4);
+      nm.style.transform = `translateX(${(-40 * (1 - p)).toFixed(2)}px) scale(${(0.94 + 0.06 * p).toFixed(4)})`;
+      nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
+    }, 700, 1200, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
 
-    // 0ms — wordmark fades in
-    fadeIn(wm, 1400, 0, 0.30);
+    // 1550ms — Role from right
+    const roleOp = dayMode ? 0.65 : 0.72;
+    animate(p => {
+      rl.style.opacity = (p * roleOp).toFixed(4);
+      rl.style.transform = `translateX(${(35 * (1 - p)).toFixed(2)}px)`;
+      rl.style.filter = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
+    }, 600, 1550, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
 
-    // 400ms — avatar springs in (scale 0.68→1.05→1.0, blur 14→0)
-    springBlur(av, 0.60, 1.10, 1.0, 16, 1200, 400);
+    // 1850ms — Divider reveals from center
+    animate(p => {
+      dv.style.transform = `scaleX(${p.toFixed(4)})`;
+      dv.style.opacity = (p * 0.55).toFixed(4);
+    }, 500, 1850, eOC);
 
-    // 800ms — ring activates (CSS transition via style)
-    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 1000ms ease'; }, 800);
-    after(() => { glow.style.animation = 'glow-pulse 1800ms ease-in-out infinite'; }, 800);
+    // 2200ms — Tags stagger in
+    tags.forEach((tag, i) => {
+      animate(p => {
+        tag.style.opacity = p.toFixed(4);
+        tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.9 + 0.1 * p).toFixed(4)})`;
+        tag.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
+      }, 500, 2200 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
+    });
 
-    // 1040ms — name slides from left
-    slideBlurX(nm, -50, 12, 0.86, 1, 750, 1040);
-
-    // 1120ms — role slides from right
-    slideBlurX(rl, 50, 8, 1, 0.75, 680, 1120);
-
-    // 1480ms — divider
-    scaleX(dv, 500, 1480);
-
-    // 2120ms — tags stagger
-    tags.forEach((tag, i) => flyUpBlur(tag, 24, 8, 1, 600, 2120 + i*80));
-
-    // 3400ms — avatar zoom in/out pulse before exit
-    zoomPulse(av, 1.22, 1400, 3400);
-
-    // 6500ms — EXIT (overlap with page enter)
+    // 4500ms — Cinematic EXIT (two-step)
     after(() => {
       if (!ov) return;
       const _ov = ov;
-      // Trigger page entrance (CSS transition with 280ms delay)
       setPageReady(true);
+      ring.style.transition = 'opacity 0ms';
       ring.style.opacity = '0';
       glow.style.animation = 'none';
-      const s = performance.now();
-      function exit(now: number) {
-        const raw = Math.min((now-s)/650, 1), p = eio4(raw);
-        _ov.style.opacity = (1-p).toFixed(4);
-        _ov.style.transform = `translateY(${(-60*p).toFixed(1)}px) scale(${(1-0.02*p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(10*p).toFixed(1)}px)`;
-        if (raw < 1) tick(exit);
-        else {
-          setSplashDone(true);
-          sessionStorage.setItem('im_splash_shown', '1');
-        }
-      }
-      tick(exit);
-    }, 6500);
+
+      // Step 1 (0–200ms): blur accumulates
+      animate(p => {
+        _ov.style.filter = `blur(${(3 * p).toFixed(1)}px)`;
+        _ov.style.transform = `scale(${(1 - 0.005 * p).toFixed(4)})`;
+      }, 200, 0, t => t);
+
+      // Step 2 (200–700ms): directional exit
+      animate(p => {
+        _ov.style.transform = `translateY(${(-52 * p).toFixed(1)}px) scale(${(0.995 - 0.013 * p).toFixed(4)})`;
+        _ov.style.filter = `blur(${(3 + 7 * p).toFixed(1)}px)`;
+        _ov.style.opacity = (1 - p).toFixed(4);
+      }, 500, 200, eIO, () => {
+        setSplashDone(true);
+        sessionStorage.setItem('im_splash_shown', '1');
+      });
+    }, 4500);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -290,14 +289,26 @@ export default function IntakeScreen() {
     }
   };
 
-  // Page assembly transition style helper
-  const emerge = (delay: number, extra?: React.CSSProperties): React.CSSProperties => ({
-    opacity: pageReady ? 1 : 0,
-    transform: pageReady ? 'translateY(0)' : 'translateY(20px)',
-    filter: pageReady ? 'blur(0px)' : 'blur(8px)',
-    transition: `opacity 600ms cubic-bezier(.25,1,.5,1) ${delay}ms, transform 600ms cubic-bezier(.25,1,.5,1) ${delay}ms, filter 600ms cubic-bezier(.25,1,.5,1) ${delay}ms`,
-    ...extra,
-  });
+  // Page assembly — per-element directional entrance
+  const emerge = (
+    delay: number,
+    from: { tx?: number; ty?: number; sc?: number; blur?: number; maxOp?: number; dur?: number } = {},
+    extra?: React.CSSProperties
+  ): React.CSSProperties => {
+    const { tx = 0, ty = 0, sc = 1, blur = 6, maxOp = 1, dur = 560 } = from;
+    const parts: string[] = [];
+    if (tx !== 0) parts.push(`translateX(${tx}px)`);
+    if (ty !== 0) parts.push(`translateY(${ty}px)`);
+    if (sc !== 1) parts.push(`scale(${sc})`);
+    const notReady = parts.length ? parts.join(' ') : 'none';
+    return {
+      opacity: pageReady ? maxOp : 0,
+      transform: pageReady ? 'none' : notReady,
+      filter: pageReady ? 'none' : `blur(${blur}px)`,
+      transition: `opacity ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, filter ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
+      ...extra,
+    };
+  };
 
 
   return (
@@ -313,7 +324,7 @@ export default function IntakeScreen() {
         }}
       >
         {/* Language switcher */}
-        <div className="absolute top-3 right-3 z-10" style={emerge(800)}>
+        <div className="absolute top-3 right-3 z-10" style={emerge(0, { ty: -20, blur: 5, dur: 500 })}>
           <LanguageSwitcher />
         </div>
 
@@ -348,10 +359,10 @@ export default function IntakeScreen() {
         <form onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[600px]">
 
           {/* ── Hero header ── */}
-          <div className="flex flex-col items-center gap-3 mb-7 text-center" style={emerge(100)}>
+          <div className="flex flex-col items-center gap-3 mb-7 text-center">
             <button type="button" onClick={() => setAvatarOpen(true)}
               className="relative cursor-zoom-in"
-              style={{ width: 112, height: 112 }}>
+              style={{ width: 112, height: 112, ...emerge(60, { sc: 0.85, blur: 6, dur: 550 }) }}>
               {/* Conic ring */}
               <div className="absolute inset-0 rounded-full" style={{
                 background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
@@ -366,16 +377,16 @@ export default function IntakeScreen() {
               </div>
             </button>
 
-            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em' }}>
+            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...emerge(140, { tx: -24, blur: 8, dur: 550 }) }}>
               {t.emptyGreeting}
             </h1>
-            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5 }}>
+            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
               {t.intakeSubtitle}
             </p>
           </div>
 
           {/* ── How it works chip ── */}
-          <div className="flex justify-center mb-5" style={emerge(150)}>
+          <div className="flex justify-center mb-5" style={emerge(300, { sc: 0.88, blur: 4, dur: 450 })}>
             <button
               type="button"
               onClick={() => setHiwOpen(true)}
@@ -431,7 +442,7 @@ export default function IntakeScreen() {
           </div>
 
           {/* ── Vision card ── */}
-          <div className="glass p-5 mb-3 text-center" style={emerge(200)}>
+          <div className="glass p-5 mb-3 text-center" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
             <p style={{ fontSize:14, fontWeight:600, color:'var(--text-primary)', lineHeight:1.5, marginBottom:10 }}>
               {t.visionTitle}
             </p>
@@ -445,11 +456,11 @@ export default function IntakeScreen() {
           </div>
 
           {/* ── Divider ── */}
-          <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(250) }} />
+          <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(460, { sc: 0.9, blur: 2, dur: 400 }) }} />
 
 
           {/* ── Form ── */}
-          <div className="glass p-5 mb-2.5" style={emerge(460)}>
+          <div className="glass p-5 mb-2.5" style={emerge(720, { ty: 28, blur: 8, dur: 560 })}>
             <div className="flex flex-col gap-3">
               <div>
                 <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
@@ -507,7 +518,7 @@ export default function IntakeScreen() {
           {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginBottom:10 }}>{error}</p>}
 
           {/* ── CTA Button ── */}
-          <div style={emerge(560)}>
+          <div style={emerge(820, { sc: 0.9, blur: 4, dur: 500 })}>
             <p className="text-center mb-3" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px' }}>
               {t.timeHint}
             </p>
@@ -558,19 +569,34 @@ export default function IntakeScreen() {
           ref={splashOverlayRef}
           className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none"
         >
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
+          {/* Vignette (night mode only) */}
+          <div ref={vignetteRef} style={{
+            position:'absolute', inset:0, pointerEvents:'none',
+            background:'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.14) 100%)',
+            opacity:0,
+          }} />
+
+          {/* Light sweep (night mode only) */}
+          <div ref={lightSweepRef} style={{
+            position:'absolute', top:'50%', left:0,
+            width:'100%', height:1, pointerEvents:'none',
+            background:'linear-gradient(90deg, transparent 0%, rgba(100,130,255,0.22) 50%, transparent 100%)',
+            opacity:0, transform:'translateX(-100%)',
+          }} />
+
+          <div style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
 
             {/* Wordmark */}
             <p ref={splashWmRef} style={{
               fontSize:10, fontWeight:500, color:'var(--splash-wm)',
-              letterSpacing:'0.22em', textTransform:'uppercase',
-              marginBottom:52, opacity:0,
+              letterSpacing:'0.32em', textTransform:'uppercase',
+              marginBottom:52, opacity:0, filter:'blur(8px)',
             }}>
               INTERVIEWMIND
             </p>
 
             {/* Avatar + ring + glow */}
-            <div ref={splashAvRef} style={{ position:'relative', width:88, height:88, marginBottom:24, opacity:0, transform:'scale(0.68)' }}>
+            <div ref={splashAvRef} style={{ position:'relative', width:88, height:88, marginBottom:24, opacity:0, transform:'translateY(8px) scale(0.55)' }}>
               {/* Glow */}
               <div ref={splashGlowRef} className="absolute inset-0 rounded-full" style={{ background:'rgba(80,110,220,0.18)' }} />
               {/* Spinning conic ring */}
@@ -590,7 +616,7 @@ export default function IntakeScreen() {
             {/* Name */}
             <p ref={splashNameRef} className="gradient-text" style={{
               fontSize:28, fontWeight:700, letterSpacing:'-0.025em',
-              marginBottom:6, opacity:0, transform:'translateX(-50px)',
+              marginBottom:6, opacity:0, transform:'translateX(-40px)', filter:'blur(14px)',
             }}>
               Pablo Agis Burgos
             </p>
@@ -598,7 +624,7 @@ export default function IntakeScreen() {
             {/* Role */}
             <p ref={splashRoleRef} style={{
               fontSize:12.5, color:'var(--splash-role)', letterSpacing:'0.04em',
-              marginBottom:16, opacity:0, transform:'translateX(50px)',
+              marginBottom:16, opacity:0, transform:'translateX(35px)', filter:'blur(10px)',
             }}>
               SaaS &amp; Hospitality Tech
             </p>
@@ -610,22 +636,24 @@ export default function IntakeScreen() {
               opacity:0, transform:'scaleX(0)',
             }} />
 
-            {/* Tag */}
-            <div style={{ display:'flex', justifyContent:'center' }}>
-              <span
-                ref={(el) => { splashTagsRef.current[0] = el; }}
-                style={{
-                  padding:'5px 14px',
-                  borderRadius:999,
-                  background:'var(--splash-tag-bg)',
-                  border:'0.5px solid var(--splash-tag-border)',
-                  fontSize:11.5, color:'var(--splash-tag-text)',
-                  opacity:0, transform:'translateY(24px)',
-                  textAlign:'center',
-                }}
-              >
-                SaaS &amp; Hospitality Tech | Helping hospitality grow through smart solutions
-              </span>
+            {/* Tags — 4 items */}
+            <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:8, maxWidth:300 }}>
+              {(['HubOS', 'Soho House London', '5 idiomas', 'Barcelona'] as const).map((tag, i) => (
+                <span
+                  key={tag}
+                  ref={(el) => { splashTagsRef.current[i] = el; }}
+                  style={{
+                    padding:'5px 12px', borderRadius:999,
+                    background:'var(--splash-tag-bg)',
+                    border:'0.5px solid var(--splash-tag-border)',
+                    fontSize:11, color:'var(--splash-tag-text)',
+                    opacity:0, transform:'translateY(18px)',
+                    display:'inline-flex', alignItems:'center',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
             </div>
 
           </div>
