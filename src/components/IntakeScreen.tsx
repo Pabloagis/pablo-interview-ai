@@ -79,15 +79,14 @@ export default function IntakeScreen() {
     const pendingList: Array<{ id: ReturnType<typeof setTimeout>; fn: () => void; firesAt: number }> = [];
 
     const after = (fn: () => void, ms: number) => {
-      const entry = { id: 0 as ReturnType<typeof setTimeout>, fn, firesAt: performance.now() + ms };
+      const firesAt = performance.now() + ms;
       const id = setTimeout(() => {
-        const idx = pendingList.indexOf(entry);
+        const idx = pendingList.findIndex(e => e.id === id);
         if (idx >= 0) pendingList.splice(idx, 1);
         fn();
       }, ms);
-      entry.id = id;
       timers.push(id);
-      pendingList.push(entry);
+      pendingList.push({ id, fn, firesAt });
     };
 
     const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);           // easeOutExpo
