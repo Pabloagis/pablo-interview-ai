@@ -364,7 +364,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   // Reset suggestions when language changes
   useEffect(() => {
     usedTopicsRef.current = new Set();
-    const initial = pickRandom(t.topics, 5);
+    const initial = pickRandom(t.topics, 3);
     initial.forEach(tp => usedTopicsRef.current.add(tp.label));
     setSuggestions(initial);
   }, [lang]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -762,7 +762,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const refreshSuggestions = () => {
     usedTopicsRef.current = new Set();
-    const next = pickRandom(t.topics, 5);
+    const next = pickRandom(t.topics, 3);
     next.forEach(tp => usedTopicsRef.current.add(tp.label));
     setSuggestions(next);
   };
@@ -786,7 +786,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setIsStreaming(false);
     setInputText('');
     usedTopicsRef.current = new Set();
-    const fresh = pickRandom(t.topics, 5);
+    const fresh = pickRandom(t.topics, 3);
     fresh.forEach(tp => usedTopicsRef.current.add(tp.label));
     setSuggestions(fresh);
     localStorage.removeItem(`im_chat_${sessionId}`);
@@ -919,6 +919,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           <Header
             recruiterName={context.recruiterName}
             company={context.company}
+            role={context.role}
             action={
               <EndInterviewButton
                 sessionId={sessionId}
@@ -944,6 +945,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             }}
           >
             <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+              <span
+                className="shrink-0 text-[10px] font-semibold uppercase tracking-widest select-none"
+                style={{ color: 'var(--text-muted)', letterSpacing: '0.08em', paddingRight: 2 }}
+              >
+                {t.topicsLabel}
+              </span>
               {suggestions.map((topic) => (
                 <button
                   key={topic.label}
@@ -1136,8 +1143,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
                   boxShadow: '0 2px 12px var(--accent-glow)',
                 } : {
-                  background: 'rgba(255,255,255,0.08)',
-                  opacity: 0.45,
+                  background: 'linear-gradient(135deg, rgba(75,111,255,0.38), rgba(160,64,240,0.38))',
+                  opacity: 0.7,
                 }}
               >
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">

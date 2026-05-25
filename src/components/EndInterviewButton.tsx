@@ -143,11 +143,10 @@ export default function EndInterviewButton({
             cursor: 'pointer',
             fontFamily: 'inherit',
           } : {
-            background: 'var(--glass-1)',
-            border: '0.5px solid var(--glass-border)',
-            color: 'var(--text-muted)',
+            background: 'linear-gradient(135deg, rgba(75,111,255,0.14), rgba(160,64,240,0.14))',
+            border: '0.5px solid rgba(100,100,220,0.22)',
+            color: 'var(--text-secondary)',
             cursor: 'not-allowed',
-            opacity: 0.45,
             fontFamily: 'inherit',
           }}
         >

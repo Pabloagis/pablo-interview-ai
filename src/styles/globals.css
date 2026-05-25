@@ -130,9 +130,9 @@
   --step-num-text:      rgba(120,160,255,0.9);
   --step-cta-color:     rgba(80,180,120,0.9);
 
-  --btn-disabled-bg:    rgba(255,255,255,0.06);
-  --btn-disabled-color: rgba(255,255,255,0.28);
-  --btn-disabled-border:rgba(255,255,255,0.08);
+  --btn-disabled-bg:    rgba(90,110,220,0.18);
+  --btn-disabled-color: rgba(255,255,255,0.52);
+  --btn-disabled-border:rgba(100,120,240,0.22);
 
   --accent-mid:         #6080e8;
   --success-text:       #4ade80;
@@ -265,9 +265,9 @@
   --step-num-text:      rgba(58,85,192,0.9);
   --step-cta-color:     #2d8050;
 
-  --btn-disabled-bg:    rgba(0,0,0,0.05);
-  --btn-disabled-color: rgba(13,17,23,0.28);
-  --btn-disabled-border:rgba(0,0,0,0.08);
+  --btn-disabled-bg:    rgba(60,90,200,0.13);
+  --btn-disabled-color: rgba(13,17,23,0.52);
+  --btn-disabled-border:rgba(60,90,200,0.22);
 
   --accent-mid:         rgba(58,85,192,0.85);
   --success-text:       #1f7a40;
