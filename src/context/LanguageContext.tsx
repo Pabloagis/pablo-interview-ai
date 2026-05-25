@@ -102,6 +102,8 @@ export type Translations = {
   endModalError: string;
   endModalOpenReport: string;
   endModalBackToChat: string;
+  bookCallLabel: string;
+  downloadCvLabel: string;
   endModalSectionExec: string;
   endModalSectionCore: string;
   endModalSectionInsights: string;
@@ -292,6 +294,8 @@ const EN: Translations = {
   endModalError: 'Something went wrong. Please try again.',
   endModalOpenReport: 'Open my insights report →',
   endModalBackToChat: '← Back to conversation',
+  bookCallLabel: 'Book a call',
+  downloadCvLabel: 'Download CV',
   endModalSectionExec: 'Executive Summary',
   endModalSectionCore: 'Core Experience',
   endModalSectionInsights: 'Conversation Insights',
@@ -494,6 +498,8 @@ const ES: Translations = {
   endModalError: 'Algo salió mal. Por favor inténtalo de nuevo.',
   endModalOpenReport: 'Abrir mi informe de insights →',
   endModalBackToChat: '← Volver a la conversación',
+  bookCallLabel: 'Reservar llamada',
+  downloadCvLabel: 'Descargar CV',
   endModalSectionExec: 'Resumen ejecutivo',
   endModalSectionCore: 'Experiencia clave',
   endModalSectionInsights: 'Insights de la conversación',
@@ -696,6 +702,8 @@ const IT: Translations = {
   endModalError: 'Qualcosa è andato storto. Per favore riprova.',
   endModalOpenReport: 'Apri il mio report →',
   endModalBackToChat: '← Torna alla conversazione',
+  bookCallLabel: 'Prenota chiamata',
+  downloadCvLabel: 'Scarica CV',
   endModalSectionExec: 'Sommario esecutivo',
   endModalSectionCore: 'Esperienza chiave',
   endModalSectionInsights: 'Insights conversazione',
@@ -898,6 +906,8 @@ const PT: Translations = {
   endModalError: 'Algo correu mal. Por favor tente novamente.',
   endModalOpenReport: 'Abrir o meu relatório →',
   endModalBackToChat: '← Voltar à conversa',
+  bookCallLabel: 'Agendar chamada',
+  downloadCvLabel: 'Descarregar CV',
   endModalSectionExec: 'Sumário executivo',
   endModalSectionCore: 'Experiência principal',
   endModalSectionInsights: 'Insights da conversa',
