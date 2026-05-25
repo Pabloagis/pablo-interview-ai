@@ -136,6 +136,12 @@
 
   --accent-mid:         #6080e8;
   --success-text:       #4ade80;
+
+  /* ── Background layer (overridden by blend system during transitions) ── */
+  --bg-gradient:  linear-gradient(145deg,#0d0f14 0%,#111520 45%,#0a0e18 100%);
+  --blob-a:       rgba(60,90,200,0.28);
+  --blob-b:       rgba(100,60,180,0.22);
+  --blob-c:       rgba(40,130,160,0.18);
 }
 
 /* ─────────────────────────────────────────────
