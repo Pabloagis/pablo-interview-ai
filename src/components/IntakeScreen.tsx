@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
-import { HowItWorksCard } from './HowItWorksModal';
+import HowItWorksModal from './HowItWorksModal';
 import WhatItIsModal from './WhatItIsModal';
 import Footer from './Footer';
 import Background from './Background';
@@ -37,6 +37,7 @@ export default function IntakeScreen() {
   const [pageReady,     setPageReady]       = useState(false);
   const [showContextWarn, setShowContextWarn] = useState(false);
   const [whatItIsOpen,   setWhatItIsOpen]    = useState(false);
+  const [hiwOpen,        setHiwOpen]         = useState(false);
   const companyInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -413,13 +414,8 @@ export default function IntakeScreen() {
             </p>
           </div>
 
-          {/* ── How it works ── */}
-          <div className="mb-5" style={emerge(300, { sc: 0.88, blur: 4, dur: 450 })}>
-            <HowItWorksCard />
-          </div>
-
           {/* ── What it is trigger ── */}
-          <div className="mb-3" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
+          <div className="mb-3" style={emerge(300, { ty: 24, blur: 8, dur: 580 })}>
             <button
               type="button"
               onClick={() => setWhatItIsOpen(true)}
@@ -443,6 +439,42 @@ export default function IntakeScreen() {
               </svg>
               <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--modal-title)', letterSpacing: '0.01em' }}>
                 {t.whatItIsLabel}
+              </span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                stroke="var(--text-tertiary)" strokeWidth={2}
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </button>
+          </div>
+
+          {/* ── How it works trigger ── */}
+          <div className="mb-5" style={emerge(380, { ty: 24, blur: 8, dur: 580 })}>
+            <button
+              type="button"
+              onClick={() => setHiwOpen(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                width: '100%', padding: '11px 14px 11px 16px',
+                background: 'var(--modal-bg)',
+                border: '0.5px solid var(--modal-border)',
+                borderRadius: 22,
+                cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                stroke="var(--accent-primary)" strokeWidth={1.8}
+                strokeLinecap="round" strokeLinejoin="round"
+                style={{ flexShrink: 0, opacity: 0.75 }}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="16" x2="12" y2="12" />
+                <line x1="12" y1="8" x2="12.01" y2="8" />
+              </svg>
+              <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--modal-title)', letterSpacing: '0.01em' }}>
+                {t.howItWorksTitle}
               </span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="var(--text-tertiary)" strokeWidth={2}
@@ -559,6 +591,10 @@ export default function IntakeScreen() {
       </div>
 
       {/* ── What it is modal ── */}
+      {hiwOpen && (
+        <HowItWorksModal onClose={() => setHiwOpen(false)} />
+      )}
+
       {whatItIsOpen && (
         <WhatItIsModal body={t.visionBody} onClose={() => setWhatItIsOpen(false)} />
       )}
