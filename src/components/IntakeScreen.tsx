@@ -29,6 +29,7 @@ export default function IntakeScreen() {
   const [company,       setCompany]         = useState('');
   const [role,          setRole]            = useState('');
   const [isLoading,     setIsLoading]       = useState(false);
+  const [isResuming,    setIsResuming]      = useState(false);
   const [error,         setError]           = useState('');
   const [resumeSession, setResumeSession]   = useState<ResumeState>(null);
   const [avatarOpen,    setAvatarOpen]      = useState(false);
@@ -49,6 +50,7 @@ export default function IntakeScreen() {
   const splashRoleRef    = useRef<HTMLParagraphElement>(null);
   const splashDivRef     = useRef<HTMLDivElement>(null);
   const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
+  const splashVisionRef  = useRef<HTMLParagraphElement>(null);
   const vignetteRef  = useRef<HTMLDivElement>(null);
   const lightSweepRef = useRef<HTMLDivElement>(null);
   const splashRanRef     = useRef(false);
@@ -192,6 +194,16 @@ export default function IntakeScreen() {
       }, 500, 2200 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
     });
 
+    // 2800ms — Vision phrase fades in below tags
+    const vision = splashVisionRef.current;
+    if (vision) {
+      animate(p => {
+        vision.style.opacity = (p * 0.52).toFixed(4);
+        vision.style.transform = `translateY(${(10 * (1 - p)).toFixed(2)}px)`;
+        vision.style.filter = `blur(${(4 * (1 - p)).toFixed(1)}px)`;
+      }, 700, 2800, eO, () => { vision.style.transform = ''; vision.style.filter = ''; });
+    }
+
     // 4500ms — Cinematic EXIT (two-step)
     after(() => {
       if (!ov) return;
@@ -242,6 +254,7 @@ export default function IntakeScreen() {
       if (!raw) return;
       const data = JSON.parse(raw) as { sessionId:string; recruiterName?:string; email?:string; company?:string; role?:string; consentToEmail?:boolean; };
       sessionStorage.setItem(`session_${data.sessionId}`, JSON.stringify({ recruiterName:data.recruiterName, email:data.email, company:data.company, role:data.role, consentToEmail:data.consentToEmail }));
+      setIsResuming(true);
       router.push(`/interview/${data.sessionId}`);
     } catch { setResumeSession(null); }
   };
@@ -353,9 +366,15 @@ export default function IntakeScreen() {
                 </span>
               </p>
               <div className="flex gap-2 shrink-0">
-                <button type="button" onClick={handleResume}
-                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                  style={{ background:'var(--chip-hover-bg)', color:'var(--chip-hover-text)', border:'0.5px solid var(--chip-hover-border)' }}>
+                <button type="button" onClick={handleResume} disabled={isResuming}
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5"
+                  style={{ background:'var(--chip-hover-bg)', color:'var(--chip-hover-text)', border:'0.5px solid var(--chip-hover-border)', opacity: isResuming ? 0.7 : 1 }}>
+                  {isResuming && (
+                    <svg className="animate-spin" width="10" height="10" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.25"/>
+                      <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                    </svg>
+                  )}
                   {t.resumeBtn}
                 </button>
                 <button type="button" onClick={handleDismissResume}
@@ -391,9 +410,6 @@ export default function IntakeScreen() {
             </h1>
             <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
               {t.intakeSubtitle}
-            </p>
-            <p style={{ fontSize: 13, fontWeight: 500, color:'var(--text-secondary)', lineHeight: 1.6, maxWidth: 320, ...emerge(290, { ty: 14, blur: 5, dur: 500 }) }}>
-              {t.visionTitle}
             </p>
           </div>
 
@@ -509,7 +525,7 @@ export default function IntakeScreen() {
             <button
               type="submit"
               disabled={isSubmitDisabled}
-              className={`w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200${!isSubmitDisabled ? ' btn-primary-cta' : ''}`}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200 flex items-center justify-center gap-2${!isSubmitDisabled ? ' btn-primary-cta' : ''}`}
               style={isSubmitDisabled ? {
                 background: 'var(--btn-disabled-bg)',
                 color: 'var(--btn-disabled-color)',
@@ -519,6 +535,12 @@ export default function IntakeScreen() {
                 cursor: 'pointer',
               }}
             >
+              {isLoading && (
+                <svg className="animate-spin shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3"/>
+                  <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              )}
               {isLoading ? t.buttonStarting : t.buttonStart}
             </button>
           </div>
@@ -642,6 +664,21 @@ export default function IntakeScreen() {
                 </span>
               ))}
             </div>
+
+            {/* Vision phrase */}
+            <p ref={splashVisionRef} style={{
+              fontSize: 10.5,
+              color: 'var(--splash-role)',
+              letterSpacing: '0.02em',
+              lineHeight: 1.6,
+              maxWidth: 260,
+              marginTop: 22,
+              opacity: 0,
+              textAlign: 'center',
+              fontStyle: 'italic',
+            }}>
+              {t.visionTitle}
+            </p>
 
           </div>
         </div>
