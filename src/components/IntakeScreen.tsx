@@ -55,6 +55,8 @@ export default function IntakeScreen() {
   const vignetteRef  = useRef<HTMLDivElement>(null);
   const lightSweepRef = useRef<HTMLDivElement>(null);
   const splashRanRef     = useRef(false);
+  const [splashPaused,   setSplashPaused]   = useState(false);
+  const splashControlRef = useRef<{ pause: () => void; resume: () => void } | null>(null);
 
   // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
@@ -69,18 +71,37 @@ export default function IntakeScreen() {
 
     const timers: ReturnType<typeof setTimeout>[] = [];
     const rafs: number[] = [];
-    const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
-    const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+    const tick = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+
+    // Pause state (local to this animation run)
+    const isPaused = { current: false };
+    const pausedAt = { current: 0 };
+    const pendingList: Array<{ id: ReturnType<typeof setTimeout>; fn: () => void; firesAt: number }> = [];
+
+    const after = (fn: () => void, ms: number) => {
+      const entry = { id: 0 as ReturnType<typeof setTimeout>, fn, firesAt: performance.now() + ms };
+      const id = setTimeout(() => {
+        const idx = pendingList.indexOf(entry);
+        if (idx >= 0) pendingList.splice(idx, 1);
+        fn();
+      }, ms);
+      entry.id = id;
+      timers.push(id);
+      pendingList.push(entry);
+    };
 
     const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);           // easeOutExpo
     const eOC = (t: number) => 1 - Math.pow(1 - t, 3);                             // easeOutCubic
     const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;  // easeInOutQuart
 
-    // Universal animate helper
+    // Universal animate helper — pause-aware
     function animate(fn: (p: number) => void, duration: number, delay: number, easing: (t: number) => number, onDone?: () => void) {
       after(() => {
-        const start = performance.now();
+        let start = performance.now();
+        let last = start;
         const frame = (now: number) => {
+          if (isPaused.current) { start += now - last; }
+          last = now;
           const raw = Math.min((now - start) / duration, 1);
           fn(easing(raw));
           if (raw < 1) tick(frame);
@@ -90,11 +111,14 @@ export default function IntakeScreen() {
       }, delay);
     }
 
-    // Spring with blur + translateY — for avatar entrance
+    // Spring with blur + translateY — for avatar entrance (pause-aware)
     function springAv(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, fromTy: number, peakTy: number, dur: number, delay: number) {
       after(() => {
-        const s = performance.now(), h = dur * 0.55, opDur = dur * 0.38;
+        let s = performance.now(), last = s;
+        const h = dur * 0.55, opDur = dur * 0.38;
         const frame = (now: number) => {
+          if (isPaused.current) { s += now - last; }
+          last = now;
           const elapsed = now - s;
           const e = Math.min(elapsed, dur);
           let sc: number, ty: number;
@@ -132,6 +156,34 @@ export default function IntakeScreen() {
     if (!ov || !wm || !av || !ring || !glow || !nm || !rl || !dv) return;
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
+
+    // Expose pause/resume for hold-to-pause (Instagram Stories style)
+    splashControlRef.current = {
+      pause: () => {
+        if (isPaused.current) return;
+        isPaused.current = true;
+        pausedAt.current = performance.now();
+        pendingList.forEach(entry => clearTimeout(entry.id));
+        setSplashPaused(true);
+      },
+      resume: () => {
+        if (!isPaused.current) return;
+        const pauseDuration = performance.now() - pausedAt.current;
+        isPaused.current = false;
+        [...pendingList].forEach(entry => {
+          entry.firesAt += pauseDuration;
+          const fn = entry.fn;
+          const newId = setTimeout(() => {
+            const idx = pendingList.indexOf(entry);
+            if (idx >= 0) pendingList.splice(idx, 1);
+            fn();
+          }, Math.max(0, entry.firesAt - performance.now()));
+          timers.push(newId);
+          entry.id = newId;
+        });
+        setSplashPaused(false);
+      },
+    };
 
     // ── Phase 1: Vision phrase leads (0–3000ms) ──────────────────────────────
 
@@ -615,7 +667,11 @@ export default function IntakeScreen() {
       {!splashDone && (
         <div
           ref={splashOverlayRef}
-          className="fixed inset-0 z-40 flex flex-col items-center justify-center pointer-events-none overflow-hidden"
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center overflow-hidden"
+          onPointerDown={() => splashControlRef.current?.pause()}
+          onPointerUp={() => splashControlRef.current?.resume()}
+          onPointerLeave={() => splashControlRef.current?.resume()}
+          style={{ cursor: 'default', userSelect: 'none' }}
         >
           {/* Vignette (night mode only) */}
           <div ref={vignetteRef} style={{
@@ -631,6 +687,27 @@ export default function IntakeScreen() {
             background:'linear-gradient(90deg, transparent 0%, rgba(100,130,255,0.22) 50%, transparent 100%)',
             opacity:0, transform:'translateX(-100%)',
           }} />
+
+          {/* Pause indicator */}
+          {splashPaused && (
+            <div style={{
+              position: 'absolute', bottom: 32, left: '50%',
+              transform: 'translateX(-50%)',
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '4px 10px', borderRadius: 999,
+              background: 'rgba(255,255,255,0.07)',
+              border: '0.5px solid rgba(255,255,255,0.13)',
+              pointerEvents: 'none',
+            }}>
+              <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,255,255,0.42)">
+                <rect x="1" y="0" width="3" height="10" rx="1" />
+                <rect x="6" y="0" width="3" height="10" rx="1" />
+              </svg>
+              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
+                paused
+              </span>
+            </div>
+          )}
 
           {/* Vision phrase — HERO, shown first, absolutely centered */}
           <div ref={splashVisionRef} style={{
