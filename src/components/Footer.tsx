@@ -84,6 +84,10 @@ export default function Footer({ variant = 'full' }: FooterProps) {
             {t.footerContact}
           </a>
         </div>
+
+        <p style={{ fontSize: 11.5, fontStyle: 'italic', color: 'var(--text-muted)', marginTop: 16, lineHeight: 1.6, opacity: 0.7 }}>
+          {t.visionClosing}
+        </p>
       </footer>
       {privacyOpen && <PrivacyModal onClose={() => setPrivacyOpen(false)} />}
     </>
