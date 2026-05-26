@@ -47,7 +47,7 @@ Return ONLY this exact JSON structure. No markdown fences. No extra text.
 
 {
   "language": "en",
-  "intro": "1-2 sentences: warm personal message from Pablo referencing something specific from this conversation",
+  "intro": "2-3 sentences written in Pablo's own voice, in first person (I / me / my), directly addressing the recruiter by name. Must sound like a genuine personal note — reference something specific from THIS conversation. Example style: 'Sarah, I genuinely enjoyed our conversation about [topic]. Your questions on [X] helped me articulate [Y] in a way I hadn't before — and I think [Z] is exactly where I can add real value at [company].'",
   "executiveSummary": {
     "headline": "One bold sentence summarising Pablo's fit for this recruiter's context",
     "chips": ["3-5 short keyword tags: skills, traits, or strengths relevant to this role"],
@@ -64,12 +64,13 @@ Return ONLY this exact JSON structure. No markdown fences. No extra text.
     ]
   },
   "recruiterTakeaways": {
-    "items": ["4-5 short actionable takeaways — each max 12 words"]
+    "items": ["4-5 short reasons why Pablo stands out — written for the recruiter to keep, each max 12 words"]
   }
 }
 
 Rules:
 - language: "es" if Spanish, "it" if Italian, "pt" if Portuguese, "en" otherwise
+- intro MUST be in first person as Pablo speaking directly — never third person, never generic
 - Be specific to THIS conversation — reference actual topics, questions, and moments
 - chips: short (1-3 words each), scannable, no duplicates
 - points and items: concrete, not generic — no "Pablo has experience in X" unless tied to a real moment

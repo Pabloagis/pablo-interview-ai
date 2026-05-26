@@ -21,8 +21,8 @@ const SECTION_LABELS: Record<string, Record<Lang, string>> = {
     it: 'Insights della conversazione', pt: 'Insights da conversa',
   },
   recruiterTakeaways: {
-    en: 'Recruiter Takeaways', es: 'Puntos clave',
-    it: 'Punti chiave', pt: 'Pontos-chave',
+    en: 'Why Pablo', es: 'Por qué Pablo',
+    it: 'Perché Pablo', pt: 'Porquê Pablo',
   },
   transcript: {
     en: 'Conversation Transcript', es: 'Transcripción de la conversación',
