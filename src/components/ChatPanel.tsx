@@ -143,7 +143,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
   const [chatSplashDone, setChatSplashDone] = useState(false);
-  const [chatPageEnter, setChatPageEnter] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [insightsReport, setInsightsReport] = useState<ReportData | null>(null);
   const [insightsFetching, setInsightsFetching] = useState(false);
@@ -192,7 +191,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
-    if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); setChatPageEnter(true); }
+    if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); }
   }, [sessionId]);
 
   // Splash 2 — cinematic JS rAF animation (first visit only)
@@ -291,8 +290,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     // 3000ms — EXIT: avatar + name + wordmark fly to their page counterparts simultaneously
     after(() => {
       if (!ov) return;
-
-      setChatPageEnter(true);
 
       // Both landings (name + wordmark) must complete before unmount
       const landingCount = { current: 0 };
@@ -955,24 +952,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const toggleRecording = () => { if (isRecording) { stopRecording(); } else { startRecording(); } };
   const handleDownloadTranscript = () => { window.open(`/api/transcript?sessionId=${sessionId}`, '_blank'); };
 
-  // Page 2 assembly — per-element directional entrance
-  const emerge2 = (
-    delay: number,
-    from: { tx?: number; ty?: number; sc?: number; blur?: number; maxOp?: number; dur?: number } = {}
-  ): React.CSSProperties => {
-    const { tx = 0, ty = 0, sc = 1, blur = 5, maxOp = 1, dur = 500 } = from;
-    const parts: string[] = [];
-    if (tx !== 0) parts.push(`translateX(${tx}px)`);
-    if (ty !== 0) parts.push(`translateY(${ty}px)`);
-    if (sc !== 1) parts.push(`scale(${sc})`);
-    const notReady = parts.length ? parts.join(' ') : 'none';
-    return {
-      opacity: chatPageEnter ? maxOp : 0,
-      transform: chatPageEnter ? 'none' : notReady,
-      filter: chatPageEnter ? 'none' : `blur(${blur}px)`,
-      transition: `opacity ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, transform ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms, filter ${dur}ms cubic-bezier(0.16,1,0.3,1) ${delay}ms`,
-    };
-  };
 
   // Ended screen
   if (interviewEnded !== null) {
@@ -1033,16 +1012,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       {/* Main chat UI */}
       <div
         className="fixed inset-0 flex flex-col overflow-hidden"
-        style={{
-          height: '100dvh',
-          opacity: chatPageEnter ? 1 : 0,
-          transform: chatPageEnter ? 'none' : 'translateY(28px) scale(0.97)',
-          filter: chatPageEnter ? 'none' : 'blur(5px)',
-          transition: 'opacity 600ms cubic-bezier(0.16,1,0.3,1) 240ms, transform 600ms cubic-bezier(0.16,1,0.3,1) 240ms, filter 600ms cubic-bezier(0.16,1,0.3,1) 240ms',
-          contain: 'layout',
-        }}
+        style={{ height: '100dvh', contain: 'layout' }}
       >
-        <div ref={chatHeaderRef} className="shrink-0" style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
+        <div ref={chatHeaderRef} className="shrink-0">
           <Header
             recruiterName={context.recruiterName}
             company={context.company}
@@ -1069,7 +1041,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             style={{
               borderBottom: '0.5px solid var(--chips-strip-border)',
               background: 'var(--chips-strip-bg)',
-              ...emerge2(80, { ty: 12, blur: 4, dur: 460 }),
             }}
           >
             <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
@@ -1111,10 +1082,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-10 w-full">
-              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...(chatPageNameLanded.current ? {} : emerge2(60, { tx: -22, blur: 7, dur: 520 })) }}>
+              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
                 {t.emptyGreeting}
               </h1>
-              <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, ...emerge2(240, { ty: 12, blur: 5, dur: 480, maxOp: 0.7 }) }}>
+              <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, opacity: 0.7 }}>
                 {t.intakeSubtitle}
               </p>
               <div className="w-10 h-px mb-6" style={{ background: 'var(--glass-border)' }} />
@@ -1128,7 +1099,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                     onClick={() => sendMessage(q)}
                     disabled={isStreaming}
                     className="theme-question w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left disabled:opacity-40"
-                    style={emerge2(420 + i * 80, { ty: 20, blur: 6, dur: 460 })}
                   >
                     <span className="q-label text-sm">{q}</span>
                     <span className="q-arrow ml-3 shrink-0">↗</span>
@@ -1167,7 +1137,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             background: 'var(--input-area-bg)',
             backdropFilter: 'blur(20px)',
             WebkitBackdropFilter: 'blur(20px)',
-            ...emerge2(680, { ty: 14, blur: 4, dur: 460 }),
           }}
         >
           {/* Playing indicator */}
