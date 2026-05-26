@@ -1189,24 +1189,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-10 w-full">
-              {/* Avatar with spinning ring */}
-              <div
-                ref={chatPageAvatarRef}
-                className="relative mb-5"
-                style={{ width: 96, height: 96, ...(chatSharedTransitionRan.current ? {} : emerge2(60, { sc: 0.85, blur: 6, dur: 550 })) }}
-              >
-                <div className="absolute inset-0 rounded-full" style={{
-                  background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
-                  animation: 'ring-spin 3.5s linear infinite',
-                  padding: 2,
-                }}>
-                  <div className="w-full h-full rounded-full" style={{ background: 'var(--bg-base)' }} />
-                </div>
-                <div className="absolute rounded-full overflow-hidden" style={{ inset: 3 }}>
-                  <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
-                </div>
-              </div>
-              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...(chatPageNameLanded.current ? {} : emerge2(160, { tx: -22, blur: 7, dur: 520 })) }}>
+              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...(chatPageNameLanded.current ? {} : emerge2(60, { tx: -22, blur: 7, dur: 520 })) }}>
                 {t.emptyGreeting}
               </h1>
               <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, ...emerge2(240, { ty: 12, blur: 5, dur: 480, maxOp: 0.7 }) }}>
