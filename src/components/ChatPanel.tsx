@@ -188,10 +188,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const interviewEndedRef = useRef(false);
   const s2RanRef              = useRef(false);
   const s2ProgressRef         = useRef<HTMLDivElement>(null);
-  const chatPageAvatarRef     = useRef<HTMLDivElement>(null);
-  const chatPageWordmarkRef   = useRef<HTMLSpanElement>(null);
-  const chatHeaderRef         = useRef<HTMLDivElement>(null);
+  const chatPageAvatarRef       = useRef<HTMLDivElement>(null);
+  const chatPageWordmarkRef     = useRef<HTMLSpanElement>(null);
+  const chatHeaderRef           = useRef<HTMLDivElement>(null);
+  const chatPageNameRef         = useRef<HTMLHeadingElement>(null);
   const chatSharedTransitionRan = useRef(false);
+  const chatPageNameLanded      = useRef(false);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -327,30 +329,78 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       }, 500, 1130, eO, () => { txt.style.transform = ''; txt.style.filter = ''; });
     }
 
-    // 3000ms — EXIT: shared element transitions (avatar + wordmark fly to page)
+    // 3000ms — EXIT: avatar + name + wordmark fly to their page counterparts simultaneously
     after(() => {
       if (!ov) return;
 
-      // Silence glow halo (ring travels with avatar)
       gl.style.opacity = '0';
-
-      // Make page visible so element positions can be measured after paint
       setChatPageEnter(true);
 
-      // Both avatar AND wordmark must call checkDone before splash unmounts
+      // All 3 landings (avatar + name + wordmark) must complete before unmount
       const landingCount = { current: 0 };
       const checkDone = () => {
         landingCount.current += 1;
-        if (landingCount.current >= 2) {
+        if (landingCount.current >= 3) {
           setChatSplashDone(true);
           sessionStorage.setItem(`im_s2_${sessionId}`, '1');
         }
       };
 
-      // ── Wordmark illumination starts immediately (no double-rAF needed) ──
+      // Fly a splash element to its page counterpart.
+      const flyTo = (
+        splashEl: HTMLElement,
+        pageEl: HTMLElement,
+        duration: number,
+        delayMs: number,
+        onLand?: () => void
+      ) => {
+        pageEl.style.opacity    = '0';
+        pageEl.style.transition = 'none';
+        pageEl.style.transform  = ''; // reset so getBoundingClientRect is at natural position
+
+        const sr = splashEl.getBoundingClientRect();
+        const pr = pageEl.getBoundingClientRect();
+
+        if (pr.width === 0 && pr.height === 0) {
+          animate(p => { splashEl.style.opacity = (1 - p).toFixed(4); }, 300, delayMs, eIO);
+          after(() => { pageEl.style.opacity = '1'; if (onLand) onLand(); }, delayMs + 300);
+          return;
+        }
+
+        const dx = pr.left - sr.left + (pr.width  - sr.width)  / 2;
+        const dy = pr.top  - sr.top  + (pr.height - sr.height) / 2;
+        const scaleTo      = Math.max(pr.width / sr.width, 0.3);
+        const startOpacity = parseFloat(splashEl.style.opacity || '1');
+
+        animate(
+          p => {
+            splashEl.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTo - 1) * p).toFixed(4)})`;
+            splashEl.style.opacity   = p > 0.80
+              ? (startOpacity * (1 - (p - 0.80) / 0.20)).toFixed(4)
+              : startOpacity.toFixed(4);
+          },
+          duration, delayMs, eO,
+          () => {
+            splashEl.style.opacity   = '0';
+            splashEl.style.transform = '';
+
+            pageEl.style.opacity    = '1';
+            pageEl.style.transform  = 'scale(0.96)';
+            pageEl.style.transition = 'none';
+            requestAnimationFrame(() => {
+              pageEl.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
+              pageEl.style.transform  = 'scale(1)';
+            });
+
+            if (onLand) setTimeout(onLand, 300);
+          }
+        );
+      };
+
+      // ── Wordmark: illuminate → fly to nav wordmark ──
       const wmBaseOp   = dayMode ? 0.52 : 0.52;
       const wmBrightOp = 0.75;
-      const wmGc = dayMode ? '58,85,192' : '120,150,255';
+      const wmGc       = dayMode ? '58,85,192' : '120,150,255';
       animate(
         p => {
           wm.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
@@ -358,7 +408,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         },
         250, 0, eO,
         () => {
-          // After illumination: measure and fly (or fallback-fade if no target)
           requestAnimationFrame(() => {
             requestAnimationFrame(() => {
               const pageWmEl = chatPageWordmarkRef.current;
@@ -367,7 +416,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               const hasTarget    = pageWmEl && pageWmRect && pageWmRect.width > 0;
 
               if (!hasTarget) {
-                // Fallback: fade out
                 animate(
                   p => {
                     wm.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
@@ -379,7 +427,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 return;
               }
 
-              // Force header wrapper to final state so rect is accurate
+              // Force header to final state for accurate rect measurement
               if (chatHeaderRef.current) {
                 chatHeaderRef.current.style.transform  = 'none';
                 chatHeaderRef.current.style.opacity    = '1';
@@ -387,17 +435,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 chatHeaderRef.current.style.transition = 'none';
               }
 
-              // Hide page wordmark during flight
-              pageWmEl.style.opacity   = '0';
+              pageWmEl.style.opacity    = '0';
               pageWmEl.style.transition = 'none';
 
-              // Re-measure after forcing header to final position
               const pageWmRectFinal = pageWmEl.getBoundingClientRect();
-              const wmDx = (pageWmRectFinal.left + pageWmRectFinal.width  / 2) - (splashWmRect.left + splashWmRect.width  / 2);
-              const wmDy = (pageWmRectFinal.top  + pageWmRectFinal.height / 2) - (splashWmRect.top  + splashWmRect.height / 2);
+              const wmDx    = (pageWmRectFinal.left + pageWmRectFinal.width  / 2) - (splashWmRect.left + splashWmRect.width  / 2);
+              const wmDy    = (pageWmRectFinal.top  + pageWmRectFinal.height / 2) - (splashWmRect.top  + splashWmRect.height / 2);
               const wmScale = Math.min(pageWmRectFinal.width / splashWmRect.width, 2.5);
 
-              // Wordmark flight: 500ms, eO
               animate(
                 p => {
                   wm.style.transform  = `translate(${(wmDx * p).toFixed(2)}px, ${(wmDy * p).toFixed(2)}px) scale(${(1 + (wmScale - 1) * p).toFixed(4)})`;
@@ -406,18 +451,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 },
                 500, 0, eO,
                 () => {
-                  // Landing: swap to page wordmark with arrival glow
-                  wm.style.opacity    = '0';
-                  wm.style.textShadow = 'none';
-
-                  pageWmEl.style.opacity   = '1';
+                  wm.style.opacity = '0'; wm.style.textShadow = 'none';
+                  pageWmEl.style.opacity    = '1';
                   pageWmEl.style.transition = 'none';
                   pageWmEl.style.textShadow = `0 0 12px rgba(${wmGc},0.40)`;
                   requestAnimationFrame(() => {
-                    pageWmEl.style.transition  = 'text-shadow 800ms ease';
-                    pageWmEl.style.textShadow  = 'none';
+                    pageWmEl.style.transition = 'text-shadow 800ms ease';
+                    pageWmEl.style.textShadow = 'none';
                   });
-
                   checkDone();
                 }
               );
@@ -429,55 +470,58 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const pageAvEl = chatPageAvatarRef.current;
+          const pageNmEl = chatPageNameRef.current;
 
-          if (!av || !pageAvEl) {
-            checkDone(); // avatar fallback counts as done
-            return;
-          }
+          // ── Avatar flight (custom: keeps ring fade, 0.94 spring) ──
+          if (av && pageAvEl) {
+            pageAvEl.style.opacity    = '0';
+            pageAvEl.style.transition = 'none';
 
-          // Hide page avatar during flight
-          pageAvEl.style.opacity   = '0';
-          pageAvEl.style.transition = 'none';
+            // Fade status elements (dot, status text); name is flying
+            const ctxEls = [dot, txt].filter(Boolean) as HTMLElement[];
+            const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
+            animate(p => {
+              ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
+            }, 160, 0, eIO);
+            if (prog) prog.style.opacity = '0';
 
-          // Fade out context elements (wordmark excluded — handles itself above)
-          const ctxEls = [nm, dot, txt].filter(Boolean) as HTMLElement[];
-          const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
-          animate(p => {
-            ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
-          }, 160, 0, eIO);
-          if (prog) prog.style.opacity = '0';
+            const splashRect  = av.getBoundingClientRect();
+            const pageRect    = pageAvEl.getBoundingClientRect();
+            const avDx        = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
+            const avDy        = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
+            const avScale     = pageRect.width / splashRect.width;
 
-          // Measure avatar positions
-          const splashRect  = av.getBoundingClientRect();
-          const pageRect    = pageAvEl.getBoundingClientRect();
-          const avDx        = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
-          const avDy        = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
-          const avScale     = pageRect.width / splashRect.width;
+            animate(
+              p => {
+                av.style.transform = `translate(${(avDx * p).toFixed(2)}px, ${(avDy * p).toFixed(2)}px) scale(${(1 + (avScale - 1) * p).toFixed(4)})`;
+                rg.style.opacity   = (1 - p * 0.85).toFixed(4);
+                av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
+              },
+              550, 60, eO,
+              () => {
+                av.style.opacity = '0';
+                chatSharedTransitionRan.current = true;
 
-          // Avatar flight: 60ms delay, 550ms, eO
-          animate(
-            p => {
-              av.style.transform = `translate(${(avDx * p).toFixed(2)}px, ${(avDy * p).toFixed(2)}px) scale(${(1 + (avScale - 1) * p).toFixed(4)})`;
-              rg.style.opacity   = (1 - p * 0.85).toFixed(4);
-              av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
-            },
-            550, 60, eO,
-            () => {
-              // Landing: swap to page avatar with spring pop
-              av.style.opacity = '0';
-              chatSharedTransitionRan.current = true;
+                pageAvEl.style.opacity    = '1';
+                pageAvEl.style.transition = 'none';
+                pageAvEl.style.transform  = 'scale(0.94)';
 
-              pageAvEl.style.opacity   = '1';
-              pageAvEl.style.transition = 'none';
-              pageAvEl.style.transform  = 'scale(0.94)';
+                requestAnimationFrame(() => {
+                  pageAvEl.style.transition = 'transform 260ms cubic-bezier(0.34,1.56,0.64,1)';
+                  pageAvEl.style.transform  = 'scale(1.0)';
+                  setTimeout(checkDone, 260);
+                });
+              }
+            );
+          } else { checkDone(); }
 
-              requestAnimationFrame(() => {
-                pageAvEl.style.transition = 'transform 260ms cubic-bezier(0.34,1.56,0.64,1)';
-                pageAvEl.style.transform  = 'scale(1.0)';
-                setTimeout(checkDone, 260);
-              });
-            }
-          );
+          // ── Name flight ──
+          if (nm && pageNmEl) {
+            flyTo(nm, pageNmEl, 520, 40, () => {
+              chatPageNameLanded.current = true;
+              checkDone();
+            });
+          } else { checkDone(); }
         });
       });
     }, 3000);
@@ -1162,7 +1206,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                   <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
                 </div>
               </div>
-              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...emerge2(160, { tx: -22, blur: 7, dur: 520 }) }}>
+              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em', ...(chatPageNameLanded.current ? {} : emerge2(160, { tx: -22, blur: 7, dur: 520 })) }}>
                 {t.emptyGreeting}
               </h1>
               <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, ...emerge2(240, { ty: 12, blur: 5, dur: 480, maxOp: 0.7 }) }}>

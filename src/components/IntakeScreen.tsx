@@ -59,7 +59,11 @@ export default function IntakeScreen() {
   const splashRanRef     = useRef(false);
   const [splashPaused,   setSplashPaused]   = useState(false);
   const splashControlRef = useRef<{ pause: () => void; resume: () => void } | null>(null);
-  const sharedTransitionRan = useRef(false);
+  const sharedTransitionRan   = useRef(false);
+  const pageNameRef           = useRef<HTMLHeadingElement>(null);
+  const pageTaglineRef        = useRef<HTMLParagraphElement>(null);
+  const pageNameLanded        = useRef(false);
+  const pageTaglineLanded     = useRef(false);
 
   // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
@@ -301,109 +305,179 @@ export default function IntakeScreen() {
       }, 520, 5200 + i * 90, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
     });
 
-    // 6600ms — EXIT: shared element transitions (avatar + wordmark)
+    // 6600ms — EXIT: all elements fly to their page counterparts simultaneously
     after(() => {
       if (!ov) return;
 
-      // Stop glow pulse (ring stays visible and travels with the avatar)
       glow.style.animation = 'none';
-
-      // Make page visible so positions can be measured after paint
       setPageReady(true);
 
-      // Both avatar AND wordmark must call checkDone before splash unmounts
+      // All 4 landings (avatar + name + tagline + wordmark) must complete before unmount
       const landingCount = { current: 0 };
       const checkDone = () => {
         landingCount.current += 1;
-        if (landingCount.current >= 2) {
+        if (landingCount.current >= 4) {
           setSplashDone(true);
           sessionStorage.setItem('im_splash_shown', '1');
         }
       };
 
-      // ── Wordmark: illuminate → fallback fade (no page wordmark on Page 1) ──
-      // Excluded from ctxEls — handles its own exit
-      const wmEl = wm;
-      const wmBaseOp  = dayMode ? 0.30 : 0.28;
-      const wmBrightOp = dayMode ? 0.55 : 0.65;
-      const wmGc       = dayMode ? '58,85,192' : '140,170,255';
-      animate(
-        p => {
-          wmEl.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
-          wmEl.style.textShadow = dayMode
-            ? `0 0 ${(32 * p).toFixed(1)}px rgba(58,85,192,${(0.50 * p).toFixed(2)}), 0 0 ${(60 * p).toFixed(1)}px rgba(58,85,192,${(0.18 * p).toFixed(2)})`
-            : `0 0 ${(40 * p).toFixed(1)}px rgba(140,170,255,${(0.80 * p).toFixed(2)}), 0 0 ${(80 * p).toFixed(1)}px rgba(100,130,255,${(0.30 * p).toFixed(2)})`;
-        },
-        300, 0, eO,
-        () => {
-          // Fallback: fade out wordmark (no destination to fly to)
-          animate(
-            p => {
-              wmEl.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
-              wmEl.style.textShadow = `0 0 ${(40 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.80 * (1 - p)).toFixed(2)})`;
-            },
-            300, 0, eO,
-            () => { wmEl.style.textShadow = 'none'; checkDone(); }
-          );
+      // Fly a splash element to its page counterpart.
+      // Measures positions, translates+scales the splash element, then reveals the page element.
+      const flyTo = (
+        splashEl: HTMLElement,
+        pageEl: HTMLElement,
+        duration: number,
+        delayMs: number,
+        onLand?: () => void
+      ) => {
+        pageEl.style.opacity    = '0';
+        pageEl.style.transition = 'none';
+        pageEl.style.transform  = ''; // reset so getBoundingClientRect is at natural position
+
+        const sr = splashEl.getBoundingClientRect();
+        const pr = pageEl.getBoundingClientRect();
+
+        // Fallback: element not yet rendered — fade out splash, reveal page
+        if (pr.width === 0 && pr.height === 0) {
+          animate(p => { splashEl.style.opacity = (1 - p).toFixed(4); }, 300, delayMs, eIO);
+          after(() => { pageEl.style.opacity = '1'; if (onLand) onLand(); }, delayMs + 300);
+          return;
         }
-      );
+
+        const dx = pr.left - sr.left + (pr.width  - sr.width)  / 2;
+        const dy = pr.top  - sr.top  + (pr.height - sr.height) / 2;
+        const scaleTo     = Math.max(pr.width / sr.width, 0.3);
+        const startOpacity = parseFloat(splashEl.style.opacity || '1');
+
+        animate(
+          p => {
+            splashEl.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTo - 1) * p).toFixed(4)})`;
+            splashEl.style.opacity   = p > 0.80
+              ? (startOpacity * (1 - (p - 0.80) / 0.20)).toFixed(4)
+              : startOpacity.toFixed(4);
+          },
+          duration, delayMs, eO,
+          () => {
+            splashEl.style.opacity   = '0';
+            splashEl.style.transform = '';
+
+            // Reveal page element with micro-spring pop
+            pageEl.style.opacity    = '1';
+            pageEl.style.transform  = 'scale(0.96)';
+            pageEl.style.transition = 'none';
+            requestAnimationFrame(() => {
+              pageEl.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
+              pageEl.style.transform  = 'scale(1)';
+            });
+
+            // Wait for spring to complete before signalling done
+            if (onLand) setTimeout(onLand, 300);
+          }
+        );
+      };
 
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const pageAvEl = welcomeAvRef.current;
+          const pageNmEl = pageNameRef.current;
+          const pageRlEl = pageTaglineRef.current;
 
-          if (!av || !pageAvEl) {
-            checkDone(); // avatar fallback counts as done
-            return;
-          }
+          // ── Avatar flight (custom: keeps ring + glow, 0.94 spring) ──
+          if (av && pageAvEl) {
+            pageAvEl.style.opacity    = '0';
+            pageAvEl.style.transition = 'none';
 
-          // Hide page avatar during flight so it doesn't double-show
-          pageAvEl.style.opacity   = '0';
-          pageAvEl.style.transition = 'none';
+            const splashRect  = av.getBoundingClientRect();
+            const pageRect    = pageAvEl.getBoundingClientRect();
+            const dx          = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
+            const dy          = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
+            const scaleTarget = pageRect.width / splashRect.width;
 
-          // Fade out context elements (wordmark excluded — handles itself)
-          const ctxEls = [
-            splashNameRef.current, splashRoleRef.current,
-            splashDivRef.current, vignetteRef.current,
-            ...splashTagsRef.current.filter(Boolean),
-          ].filter(Boolean) as HTMLElement[];
-          const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
-          animate(p => {
-            ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
-          }, 180, 0, eIO);
-          if (splashVisionRef.current) splashVisionRef.current.style.opacity = '0';
+            animate(
+              p => {
+                av.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTarget - 1) * p).toFixed(4)})`;
+                ring.style.opacity = (1 - p * 0.85).toFixed(4);
+                glow.style.opacity = (1 - p).toFixed(4);
+                av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
+              },
+              600, 80, eO,
+              () => {
+                av.style.opacity = '0';
+                sharedTransitionRan.current = true;
 
-          // Measure screen-space positions
-          const splashRect = av.getBoundingClientRect();
-          const pageRect   = pageAvEl.getBoundingClientRect();
-          const dx = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
-          const dy = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
-          const scaleTarget = pageRect.width / splashRect.width;
+                pageAvEl.style.opacity    = '1';
+                pageAvEl.style.transition = 'none';
+                pageAvEl.style.transform  = 'scale(0.94)';
 
-          // Avatar flight: 80ms delay, 600ms, eO
+                requestAnimationFrame(() => {
+                  pageAvEl.style.transition = 'transform 280ms cubic-bezier(0.34,1.56,0.64,1)';
+                  pageAvEl.style.transform  = 'scale(1.0)';
+                  setTimeout(checkDone, 280);
+                });
+              }
+            );
+          } else { checkDone(); }
+
+          // ── Name flight ──
+          if (nm && pageNmEl) {
+            flyTo(nm, pageNmEl, 580, 40, () => {
+              pageNameLanded.current = true;
+              checkDone();
+            });
+          } else { checkDone(); }
+
+          // ── Tagline/Role flight ──
+          if (rl && pageRlEl) {
+            flyTo(rl, pageRlEl, 540, 80, () => {
+              pageTaglineLanded.current = true;
+              checkDone();
+            });
+          } else { checkDone(); }
+
+          // ── Wordmark: illuminate → fallback fade (Page 1 has no nav wordmark) ──
+          const wmEl       = wm;
+          const wmBaseOp   = dayMode ? 0.30 : 0.28;
+          const wmBrightOp = dayMode ? 0.55 : 0.65;
+          const wmGc       = dayMode ? '58,85,192' : '140,170,255';
           animate(
             p => {
-              av.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTarget - 1) * p).toFixed(4)})`;
-              ring.style.opacity = (1 - p * 0.85).toFixed(4);
-              glow.style.opacity = (1 - p).toFixed(4);
-              av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
+              wmEl.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
+              wmEl.style.textShadow = dayMode
+                ? `0 0 ${(32 * p).toFixed(1)}px rgba(58,85,192,${(0.50 * p).toFixed(2)}), 0 0 ${(60 * p).toFixed(1)}px rgba(58,85,192,${(0.18 * p).toFixed(2)})`
+                : `0 0 ${(40 * p).toFixed(1)}px rgba(140,170,255,${(0.80 * p).toFixed(2)}), 0 0 ${(80 * p).toFixed(1)}px rgba(100,130,255,${(0.30 * p).toFixed(2)})`;
             },
-            600, 80, eO,
-            () => {
-              av.style.opacity = '0';
-              sharedTransitionRan.current = true;
-
-              pageAvEl.style.opacity   = '1';
-              pageAvEl.style.transition = 'none';
-              pageAvEl.style.transform  = 'scale(0.94)';
-
-              requestAnimationFrame(() => {
-                pageAvEl.style.transition = 'transform 280ms cubic-bezier(0.34,1.56,0.64,1)';
-                pageAvEl.style.transform  = 'scale(1.0)';
-                setTimeout(checkDone, 280);
-              });
-            }
+            300, 0, eO,
+            () => animate(
+              p => {
+                wmEl.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
+                wmEl.style.textShadow = `0 0 ${(40 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.80 * (1 - p)).toFixed(2)})`;
+              },
+              300, 0, eO,
+              () => { wmEl.style.textShadow = 'none'; checkDone(); }
+            )
           );
+
+          // ── Elements without page counterparts — dissolve gracefully ──
+
+          // Tags — staggered fade
+          tags.forEach((tag, i) => {
+            animate(p => { tag.style.opacity = (1 - p).toFixed(4); }, 200, i * 40, eIO);
+          });
+
+          // Divider
+          if (dv) {
+            const dvOp = parseFloat(dv.style.opacity || '0');
+            animate(p => { dv.style.opacity = (dvOp * (1 - p)).toFixed(4); }, 180, 0, eIO);
+          }
+
+          // Vignette
+          if (vig) {
+            const vigOp = parseFloat(vig.style.opacity || '0');
+            animate(p => { vig.style.opacity = (vigOp * (1 - p)).toFixed(4); }, 300, 0, eIO);
+          }
+
+          if (splashVisionRef.current) splashVisionRef.current.style.opacity = '0';
         });
       });
     }, 6600);
@@ -586,10 +660,10 @@ export default function IntakeScreen() {
                 <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
               </div>
             </button>
-            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...emerge(140, { tx: -24, blur: 8, dur: 550 }) }}>
+            <h1 ref={pageNameRef} className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...(pageNameLanded.current ? {} : emerge(140, { tx: -24, blur: 8, dur: 550 })) }}>
               {t.emptyGreeting}
             </h1>
-            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
+            <p ref={pageTaglineRef} style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...(pageTaglineLanded.current ? {} : emerge(220, { ty: 14, blur: 5, dur: 500 })) }}>
               {t.intakeSubtitle}
             </p>
           </div>
