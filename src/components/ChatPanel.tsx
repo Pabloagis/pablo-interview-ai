@@ -187,6 +187,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const interviewEndedRef = useRef(false);
   const s2RanRef          = useRef(false);
+  const s2ProgressRef     = useRef<HTMLDivElement>(null);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -251,14 +252,38 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     const ov  = s2OverlayRef.current, av = s2AvRef.current, rg = s2RingRef.current;
     const gl  = s2GlowRef.current, nm = s2NameRef.current, wm = s2WmRef.current;
     const dot = s2StatusDotRef.current, txt = s2StatusTextRef.current;
+    const prog = s2ProgressRef.current;
     if (!ov || !av || !rg || !gl || !nm || !wm) return;
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
 
+    // Progress bar — linear fill over full splash duration (3050ms hold + 550ms exit)
+    if (prog) {
+      const TOTAL_MS = 3600;
+      const pStart = performance.now();
+      const _prog = prog;
+      function progressFrame(now: number) {
+        const p = Math.min((now - pStart) / TOTAL_MS, 1);
+        _prog.style.width = `${(p * 100).toFixed(2)}%`;
+        if (p < 1) tick(progressFrame);
+      }
+      tick(progressFrame);
+    }
+
+    const wmTargetOp = dayMode ? 0.48 : 0.52;
+
+    // 0ms: Wordmark levitates from below as a background motion — runs concurrently
+    // with the main content so "Pablo Agis Burgos" (the star) appears at its natural timing
+    animate(p => {
+      wm.style.transform = `translateY(${(120 * (1 - p)).toFixed(2)}px)`;
+      wm.style.opacity = (p * wmTargetOp).toFixed(4);
+      wm.style.filter = p > 0.95 ? '' : `blur(${(6 * (1 - p)).toFixed(1)}px)`;
+    }, 1300, 0, eOC, () => { wm.style.transform = ''; wm.style.filter = ''; });
+
     // 0ms: Avatar springs from depth with translateY
     springAv(av, 0.60, 1.06, 1.0, 18, 6, -1, 680, 0);
 
-    // 360ms: Name assembles from left
+    // 360ms: Name assembles from left — the main focal point of the splash
     animate(p => {
       nm.style.opacity = p.toFixed(4);
       nm.style.transform = `translateX(${(-36 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
@@ -271,13 +296,10 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     // 420ms: Glow activates
     after(() => { gl.style.transition = 'opacity 600ms ease'; gl.style.opacity = '0.9'; }, 420);
 
-    // 700ms: Wordmark with tracking compression
-    const wmTargetOp = dayMode ? 0.48 : 0.52;
+    // 700ms: Wordmark tracking compression (opacity/transform owned by levitation above)
     animate(p => {
       const tracking = 0.28 - (0.28 - 0.20) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
-      wm.style.opacity = (p * wmTargetOp).toFixed(4);
-      wm.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
     }, 650, 700, eO);
 
     // 1000ms: Status dot spring
@@ -1312,6 +1334,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 color: 'var(--splash-wm)',
                 letterSpacing: '0.28em', textTransform: 'uppercase',
                 marginTop: 28, opacity: 0, filter: 'blur(6px)',
+                transform: 'translateY(120px)',
               }}
             >
               InterviewMind
@@ -1338,6 +1361,21 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 IA lista · Conectando sesión
               </span>
             </div>
+          </div>
+
+          {/* Progress bar — barely visible, fills over splash duration */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: 1.5,
+            background: 'rgba(120,120,200,0.08)',
+          }}>
+            <div
+              ref={s2ProgressRef}
+              style={{
+                height: '100%', width: '0%',
+                background: 'linear-gradient(90deg, rgba(80,110,220,0.28), rgba(130,80,210,0.28))',
+              }}
+            />
           </div>
         </div>
       )}

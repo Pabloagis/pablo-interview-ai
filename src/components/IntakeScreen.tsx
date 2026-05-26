@@ -189,17 +189,17 @@ export default function IntakeScreen() {
 
     const vision = splashVisionRef.current;
     if (vision) {
-      // 0ms — blur + scale in from center (translate kept every frame)
+      // 0ms — blur + scale + float in from below (gravity gives it presence)
       animate(p => {
         vision.style.opacity   = p.toFixed(4);
         vision.style.filter    = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-        vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
+        vision.style.transform = `translate(-50%, calc(-50% + ${(8 * (1 - p)).toFixed(2)}px)) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
       }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
 
-      // 3300ms — fade out, leaving enough time to read
+      // 3300ms — cinematic fade out: blurs hard, handing off to phase 2
       animate(p => {
         vision.style.opacity   = (1 - p).toFixed(4);
-        vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
+        vision.style.filter    = `blur(${(12 * p).toFixed(1)}px)`;
         vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
       }, 400, 3300, eIO, () => { vision.style.display = 'none'; });
     }
@@ -211,12 +211,20 @@ export default function IntakeScreen() {
       animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 3100, eIO);
     }
 
-    // 3300ms — Wordmark: blur + tracking compression
+    // 0ms — Wordmark ghost-levitates behind the vision phrase throughout phase 1
+    // Barely perceptible — vision phrase owns the frame, wordmark is atmosphere
+    const GHOST_OP = 0.09;
+    animate(p => {
+      wm.style.transform = `translateY(${(100 * (1 - p)).toFixed(2)}px)`;
+      wm.style.opacity = (p * GHOST_OP).toFixed(4);
+    }, 3300, 0, eOC);
+
+    // 3300ms — Wordmark: full reveal, picks up from ghost opacity seamlessly
     const wmTargetOp = dayMode ? 0.30 : 0.28;
     animate(p => {
       const tracking = 0.32 - (0.32 - 0.22) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
-      wm.style.opacity = (p * wmTargetOp).toFixed(4);
+      wm.style.opacity = (GHOST_OP + p * (wmTargetOp - GHOST_OP)).toFixed(4);
       wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
     }, 1000, 3300, eO);
 
@@ -762,6 +770,7 @@ export default function IntakeScreen() {
               fontSize:10, fontWeight:500, color:'var(--splash-wm)',
               letterSpacing:'0.32em', textTransform:'uppercase',
               marginBottom:52, opacity:0, filter:'blur(8px)',
+              transform:'translateY(100px)',
             }}>
               INTERVIEWMIND
             </p>
