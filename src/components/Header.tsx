@@ -9,9 +9,10 @@ interface HeaderProps {
   company?: string;
   role?: string;
   action?: React.ReactNode;
+  wordmarkRef?: React.RefObject<HTMLSpanElement>;
 }
 
-export default function Header({ recruiterName, company, role, action }: HeaderProps) {
+export default function Header({ recruiterName, company, role, action, wordmarkRef }: HeaderProps) {
   const { t } = useLanguage();
 
   return (
@@ -62,7 +63,7 @@ export default function Header({ recruiterName, company, role, action }: HeaderP
 
       {/* Center: wordmark — flex-1 on both sides keeps this truly centered */}
       <div className="shrink-0 flex items-center justify-center">
-        <span style={{
+        <span ref={wordmarkRef} style={{
           fontSize: 11,
           fontWeight: 600,
           letterSpacing: '0.18em',

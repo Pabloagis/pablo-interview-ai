@@ -186,8 +186,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const dismissPersistentReminderRef = useRef<() => void>();
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const interviewEndedRef = useRef(false);
-  const s2RanRef          = useRef(false);
-  const s2ProgressRef     = useRef<HTMLDivElement>(null);
+  const s2RanRef              = useRef(false);
+  const s2ProgressRef         = useRef<HTMLDivElement>(null);
+  const chatPageAvatarRef     = useRef<HTMLDivElement>(null);
+  const chatPageWordmarkRef   = useRef<HTMLSpanElement>(null);
+  const chatHeaderRef         = useRef<HTMLDivElement>(null);
+  const chatSharedTransitionRan = useRef(false);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -257,89 +261,226 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
 
-    // Progress bar — linear fill over full splash duration (hold 3050ms + exit 550ms)
+    // Progress bar — eIO fill starting at 200ms delay (CHANGE 22)
     if (prog) {
       const TOTAL_MS = 3600;
-      const pStart = performance.now();
       const _prog = prog;
-      function progressFrame(now: number) {
-        const p = Math.min((now - pStart) / TOTAL_MS, 1);
-        _prog.style.width = `${(p * 100).toFixed(2)}%`;
-        if (p < 1) tick(progressFrame);
-      }
-      tick(progressFrame);
+      after(() => {
+        const pStart = performance.now();
+        function progressFrame(now: number) {
+          const p = Math.min((now - pStart) / TOTAL_MS, 1);
+          _prog.style.width = `${(eIO(p) * 100).toFixed(2)}%`;
+          if (p < 1) tick(progressFrame);
+        }
+        tick(progressFrame);
+      }, 200);
     }
 
-    // 0ms: Avatar springs from depth with translateY
-    springAv(av, 0.60, 1.06, 1.0, 18, 6, -1, 680, 0);
+    // 0ms: Avatar springs from depth with translateY (CHANGE 15)
+    springAv(av, 0.55, 1.08, 1.0, 22, 8, -2, 820, 0);
 
-    // 360ms: Name assembles from left
+    // 400ms: Name assembles from left (CHANGE 18)
     animate(p => {
       nm.style.opacity = p.toFixed(4);
-      nm.style.transform = `translateX(${(-36 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
-      nm.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
-    }, 600, 360, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
+      nm.style.transform = `translateX(${(-44 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
+      nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
+    }, 680, 400, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
 
-    // 380ms: Ring activates
-    after(() => { rg.style.transition = 'opacity 700ms ease'; rg.style.opacity = '1'; }, 380);
+    // 360ms: Ring activates (CHANGE 16)
+    after(() => { rg.style.transition = 'opacity 900ms ease'; rg.style.opacity = '1'; }, 360);
 
-    // 420ms: Glow activates
-    after(() => { gl.style.transition = 'opacity 600ms ease'; gl.style.opacity = '0.9'; }, 420);
+    // 400ms: Glow activates (CHANGE 17)
+    after(() => { gl.style.transition = 'opacity 800ms ease'; gl.style.opacity = '1'; }, 400);
 
-    // 700ms: Wordmark with tracking compression
+    // 780ms: Wordmark with tracking compression (CHANGE 19)
     const wmTargetOp = dayMode ? 0.48 : 0.52;
     animate(p => {
       const tracking = 0.28 - (0.28 - 0.20) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
       wm.style.opacity = (p * wmTargetOp).toFixed(4);
-      wm.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
-    }, 650, 700, eO);
+      wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
+    }, 720, 780, eO);
 
-    // 1000ms: Status dot spring
+    // 1050ms: Status dot spring (CHANGE 20)
     if (dot) {
       after(() => {
-        const s = performance.now(), dur = 400, h = dur * 0.55;
+        const s = performance.now(), dur = 420, h = dur * 0.55;
         const frame = (now: number) => {
           const elapsed = now - s;
           const e = Math.min(elapsed, dur);
-          const sc = e < h ? eO(e / h) * 1.2 : 1.2 - 0.2 * eOC((e - h) / (dur - h));
+          const sc = e < h ? eO(e / h) * 1.25 : 1.25 - 0.25 * eOC((e - h) / (dur - h));
           dot.style.opacity = Math.min(elapsed / (dur * 0.4), 1).toFixed(4);
           dot.style.transform = `scale(${sc.toFixed(4)})`;
           if (elapsed < dur) tick(frame);
           else { dot.style.transform = 'scale(1)'; dot.style.opacity = '1'; }
         };
         tick(frame);
-      }, 1000);
+      }, 1050);
     }
 
-    // 1080ms: Status text slides in
+    // 1130ms: Status text slides in (CHANGE 21)
     if (txt) {
       animate(p => {
-        txt.style.opacity = (p * 0.65).toFixed(4);
-        txt.style.transform = `translateX(${(-12 * (1 - p)).toFixed(2)}px)`;
-        txt.style.filter = `blur(${(4 * (1 - p)).toFixed(1)}px)`;
-      }, 450, 1080, eO, () => { txt.style.transform = ''; txt.style.filter = ''; });
+        txt.style.opacity = (p * 0.72).toFixed(4);
+        txt.style.transform = `translateX(${(-16 * (1 - p)).toFixed(2)}px)`;
+        txt.style.filter = `blur(${(5 * (1 - p)).toFixed(1)}px)`;
+      }, 500, 1130, eO, () => { txt.style.transform = ''; txt.style.filter = ''; });
     }
 
-    // 3050ms: Cinematic exit
+    // 3000ms — EXIT: shared element transitions (avatar + wordmark fly to page)
     after(() => {
       if (!ov) return;
-      const _ov = ov;
-      const s = performance.now();
-      function exit(now: number) {
-        const raw = Math.min((now - s) / 550, 1), p = eIO(raw);
-        _ov.style.opacity = (1 - p).toFixed(4);
-        _ov.style.transform = `translateY(${(-48 * p).toFixed(1)}px) scale(${(1 - 0.016 * p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(9 * p).toFixed(1)}px)`;
-        if (raw < 1) tick(exit);
-        else {
+
+      // Silence glow halo (ring travels with avatar)
+      gl.style.opacity = '0';
+
+      // Make page visible so element positions can be measured after paint
+      setChatPageEnter(true);
+
+      // Both avatar AND wordmark must call checkDone before splash unmounts
+      const landingCount = { current: 0 };
+      const checkDone = () => {
+        landingCount.current += 1;
+        if (landingCount.current >= 2) {
           setChatSplashDone(true);
           sessionStorage.setItem(`im_s2_${sessionId}`, '1');
-          requestAnimationFrame(() => requestAnimationFrame(() => setChatPageEnter(true)));
         }
-      }
-      tick(exit);
-    }, 3050);
+      };
+
+      // ── Wordmark illumination starts immediately (no double-rAF needed) ──
+      const wmBaseOp   = dayMode ? 0.52 : 0.52;
+      const wmBrightOp = 0.75;
+      const wmGc = dayMode ? '58,85,192' : '120,150,255';
+      animate(
+        p => {
+          wm.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
+          wm.style.textShadow = `0 0 ${(24 * p).toFixed(1)}px rgba(${wmGc},${(0.50 * p).toFixed(2)})`;
+        },
+        250, 0, eO,
+        () => {
+          // After illumination: measure and fly (or fallback-fade if no target)
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const pageWmEl = chatPageWordmarkRef.current;
+              const splashWmRect = wm.getBoundingClientRect();
+              const pageWmRect   = pageWmEl?.getBoundingClientRect();
+              const hasTarget    = pageWmEl && pageWmRect && pageWmRect.width > 0;
+
+              if (!hasTarget) {
+                // Fallback: fade out
+                animate(
+                  p => {
+                    wm.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
+                    wm.style.textShadow = `0 0 ${(24 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.50 * (1 - p)).toFixed(2)})`;
+                  },
+                  300, 0, eO,
+                  () => { wm.style.textShadow = 'none'; checkDone(); }
+                );
+                return;
+              }
+
+              // Force header wrapper to final state so rect is accurate
+              if (chatHeaderRef.current) {
+                chatHeaderRef.current.style.transform  = 'none';
+                chatHeaderRef.current.style.opacity    = '1';
+                chatHeaderRef.current.style.filter     = 'none';
+                chatHeaderRef.current.style.transition = 'none';
+              }
+
+              // Hide page wordmark during flight
+              pageWmEl.style.opacity   = '0';
+              pageWmEl.style.transition = 'none';
+
+              // Re-measure after forcing header to final position
+              const pageWmRectFinal = pageWmEl.getBoundingClientRect();
+              const wmDx = (pageWmRectFinal.left + pageWmRectFinal.width  / 2) - (splashWmRect.left + splashWmRect.width  / 2);
+              const wmDy = (pageWmRectFinal.top  + pageWmRectFinal.height / 2) - (splashWmRect.top  + splashWmRect.height / 2);
+              const wmScale = Math.min(pageWmRectFinal.width / splashWmRect.width, 2.5);
+
+              // Wordmark flight: 500ms, eO
+              animate(
+                p => {
+                  wm.style.transform  = `translate(${(wmDx * p).toFixed(2)}px, ${(wmDy * p).toFixed(2)}px) scale(${(1 + (wmScale - 1) * p).toFixed(4)})`;
+                  wm.style.textShadow = `0 0 ${(24 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.50 * (1 - p)).toFixed(2)})`;
+                  wm.style.opacity    = p > 0.80 ? (wmBrightOp * (1 - (p - 0.80) / 0.20)).toFixed(4) : wmBrightOp.toFixed(4);
+                },
+                500, 0, eO,
+                () => {
+                  // Landing: swap to page wordmark with arrival glow
+                  wm.style.opacity    = '0';
+                  wm.style.textShadow = 'none';
+
+                  pageWmEl.style.opacity   = '1';
+                  pageWmEl.style.transition = 'none';
+                  pageWmEl.style.textShadow = `0 0 12px rgba(${wmGc},0.40)`;
+                  requestAnimationFrame(() => {
+                    pageWmEl.style.transition  = 'text-shadow 800ms ease';
+                    pageWmEl.style.textShadow  = 'none';
+                  });
+
+                  checkDone();
+                }
+              );
+            });
+          });
+        }
+      );
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const pageAvEl = chatPageAvatarRef.current;
+
+          if (!av || !pageAvEl) {
+            checkDone(); // avatar fallback counts as done
+            return;
+          }
+
+          // Hide page avatar during flight
+          pageAvEl.style.opacity   = '0';
+          pageAvEl.style.transition = 'none';
+
+          // Fade out context elements (wordmark excluded — handles itself above)
+          const ctxEls = [nm, dot, txt].filter(Boolean) as HTMLElement[];
+          const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
+          animate(p => {
+            ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
+          }, 160, 0, eIO);
+          if (prog) prog.style.opacity = '0';
+
+          // Measure avatar positions
+          const splashRect  = av.getBoundingClientRect();
+          const pageRect    = pageAvEl.getBoundingClientRect();
+          const avDx        = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
+          const avDy        = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
+          const avScale     = pageRect.width / splashRect.width;
+
+          // Avatar flight: 60ms delay, 550ms, eO
+          animate(
+            p => {
+              av.style.transform = `translate(${(avDx * p).toFixed(2)}px, ${(avDy * p).toFixed(2)}px) scale(${(1 + (avScale - 1) * p).toFixed(4)})`;
+              rg.style.opacity   = (1 - p * 0.85).toFixed(4);
+              av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
+            },
+            550, 60, eO,
+            () => {
+              // Landing: swap to page avatar with spring pop
+              av.style.opacity = '0';
+              chatSharedTransitionRan.current = true;
+
+              pageAvEl.style.opacity   = '1';
+              pageAvEl.style.transition = 'none';
+              pageAvEl.style.transform  = 'scale(0.94)';
+
+              requestAnimationFrame(() => {
+                pageAvEl.style.transition = 'transform 260ms cubic-bezier(0.34,1.56,0.64,1)';
+                pageAvEl.style.transform  = 'scale(1.0)';
+                setTimeout(checkDone, 260);
+              });
+            }
+          );
+        });
+      });
+    }, 3000);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -929,14 +1070,18 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         style={{
           height: '100dvh',
           opacity: chatPageEnter ? 1 : 0,
-          transition: 'opacity 600ms cubic-bezier(0.22,1,0.36,1) 60ms',
+          transform: chatPageEnter ? 'none' : 'translateY(28px) scale(0.97)',
+          filter: chatPageEnter ? 'none' : 'blur(5px)',
+          transition: 'opacity 600ms cubic-bezier(0.16,1,0.3,1) 240ms, transform 600ms cubic-bezier(0.16,1,0.3,1) 240ms, filter 600ms cubic-bezier(0.16,1,0.3,1) 240ms',
+          contain: 'layout',
         }}
       >
-        <div className="shrink-0" style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
+        <div ref={chatHeaderRef} className="shrink-0" style={emerge2(0, { ty: -18, blur: 5, dur: 480 })}>
           <Header
             recruiterName={context.recruiterName}
             company={context.company}
             role={context.role}
+            wordmarkRef={chatPageWordmarkRef}
             action={
               <EndInterviewButton
                 sessionId={sessionId}
@@ -1002,8 +1147,9 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
             <div className="flex flex-col items-center px-6 py-10 w-full">
               {/* Avatar with spinning ring */}
               <div
+                ref={chatPageAvatarRef}
                 className="relative mb-5"
-                style={{ width: 96, height: 96, ...emerge2(60, { sc: 0.85, blur: 6, dur: 550 }) }}
+                style={{ width: 96, height: 96, ...(chatSharedTransitionRan.current ? {} : emerge2(60, { sc: 0.85, blur: 6, dur: 550 })) }}
               >
                 <div className="absolute inset-0 rounded-full" style={{
                   background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',

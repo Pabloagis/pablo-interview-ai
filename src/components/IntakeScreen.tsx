@@ -59,6 +59,7 @@ export default function IntakeScreen() {
   const splashRanRef     = useRef(false);
   const [splashPaused,   setSplashPaused]   = useState(false);
   const splashControlRef = useRef<{ pause: () => void; resume: () => void } | null>(null);
+  const sharedTransitionRan = useRef(false);
 
   // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
@@ -157,6 +158,7 @@ export default function IntakeScreen() {
     if (!ov || !wm || !av || !ring || !glow || !nm || !rl || !dv) return;
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
+    const namePulsed = { current: false };
 
     // Expose pause/resume for hold-to-pause (Instagram Stories style)
     splashControlRef.current = {
@@ -190,125 +192,221 @@ export default function IntakeScreen() {
 
     const vision = splashVisionRef.current;
     if (vision) {
-      // 0ms — blur + scale in from center (translate kept every frame)
+      // 200ms — blur + scale in from center (translate kept every frame)
       animate(p => {
         vision.style.opacity   = p.toFixed(4);
         vision.style.filter    = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
         vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
-      }, 650, 0, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
+      }, 800, 200, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
 
       // 3300ms — fade out, leaving enough time to read
       animate(p => {
         vision.style.opacity   = (1 - p).toFixed(4);
         vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
         vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
-      }, 400, 3300, eIO, () => { vision.style.display = 'none'; });
+      }, 550, 3300, eIO, () => { vision.style.display = 'none'; });
     }
 
     // ── Phase 2: Pablo identity ───────────────────────────────────────────────
 
-    // 3100ms — Vignette (night only)
+    // 3000ms — Vignette (night only)
     if (!dayMode && vig) {
-      animate(p => { vig.style.opacity = (p * 0.6).toFixed(4); }, 800, 3100, eIO);
+      animate(p => { vig.style.opacity = (p * 0.7).toFixed(4); }, 1000, 3000, eIO);
     }
 
-    // 3300ms — Wordmark: blur + tracking compression
+    // 3200ms — Wordmark: blur + tracking compression
     const wmTargetOp = dayMode ? 0.30 : 0.28;
     animate(p => {
-      const tracking = 0.32 - (0.32 - 0.22) * p;
+      const tracking = 0.34 - (0.34 - 0.22) * p;
       wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
       wm.style.opacity = (p * wmTargetOp).toFixed(4);
-      wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
-    }, 1000, 3300, eO);
+      wm.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
+    }, 1100, 3200, eO);
 
-    // 3600ms — Light sweep (night only)
+    // 3600ms — Wordmark glow: rise then settle (illumination at beginning)
+    {
+      const gc  = dayMode ? '58,85,192'   : '120,150,255';
+      const pkP = dayMode ? 16 : 20;   // peak size px
+      const pkA = dayMode ? 0.30 : 0.50; // peak alpha
+      const stP = dayMode ? 6  : 8;    // settle size px
+      const stA = dayMode ? 0.12 : 0.18; // settle alpha
+      animate(
+        p => { wm.style.textShadow = `0 0 ${(pkP * p).toFixed(1)}px rgba(${gc},${(pkA * p).toFixed(2)})`; },
+        600, 3600, eO,
+        () => animate(
+          p => { wm.style.textShadow = `0 0 ${(pkP - (pkP - stP) * p).toFixed(1)}px rgba(${gc},${(pkA - (pkA - stA) * p).toFixed(2)})`; },
+          400, 0, eOC
+        )
+      );
+    }
+
+    // 3500ms — Light sweep (night only)
     if (!dayMode && sweep) {
       animate(p => {
         const sw = p < 0.5 ? p * 2 : (1 - p) * 2;
-        sweep.style.opacity = (sw * 0.8).toFixed(4);
+        sweep.style.opacity = (sw * 0.6).toFixed(4);
         sweep.style.transform = `translateX(${(-100 + p * 200).toFixed(1)}%)`;
-      }, 600, 3600, t => t);
+      }, 700, 3500, t => t);
     }
 
-    // 3700ms — Avatar springs from depth with weight
-    springAv(av, 0.55, 1.08, 1.0, 20, 8, -2, 1100, 3700);
+    // 3600ms — Avatar springs from depth with weight
+    springAv(av, 0.50, 1.10, 1.0, 24, 10, -3, 1300, 3600);
 
-    // 4100ms — Ring activates
-    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 900ms ease'; }, 4100);
+    // 4000ms — Ring activates
+    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 1100ms ease'; }, 4000);
 
-    // 4200ms — Glow pulse begins
-    after(() => { glow.style.animation = 'glow-pulse 2000ms ease-in-out infinite'; }, 4200);
+    // 4100ms — Glow pulse begins
+    after(() => { glow.style.animation = 'glow-pulse 2200ms ease-in-out infinite'; }, 4100);
 
-    // 4300ms — Name assembles from left
+    // 4250ms — Name assembles from left
+    const nameEl = nm;
     animate(p => {
-      nm.style.opacity = p.toFixed(4);
-      nm.style.transform = `translateX(${(-40 * (1 - p)).toFixed(2)}px) scale(${(0.94 + 0.06 * p).toFixed(4)})`;
-      nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
-    }, 700, 4300, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
+      nameEl.style.opacity = p.toFixed(4);
+      nameEl.style.transform = `translateX(${(-48 * (1 - p)).toFixed(2)}px) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
+      nameEl.style.filter = `blur(${(16 * (1 - p)).toFixed(1)}px)`;
+    }, 750, 4250, eO, () => { nameEl.style.transform = ''; nameEl.style.filter = ''; });
 
-    // 4650ms — Role from right
-    const roleOp = dayMode ? 0.65 : 0.72;
+    // 4625ms — Name micro-pulse (at 375ms into the 750ms name animation)
+    after(() => {
+      if (!namePulsed.current) {
+        namePulsed.current = true;
+        animate(
+          pp => { nameEl.style.transform = `translateX(0) scale(${(1 + 0.014 * Math.sin(pp * Math.PI)).toFixed(4)})`; },
+          90, 0, t => t
+        );
+      }
+    }, 4625);
+
+    // 4600ms — Role from right
+    const roleOp = dayMode ? 0.62 : 0.70;
     animate(p => {
       rl.style.opacity = (p * roleOp).toFixed(4);
-      rl.style.transform = `translateX(${(35 * (1 - p)).toFixed(2)}px)`;
-      rl.style.filter = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-    }, 600, 4650, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
+      rl.style.transform = `translateX(${(40 * (1 - p)).toFixed(2)}px)`;
+      rl.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
+    }, 650, 4600, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
 
-    // 4950ms — Divider reveals from center
+    // 4900ms — Divider reveals from center
+    const divOp = dayMode ? 0.50 : 0.60;
     animate(p => {
       dv.style.transform = `scaleX(${p.toFixed(4)})`;
-      dv.style.opacity = (p * 0.55).toFixed(4);
-    }, 500, 4950, eOC);
+      dv.style.opacity = (p * divOp).toFixed(4);
+    }, 550, 4900, eOC);
 
-    // 5300ms — Tags stagger in
+    // 5200ms — Tags stagger in
     tags.forEach((tag, i) => {
       animate(p => {
         tag.style.opacity = p.toFixed(4);
-        tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.9 + 0.1 * p).toFixed(4)})`;
-        tag.style.filter = `blur(${(6 * (1 - p)).toFixed(1)}px)`;
-      }, 500, 5300 + i * 80, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
+        tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.88 + 0.12 * p).toFixed(4)})`;
+        tag.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
+      }, 520, 5200 + i * 90, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
     });
 
-    // 6700ms — Cinematic EXIT (two-step)
+    // 6600ms — EXIT: shared element transitions (avatar + wordmark)
     after(() => {
       if (!ov) return;
-      const _ov = ov;
-      setPageReady(true);
-      ring.style.transition = 'opacity 0ms';
-      ring.style.opacity = '0';
+
+      // Stop glow pulse (ring stays visible and travels with the avatar)
       glow.style.animation = 'none';
 
-      // Measure where the welcome avatar sits, then fly the splash avatar there
-      const measureRaf = requestAnimationFrame(() => {
-        const welcomeEl = welcomeAvRef.current;
-        let dy = 0, dx = 0;
-        if (welcomeEl) {
-          const splashRect = av.getBoundingClientRect();
-          const welcomeRect = welcomeEl.getBoundingClientRect();
-          dy = (welcomeRect.top + welcomeRect.height / 2) - (splashRect.top + splashRect.height / 2);
-          dx = (welcomeRect.left + welcomeRect.width / 2) - (splashRect.left + splashRect.width / 2);
-        }
+      // Make page visible so positions can be measured after paint
+      setPageReady(true);
 
-        const dur = 620;
-        const exitStart = performance.now();
-        const frame = (now: number) => {
-          const raw = Math.min((now - exitStart) / dur, 1);
-          const e = eIO(raw);
-          // Avatar travels to welcome position, shrinking slightly
-          av.style.transform = `translate(${(dx * e).toFixed(1)}px, ${(dy * e).toFixed(1)}px) scale(${(1 - 0.08 * e).toFixed(4)})`;
-          // Overlay fades (compound opacity fades the avatar too)
-          _ov.style.opacity = (1 - e).toFixed(4);
-          _ov.style.filter = `blur(${(6 * e).toFixed(1)}px)`;
-          if (raw < 1) tick(frame);
-          else {
-            setSplashDone(true);
-            sessionStorage.setItem('im_splash_shown', '1');
+      // Both avatar AND wordmark must call checkDone before splash unmounts
+      const landingCount = { current: 0 };
+      const checkDone = () => {
+        landingCount.current += 1;
+        if (landingCount.current >= 2) {
+          setSplashDone(true);
+          sessionStorage.setItem('im_splash_shown', '1');
+        }
+      };
+
+      // ── Wordmark: illuminate → fallback fade (no page wordmark on Page 1) ──
+      // Excluded from ctxEls — handles its own exit
+      const wmEl = wm;
+      const wmBaseOp  = dayMode ? 0.30 : 0.28;
+      const wmBrightOp = dayMode ? 0.55 : 0.65;
+      const wmGc       = dayMode ? '58,85,192' : '140,170,255';
+      animate(
+        p => {
+          wmEl.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
+          wmEl.style.textShadow = dayMode
+            ? `0 0 ${(32 * p).toFixed(1)}px rgba(58,85,192,${(0.50 * p).toFixed(2)}), 0 0 ${(60 * p).toFixed(1)}px rgba(58,85,192,${(0.18 * p).toFixed(2)})`
+            : `0 0 ${(40 * p).toFixed(1)}px rgba(140,170,255,${(0.80 * p).toFixed(2)}), 0 0 ${(80 * p).toFixed(1)}px rgba(100,130,255,${(0.30 * p).toFixed(2)})`;
+        },
+        300, 0, eO,
+        () => {
+          // Fallback: fade out wordmark (no destination to fly to)
+          animate(
+            p => {
+              wmEl.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
+              wmEl.style.textShadow = `0 0 ${(40 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.80 * (1 - p)).toFixed(2)})`;
+            },
+            300, 0, eO,
+            () => { wmEl.style.textShadow = 'none'; checkDone(); }
+          );
+        }
+      );
+
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const pageAvEl = welcomeAvRef.current;
+
+          if (!av || !pageAvEl) {
+            checkDone(); // avatar fallback counts as done
+            return;
           }
-        };
-        tick(frame);
+
+          // Hide page avatar during flight so it doesn't double-show
+          pageAvEl.style.opacity   = '0';
+          pageAvEl.style.transition = 'none';
+
+          // Fade out context elements (wordmark excluded — handles itself)
+          const ctxEls = [
+            splashNameRef.current, splashRoleRef.current,
+            splashDivRef.current, vignetteRef.current,
+            ...splashTagsRef.current.filter(Boolean),
+          ].filter(Boolean) as HTMLElement[];
+          const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
+          animate(p => {
+            ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
+          }, 180, 0, eIO);
+          if (splashVisionRef.current) splashVisionRef.current.style.opacity = '0';
+
+          // Measure screen-space positions
+          const splashRect = av.getBoundingClientRect();
+          const pageRect   = pageAvEl.getBoundingClientRect();
+          const dx = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
+          const dy = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
+          const scaleTarget = pageRect.width / splashRect.width;
+
+          // Avatar flight: 80ms delay, 600ms, eO
+          animate(
+            p => {
+              av.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTarget - 1) * p).toFixed(4)})`;
+              ring.style.opacity = (1 - p * 0.85).toFixed(4);
+              glow.style.opacity = (1 - p).toFixed(4);
+              av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
+            },
+            600, 80, eO,
+            () => {
+              av.style.opacity = '0';
+              sharedTransitionRan.current = true;
+
+              pageAvEl.style.opacity   = '1';
+              pageAvEl.style.transition = 'none';
+              pageAvEl.style.transform  = 'scale(0.94)';
+
+              requestAnimationFrame(() => {
+                pageAvEl.style.transition = 'transform 280ms cubic-bezier(0.34,1.56,0.64,1)';
+                pageAvEl.style.transform  = 'scale(1.0)';
+                setTimeout(checkDone, 280);
+              });
+            }
+          );
+        });
       });
-      rafs.push(measureRaf);
-    }, 6700);
+    }, 6600);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -424,7 +522,9 @@ export default function IntakeScreen() {
         className="relative min-h-screen flex flex-col items-center px-4 py-10 w-full max-w-full overflow-x-hidden"
         style={{
           opacity: pageReady ? 1 : 0,
-          transition: 'opacity 500ms ease 100ms',
+          transform: pageReady ? 'none' : 'translateY(36px) scale(0.97)',
+          filter: pageReady ? 'none' : 'blur(6px)',
+          transition: 'opacity 700ms cubic-bezier(0.16,1,0.3,1) 280ms, transform 700ms cubic-bezier(0.16,1,0.3,1) 280ms, filter 700ms cubic-bezier(0.16,1,0.3,1) 280ms',
           contain: 'layout',
         }}
       >
@@ -474,7 +574,7 @@ export default function IntakeScreen() {
           <div className="flex flex-col items-center gap-3 mb-7 text-center">
             <button ref={welcomeAvRef} type="button" onClick={() => setAvatarOpen(true)}
               className="relative cursor-zoom-in"
-              style={{ width: 112, height: 112, ...emerge(0, { sc: 0.97, blur: 3, dur: 500 }) }}>
+              style={{ width: 112, height: 112, ...(sharedTransitionRan.current ? {} : emerge(0, { sc: 0.97, blur: 3, dur: 500 })) }}>
               <div className="absolute inset-0 rounded-full" style={{
                 background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
                 animation: 'ring-spin 3.5s linear infinite',
@@ -735,6 +835,7 @@ export default function IntakeScreen() {
             maxWidth: 300, width: '82%',
             textAlign: 'center',
             opacity: 0,
+            filter: 'blur(10px)',
             pointerEvents: 'none',
             zIndex: 2,
           }}>
@@ -776,8 +877,8 @@ export default function IntakeScreen() {
             {/* Wordmark */}
             <p ref={splashWmRef} style={{
               fontSize:10, fontWeight:500, color:'var(--splash-wm)',
-              letterSpacing:'0.32em', textTransform:'uppercase',
-              marginBottom:52, opacity:0, filter:'blur(8px)',
+              letterSpacing:'0.34em', textTransform:'uppercase',
+              marginBottom:52, opacity:0, filter:'blur(12px)',
             }}>
               INTERVIEWMIND
             </p>
@@ -811,7 +912,7 @@ export default function IntakeScreen() {
             {/* Role */}
             <p ref={splashRoleRef} style={{
               fontSize:12.5, color:'var(--splash-role)', letterSpacing:'0.04em',
-              marginBottom:16, opacity:0, transform:'translateX(35px)', filter:'blur(10px)',
+              marginBottom:16, opacity:0, transform:'translateX(40px)', filter:'blur(12px)',
             }}>
               SaaS &amp; Hospitality Tech
             </p>
