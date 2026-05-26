@@ -499,13 +499,29 @@ export default function IntakeScreen() {
             </p>
 
             {/* Vision phrase */}
-            <div ref={splashVisionRef} style={{ opacity: 0, maxWidth: 280, width: '82%' }}>
+            <div ref={splashVisionRef} style={{ opacity: 0, maxWidth: 400, width: '88%', textAlign: 'center' }}>
+              {/* Thin separator */}
+              <div style={{
+                width: 32, height: 1, margin: '0 auto 20px',
+                background: 'linear-gradient(90deg, transparent, var(--glass-border), transparent)',
+              }} />
+              {/* Headline — before the colon */}
               <p className="gradient-text" style={{
-                margin: 0,
-                fontSize: 17, fontWeight: 700,
-                letterSpacing: '-0.02em', lineHeight: 1.5,
+                margin: '0 0 10px',
+                fontSize: 20, fontWeight: 700,
+                letterSpacing: '-0.025em', lineHeight: 1.35,
               }}>
-                {t.visionTitle}
+                {t.visionTitle.split(':')[0] + ':'}
+              </p>
+              {/* Descriptor — after the colon */}
+              <p style={{
+                margin: 0,
+                fontSize: 13, fontWeight: 400,
+                letterSpacing: '0.01em', lineHeight: 1.7,
+                color: 'var(--text-secondary)',
+                opacity: 0.75,
+              }}>
+                {t.visionTitle.split(':').slice(1).join(':').trim()}
               </p>
             </div>
 
