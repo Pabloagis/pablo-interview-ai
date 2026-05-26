@@ -84,6 +84,9 @@ export default function IntakeScreen() {
     const vision = splashVisionRef.current;
     if (!wm) return;
 
+    const dayMode  = document.documentElement.getAttribute('data-theme') === 'day';
+    const glowRgb  = dayMode ? '58,85,192' : '100,130,255';
+
     // InterviewMind wordmark — Apple-style: clean opacity fade + subtle scale
     animate(p => {
       wm.style.opacity   = p.toFixed(4);
@@ -93,18 +96,26 @@ export default function IntakeScreen() {
     // Vision phrase — fades in after wordmark is established
     if (vision) {
       animate(p => { vision.style.opacity = p.toFixed(4); }, 600, 500, eO);
-      // Fade out to make room for page
-      animate(p => { vision.style.opacity = (1 - p).toFixed(4); }, 400, 2700, eIO);
+      // Fade out 1s later than before (extra second for highlight)
+      animate(p => { vision.style.opacity = (1 - p).toFixed(4); }, 400, 3700, eIO);
     }
 
-    // Exit: wordmark fades, then page appears
+    // Wordmark highlight — glow pulses in as the extra second begins
+    after(() => {
+      animate(p => {
+        wm.style.textShadow = `0 0 ${(22 * p).toFixed(1)}px rgba(${glowRgb},${(0.5 * p).toFixed(3)})`;
+      }, 600, 0, eO);
+    }, 2700);
+
+    // Exit: wordmark fades out (1s later), then page appears
     after(() => {
       animate(p => { wm.style.opacity = (1 - p).toFixed(4); }, 400, 0, eO, () => {
+        wm.style.textShadow = '';
         setPageReady(true);
         setSplashDone(true);
         sessionStorage.setItem('im_splash_shown', '1');
       });
-    }, 3200);
+    }, 4200);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
