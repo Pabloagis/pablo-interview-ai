@@ -41,6 +41,7 @@ export default function IntakeScreen() {
   const [hiwOpen,        setHiwOpen]         = useState(false);
   const companyInputRef = useRef<HTMLInputElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const welcomeAvRef = useRef<HTMLButtonElement>(null);
 
   // Splash refs
   const splashOverlayRef = useRef<HTMLDivElement>(null);
@@ -277,21 +278,36 @@ export default function IntakeScreen() {
       ring.style.opacity = '0';
       glow.style.animation = 'none';
 
-      // Step 1 (0–200ms): blur accumulates
-      animate(p => {
-        _ov.style.filter = `blur(${(3 * p).toFixed(1)}px)`;
-        _ov.style.transform = `scale(${(1 - 0.005 * p).toFixed(4)})`;
-      }, 200, 0, t => t);
+      // Measure where the welcome avatar sits, then fly the splash avatar there
+      const measureRaf = requestAnimationFrame(() => {
+        const welcomeEl = welcomeAvRef.current;
+        let dy = 0, dx = 0;
+        if (welcomeEl) {
+          const splashRect = av.getBoundingClientRect();
+          const welcomeRect = welcomeEl.getBoundingClientRect();
+          dy = (welcomeRect.top + welcomeRect.height / 2) - (splashRect.top + splashRect.height / 2);
+          dx = (welcomeRect.left + welcomeRect.width / 2) - (splashRect.left + splashRect.width / 2);
+        }
 
-      // Step 2 (200–700ms): directional exit
-      animate(p => {
-        _ov.style.transform = `translateY(${(-52 * p).toFixed(1)}px) scale(${(0.995 - 0.013 * p).toFixed(4)})`;
-        _ov.style.filter = `blur(${(3 + 7 * p).toFixed(1)}px)`;
-        _ov.style.opacity = (1 - p).toFixed(4);
-      }, 500, 200, eIO, () => {
-        setSplashDone(true);
-        sessionStorage.setItem('im_splash_shown', '1');
+        const dur = 620;
+        const exitStart = performance.now();
+        const frame = (now: number) => {
+          const raw = Math.min((now - exitStart) / dur, 1);
+          const e = eIO(raw);
+          // Avatar travels to welcome position, shrinking slightly
+          av.style.transform = `translate(${(dx * e).toFixed(1)}px, ${(dy * e).toFixed(1)}px) scale(${(1 - 0.08 * e).toFixed(4)})`;
+          // Overlay fades (compound opacity fades the avatar too)
+          _ov.style.opacity = (1 - e).toFixed(4);
+          _ov.style.filter = `blur(${(6 * e).toFixed(1)}px)`;
+          if (raw < 1) tick(frame);
+          else {
+            setSplashDone(true);
+            sessionStorage.setItem('im_splash_shown', '1');
+          }
+        };
+        tick(frame);
       });
+      rafs.push(measureRaf);
     }, 6700);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
@@ -456,9 +472,9 @@ export default function IntakeScreen() {
 
           {/* ── Hero header ── */}
           <div className="flex flex-col items-center gap-3 mb-7 text-center">
-            <button type="button" onClick={() => setAvatarOpen(true)}
+            <button ref={welcomeAvRef} type="button" onClick={() => setAvatarOpen(true)}
               className="relative cursor-zoom-in"
-              style={{ width: 112, height: 112, ...emerge(60, { sc: 0.85, blur: 6, dur: 550 }) }}>
+              style={{ width: 112, height: 112, ...emerge(0, { sc: 0.97, blur: 3, dur: 500 }) }}>
               <div className="absolute inset-0 rounded-full" style={{
                 background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
                 animation: 'ring-spin 3.5s linear infinite',
