@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message, RecruiterContext, ToastMessage } from '@/lib/types';
 import { generateId, parseSSELine } from '@/lib/utils';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
@@ -142,7 +142,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
   const [reminderState, setReminderState] = useState<'hidden' | 'visible' | 'fading'>('hidden');
-  const [chatSplashDone, setChatSplashDone] = useState(false);
   const [insightsOpen, setInsightsOpen] = useState(false);
   const [insightsReport, setInsightsReport] = useState<ReportData | null>(null);
   const [insightsFetching, setInsightsFetching] = useState(false);
@@ -151,13 +150,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     try { return !!localStorage.getItem(`im_insights_${sessionId}`); } catch { return false; }
   });
   const insightsCacheRef = useRef<{ report: ReportData; msgCount: number } | null>(null);
-
-  // Splash 2 refs
-  const s2OverlayRef    = useRef<HTMLDivElement>(null);
-  const s2NameRef       = useRef<HTMLParagraphElement>(null);
-  const s2WmRef         = useRef<HTMLParagraphElement>(null);
-  const s2StatusDotRef  = useRef<HTMLDivElement>(null);
-  const s2StatusTextRef = useRef<HTMLSpanElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -182,272 +174,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const dismissPersistentReminderRef = useRef<() => void>();
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const interviewEndedRef = useRef(false);
-  const s2RanRef            = useRef(false);
-  const s2ProgressRef       = useRef<HTMLDivElement>(null);
-  const chatPageWordmarkRef = useRef<HTMLSpanElement>(null);
-  const chatHeaderRef       = useRef<HTMLDivElement>(null);
-  const chatPageNameRef     = useRef<HTMLHeadingElement>(null);
-  const chatPageNameLanded  = useRef(false);
-
-  // Skip splash before first paint for returning visitors
-  useLayoutEffect(() => {
-    if (sessionStorage.getItem(`im_s2_${sessionId}`)) { setChatSplashDone(true); }
-  }, [sessionId]);
-
-  // Splash 2 — cinematic JS rAF animation (first visit only)
-  useEffect(() => {
-    if (s2RanRef.current) return;
-    s2RanRef.current = true;
-    if (sessionStorage.getItem(`im_s2_${sessionId}`)) return;
-
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    const rafs: number[] = [];
-    const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
-    const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
-
-    const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-    const eOC = (t: number) => 1 - Math.pow(1 - t, 3);
-    const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
-
-    function animate(fn: (p: number) => void, duration: number, delay: number, easing: (t: number) => number, onDone?: () => void) {
-      after(() => {
-        const start = performance.now();
-        const frame = (now: number) => {
-          const raw = Math.min((now - start) / duration, 1);
-          fn(easing(raw));
-          if (raw < 1) tick(frame);
-          else if (onDone) onDone();
-        };
-        tick(frame);
-      }, delay);
-    }
-
-    const ov  = s2OverlayRef.current;
-    const nm  = s2NameRef.current, wm = s2WmRef.current;
-    const dot = s2StatusDotRef.current, txt = s2StatusTextRef.current;
-    const prog = s2ProgressRef.current;
-    if (!ov || !nm || !wm) return;
-
-    const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
-
-    // Progress bar — eIO fill starting at 200ms delay (CHANGE 22)
-    if (prog) {
-      const TOTAL_MS = 3600;
-      const _prog = prog;
-      after(() => {
-        const pStart = performance.now();
-        function progressFrame(now: number) {
-          const p = Math.min((now - pStart) / TOTAL_MS, 1);
-          _prog.style.width = `${(eIO(p) * 100).toFixed(2)}%`;
-          if (p < 1) tick(progressFrame);
-        }
-        tick(progressFrame);
-      }, 200);
-    }
-
-    // 400ms: Name assembles from left
-    animate(p => {
-      nm.style.opacity = p.toFixed(4);
-      nm.style.transform = `translateX(${(-44 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
-      nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
-    }, 680, 400, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
-
-    // 780ms: Wordmark with tracking compression
-    const wmTargetOp = dayMode ? 0.48 : 0.52;
-    animate(p => {
-      const tracking = 0.28 - (0.28 - 0.20) * p;
-      wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
-      wm.style.opacity = (p * wmTargetOp).toFixed(4);
-      wm.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
-    }, 720, 780, eO);
-
-    // 1050ms: Status dot spring (CHANGE 20)
-    if (dot) {
-      after(() => {
-        const s = performance.now(), dur = 420, h = dur * 0.55;
-        const frame = (now: number) => {
-          const elapsed = now - s;
-          const e = Math.min(elapsed, dur);
-          const sc = e < h ? eO(e / h) * 1.25 : 1.25 - 0.25 * eOC((e - h) / (dur - h));
-          dot.style.opacity = Math.min(elapsed / (dur * 0.4), 1).toFixed(4);
-          dot.style.transform = `scale(${sc.toFixed(4)})`;
-          if (elapsed < dur) tick(frame);
-          else { dot.style.transform = 'scale(1)'; dot.style.opacity = '1'; }
-        };
-        tick(frame);
-      }, 1050);
-    }
-
-    // 1130ms: Status text slides in (CHANGE 21)
-    if (txt) {
-      animate(p => {
-        txt.style.opacity = (p * 0.72).toFixed(4);
-        txt.style.transform = `translateX(${(-16 * (1 - p)).toFixed(2)}px)`;
-        txt.style.filter = `blur(${(5 * (1 - p)).toFixed(1)}px)`;
-      }, 500, 1130, eO, () => { txt.style.transform = ''; txt.style.filter = ''; });
-    }
-
-    // 3000ms — EXIT: avatar + name + wordmark fly to their page counterparts simultaneously
-    after(() => {
-      if (!ov) return;
-
-      // Both landings (name + wordmark) must complete before unmount
-      const landingCount = { current: 0 };
-      const checkDone = () => {
-        landingCount.current += 1;
-        if (landingCount.current >= 2) {
-          setChatSplashDone(true);
-          sessionStorage.setItem(`im_s2_${sessionId}`, '1');
-        }
-      };
-
-      // Fly a splash element to its page counterpart.
-      const flyTo = (
-        splashEl: HTMLElement,
-        pageEl: HTMLElement,
-        duration: number,
-        delayMs: number,
-        onLand?: () => void
-      ) => {
-        pageEl.style.opacity    = '0';
-        pageEl.style.transition = 'none';
-        pageEl.style.transform  = ''; // reset so getBoundingClientRect is at natural position
-
-        const sr = splashEl.getBoundingClientRect();
-        const pr = pageEl.getBoundingClientRect();
-
-        if (pr.width === 0 && pr.height === 0) {
-          animate(p => { splashEl.style.opacity = (1 - p).toFixed(4); }, 300, delayMs, eIO);
-          after(() => { pageEl.style.opacity = '1'; if (onLand) onLand(); }, delayMs + 300);
-          return;
-        }
-
-        const dx = pr.left - sr.left + (pr.width  - sr.width)  / 2;
-        const dy = pr.top  - sr.top  + (pr.height - sr.height) / 2;
-        const scaleTo      = Math.max(pr.width / sr.width, 0.3);
-        const startOpacity = parseFloat(splashEl.style.opacity || '1');
-
-        animate(
-          p => {
-            splashEl.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTo - 1) * p).toFixed(4)})`;
-            splashEl.style.opacity   = p > 0.80
-              ? (startOpacity * (1 - (p - 0.80) / 0.20)).toFixed(4)
-              : startOpacity.toFixed(4);
-          },
-          duration, delayMs, eO,
-          () => {
-            splashEl.style.opacity   = '0';
-            splashEl.style.transform = '';
-
-            pageEl.style.opacity    = '1';
-            pageEl.style.transform  = 'scale(0.96)';
-            pageEl.style.transition = 'none';
-            requestAnimationFrame(() => {
-              pageEl.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
-              pageEl.style.transform  = 'scale(1)';
-            });
-
-            if (onLand) setTimeout(onLand, 300);
-          }
-        );
-      };
-
-      // ── Wordmark: illuminate → fly to nav wordmark ──
-      const wmBaseOp   = dayMode ? 0.52 : 0.52;
-      const wmBrightOp = 0.75;
-      const wmGc       = dayMode ? '58,85,192' : '120,150,255';
-      animate(
-        p => {
-          wm.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
-          wm.style.textShadow = `0 0 ${(24 * p).toFixed(1)}px rgba(${wmGc},${(0.50 * p).toFixed(2)})`;
-        },
-        250, 0, eO,
-        () => {
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const pageWmEl = chatPageWordmarkRef.current;
-              const splashWmRect = wm.getBoundingClientRect();
-              const pageWmRect   = pageWmEl?.getBoundingClientRect();
-              const hasTarget    = pageWmEl && pageWmRect && pageWmRect.width > 0;
-
-              if (!hasTarget) {
-                animate(
-                  p => {
-                    wm.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
-                    wm.style.textShadow = `0 0 ${(24 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.50 * (1 - p)).toFixed(2)})`;
-                  },
-                  300, 0, eO,
-                  () => { wm.style.textShadow = 'none'; checkDone(); }
-                );
-                return;
-              }
-
-              // Force header to final state for accurate rect measurement
-              if (chatHeaderRef.current) {
-                chatHeaderRef.current.style.transform  = 'none';
-                chatHeaderRef.current.style.opacity    = '1';
-                chatHeaderRef.current.style.filter     = 'none';
-                chatHeaderRef.current.style.transition = 'none';
-              }
-
-              pageWmEl.style.opacity    = '0';
-              pageWmEl.style.transition = 'none';
-
-              const pageWmRectFinal = pageWmEl.getBoundingClientRect();
-              const wmDx    = (pageWmRectFinal.left + pageWmRectFinal.width  / 2) - (splashWmRect.left + splashWmRect.width  / 2);
-              const wmDy    = (pageWmRectFinal.top  + pageWmRectFinal.height / 2) - (splashWmRect.top  + splashWmRect.height / 2);
-              const wmScale = Math.min(pageWmRectFinal.width / splashWmRect.width, 2.5);
-
-              animate(
-                p => {
-                  wm.style.transform  = `translate(${(wmDx * p).toFixed(2)}px, ${(wmDy * p).toFixed(2)}px) scale(${(1 + (wmScale - 1) * p).toFixed(4)})`;
-                  wm.style.textShadow = `0 0 ${(24 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.50 * (1 - p)).toFixed(2)})`;
-                  wm.style.opacity    = p > 0.80 ? (wmBrightOp * (1 - (p - 0.80) / 0.20)).toFixed(4) : wmBrightOp.toFixed(4);
-                },
-                500, 0, eO,
-                () => {
-                  wm.style.opacity = '0'; wm.style.textShadow = 'none';
-                  pageWmEl.style.opacity    = '1';
-                  pageWmEl.style.transition = 'none';
-                  pageWmEl.style.textShadow = `0 0 12px rgba(${wmGc},0.40)`;
-                  requestAnimationFrame(() => {
-                    pageWmEl.style.transition = 'text-shadow 800ms ease';
-                    pageWmEl.style.textShadow = 'none';
-                  });
-                  checkDone();
-                }
-              );
-            });
-          });
-        }
-      );
-
-      // Fade status elements and progress bar on exit
-      if (prog) prog.style.opacity = '0';
-      const ctxEls = [dot, txt].filter(Boolean) as HTMLElement[];
-      const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
-      animate(p => {
-        ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
-      }, 160, 0, eIO);
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const pageNmEl = chatPageNameRef.current;
-
-          // ── Name flight ──
-          if (nm && pageNmEl) {
-            flyTo(nm, pageNmEl, 520, 40, () => {
-              chatPageNameLanded.current = true;
-              checkDone();
-            });
-          } else { checkDone(); }
-        });
-      });
-    }, 3000);
-
-    return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
-  }, [sessionId]); // eslint-disable-line react-hooks/exhaustive-deps
-
   // Load recruiter context from sessionStorage
   useEffect(() => {
     const stored = sessionStorage.getItem(`session_${sessionId}`);
@@ -1014,12 +740,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         className="fixed inset-0 flex flex-col overflow-hidden"
         style={{ height: '100dvh', contain: 'layout' }}
       >
-        <div ref={chatHeaderRef} className="shrink-0">
+        <div className="shrink-0">
           <Header
             recruiterName={context.recruiterName}
             company={context.company}
             role={context.role}
-            wordmarkRef={chatPageWordmarkRef}
             action={
               <EndInterviewButton
                 sessionId={sessionId}
@@ -1082,7 +807,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           {/* Empty state */}
           {messages.length === 0 && !isStreaming && (
             <div className="flex flex-col items-center px-6 py-10 w-full">
-              <h1 ref={chatPageNameRef} className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
+              <h1 className="gradient-text text-2xl font-bold mb-2 text-center" style={{ letterSpacing: '-0.02em' }}>
                 {t.emptyGreeting}
               </h1>
               <p className="text-xs text-center leading-relaxed mb-8" style={{ color: 'var(--splash-status)', letterSpacing: '0.04em', maxWidth: 320, opacity: 0.7 }}>
@@ -1316,82 +1041,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         retryLabel={t.insightsRetry}
       />}
 
-      {/* SPLASH 2 — transparent overlay (Background shows through) */}
-      {!chatSplashDone && (
-        <div
-          ref={s2OverlayRef}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 50,
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center',
-            pointerEvents: 'none', overflow: 'hidden',
-          }}
-        >
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            {/* Name */}
-            <p
-              ref={s2NameRef}
-              style={{
-                fontSize: 18, fontWeight: 700, color: 'var(--splash-name)',
-                letterSpacing: '-0.01em', marginBottom: 0,
-                opacity: 0, transform: 'translateX(-36px)', filter: 'blur(12px)',
-              }}
-            >
-              Pablo Agis Burgos
-            </p>
-
-            {/* Wordmark */}
-            <p
-              ref={s2WmRef}
-              style={{
-                fontSize: 11, fontWeight: 500,
-                color: 'var(--splash-wm)',
-                letterSpacing: '0.28em', textTransform: 'uppercase',
-                marginTop: 28, opacity: 0, filter: 'blur(6px)',
-              }}
-            >
-              InterviewMind
-            </p>
-
-            {/* Status indicator — dot and text animated separately */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 12 }}>
-              <div
-                ref={s2StatusDotRef}
-                style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: '#3a9d5d', flexShrink: 0,
-                  animation: 'status-pulse 2s ease-in-out infinite',
-                  opacity: 0, transform: 'scale(0)',
-                }}
-              />
-              <span
-                ref={s2StatusTextRef}
-                style={{
-                  fontSize: 11, color: 'var(--splash-status)', letterSpacing: '0.04em',
-                  opacity: 0, transform: 'translateX(-12px)', filter: 'blur(4px)',
-                }}
-              >
-                IA lista · Conectando sesión
-              </span>
-            </div>
-          </div>
-
-          {/* Progress bar — barely visible, fills over splash duration */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
-            height: 1.5,
-            background: 'rgba(120,120,200,0.08)',
-          }}>
-            <div
-              ref={s2ProgressRef}
-              style={{
-                height: '100%', width: '0%',
-                background: 'linear-gradient(90deg, rgba(80,110,220,0.28), rgba(130,80,210,0.28))',
-              }}
-            />
-          </div>
-        </div>
-      )}
     </>
   );
 }
