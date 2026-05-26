@@ -377,7 +377,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
               Pablo Agis Burgos
             </h2>
             <div style={{ fontSize: 12, color: 'var(--splash-status)', letterSpacing: '0.04em', marginBottom: 20 }}>
-              SaaS · Hospitality Tech · 5 idiomas
+              SaaS · Hospitality Tech
             </div>
 
             {/* Divider */}
