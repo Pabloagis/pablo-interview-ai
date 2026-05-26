@@ -185,7 +185,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
       case 'executiveSummary': {
         const { headline, chips, points } = report.executiveSummary;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 500, color: 'var(--text-primary)', lineHeight: 1.6 }}>
               {headline}
             </p>
@@ -202,7 +202,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
               </div>
             )}
             {points?.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 11 }}>
                 {points.map((pt, i) => (
                   <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                     <span style={{ color: 'var(--accent-primary)', fontWeight: 700, fontSize: 13, flexShrink: 0, marginTop: 1 }}>·</span>
@@ -220,8 +220,8 @@ export default function InteractiveReport({ report, recruiterName, messages = []
           <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
             {items.map(({ label, detail }, i) => (
               <div key={i}>
-                {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '12px 0' }} />}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '16px 0' }} />}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <span style={{
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
                     textTransform: 'uppercase', color: 'var(--accent-primary)',
@@ -236,10 +236,10 @@ export default function InteractiveReport({ report, recruiterName, messages = []
       case 'conversationInsights': {
         const { items } = report.conversationInsights;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {items.map(({ title, body }, i) => (
               <div key={i} style={{
-                padding: '10px 14px',
+                padding: '13px 16px',
                 borderRadius: 10,
                 background: 'var(--glass-1)',
                 border: '0.5px solid var(--glass-border)',
@@ -258,7 +258,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
       case 'recruiterTakeaways': {
         const { items } = report.recruiterTakeaways;
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 13 }}>
             {items.map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                 <span style={{
@@ -279,7 +279,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
               const isPablo = msg.role === 'assistant';
               return (
                 <div key={i}>
-                  {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '12px 0' }} />}
+                  {i > 0 && <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '16px 0' }} />}
                   <div>
                     <span style={{
                       display: 'inline-block',
@@ -308,7 +308,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
         @keyframes irGlow { 0%,100%{opacity:0.4} 50%{opacity:0.75} }
       `}</style>
 
-      <div style={{ maxWidth: 660, margin: '0 auto', padding: '24px 16px 52px' }}>
+      <div style={{ maxWidth: 660, margin: '0 auto', padding: '28px 16px 64px' }}>
 
         {/* ── Report header card ─────────────────────────────────────────────── */}
         <div
@@ -432,7 +432,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
               key={key}
               style={{
                 ...stagger(i + 5),
-                marginBottom: 8,
+                marginBottom: 12,
                 borderRadius: 14,
                 overflow: 'hidden',
                 background: 'var(--glass-1)',
@@ -445,7 +445,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
                 style={{
                   width: '100%',
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '14px 18px',
+                  padding: '16px 18px',
                   background: 'none', border: 'none',
                   cursor: 'pointer', textAlign: 'left',
                 }}
@@ -483,7 +483,7 @@ export default function InteractiveReport({ report, recruiterName, messages = []
                 transition: 'max-height 380ms cubic-bezier(0.16,1,0.3,1), opacity 220ms ease',
               }}>
                 <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 18px' }} />
-                <div style={{ padding: '16px 18px 20px' }}>
+                <div style={{ padding: '20px 18px 24px' }}>
                   {renderSectionContent(key)}
                 </div>
               </div>
