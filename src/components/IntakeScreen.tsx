@@ -505,23 +505,12 @@ export default function IntakeScreen() {
                 width: 32, height: 1, margin: '0 auto 20px',
                 background: 'linear-gradient(90deg, transparent, var(--glass-border), transparent)',
               }} />
-              {/* Headline — before the colon */}
               <p className="gradient-text" style={{
-                margin: '0 0 10px',
-                fontSize: 20, fontWeight: 700,
-                letterSpacing: '-0.025em', lineHeight: 1.35,
-              }}>
-                {t.visionTitle.split(':')[0] + ':'}
-              </p>
-              {/* Descriptor — after the colon */}
-              <p style={{
                 margin: 0,
-                fontSize: 13, fontWeight: 400,
-                letterSpacing: '0.01em', lineHeight: 1.7,
-                color: 'var(--text-secondary)',
-                opacity: 0.75,
+                fontSize: 19, fontWeight: 700,
+                letterSpacing: '-0.025em', lineHeight: 1.5,
               }}>
-                {t.visionTitle.split(':').slice(1).join(':').trim()}
+                {t.visionTitle}
               </p>
             </div>
 
