@@ -46,68 +46,31 @@ export default function IntakeScreen() {
   // Splash refs
   const splashOverlayRef = useRef<HTMLDivElement>(null);
   const splashWmRef      = useRef<HTMLParagraphElement>(null);
-  const splashAvRef      = useRef<HTMLDivElement>(null);
-  const splashRingRef    = useRef<HTMLDivElement>(null);
-  const splashGlowRef    = useRef<HTMLDivElement>(null);
-  const splashNameRef    = useRef<HTMLParagraphElement>(null);
-  const splashRoleRef    = useRef<HTMLParagraphElement>(null);
-  const splashDivRef     = useRef<HTMLDivElement>(null);
-  const splashTagsRef    = useRef<(HTMLSpanElement | null)[]>([]);
   const splashVisionRef  = useRef<HTMLDivElement>(null);
-  const vignetteRef  = useRef<HTMLDivElement>(null);
-  const lightSweepRef = useRef<HTMLDivElement>(null);
   const splashRanRef     = useRef(false);
-  const [splashPaused,   setSplashPaused]   = useState(false);
-  const splashControlRef = useRef<{ pause: () => void; resume: () => void } | null>(null);
-  const sharedTransitionRan   = useRef(false);
-  const pageNameRef           = useRef<HTMLHeadingElement>(null);
-  const pageTaglineRef        = useRef<HTMLParagraphElement>(null);
-  const pageNameLanded        = useRef(false);
-  const pageTaglineLanded     = useRef(false);
 
   // ── Skip before first paint for returning visitors ──
   useLayoutEffect(() => {
     if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageReady(true); }
   }, []);
 
-  // ── Splash 1 — cinematic JS rAF animation ──
+  // ── Splash 1 ──
   useEffect(() => {
     if (splashRanRef.current) return;
     splashRanRef.current = true;
     if (sessionStorage.getItem('im_splash_shown')) return;
 
     const timers: ReturnType<typeof setTimeout>[] = [];
-    const rafs: number[] = [];
-    const tick = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+    const rafs:   number[] = [];
+    const tick  = (fn: FrameRequestCallback) => { const id = requestAnimationFrame(fn); rafs.push(id); return id; };
+    const after = (fn: () => void, ms: number) => { const id = setTimeout(fn, ms); timers.push(id); };
+    const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+    const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;
 
-    // Pause state (local to this animation run)
-    const isPaused = { current: false };
-    const pausedAt = { current: 0 };
-    const pendingList: Array<{ id: ReturnType<typeof setTimeout>; fn: () => void; firesAt: number }> = [];
-
-    const after = (fn: () => void, ms: number) => {
-      const firesAt = performance.now() + ms;
-      const id = setTimeout(() => {
-        const idx = pendingList.findIndex(e => e.id === id);
-        if (idx >= 0) pendingList.splice(idx, 1);
-        fn();
-      }, ms);
-      timers.push(id);
-      pendingList.push({ id, fn, firesAt });
-    };
-
-    const eO  = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);           // easeOutExpo
-    const eOC = (t: number) => 1 - Math.pow(1 - t, 3);                             // easeOutCubic
-    const eIO = (t: number) => t < 0.5 ? 8*t*t*t*t : 1 - Math.pow(-2*t+2, 4)/2;  // easeInOutQuart
-
-    // Universal animate helper — pause-aware
     function animate(fn: (p: number) => void, duration: number, delay: number, easing: (t: number) => number, onDone?: () => void) {
       after(() => {
-        let start = performance.now();
-        let last = start;
+        const start = performance.now();
         const frame = (now: number) => {
-          if (isPaused.current) { start += now - last; }
-          last = now;
           const raw = Math.min((now - start) / duration, 1);
           fn(easing(raw));
           if (raw < 1) tick(frame);
@@ -117,370 +80,31 @@ export default function IntakeScreen() {
       }, delay);
     }
 
-    // Spring with blur + translateY — for avatar entrance (pause-aware)
-    function springAv(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, fromTy: number, peakTy: number, dur: number, delay: number) {
-      after(() => {
-        let s = performance.now(), last = s;
-        const h = dur * 0.55, opDur = dur * 0.38;
-        const frame = (now: number) => {
-          if (isPaused.current) { s += now - last; }
-          last = now;
-          const elapsed = now - s;
-          const e = Math.min(elapsed, dur);
-          let sc: number, ty: number;
-          if (e < h) {
-            const p = eO(e / h);
-            sc = fromSc + (peakSc - fromSc) * p;
-            ty = fromTy + (peakTy - fromTy) * p;
-          } else {
-            const p = eOC((e - h) / (dur - h));
-            sc = peakSc + (finSc - peakSc) * p;
-            ty = peakTy * (1 - p);
-          }
-          const bl = fromBlur * Math.max(0, 1 - Math.min(elapsed / dur, 1));
-          el.style.transform = `translateY(${ty.toFixed(2)}px) scale(${sc.toFixed(4)})`;
-          el.style.opacity = Math.min(elapsed / opDur, 1).toFixed(4);
-          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
-          if (elapsed < dur) tick(frame);
-          else { el.style.transform = 'none'; el.style.opacity = '1'; el.style.filter = ''; }
-        };
-        tick(frame);
-      }, delay);
-    }
-
-    const ov    = splashOverlayRef.current;
-    const wm    = splashWmRef.current;
-    const av    = splashAvRef.current;
-    const ring  = splashRingRef.current;
-    const glow  = splashGlowRef.current;
-    const nm    = splashNameRef.current;
-    const rl    = splashRoleRef.current;
-    const dv    = splashDivRef.current;
-    const vig   = vignetteRef.current;
-    const sweep = lightSweepRef.current;
-    const tags  = splashTagsRef.current.filter(Boolean) as HTMLSpanElement[];
-    if (!ov || !wm || !av || !ring || !glow || !nm || !rl || !dv) return;
-
-    const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
-    const namePulsed = { current: false };
-
-    // Expose pause/resume for hold-to-pause (Instagram Stories style)
-    splashControlRef.current = {
-      pause: () => {
-        if (isPaused.current) return;
-        isPaused.current = true;
-        pausedAt.current = performance.now();
-        pendingList.forEach(entry => clearTimeout(entry.id));
-        setSplashPaused(true);
-      },
-      resume: () => {
-        if (!isPaused.current) return;
-        const pauseDuration = performance.now() - pausedAt.current;
-        isPaused.current = false;
-        [...pendingList].forEach(entry => {
-          entry.firesAt += pauseDuration;
-          const fn = entry.fn;
-          const newId = setTimeout(() => {
-            const idx = pendingList.indexOf(entry);
-            if (idx >= 0) pendingList.splice(idx, 1);
-            fn();
-          }, Math.max(0, entry.firesAt - performance.now()));
-          timers.push(newId);
-          entry.id = newId;
-        });
-        setSplashPaused(false);
-      },
-    };
-
-    // ── Phase 1: Vision phrase leads (0–3300ms) ──────────────────────────────
-
+    const wm     = splashWmRef.current;
     const vision = splashVisionRef.current;
+    if (!wm) return;
+
+    // InterviewMind wordmark — Apple-style: clean opacity fade + subtle scale
+    animate(p => {
+      wm.style.opacity   = p.toFixed(4);
+      wm.style.transform = `scale(${(0.96 + 0.04 * p).toFixed(4)})`;
+    }, 800, 0, eO, () => { wm.style.transform = ''; });
+
+    // Vision phrase — fades in after wordmark is established
     if (vision) {
-      // 200ms — blur + scale in from center (translate kept every frame)
-      animate(p => {
-        vision.style.opacity   = p.toFixed(4);
-        vision.style.filter    = `blur(${(10 * (1 - p)).toFixed(1)}px)`;
-        vision.style.transform = `translate(-50%, -50%) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
-      }, 800, 200, eO, () => { vision.style.filter = ''; vision.style.transform = 'translate(-50%, -50%)'; });
-
-      // 3300ms — fade out, leaving enough time to read
-      animate(p => {
-        vision.style.opacity   = (1 - p).toFixed(4);
-        vision.style.filter    = `blur(${(8 * p).toFixed(1)}px)`;
-        vision.style.transform = `translate(-50%, -50%) scale(${(1 - 0.04 * p).toFixed(4)})`;
-      }, 550, 3300, eIO, () => { vision.style.display = 'none'; });
+      animate(p => { vision.style.opacity = p.toFixed(4); }, 600, 500, eO);
+      // Fade out to make room for page
+      animate(p => { vision.style.opacity = (1 - p).toFixed(4); }, 400, 2700, eIO);
     }
 
-    // ── Phase 2: Pablo identity ───────────────────────────────────────────────
-
-    // 3000ms — Vignette (night only)
-    if (!dayMode && vig) {
-      animate(p => { vig.style.opacity = (p * 0.7).toFixed(4); }, 1000, 3000, eIO);
-    }
-
-    // 3200ms — Wordmark: blur + tracking compression
-    const wmTargetOp = dayMode ? 0.30 : 0.28;
-    animate(p => {
-      const tracking = 0.34 - (0.34 - 0.22) * p;
-      wm.style.letterSpacing = `${tracking.toFixed(3)}em`;
-      wm.style.opacity = (p * wmTargetOp).toFixed(4);
-      wm.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
-    }, 1100, 3200, eO);
-
-    // 3600ms — Wordmark glow: rise then settle (illumination at beginning)
-    {
-      const gc  = dayMode ? '58,85,192'   : '120,150,255';
-      const pkP = dayMode ? 16 : 20;   // peak size px
-      const pkA = dayMode ? 0.30 : 0.50; // peak alpha
-      const stP = dayMode ? 6  : 8;    // settle size px
-      const stA = dayMode ? 0.12 : 0.18; // settle alpha
-      animate(
-        p => { wm.style.textShadow = `0 0 ${(pkP * p).toFixed(1)}px rgba(${gc},${(pkA * p).toFixed(2)})`; },
-        600, 3600, eO,
-        () => animate(
-          p => { wm.style.textShadow = `0 0 ${(pkP - (pkP - stP) * p).toFixed(1)}px rgba(${gc},${(pkA - (pkA - stA) * p).toFixed(2)})`; },
-          400, 0, eOC
-        )
-      );
-    }
-
-    // 3500ms — Light sweep (night only)
-    if (!dayMode && sweep) {
-      animate(p => {
-        const sw = p < 0.5 ? p * 2 : (1 - p) * 2;
-        sweep.style.opacity = (sw * 0.6).toFixed(4);
-        sweep.style.transform = `translateX(${(-100 + p * 200).toFixed(1)}%)`;
-      }, 700, 3500, t => t);
-    }
-
-    // 3600ms — Avatar springs from depth with weight
-    springAv(av, 0.50, 1.10, 1.0, 24, 10, -3, 1300, 3600);
-
-    // 4000ms — Ring activates
-    after(() => { ring.style.opacity = '1'; ring.style.transition = 'opacity 1100ms ease'; }, 4000);
-
-    // 4100ms — Glow pulse begins
-    after(() => { glow.style.animation = 'glow-pulse 2200ms ease-in-out infinite'; }, 4100);
-
-    // 4250ms — Name assembles from left
-    const nameEl = nm;
-    animate(p => {
-      nameEl.style.opacity = p.toFixed(4);
-      nameEl.style.transform = `translateX(${(-48 * (1 - p)).toFixed(2)}px) scale(${(0.92 + 0.08 * p).toFixed(4)})`;
-      nameEl.style.filter = `blur(${(16 * (1 - p)).toFixed(1)}px)`;
-    }, 750, 4250, eO, () => { nameEl.style.transform = ''; nameEl.style.filter = ''; });
-
-    // 4625ms — Name micro-pulse (at 375ms into the 750ms name animation)
+    // Exit: wordmark fades, then page appears
     after(() => {
-      if (!namePulsed.current) {
-        namePulsed.current = true;
-        animate(
-          pp => { nameEl.style.transform = `translateX(0) scale(${(1 + 0.014 * Math.sin(pp * Math.PI)).toFixed(4)})`; },
-          90, 0, t => t
-        );
-      }
-    }, 4625);
-
-    // 4600ms — Role from right
-    const roleOp = dayMode ? 0.62 : 0.70;
-    animate(p => {
-      rl.style.opacity = (p * roleOp).toFixed(4);
-      rl.style.transform = `translateX(${(40 * (1 - p)).toFixed(2)}px)`;
-      rl.style.filter = `blur(${(12 * (1 - p)).toFixed(1)}px)`;
-    }, 650, 4600, eO, () => { rl.style.transform = ''; rl.style.filter = ''; });
-
-    // 4900ms — Divider reveals from center
-    const divOp = dayMode ? 0.50 : 0.60;
-    animate(p => {
-      dv.style.transform = `scaleX(${p.toFixed(4)})`;
-      dv.style.opacity = (p * divOp).toFixed(4);
-    }, 550, 4900, eOC);
-
-    // 5200ms — Tags stagger in
-    tags.forEach((tag, i) => {
-      animate(p => {
-        tag.style.opacity = p.toFixed(4);
-        tag.style.transform = `translateY(${(18 * (1 - p)).toFixed(2)}px) scale(${(0.88 + 0.12 * p).toFixed(4)})`;
-        tag.style.filter = `blur(${(8 * (1 - p)).toFixed(1)}px)`;
-      }, 520, 5200 + i * 90, eO, () => { tag.style.transform = ''; tag.style.filter = ''; });
-    });
-
-    // 6600ms — EXIT: all elements fly to their page counterparts simultaneously
-    after(() => {
-      if (!ov) return;
-
-      glow.style.animation = 'none';
-      setPageReady(true);
-
-      // All 4 landings (avatar + name + tagline + wordmark) must complete before unmount
-      const landingCount = { current: 0 };
-      const checkDone = () => {
-        landingCount.current += 1;
-        if (landingCount.current >= 4) {
-          setSplashDone(true);
-          sessionStorage.setItem('im_splash_shown', '1');
-        }
-      };
-
-      // Fly a splash element to its page counterpart.
-      // Measures positions, translates+scales the splash element, then reveals the page element.
-      const flyTo = (
-        splashEl: HTMLElement,
-        pageEl: HTMLElement,
-        duration: number,
-        delayMs: number,
-        onLand?: () => void
-      ) => {
-        pageEl.style.opacity    = '0';
-        pageEl.style.transition = 'none';
-        pageEl.style.transform  = ''; // reset so getBoundingClientRect is at natural position
-
-        const sr = splashEl.getBoundingClientRect();
-        const pr = pageEl.getBoundingClientRect();
-
-        // Fallback: element not yet rendered — fade out splash, reveal page
-        if (pr.width === 0 && pr.height === 0) {
-          animate(p => { splashEl.style.opacity = (1 - p).toFixed(4); }, 300, delayMs, eIO);
-          after(() => { pageEl.style.opacity = '1'; if (onLand) onLand(); }, delayMs + 300);
-          return;
-        }
-
-        const dx = pr.left - sr.left + (pr.width  - sr.width)  / 2;
-        const dy = pr.top  - sr.top  + (pr.height - sr.height) / 2;
-        const scaleTo     = Math.max(pr.width / sr.width, 0.3);
-        const startOpacity = parseFloat(splashEl.style.opacity || '1');
-
-        animate(
-          p => {
-            splashEl.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTo - 1) * p).toFixed(4)})`;
-            splashEl.style.opacity   = p > 0.80
-              ? (startOpacity * (1 - (p - 0.80) / 0.20)).toFixed(4)
-              : startOpacity.toFixed(4);
-          },
-          duration, delayMs, eO,
-          () => {
-            splashEl.style.opacity   = '0';
-            splashEl.style.transform = '';
-
-            // Reveal page element with micro-spring pop
-            pageEl.style.opacity    = '1';
-            pageEl.style.transform  = 'scale(0.96)';
-            pageEl.style.transition = 'none';
-            requestAnimationFrame(() => {
-              pageEl.style.transition = 'transform 300ms cubic-bezier(0.34,1.56,0.64,1)';
-              pageEl.style.transform  = 'scale(1)';
-            });
-
-            // Wait for spring to complete before signalling done
-            if (onLand) setTimeout(onLand, 300);
-          }
-        );
-      };
-
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const pageAvEl = welcomeAvRef.current;
-          const pageNmEl = pageNameRef.current;
-          const pageRlEl = pageTaglineRef.current;
-
-          // ── Avatar flight (custom: keeps ring + glow, 0.94 spring) ──
-          if (av && pageAvEl) {
-            pageAvEl.style.opacity    = '0';
-            pageAvEl.style.transition = 'none';
-
-            const splashRect  = av.getBoundingClientRect();
-            const pageRect    = pageAvEl.getBoundingClientRect();
-            const dx          = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
-            const dy          = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
-            const scaleTarget = pageRect.width / splashRect.width;
-
-            animate(
-              p => {
-                av.style.transform = `translate(${(dx * p).toFixed(2)}px, ${(dy * p).toFixed(2)}px) scale(${(1 + (scaleTarget - 1) * p).toFixed(4)})`;
-                ring.style.opacity = (1 - p * 0.85).toFixed(4);
-                glow.style.opacity = (1 - p).toFixed(4);
-                av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
-              },
-              600, 80, eO,
-              () => {
-                av.style.opacity = '0';
-                sharedTransitionRan.current = true;
-
-                pageAvEl.style.opacity    = '1';
-                pageAvEl.style.transition = 'none';
-                pageAvEl.style.transform  = 'scale(0.94)';
-
-                requestAnimationFrame(() => {
-                  pageAvEl.style.transition = 'transform 280ms cubic-bezier(0.34,1.56,0.64,1)';
-                  pageAvEl.style.transform  = 'scale(1.0)';
-                  setTimeout(checkDone, 280);
-                });
-              }
-            );
-          } else { checkDone(); }
-
-          // ── Name flight ──
-          if (nm && pageNmEl) {
-            flyTo(nm, pageNmEl, 580, 40, () => {
-              pageNameLanded.current = true;
-              checkDone();
-            });
-          } else { checkDone(); }
-
-          // ── Tagline/Role flight ──
-          if (rl && pageRlEl) {
-            flyTo(rl, pageRlEl, 540, 80, () => {
-              pageTaglineLanded.current = true;
-              checkDone();
-            });
-          } else { checkDone(); }
-
-          // ── Wordmark: illuminate → fallback fade (Page 1 has no nav wordmark) ──
-          const wmEl       = wm;
-          const wmBaseOp   = dayMode ? 0.30 : 0.28;
-          const wmBrightOp = dayMode ? 0.55 : 0.65;
-          const wmGc       = dayMode ? '58,85,192' : '140,170,255';
-          animate(
-            p => {
-              wmEl.style.opacity    = (wmBaseOp + (wmBrightOp - wmBaseOp) * p).toFixed(4);
-              wmEl.style.textShadow = dayMode
-                ? `0 0 ${(32 * p).toFixed(1)}px rgba(58,85,192,${(0.50 * p).toFixed(2)}), 0 0 ${(60 * p).toFixed(1)}px rgba(58,85,192,${(0.18 * p).toFixed(2)})`
-                : `0 0 ${(40 * p).toFixed(1)}px rgba(140,170,255,${(0.80 * p).toFixed(2)}), 0 0 ${(80 * p).toFixed(1)}px rgba(100,130,255,${(0.30 * p).toFixed(2)})`;
-            },
-            300, 0, eO,
-            () => animate(
-              p => {
-                wmEl.style.opacity    = (wmBrightOp * (1 - p)).toFixed(4);
-                wmEl.style.textShadow = `0 0 ${(40 * (1 - p)).toFixed(1)}px rgba(${wmGc},${(0.80 * (1 - p)).toFixed(2)})`;
-              },
-              300, 0, eO,
-              () => { wmEl.style.textShadow = 'none'; checkDone(); }
-            )
-          );
-
-          // ── Elements without page counterparts — dissolve gracefully ──
-
-          // Tags — staggered fade
-          tags.forEach((tag, i) => {
-            animate(p => { tag.style.opacity = (1 - p).toFixed(4); }, 200, i * 40, eIO);
-          });
-
-          // Divider
-          if (dv) {
-            const dvOp = parseFloat(dv.style.opacity || '0');
-            animate(p => { dv.style.opacity = (dvOp * (1 - p)).toFixed(4); }, 180, 0, eIO);
-          }
-
-          // Vignette
-          if (vig) {
-            const vigOp = parseFloat(vig.style.opacity || '0');
-            animate(p => { vig.style.opacity = (vigOp * (1 - p)).toFixed(4); }, 300, 0, eIO);
-          }
-
-          if (splashVisionRef.current) splashVisionRef.current.style.opacity = '0';
-        });
+      animate(p => { wm.style.opacity = (1 - p).toFixed(4); }, 400, 0, eO, () => {
+        setPageReady(true);
+        setSplashDone(true);
+        sessionStorage.setItem('im_splash_shown', '1');
       });
-    }, 6600);
+    }, 3200);
 
     return () => { timers.forEach(clearTimeout); rafs.forEach(cancelAnimationFrame); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -648,7 +272,7 @@ export default function IntakeScreen() {
           <div className="flex flex-col items-center gap-3 mb-7 text-center">
             <button ref={welcomeAvRef} type="button" onClick={() => setAvatarOpen(true)}
               className="relative cursor-zoom-in"
-              style={{ width: 112, height: 112, ...(sharedTransitionRan.current ? {} : emerge(0, { sc: 0.97, blur: 3, dur: 500 })) }}>
+              style={{ width: 112, height: 112, ...emerge(0, { sc: 0.97, blur: 3, dur: 500 }) }}>
               <div className="absolute inset-0 rounded-full" style={{
                 background: 'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
                 animation: 'ring-spin 3.5s linear infinite',
@@ -660,10 +284,10 @@ export default function IntakeScreen() {
                 <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
               </div>
             </button>
-            <h1 ref={pageNameRef} className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...(pageNameLanded.current ? {} : emerge(140, { tx: -24, blur: 8, dur: 550 })) }}>
+            <h1 className="gradient-text" style={{ fontSize: 24, fontWeight: 700, letterSpacing: '-0.02em', ...emerge(140, { tx: -24, blur: 8, dur: 550 }) }}>
               {t.emptyGreeting}
             </h1>
-            <p ref={pageTaglineRef} style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...(pageTaglineLanded.current ? {} : emerge(220, { ty: 14, blur: 5, dur: 500 })) }}>
+            <p style={{ fontSize: 12, color:'var(--splash-status)', letterSpacing:'0.04em', lineHeight:1.5, ...emerge(220, { ty: 14, blur: 5, dur: 500 }) }}>
               {t.intakeSubtitle}
             </p>
           </div>
@@ -858,164 +482,31 @@ export default function IntakeScreen() {
       {!splashDone && (
         <div
           ref={splashOverlayRef}
-          className="fixed inset-0 z-40 flex flex-col items-center justify-center overflow-hidden"
-          onPointerDown={() => splashControlRef.current?.pause()}
-          onPointerUp={() => splashControlRef.current?.resume()}
-          onPointerLeave={() => splashControlRef.current?.resume()}
-          style={{ cursor: 'default', userSelect: 'none' }}
+          className="fixed inset-0 z-40 flex flex-col items-center justify-center"
+          style={{ pointerEvents: 'none' }}
         >
-          {/* Vignette (night mode only) */}
-          <div ref={vignetteRef} style={{
-            position:'absolute', inset:0, pointerEvents:'none',
-            background:'radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.14) 100%)',
-            opacity:0,
-          }} />
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 32 }}>
 
-          {/* Light sweep (night mode only) */}
-          <div ref={lightSweepRef} style={{
-            position:'absolute', top:'50%', left:0,
-            width:'100%', height:1, pointerEvents:'none',
-            background:'linear-gradient(90deg, transparent 0%, rgba(100,130,255,0.22) 50%, transparent 100%)',
-            opacity:0, transform:'translateX(-100%)',
-          }} />
-
-          {/* Pause indicator */}
-          {splashPaused && (
-            <div style={{
-              position: 'absolute', bottom: 32, left: '50%',
-              transform: 'translateX(-50%)',
-              display: 'flex', alignItems: 'center', gap: 5,
-              padding: '4px 10px', borderRadius: 999,
-              background: 'rgba(255,255,255,0.07)',
-              border: '0.5px solid rgba(255,255,255,0.13)',
-              pointerEvents: 'none',
-            }}>
-              <svg width="8" height="8" viewBox="0 0 10 10" fill="rgba(255,255,255,0.42)">
-                <rect x="1" y="0" width="3" height="10" rx="1" />
-                <rect x="6" y="0" width="3" height="10" rx="1" />
-              </svg>
-              <span style={{ fontSize: 9, fontWeight: 500, letterSpacing: '0.12em', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' }}>
-                paused
-              </span>
-            </div>
-          )}
-
-          {/* Vision phrase — HERO, shown first, absolutely centered */}
-          <div ref={splashVisionRef} style={{
-            position: 'absolute',
-            top: '50%', left: '50%',
-            transform: 'translate(-50%, -50%)',
-            display: 'flex', flexDirection: 'column', alignItems: 'center',
-            maxWidth: 300, width: '82%',
-            textAlign: 'center',
-            opacity: 0,
-            filter: 'blur(10px)',
-            pointerEvents: 'none',
-            zIndex: 2,
-          }}>
-            {/* Micro wordmark — orients the viewer */}
-            <span style={{
-              fontSize: 8.5,
-              fontWeight: 600,
-              letterSpacing: '0.28em',
-              textTransform: 'uppercase',
-              color: 'var(--splash-wm)',
-              marginBottom: 12,
+            {/* InterviewMind — Apple-style animated wordmark */}
+            <p ref={splashWmRef} style={{
+              margin: 0,
+              fontSize: 11, fontWeight: 600,
+              letterSpacing: '0.22em', textTransform: 'uppercase',
+              color: 'var(--nav-text)',
+              opacity: 0,
             }}>
               InterviewMind
-            </span>
-
-            {/* Accent line */}
-            <span style={{
-              display: 'block',
-              width: 32, height: 1,
-              background: 'linear-gradient(90deg, transparent, var(--accent-primary), transparent)',
-              marginBottom: 16,
-              opacity: 0.7,
-            }} />
-
-            {/* Main phrase */}
-            <p className="gradient-text" style={{
-              fontSize: 17,
-              fontWeight: 700,
-              letterSpacing: '-0.02em',
-              lineHeight: 1.45,
-              margin: 0,
-            }}>
-              {t.visionTitle}
-            </p>
-          </div>
-
-          <div style={{ position:'relative', display:'flex', flexDirection:'column', alignItems:'center', textAlign:'center' }}>
-
-            {/* Wordmark */}
-            <p ref={splashWmRef} style={{
-              fontSize:10, fontWeight:500, color:'var(--splash-wm)',
-              letterSpacing:'0.34em', textTransform:'uppercase',
-              marginBottom:52, opacity:0, filter:'blur(12px)',
-            }}>
-              INTERVIEWMIND
             </p>
 
-            {/* Avatar + ring + glow */}
-            <div ref={splashAvRef} style={{ position:'relative', width:112, height:112, marginBottom:24, opacity:0, transform:'translateY(8px) scale(0.55)' }}>
-              {/* Glow */}
-              <div ref={splashGlowRef} className="absolute inset-0 rounded-full" style={{ background:'rgba(80,110,220,0.18)' }} />
-              {/* Spinning conic ring */}
-              <div ref={splashRingRef} className="absolute inset-0 rounded-full" style={{
-                background:'conic-gradient(from 0deg, rgba(60,90,200,0.7), rgba(100,60,180,0.5), rgba(40,130,160,0.55), rgba(60,90,200,0.7))',
-                padding:2, opacity:0,
-                animation:'ring-spin 3.5s linear infinite',
+            {/* Vision phrase */}
+            <div ref={splashVisionRef} style={{ opacity: 0, maxWidth: 280, width: '82%' }}>
+              <p className="gradient-text" style={{
+                margin: 0,
+                fontSize: 17, fontWeight: 700,
+                letterSpacing: '-0.02em', lineHeight: 1.5,
               }}>
-                <div className="w-full h-full rounded-full" style={{ background:'var(--bg-base)' }} />
-              </div>
-              {/* Photo */}
-              <div className="absolute rounded-full overflow-hidden" style={{ inset:3 }}>
-                <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'center 15%', display:'block' }} />
-              </div>
-            </div>
-
-            {/* Name */}
-            <p ref={splashNameRef} className="gradient-text" style={{
-              fontSize:28, fontWeight:700, letterSpacing:'-0.025em',
-              marginBottom:6, opacity:0, transform:'translateX(-40px)', filter:'blur(14px)',
-            }}>
-              Pablo Agis Burgos
-            </p>
-
-            {/* Role */}
-            <p ref={splashRoleRef} style={{
-              fontSize:12.5, color:'var(--splash-role)', letterSpacing:'0.04em',
-              marginBottom:16, opacity:0, transform:'translateX(40px)', filter:'blur(12px)',
-            }}>
-              SaaS &amp; Hospitality Tech
-            </p>
-
-            {/* Divider */}
-            <div ref={splashDivRef} style={{
-              width:200, height:0.5, marginBottom:20, transformOrigin:'center',
-              background:'var(--splash-divider)',
-              opacity:0, transform:'scaleX(0)',
-            }} />
-
-            {/* Tags — 4 items */}
-            <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:8, maxWidth:300 }}>
-              {(['HubOS', 'Soho House London', '5 idiomas', 'Barcelona'] as const).map((tag, i) => (
-                <span
-                  key={tag}
-                  ref={(el) => { splashTagsRef.current[i] = el; }}
-                  style={{
-                    padding:'5px 12px', borderRadius:999,
-                    background:'var(--splash-tag-bg)',
-                    border:'0.5px solid var(--splash-tag-border)',
-                    fontSize:11, color:'var(--splash-tag-text)',
-                    opacity:0, transform:'translateY(18px)',
-                    display:'inline-flex', alignItems:'center',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
+                {t.visionTitle}
+              </p>
             </div>
 
           </div>

@@ -155,9 +155,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   // Splash 2 refs
   const s2OverlayRef    = useRef<HTMLDivElement>(null);
-  const s2AvRef         = useRef<HTMLDivElement>(null);
-  const s2RingRef       = useRef<HTMLDivElement>(null);
-  const s2GlowRef       = useRef<HTMLDivElement>(null);
   const s2NameRef       = useRef<HTMLParagraphElement>(null);
   const s2WmRef         = useRef<HTMLParagraphElement>(null);
   const s2StatusDotRef  = useRef<HTMLDivElement>(null);
@@ -186,14 +183,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const dismissPersistentReminderRef = useRef<() => void>();
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const interviewEndedRef = useRef(false);
-  const s2RanRef              = useRef(false);
-  const s2ProgressRef         = useRef<HTMLDivElement>(null);
-  const chatPageAvatarRef       = useRef<HTMLDivElement>(null);
-  const chatPageWordmarkRef     = useRef<HTMLSpanElement>(null);
-  const chatHeaderRef           = useRef<HTMLDivElement>(null);
-  const chatPageNameRef         = useRef<HTMLHeadingElement>(null);
-  const chatSharedTransitionRan = useRef(false);
-  const chatPageNameLanded      = useRef(false);
+  const s2RanRef            = useRef(false);
+  const s2ProgressRef       = useRef<HTMLDivElement>(null);
+  const chatPageWordmarkRef = useRef<HTMLSpanElement>(null);
+  const chatHeaderRef       = useRef<HTMLDivElement>(null);
+  const chatPageNameRef     = useRef<HTMLHeadingElement>(null);
+  const chatPageNameLanded  = useRef(false);
 
   // Skip splash before first paint for returning visitors
   useLayoutEffect(() => {
@@ -228,38 +223,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       }, delay);
     }
 
-    function springAv(el: HTMLElement, fromSc: number, peakSc: number, finSc: number, fromBlur: number, fromTy: number, peakTy: number, dur: number, delay: number) {
-      after(() => {
-        const s = performance.now(), h = dur * 0.55, opDur = dur * 0.38;
-        const frame = (now: number) => {
-          const elapsed = now - s;
-          const e = Math.min(elapsed, dur);
-          let sc: number, ty: number;
-          if (e < h) {
-            const p = eO(e / h);
-            sc = fromSc + (peakSc - fromSc) * p;
-            ty = fromTy + (peakTy - fromTy) * p;
-          } else {
-            const p = eOC((e - h) / (dur - h));
-            sc = peakSc + (finSc - peakSc) * p;
-            ty = peakTy * (1 - p);
-          }
-          const bl = fromBlur * Math.max(0, 1 - Math.min(elapsed / dur, 1));
-          el.style.transform = `translateY(${ty.toFixed(2)}px) scale(${sc.toFixed(4)})`;
-          el.style.opacity = Math.min(elapsed / opDur, 1).toFixed(4);
-          el.style.filter = bl > 0.2 ? `blur(${bl.toFixed(1)}px)` : '';
-          if (elapsed < dur) tick(frame);
-          else { el.style.transform = 'none'; el.style.opacity = '1'; el.style.filter = ''; }
-        };
-        tick(frame);
-      }, delay);
-    }
-
-    const ov  = s2OverlayRef.current, av = s2AvRef.current, rg = s2RingRef.current;
-    const gl  = s2GlowRef.current, nm = s2NameRef.current, wm = s2WmRef.current;
+    const ov  = s2OverlayRef.current;
+    const nm  = s2NameRef.current, wm = s2WmRef.current;
     const dot = s2StatusDotRef.current, txt = s2StatusTextRef.current;
     const prog = s2ProgressRef.current;
-    if (!ov || !av || !rg || !gl || !nm || !wm) return;
+    if (!ov || !nm || !wm) return;
 
     const dayMode = document.documentElement.getAttribute('data-theme') === 'day';
 
@@ -278,23 +246,14 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       }, 200);
     }
 
-    // 0ms: Avatar springs from depth with translateY (CHANGE 15)
-    springAv(av, 0.55, 1.08, 1.0, 22, 8, -2, 820, 0);
-
-    // 400ms: Name assembles from left (CHANGE 18)
+    // 400ms: Name assembles from left
     animate(p => {
       nm.style.opacity = p.toFixed(4);
       nm.style.transform = `translateX(${(-44 * (1 - p)).toFixed(2)}px) scale(${(0.93 + 0.07 * p).toFixed(4)})`;
       nm.style.filter = `blur(${(14 * (1 - p)).toFixed(1)}px)`;
     }, 680, 400, eO, () => { nm.style.transform = ''; nm.style.filter = ''; });
 
-    // 360ms: Ring activates (CHANGE 16)
-    after(() => { rg.style.transition = 'opacity 900ms ease'; rg.style.opacity = '1'; }, 360);
-
-    // 400ms: Glow activates (CHANGE 17)
-    after(() => { gl.style.transition = 'opacity 800ms ease'; gl.style.opacity = '1'; }, 400);
-
-    // 780ms: Wordmark with tracking compression (CHANGE 19)
+    // 780ms: Wordmark with tracking compression
     const wmTargetOp = dayMode ? 0.48 : 0.52;
     animate(p => {
       const tracking = 0.28 - (0.28 - 0.20) * p;
@@ -333,14 +292,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     after(() => {
       if (!ov) return;
 
-      gl.style.opacity = '0';
       setChatPageEnter(true);
 
-      // All 3 landings (avatar + name + wordmark) must complete before unmount
+      // Both landings (name + wordmark) must complete before unmount
       const landingCount = { current: 0 };
       const checkDone = () => {
         landingCount.current += 1;
-        if (landingCount.current >= 3) {
+        if (landingCount.current >= 2) {
           setChatSplashDone(true);
           sessionStorage.setItem(`im_s2_${sessionId}`, '1');
         }
@@ -467,53 +425,17 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         }
       );
 
+      // Fade status elements and progress bar on exit
+      if (prog) prog.style.opacity = '0';
+      const ctxEls = [dot, txt].filter(Boolean) as HTMLElement[];
+      const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
+      animate(p => {
+        ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
+      }, 160, 0, eIO);
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-          const pageAvEl = chatPageAvatarRef.current;
           const pageNmEl = chatPageNameRef.current;
-
-          // ── Avatar flight (custom: keeps ring fade, 0.94 spring) ──
-          if (av && pageAvEl) {
-            pageAvEl.style.opacity    = '0';
-            pageAvEl.style.transition = 'none';
-
-            // Fade status elements (dot, status text); name is flying
-            const ctxEls = [dot, txt].filter(Boolean) as HTMLElement[];
-            const initOps = ctxEls.map(el => parseFloat(el.style.opacity || '1'));
-            animate(p => {
-              ctxEls.forEach((el, i) => { el.style.opacity = (initOps[i] * (1 - p)).toFixed(4); });
-            }, 160, 0, eIO);
-            if (prog) prog.style.opacity = '0';
-
-            const splashRect  = av.getBoundingClientRect();
-            const pageRect    = pageAvEl.getBoundingClientRect();
-            const avDx        = (pageRect.left + pageRect.width  / 2) - (splashRect.left + splashRect.width  / 2);
-            const avDy        = (pageRect.top  + pageRect.height / 2) - (splashRect.top  + splashRect.height / 2);
-            const avScale     = pageRect.width / splashRect.width;
-
-            animate(
-              p => {
-                av.style.transform = `translate(${(avDx * p).toFixed(2)}px, ${(avDy * p).toFixed(2)}px) scale(${(1 + (avScale - 1) * p).toFixed(4)})`;
-                rg.style.opacity   = (1 - p * 0.85).toFixed(4);
-                av.style.opacity   = p > 0.85 ? (1 - (p - 0.85) / 0.15).toFixed(4) : '1';
-              },
-              550, 60, eO,
-              () => {
-                av.style.opacity = '0';
-                chatSharedTransitionRan.current = true;
-
-                pageAvEl.style.opacity    = '1';
-                pageAvEl.style.transition = 'none';
-                pageAvEl.style.transform  = 'scale(0.94)';
-
-                requestAnimationFrame(() => {
-                  pageAvEl.style.transition = 'transform 260ms cubic-bezier(0.34,1.56,0.64,1)';
-                  pageAvEl.style.transform  = 'scale(1.0)';
-                  setTimeout(checkDone, 260);
-                });
-              }
-            );
-          } else { checkDone(); }
 
           // ── Name flight ──
           if (nm && pageNmEl) {
@@ -1437,49 +1359,6 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           }}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-            {/* Avatar with conic ring + glow */}
-            <div
-              ref={s2AvRef}
-              style={{
-                position: 'relative', width: 72, height: 72,
-                marginBottom: 24, opacity: 0,
-                transform: 'translateY(6px) scale(0.60)', filter: 'blur(18px)',
-              }}
-            >
-              {/* Spinning conic ring */}
-              <div
-                ref={s2RingRef}
-                style={{
-                  position: 'absolute', inset: -10, borderRadius: '50%',
-                  background: 'conic-gradient(from 0deg, transparent 0%, rgba(80,110,220,0.9) 35%, rgba(120,80,200,0.7) 65%, transparent 100%)',
-                  opacity: 0,
-                  animation: 'ring-spin 3.5s linear infinite',
-                }}
-              />
-              {/* Glow halo */}
-              <div
-                ref={s2GlowRef}
-                style={{
-                  position: 'absolute', inset: -24, borderRadius: '50%',
-                  background: 'radial-gradient(circle, rgba(64,96,208,0.4) 0%, transparent 70%)',
-                  opacity: 0,
-                }}
-              />
-              {/* Photo */}
-              <div style={{
-                position: 'relative', width: '100%', height: '100%',
-                borderRadius: '50%', overflow: 'hidden',
-                border: '1.5px solid rgba(255,255,255,0.18)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5)',
-              }}>
-                <img
-                  src="/assets/pablo-avatar.jpg"
-                  alt="Pablo Agis"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }}
-                />
-              </div>
-            </div>
-
             {/* Name */}
             <p
               ref={s2NameRef}
