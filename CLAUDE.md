@@ -76,8 +76,8 @@ The `/api/send-application` endpoint checks `consent_to_email` before sending an
 
 ### Work History (All Verified — Use Exact Dates)
 - **HubOS** — Software Implementation Specialist (Early 2026, a few months)
-- **Axel Hotel Barcelona** — Front Office Manager (Mar 2025 – May 2025, 3 months)
-- **Gap** — May 2025 to Early 2026: returned to Barcelona, temporary work + private events while exploring hospitality tech roles
+- **Axel Hotel Barcelona** — Front Office Manager (Early 2026, a few months)
+- **Gap** — May 2025 to January 2026: returned to Barcelona, temporary work + private events while exploring hospitality tech roles
 - **Soho House / Redchurch Townhouse London** — Senior Receptionist (Oct 2021 – Feb 2024, 2.5 years)
 - **Ibis City Shoreditch / Accor** — Hotel Team Leader & Duty Manager (Nov 2019 – Jul 2021)
 - **Novotel Tower Bridge / Accor** — Front Office Team Member (Nov 2018 – Nov 2019)
@@ -92,7 +92,7 @@ The `/api/send-application` endpoint checks `consent_to_email` before sending an
 - French — Limited / not professional level
 
 ### Tools Experience (All Verified)
-- **PMS:** Opera (7 years across Accor properties), Ulyses Cloud, Protel, FOLS, Mews (general knowledge)
+- **PMS:** Opera (7 years across Accor and Soho House properties), Ulyses Cloud, Protel, FOLS, Mews (general knowledge)
 - **CRM:** Salesforce (daily use at Soho House — Salesforce Customer Relationship Management for member context and cases resolution)
 - **Implementation tools:** Jira, Excel, Monday.com (used at HubOS)
 
