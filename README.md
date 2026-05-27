@@ -9,49 +9,51 @@
 [![Anthropic](https://img.shields.io/badge/Anthropic-Claude%20Sonnet%204.6-D97757)](https://www.anthropic.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-deployed-black?logo=vercel)](https://vercel.com/)
 
-🔗 **[Live Demo →](https://pablo-interview.vercel.app)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
+🔗 **[Live Demo →](https://interviewmind.one)** &nbsp;|&nbsp; 💼 **[LinkedIn](https://www.linkedin.com/in/pablo-agis-burgos)** &nbsp;|&nbsp; 📧 **pabloagisburgos@gmail.com**
 
 ---
 
 ## 📖 What is this?
 
-**InterviewMind v2** is a production-grade web application that simulates an interview conversation with me — Pablo Agis Burgos, a hospitality-tech professional transitioning into commercial SaaS roles.
+**InterviewMind v2** is a production-grade web application that simulates an interview conversation with me — Pablo Agis Burgos, a hospitality-tech professional moving into commercial SaaS roles.
 
-Recruiters land on a simple intake form, enter their details, and immediately start a live conversation with an AI assistant that knows my background deeply — my work history, my stories, my voice, and my limits (it never invents facts).
+Recruiters land on a short intake form, enter their details, and start a live conversation with an AI that knows my background deeply — my real work history, real stories, real voice, and real limits (it never invents facts).
 
-After the interview, if the recruiter consented, the system automatically sends them a follow-up email with my CV attached and a transcript of the conversation.
+After the interview, the app generates a personalised **Insights Report** — an AI-analysed summary of the conversation with executive summary, conversation themes, and a first-person letter from me to the recruiter. If the recruiter consented, the system also sends a follow-up email with my CV attached.
 
-But this isn't just a chatbot. It's a **portfolio piece** that demonstrates:
+This isn't just a chatbot. It's a **portfolio piece** that demonstrates:
 
 - 🧠 **Production prompt engineering** — anti-hallucination rules, modular knowledge retrieval, contextual adaptation
-- ⚡ **Real-time SSE streaming** — text appears word-by-word, just like ChatGPT
+- ⚡ **Real-time SSE streaming** — text appears word-by-word, just like modern AI products
 - 🗄️ **Vector-based semantic memory** — every conversation builds context using pgvector + OpenAI embeddings
 - 🏗️ **Modular architecture** — smart retrieval loads only relevant knowledge per query (token-efficient)
-- 📧 **Automated post-interview email** — CV delivery via Gmail SMTP with GDPR-gated consent
-- 🚀 **Full-stack execution** — Next.js 15 App Router + TypeScript + Supabase + Vercel
+- 📊 **AI-generated Insights Report** — post-conversation analysis powered by Claude
+- 🌍 **Full internationalisation** — English, Spanish, Italian, and Portuguese
+- 🎙️ **Voice I/O** — Whisper transcription for input, TTS for output
+- 🎨 **Polished UX** — cinematic splash, theme toggle, animated transitions
 
 ---
 
 ## 🎯 Why I built this
 
-I'm a hospitality operations professional with 7 years of hotel experience (Accor, Soho House, Axel Hotel Barcelona) who recently moved into SaaS implementation at HubOS. I'm now actively pursuing SDR and commercial roles in hospitality tech.
+I'm a hospitality operations professional with 7 years of hotel experience (Accor, Soho House, Axel Hotel Barcelona) who recently moved into SaaS implementation at HubOS. I'm now actively pursuing implementation, customer success, and commercial roles in hospitality tech.
 
-Standard CVs and LinkedIn profiles tell recruiters *what* I've done. This tool lets them experience *how* I think and communicate — which matters far more for sales roles.
+Standard CVs and LinkedIn profiles tell recruiters *what* I've done. This tool lets them experience *how* I think and communicate — which matters far more for customer-facing roles.
 
 It also lets me demonstrate something most candidates can't: that I can ship a real, deployed, technically credible product. **I had zero prior programming experience before this project.**
 
 ---
 
-## ✨ Key Features
+## ✨ Features
 
 ### 1. Intake form with GDPR consent
-Recruiters fill a short form before the interview starts. Email address and GDPR consent are required — the consent checkbox gates the "Start Interview" button and is stored server-side. The system only sends follow-up emails to recruiters who explicitly opt in.
+Recruiters fill a short form before the interview starts. Email and GDPR consent are required — the consent checkbox gates the Start Interview button and is stored server-side. The system only sends follow-up emails to recruiters who explicitly opt in.
 
 ### 2. Authentic conversational AI
-The system prompt is heavily engineered to represent me accurately — my real work history, real stories (STAR-formatted), real limitations. It refuses to invent personal details (a common LLM failure mode) and acknowledges what it doesn't know.
+The system prompt is heavily engineered to represent me accurately — my real work history, real stories (STAR-formatted), real limitations. It refuses to invent personal details and acknowledges what it doesn't know. Story ownership is tracked precisely: "participated in" is never upgraded to "led."
 
-### 3. Streaming responses (SSE)
-Built using Server-Sent Events for word-by-word streaming. No spinner-and-wait — responses appear in real time, exactly like modern AI products.
+### 3. Real-time SSE streaming
+Built with Server-Sent Events for word-by-word streaming. No spinner-and-wait — responses appear in real time, exactly like modern AI products.
 
 ### 4. Semantic memory across the conversation
 Every message is embedded using OpenAI's `text-embedding-3-small` and stored in Supabase with `pgvector`. When a new message arrives, the system retrieves the most contextually relevant prior turns to inform the response.
@@ -59,16 +61,41 @@ Every message is embedded using OpenAI's `text-embedding-3-small` and stored in 
 ### 5. Modular knowledge retrieval
 Rather than stuffing everything into one massive prompt (expensive, slow, lower quality), the system loads only relevant context per query:
 - Recruiter mentions Mews → loads deep Mews context
-- Recruiter asks about implementation → loads the Vienna story
+- Recruiter asks about implementation → loads the Vienna AI story
 - Recruiter asks about hobbies → loads only verified personal interests
 
-This reduced token usage by ~50% per request.
+This reduces token usage by ~50% per request.
 
-### 6. Post-interview email with CV
-After the session, the system can send the recruiter a follow-up email (HTML, with CV attached) including the full conversation transcript. The endpoint checks GDPR consent before sending — if it wasn't granted, it returns 403.
+### 6. AI-generated Insights Report
+After the interview, the recruiter can unlock a personalised report — generated by Claude from the full conversation transcript. The report includes:
+- **Executive Summary** — headline, skill chips, and 3 positioning bullets
+- **Core Experience** — Pablo's most relevant roles mapped to the recruiter's context
+- **Conversation Insights** — key themes that emerged from the actual discussion
+- **Why Pablo** — 4–5 concrete reasons to move forward
+- **Full Transcript** — complete record of the conversation
 
-### 7. Conversation transcript export
+The report intro is written in Pablo's first-person voice, directly addressing the recruiter by name.
+
+### 7. Multi-language support
+The entire UI — intake form, chat, report, actions — is fully translated into English, Spanish, Italian, and Portuguese. Language is detected from the browser and can be switched at any time.
+
+### 8. Voice input and TTS playback
+Recruiters can speak their questions using the microphone button (transcribed via OpenAI Whisper). Pablo's responses can be played back as audio. Voice-triggered queries automatically play the response on completion.
+
+### 9. Suggested topics
+A scrollable strip of suggested questions appears above the chat, updating as topics are used. Recruiters unfamiliar with what to ask are guided naturally into relevant areas.
+
+### 10. Auto check-in
+If the recruiter goes quiet after sending messages, the AI sends a brief, natural check-in to keep the conversation going.
+
+### 11. Post-interview email with CV
+After the session, `POST /api/send-application` sends a follow-up email (HTML, with CV attached) including the full conversation transcript. The endpoint checks GDPR consent before sending — returns 403 if it wasn't granted.
+
+### 12. Conversation transcript export
 Each session can be exported as a Markdown file via a dedicated API endpoint, built dynamically from the stored message history.
+
+### 13. Theme toggle (day / night)
+Full dark and light mode with smooth transitions. Long-pressing the toggle on mobile applies the theme persistently.
 
 ---
 
@@ -82,7 +109,7 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
                          ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Next.js Frontend (React)                      │
-│              IntakeScreen → ChatPanel → Streaming UI             │
+│     IntakeScreen → ChatPanel → Insights Report                   │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -97,13 +124,18 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
 │  │   5. Stream response from Claude (SSE)                   │   │
 │  │   6. Store assistant response                            │   │
 │  └─────────────────────────────────────────────────────────┘   │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  GET /api/report — AI-generated insights report          │   │
+│  │  POST /api/tts  — Text-to-speech playback                │   │
+│  │  POST /api/transcribe — Whisper voice transcription      │   │
+│  └─────────────────────────────────────────────────────────┘   │
 └──────┬──────────────────┬──────────────────┬────────────────────┘
        │                  │                  │
        ▼                  ▼                  ▼
 ┌─────────────┐  ┌─────────────────┐  ┌─────────────────────┐
 │  Anthropic  │  │     OpenAI      │  │      Supabase       │
-│  Claude     │  │  Embeddings     │  │  PostgreSQL +       │
-│  Sonnet 4.6 │  │  (1536 dims)    │  │  pgvector + RLS     │
+│  Claude     │  │  Embeddings +   │  │  PostgreSQL +       │
+│  Sonnet 4.6 │  │  Whisper + TTS  │  │  pgvector           │
 └─────────────┘  └─────────────────┘  └─────────────────────┘
 ```
 
@@ -115,9 +147,10 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
 | **pgvector over Pinecone/Weaviate** | Free tier, runs alongside transactional data, simpler ops. |
 | **Memory non-blocking** | If embedding/memory fails, the chat still works. Graceful degradation. |
 | **Modular knowledge over monolithic prompt** | ~50% token reduction. Better response quality. Easier to maintain. |
-| **Anti-confabulation rules in prompt** | Prevents the AI from inventing personal details — a critical safety requirement. |
+| **Anti-confabulation rules in prompt** | Prevents the AI from inventing personal details — a critical safety requirement for this use case. |
 | **GDPR-gated email** | Consent is stored server-side on session creation and checked before any email is sent. |
 | **No prompt secrets exposed** | All API calls are server-side. Frontend never sees keys. |
+| **Report generated on demand** | The Insights Report is generated lazily, cached per session, and unlocked once — keeps costs low. |
 
 ---
 
@@ -128,6 +161,7 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
 - [TypeScript 5](https://www.typescriptlang.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - React 18 with hooks and context
+- Custom rAF animation system (no animation libraries)
 
 **Backend**
 - Next.js API Routes (serverless)
@@ -136,8 +170,10 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
 - nodemailer + Gmail SMTP for post-interview email delivery
 
 **AI & Memory**
-- [Anthropic Claude Sonnet 4.6](https://www.anthropic.com/) — conversational AI
+- [Anthropic Claude Sonnet 4.6](https://www.anthropic.com/) — conversational AI + report generation
 - [OpenAI `text-embedding-3-small`](https://platform.openai.com/) — embeddings (1536 dims)
+- [OpenAI Whisper](https://platform.openai.com/) — voice transcription
+- [OpenAI TTS](https://platform.openai.com/) — text-to-speech playback
 - Semantic similarity search via pgvector
 
 **Database**
@@ -147,10 +183,10 @@ Each session can be exported as a Markdown file via a dedicated API endpoint, bu
 
 **Deployment**
 - [Vercel](https://vercel.com/) (serverless, global edge)
-- Environment-based configuration
+- Custom domain: [interviewmind.one](https://interviewmind.one)
 
 **Development**
-- VS Code with Claude Code extension (AI pair programming)
+- VS Code with Claude Code (AI pair programming)
 - Git + GitHub for version control
 
 ---
@@ -180,7 +216,7 @@ Create a `.env.local` file in the root:
 # Anthropic API
 ANTHROPIC_API_KEY=sk-ant-api03-...
 
-# OpenAI API (for embeddings)
+# OpenAI API (embeddings, Whisper, TTS)
 OPENAI_API_KEY=sk-proj-...
 
 # Supabase
@@ -224,38 +260,47 @@ pablo-interview-ai/
 │   │   ├── api/
 │   │   │   ├── chat/route.ts              # Main streaming endpoint
 │   │   │   ├── session/route.ts           # Session creation
+│   │   │   ├── report/route.ts            # AI insights report generation
+│   │   │   ├── tts/route.ts               # Text-to-speech
+│   │   │   ├── transcribe/route.ts        # Whisper voice transcription
 │   │   │   ├── transcript/route.ts        # Export transcript as Markdown
 │   │   │   └── send-application/route.ts  # Post-interview email with CV
 │   │   ├── interview/[sessionId]/         # Per-session chat page
 │   │   ├── layout.tsx
 │   │   └── page.tsx                       # Intake screen
 │   ├── components/
-│   │   ├── ChatPanel.tsx                  # Chat UI with SSE handling
+│   │   ├── ChatPanel.tsx                  # Chat UI with SSE handling, voice, suggestions
 │   │   ├── IntakeScreen.tsx               # Recruiter intake form (email + GDPR required)
-│   │   ├── MessageBubble.tsx
+│   │   ├── InteractiveReport.tsx          # AI-generated insights report UI
+│   │   ├── EndInterviewButton.tsx         # Triggers report + email flow
+│   │   ├── MessageBubble.tsx              # Individual message with TTS playback
 │   │   ├── StreamingResponse.tsx          # Real-time text rendering
-│   │   ├── Header.tsx
+│   │   ├── Header.tsx                     # Navigation with language + theme controls
+│   │   ├── Background.tsx                 # Animated particle background
+│   │   ├── LanguageSwitcher.tsx           # EN / ES / IT / PT switcher
+│   │   ├── ThemeToggleButton.tsx          # Day / night mode toggle
 │   │   └── Toast.tsx
 │   ├── lib/
-│   │   ├── prompts.ts                     # Core system prompt
-│   │   ├── stories-knowledge.ts           # STAR stories (retrieval)
+│   │   ├── prompts.ts                     # Core system prompt + buildSystemPrompt()
+│   │   ├── stories-knowledge.ts           # 6 STAR stories with ownership levels
 │   │   ├── companies-knowledge.ts         # Target companies context
 │   │   ├── retrieval.ts                   # Smart context loader
+│   │   ├── report.ts                      # Insights report generation (Claude)
 │   │   ├── mailer.ts                      # Email sending via Gmail SMTP
 │   │   ├── anthropic.ts                   # Claude API client
 │   │   ├── supabase.ts                    # Database client
 │   │   ├── types.ts
-│   │   ├── constants.ts
+│   │   ├── constants.ts                   # Models, timeouts, limits
 │   │   └── utils.ts
 │   └── context/
-│       └── SessionContext.tsx
+│       └── LanguageContext.tsx            # i18n — EN, ES, IT, PT
 ├── public/
 │   └── assets/
-│       └── Pablo_Agis_Burgos_CV.pdf       # Attached in follow-up emails
+│       ├── Pablo_Agis_Burgos_CV.pdf       # Attached in follow-up emails
+│       └── pablo-avatar.jpg
 ├── supabase/
-│   └── schema.sql                         # Database schema
-├── CLAUDE.md                              # AI assistant context
-├── .env.local.example
+│   └── schema.sql                         # Full DB schema including migrations
+├── CLAUDE.md                              # AI assistant context (source of truth)
 └── package.json
 ```
 
@@ -276,19 +321,19 @@ The email uses Gmail SMTP via nodemailer. To set it up, generate a [Google App P
 
 ## 🎓 What I learned building this
 
-Going from zero programming experience to a deployed full-stack application in roughly a week taught me more than I expected. Some honest observations:
+Going from zero programming experience to a deployed full-stack application taught me more than I expected. Some honest observations:
 
 **Prompt engineering is its own discipline.**
-The first version of the AI invented personal details ("I'm from Vigo" — I'm not). The second version learned to refuse to invent cities but invented hobbies instead ("I love football and skiing" — only one of those is true). Building robust anti-hallucination rules required several iterations and explicit forbidden-fact lists.
+The first version of the AI invented personal details. The second version learned to refuse to invent cities but invented hobbies instead. Building robust anti-hallucination rules required several iterations and explicit forbidden-fact lists. Story ownership — "participated in" versus "led" — turned out to be a critical distinction that required its own enforcement layer.
 
 **Architecture matters more than features.**
-The initial system prompt was a single 5,000-token block. After feedback from two technical reviewers, I refactored it into a modular retrieval system: a compact core prompt plus on-demand loading of stories and company contexts. This reduced costs by ~50% and improved response quality measurably.
+The initial system prompt was a single 5,000-token block. After feedback I refactored it into a modular retrieval system: a compact core prompt plus on-demand loading of stories and company contexts. This reduced costs by ~50% and improved response quality measurably.
 
 **Streaming is harder than it looks.**
 SSE works great in theory. In practice, you need careful error handling, timeout management, and graceful degradation when embeddings fail. The chat must keep working even if memory does not.
 
 **The hardest part wasn't the code.**
-The hardest part was deciding *what the AI should refuse to say* — and getting it to say "I don't know" instead of inventing plausible answers under pressure. That's a behavioral problem disguised as a technical one.
+The hardest part was deciding *what the AI should refuse to say* — and getting it to say "I don't know" instead of inventing plausible answers under pressure. That's a behavioural problem disguised as a technical one.
 
 **AI pair programming changes the game.**
 Using VS Code + Claude Code as an AI pair-programming partner meant I could focus on product decisions, architecture, and quality — rather than fighting syntax. The bottleneck shifted from "how do I write this" to "what should this do, and is it correct?"
@@ -302,8 +347,7 @@ If I were starting over (or extending this further):
 - **Add tests.** End-to-end tests for the streaming endpoint and unit tests for retrieval logic.
 - **Add analytics.** Anonymous usage tracking to see which questions recruiters actually ask most.
 - **Add a recruiter feedback mechanism.** Lightweight thumbs-up / thumbs-down to learn from real interactions.
-- **Internationalization.** A Spanish version would help with Iberian recruiters.
-- **Voice mode.** Whisper for input, ElevenLabs for output, would make it a much richer experience.
+- **Session replay.** Let returning recruiters pick up a previous conversation without losing context.
 
 ---
 
@@ -311,9 +355,9 @@ If I were starting over (or extending this further):
 
 I'm **Pablo Agis Burgos** — based in Barcelona, originally from Galicia.
 
-I spent seven years in hospitality operations across London (Accor, Soho House) and Barcelona (Axel Hotel) before moving into SaaS implementation at HubOS. I'm now actively exploring SDR and commercial roles in hospitality tech, ideally at companies building the future of how hotels operate.
+I spent seven years in hospitality operations across London (Accor, Soho House) and Barcelona (Axel Hotel) before moving into SaaS implementation at HubOS. I'm now actively exploring implementation, customer success, and commercial roles in hospitality tech, ideally at companies building the future of how hotels operate.
 
-I speak Spanish and Galician natively, fluent professional English, and advanced professional Italian and Portuguese.
+I speak Spanish and Galician natively, fluent professional English, advanced Italian, and functional Portuguese.
 
 This project is one part of how I'm answering the question every transitioning candidate gets asked: *"Can you actually do the new thing, or do you just want to?"*
 
