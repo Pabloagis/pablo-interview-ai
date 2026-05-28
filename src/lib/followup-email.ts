@@ -59,12 +59,15 @@ const REFER_SUBJECT: Record<Lang, string> = {
   pt: 'Apresento-te Pablo Agis Burgos — Hospitality Tech & SaaS',
 };
 
-const REFER_BODY: Record<Lang, string> = {
-  en:  `Hi,\n\nI wanted to introduce you to Pablo Agis Burgos — a hospitality technology professional I'd genuinely recommend.\n\nPablo brings 6+ years of hotel operations (Soho House London, Accor) combined with SaaS implementation experience at HubOS. He's strong on Opera, Salesforce, and channel management ecosystems, and he approaches every problem with real operational depth.\n\nHe's currently open to roles in SaaS implementation, customer success, or hospitality tech.\n\nYou can talk to him directly via his AI interview simulator:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
-  es:  `Hola,\n\nQuería presentarte a Pablo Agis Burgos — un profesional de hospitality tech que te recomiendo con total confianza.\n\nPablo combina más de 6 años de operaciones hoteleras (Soho House Londres, Accor) con experiencia en implementación SaaS en HubOS. Domina Opera, Salesforce y ecosistemas de channel management, y aporta una visión operacional real a cada proyecto.\n\nEstá buscando oportunidades en implementación SaaS, customer success o tecnología hotelera.\n\nPuedes hablar con él directamente a través de su simulador de entrevista con IA:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
-  it:  `Ciao,\n\nVolevo presentarti Pablo Agis Burgos — un professionista dell'hospitality tech che ti consiglio con entusiasmo.\n\nPablo unisce 6+ anni di operazioni alberghiere (Soho House Londra, Accor) a esperienza nell'implementazione SaaS presso HubOS. Conosce Opera, Salesforce e gli ecosistemi di channel management, e affronta ogni sfida con una prospettiva operativa concreta.\n\nSta cercando opportunità nel SaaS implementation, customer success o hospitality tech.\n\nPuoi parlare direttamente con lui tramite il suo simulatore di colloquio AI:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
-  pt:  `Olá,\n\nQueria apresentar-te o Pablo Agis Burgos — um profissional de hospitality tech que recomendo com toda a confiança.\n\nO Pablo combina 6+ anos de operações hoteleiras (Soho House Londres, Accor) com experiência em implementação SaaS na HubOS. Domina Opera, Salesforce e ecossistemas de channel management, e aborda cada desafio com uma perspetiva operacional sólida.\n\nEstá à procura de oportunidades em SaaS implementation, customer success ou hospitality tech.\n\nPodes falar com ele diretamente através do seu simulador de entrevista com IA:\nhttps://interviewmind.one\n\nLinkedIn: linkedin.com/in/pablo-agis-burgos\nEmail: pabloagisburgos@gmail.com\n\n`,
-};
+function getReferBody(lang: Lang, insightsUrl: string): string {
+  const bodies: Record<Lang, string> = {
+    en: `Hi,\n\nI wanted to share something a little different with you.\n\nInstead of relying on a static CV, Pablo Agis built an interactive AI profile that lets you explore his professional background through conversation — shaped around his real experience, client work, projects and transition into hospitality tech.\n\nIt's a thoughtful way to get a sense of how he communicates, thinks and approaches problems — much closer to a real conversation than a traditional CV ever could.\n\nYou can explore it here:\nhttps://interviewmind.one\n\nAnd if useful, here are the insights from my own conversation:\n${insightsUrl}\n\nBest,\n\n`,
+    es: `Hola,\n\nQuería compartir algo un poco diferente contigo.\n\nEn lugar de un CV estático, Pablo Agis ha creado un perfil interactivo con IA que permite explorar su trayectoria profesional a través de una conversación — basada en su experiencia real, proyectos y evolución hacia la tecnología hotelera.\n\nEs una forma muy natural de ver cómo comunica, cómo piensa y cómo afronta los problemas — mucho más cercana a una conversación real de lo que podría serlo un CV tradicional.\n\nPuedes explorarlo aquí:\nhttps://interviewmind.one\n\nY si te resulta útil, aquí tienes los insights de mi propia conversación:\n${insightsUrl}\n\nUn saludo,\n\n`,
+    it: `Ciao,\n\nVolevo condividere con te qualcosa di un po' diverso.\n\nInvece di affidarsi a un CV statico, Pablo Agis ha creato un profilo interattivo con AI che permette di esplorare il suo percorso professionale attraverso una conversazione — costruita attorno alla sua esperienza reale, ai progetti e alla sua transizione nel settore dell'hospitality tech.\n\nÈ un modo molto naturale per capire come comunica, come ragiona e come affronta i problemi — molto più vicino a una vera conversazione di quanto potrebbe mai essere un CV tradizionale.\n\nPuoi esplorarlo qui:\nhttps://interviewmind.one\n\nE se ti è utile, ecco gli insights della mia conversazione:\n${insightsUrl}\n\nA presto,\n\n`,
+    pt: `Olá,\n\nQueria partilhar contigo algo um pouco diferente.\n\nEm vez de um CV estático, o Pablo Agis criou um perfil interativo com IA que permite explorar o seu percurso profissional através de uma conversa — baseada na sua experiência real, projetos e transição para o hospitality tech.\n\nÉ uma forma muito natural de perceber como comunica, como pensa e como aborda os problemas — muito mais próxima de uma conversa real do que um CV tradicional alguma vez poderia ser.\n\nPodes explorá-lo aqui:\nhttps://interviewmind.one\n\nE se for útil, aqui estão os insights da minha própria conversa:\n${insightsUrl}\n\nCom os melhores cumprimentos,\n\n`,
+  };
+  return bodies[lang];
+}
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -104,11 +107,12 @@ function generateEmailHTML(
   _jobTitle?: string | null,
   _companyName?: string | null,
   exitNotify?: boolean,
+  insightsUrl?: string,
 ): string {
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
   const greetingName = recruiterName?.trim() || '';
   const greeting = greetingName ? `${GREETING[lang]} ${greetingName},` : `${GREETING[lang]},`;
-  const referHref = `mailto:?subject=${encodeURIComponent(REFER_SUBJECT[lang])}&body=${encodeURIComponent(REFER_BODY[lang])}`;
+  const referHref = `mailto:?subject=${encodeURIComponent(REFER_SUBJECT[lang])}&body=${encodeURIComponent(getReferBody(lang, insightsUrl ?? BASE_URL))}`;
 
   // ── Section 1: Executive Summary
   const chipsHTML = (report.executiveSummary.chips ?? []).map(chip =>
@@ -358,7 +362,8 @@ export async function sendFollowUpEmail({
   });
 
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
-  const html = generateEmailHTML(report, recruiterName ?? null, messages, previewUrl, jobTitle, companyName, exitNotify);
+  const insightsUrl = sessionId ? `${BASE_URL}/interview/${sessionId}` : BASE_URL;
+  const html = generateEmailHTML(report, recruiterName ?? null, messages, previewUrl, jobTitle, companyName, exitNotify, insightsUrl);
 
   const resend = getResendClient();
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
