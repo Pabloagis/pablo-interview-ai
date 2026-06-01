@@ -234,12 +234,16 @@ export async function POST(request: NextRequest) {
         }
 
         if (!abortController.signal.aborted && fullResponse) {
+          // Strip the hidden UI trigger before saving — it must never appear in stored history
+          // or be fed back to Claude as context in future turns.
+          const savedResponse = fullResponse.replace('[SHOW_INSIGHTS_MODAL]', '').trim();
+
           // Persist the FULL history — rawHistory is the source of truth; conversationHistory
           // is only a slice used for Claude's context window, never for storage.
           // For auto-triggers: skip storing the hidden system prompt; only append the reply.
           const updatedMessages: AnthropicMessage[] = (autoIntro || autoCheckIn)
-            ? [...rawHistory, { role: 'assistant', content: fullResponse }]
-            : [...rawHistory, newUserMessage, { role: 'assistant', content: fullResponse }];
+            ? [...rawHistory, { role: 'assistant', content: savedResponse }]
+            : [...rawHistory, newUserMessage, { role: 'assistant', content: savedResponse }];
 
           const { error: updateError } = await supabase
             .from('sessions')

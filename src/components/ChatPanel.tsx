@@ -23,6 +23,114 @@ function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
 }
 
+function ClosingModal({
+  t, email, onEmailChange, onConfirm, onDismiss, sending, error, consentToEmail,
+}: {
+  t: ReturnType<typeof import('@/context/LanguageContext').useLanguage>['t'];
+  email: string;
+  onEmailChange: (v: string) => void;
+  onConfirm: (email: string) => void;
+  onDismiss: () => void;
+  sending: boolean;
+  error: string | null;
+  consentToEmail: boolean;
+}) {
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
+      style={{
+        background: visible ? 'rgba(0,0,0,0.45)' : 'rgba(0,0,0,0)',
+        backdropFilter: visible ? 'blur(6px)' : 'none',
+        WebkitBackdropFilter: visible ? 'blur(6px)' : 'none',
+        transition: 'background 280ms ease, backdrop-filter 280ms ease',
+        pointerEvents: 'auto',
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) onDismiss(); }}
+    >
+      <div
+        className="w-full sm:max-w-sm mx-auto"
+        style={{
+          padding: '0 12px 12px',
+          opacity: visible ? 1 : 0,
+          transform: visible ? 'translateY(0)' : 'translateY(32px)',
+          transition: 'opacity 280ms cubic-bezier(0.16,1,0.3,1), transform 280ms cubic-bezier(0.16,1,0.3,1)',
+        }}
+      >
+        <div
+          className="rounded-2xl p-5"
+          style={{
+            background: 'var(--bg-elevated)',
+            border: '0.5px solid var(--glass-border)',
+            boxShadow: '0 24px 64px rgba(0,0,0,0.28)',
+          }}
+        >
+          {/* Header */}
+          <div style={{ marginBottom: 16 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 6 }}>
+              {t.closingModalTitle}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t.closingModalSubtitle}
+            </p>
+          </div>
+
+          {/* Email input — only show if consent was given at intake */}
+          {consentToEmail && (
+            <div style={{ marginBottom: 14 }}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => onEmailChange(e.target.value)}
+                placeholder={t.closingModalEmailPlaceholder}
+                className="input-glass w-full"
+                style={{ fontSize: 14 }}
+                autoComplete="email"
+                disabled={sending}
+              />
+            </div>
+          )}
+
+          {error && (
+            <p style={{ fontSize: 12, color: 'rgba(220,80,80,0.9)', marginBottom: 10 }}>{error}</p>
+          )}
+
+          {/* Primary CTA */}
+          <button
+            onClick={() => onConfirm(email)}
+            disabled={sending}
+            className="w-full py-3 rounded-xl font-bold text-[15px] transition-all duration-200 disabled:opacity-60"
+            style={{
+              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
+              color: '#fff',
+              boxShadow: '0 4px 20px var(--accent-glow)',
+              border: 'none',
+              marginBottom: 10,
+            }}
+          >
+            {sending ? t.closingModalSending : t.closingModalConfirm}
+          </button>
+
+          {/* Secondary dismiss */}
+          <button
+            onClick={onDismiss}
+            disabled={sending}
+            className="w-full py-2.5 text-sm font-medium transition-colors disabled:opacity-40"
+            style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
+          >
+            {t.closingModalDismiss}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function InsightsOverlay({
   onClose, fetching, error, report, onRetry,
   recruiterName, company, messages,
@@ -125,6 +233,8 @@ interface ChatPanelProps {
   sessionId: string;
 }
 
+const INSIGHTS_MODAL_TRIGGER = '[SHOW_INSIGHTS_MODAL]';
+
 export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const { lang, t } = useLanguage();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -150,6 +260,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     try { return !!localStorage.getItem(`im_insights_${sessionId}`); } catch { return false; }
   });
   const insightsCacheRef = useRef<{ report: ReportData; msgCount: number } | null>(null);
+
+  // Closing modal (auto-triggered by [SHOW_INSIGHTS_MODAL] marker in AI response)
+  const [closingModalOpen, setClosingModalOpen] = useState(false);
+  const [closingModalEmail, setClosingModalEmail] = useState('');
+  const [closingModalSending, setClosingModalSending] = useState(false);
+  const [closingModalError, setClosingModalError] = useState<string | null>(null);
+  const closingModalShownRef = useRef(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
@@ -336,6 +453,33 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       setInsightsFetching(false);
     }
   }, [sessionId]);
+
+  const handleClosingModalConfirm = useCallback(async (email: string) => {
+    setClosingModalError(null);
+    setClosingModalSending(true);
+    try {
+      if (contextRef.current.consentToEmail && email) {
+        const res = await fetch('/api/send-followup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sessionId }),
+        });
+        if (!res.ok) {
+          const data = await res.json().catch(() => ({}));
+          // skipped (already sent) is fine — still open insights
+          if (!(data as { skipped?: boolean }).skipped) {
+            throw new Error((data as { error?: string }).error || 'Request failed');
+          }
+        }
+      }
+      setClosingModalOpen(false);
+      openInsights();
+    } catch {
+      setClosingModalError(t.closingModalError);
+    } finally {
+      setClosingModalSending(false);
+    }
+  }, [sessionId, openInsights, t.closingModalError]);
 
   const playResponse = useCallback(async (text: string, messageId?: string) => {
     if (currentAudioRef.current) {
@@ -540,12 +684,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
             if (event.type === 'content' && event.text) {
               accumulated += event.text;
-              setStreamingText(accumulated);
+              // Strip hidden marker from live display so it never flashes to the user
+              setStreamingText(accumulated.replace(INSIGHTS_MODAL_TRIGGER, ''));
             } else if (event.type === 'done') {
+              const hasModalTrigger = accumulated.includes(INSIGHTS_MODAL_TRIGGER);
+              const cleanContent = accumulated.replace(INSIGHTS_MODAL_TRIGGER, '').trim();
               const assistantMessage: Message = {
                 id: generateId(),
                 role: 'assistant',
-                content: accumulated,
+                content: cleanContent,
                 createdAt: new Date().toISOString(),
               };
               setMessages((prev) => [...prev, assistantMessage]);
@@ -553,7 +700,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               setIsStreaming(false);
               if (voiceTriggeredRef.current) {
                 voiceTriggeredRef.current = false;
-                playResponse(accumulated, assistantMessage.id);
+                playResponse(cleanContent, assistantMessage.id);
+              }
+              // Show closing modal after a short delay so the user can read the farewell first
+              if (hasModalTrigger && !closingModalShownRef.current && !insightsUnlocked) {
+                closingModalShownRef.current = true;
+                setTimeout(() => {
+                  setClosingModalEmail(contextRef.current.email ?? '');
+                  setClosingModalOpen(true);
+                }, 2200);
               }
               return;
             } else if (event.type === 'error' && event.message) {
@@ -1026,6 +1181,20 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       </div>
 
       {/* ── Insights overlay ── */}
+      {/* ── Closing modal (auto-triggered by AI farewell marker) ─────────────── */}
+      {closingModalOpen && (
+        <ClosingModal
+          t={t}
+          email={closingModalEmail}
+          onEmailChange={setClosingModalEmail}
+          onConfirm={handleClosingModalConfirm}
+          onDismiss={() => setClosingModalOpen(false)}
+          sending={closingModalSending}
+          error={closingModalError}
+          consentToEmail={!!context.consentToEmail}
+        />
+      )}
+
       {insightsOpen && <InsightsOverlay
         onClose={() => setInsightsOpen(false)}
         fetching={insightsFetching}

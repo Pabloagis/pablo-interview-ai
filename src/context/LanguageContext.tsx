@@ -159,6 +159,14 @@ export type Translations = {
   exitIntentBody: string;
   exitIntentCta: string;
   exitIntentLeave: string;
+  // Closing modal (auto-triggered when AI detects end of conversation)
+  closingModalTitle: string;
+  closingModalSubtitle: string;
+  closingModalConfirm: string;
+  closingModalDismiss: string;
+  closingModalEmailPlaceholder: string;
+  closingModalSending: string;
+  closingModalError: string;
   // Resume banner
   resumeBannerPrefix: string;
   resumeBannerWith: string;
@@ -375,6 +383,13 @@ const EN: Translations = {
   exitIntentBody: 'You\'re mid-conversation. Get your insights first — Pablo will send his CV and a summary to your inbox.',
   exitIntentCta: 'Get insights & leave',
   exitIntentLeave: 'Leave without insights',
+  closingModalTitle: 'Want a summary of this conversation?',
+  closingModalSubtitle: "We'll send it to your inbox in seconds.",
+  closingModalConfirm: 'Send Insights',
+  closingModalDismiss: 'No, thanks',
+  closingModalEmailPlaceholder: 'your@email.com',
+  closingModalSending: 'Sending…',
+  closingModalError: 'Something went wrong. Please try again.',
   resumeBannerPrefix: 'Resume your session',
   resumeBannerWith: 'with',
   resumeBannerMsg: 'message',
@@ -587,6 +602,13 @@ const ES: Translations = {
   exitIntentBody: 'Estás a mitad de conversación. Obtén tus insights primero — Pablo te enviará su CV y un resumen.',
   exitIntentCta: 'Obtener insights y salir',
   exitIntentLeave: 'Salir sin insights',
+  closingModalTitle: '¿Quieres recibir un resumen de esta conversación?',
+  closingModalSubtitle: 'Te lo enviamos por email en segundos.',
+  closingModalConfirm: 'Enviar Insights',
+  closingModalDismiss: 'No, gracias',
+  closingModalEmailPlaceholder: 'tu@email.com',
+  closingModalSending: 'Enviando…',
+  closingModalError: 'Algo salió mal. Por favor, inténtalo de nuevo.',
   resumeBannerPrefix: 'Retomar tu sesión',
   resumeBannerWith: 'con',
   resumeBannerMsg: 'mensaje',
@@ -799,6 +821,13 @@ const IT: Translations = {
   exitIntentBody: 'Sei a metà conversazione. Ottieni prima i tuoi insights — Pablo ti invierà il CV e un riepilogo.',
   exitIntentCta: 'Ottieni insights ed esci',
   exitIntentLeave: 'Esci senza insights',
+  closingModalTitle: 'Vuoi ricevere un riepilogo di questa conversazione?',
+  closingModalSubtitle: 'Te lo inviamo via email in pochi secondi.',
+  closingModalConfirm: 'Invia Insights',
+  closingModalDismiss: 'No, grazie',
+  closingModalEmailPlaceholder: 'tua@email.com',
+  closingModalSending: 'Invio in corso…',
+  closingModalError: 'Qualcosa è andato storto. Riprova.',
   resumeBannerPrefix: 'Riprendi la sessione',
   resumeBannerWith: 'con',
   resumeBannerMsg: 'messaggio',
@@ -1010,6 +1039,13 @@ const PT: Translations = {
   exitIntentBody: 'Está a meio da conversa. Obtenha primeiro os seus insights — Pablo enviará o CV e um resumo.',
   exitIntentCta: 'Obter insights e sair',
   exitIntentLeave: 'Sair sem insights',
+  closingModalTitle: 'Queres receber um resumo desta conversa?',
+  closingModalSubtitle: 'Enviamos para o teu email em segundos.',
+  closingModalConfirm: 'Enviar Insights',
+  closingModalDismiss: 'Não, obrigado',
+  closingModalEmailPlaceholder: 'teu@email.com',
+  closingModalSending: 'A enviar…',
+  closingModalError: 'Algo correu mal. Por favor, tenta novamente.',
   resumeBannerPrefix: 'Retomar a sessão',
   resumeBannerWith: 'com',
   resumeBannerMsg: 'mensagem',
