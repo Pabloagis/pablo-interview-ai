@@ -234,12 +234,12 @@ export async function POST(request: NextRequest) {
         }
 
         if (!abortController.signal.aborted && fullResponse) {
-          // Persist updated conversation history before signalling done so
-          // send-followup always reads a complete message list
-          // For auto-triggers: skip storing the hidden prompt; only keep the assistant message
+          // Persist the FULL history — rawHistory is the source of truth; conversationHistory
+          // is only a slice used for Claude's context window, never for storage.
+          // For auto-triggers: skip storing the hidden system prompt; only append the reply.
           const updatedMessages: AnthropicMessage[] = (autoIntro || autoCheckIn)
-            ? [...conversationHistory, { role: 'assistant', content: fullResponse }]
-            : [...messagesForClaude, { role: 'assistant', content: fullResponse }];
+            ? [...rawHistory, { role: 'assistant', content: fullResponse }]
+            : [...rawHistory, newUserMessage, { role: 'assistant', content: fullResponse }];
 
           const { error: updateError } = await supabase
             .from('sessions')
