@@ -477,10 +477,10 @@ export default function InteractiveReport({ report, recruiterName, messages = []
               </button>
 
               <div style={{
-                maxHeight: isOpen ? 1400 : 0,
+                maxHeight: isOpen ? (key === 'transcript' ? 'none' : 1400) : 0,
                 overflow: 'hidden',
                 opacity: isOpen ? 1 : 0,
-                transition: 'max-height 380ms cubic-bezier(0.16,1,0.3,1), opacity 220ms ease',
+                transition: key === 'transcript' ? 'opacity 220ms ease' : 'max-height 380ms cubic-bezier(0.16,1,0.3,1), opacity 220ms ease',
               }}>
                 <div style={{ height: '0.5px', background: 'var(--glass-border)', margin: '0 18px' }} />
                 <div style={{ padding: '20px 18px 24px' }}>
