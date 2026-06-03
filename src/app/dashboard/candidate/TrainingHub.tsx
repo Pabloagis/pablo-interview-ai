@@ -4,6 +4,10 @@ import { useState, useEffect, useCallback } from 'react';
 import EvidenceScore from './components/EvidenceScore';
 import ModuleShell from './components/ModuleShell';
 import LogoutButton from '../LogoutButton';
+import CvUpload from './modules/CvUpload';
+import StoryLibrary from './modules/StoryLibrary';
+import OpenResponseModule from './modules/OpenResponseModule';
+import UploadModule from './modules/UploadModule';
 import type { ScoreResult } from '@/app/api/training/score/route';
 
 // ── Types shared across modules ──────────────────────────────────────────────
@@ -302,10 +306,118 @@ export default function TrainingHub({ name, email }: Props) {
                 onToggle={() => toggleModule(mod.id)}
                 saveConfirmation={saveConfirmations[mod.id] ?? null}
               >
-                {/* Module content — wired in Phase 5 */}
-                <div className="text-xs text-[rgba(255,255,255,0.3)] italic py-2">
-                  Module content coming in Phase 5…
-                </div>
+                {mod.id === 'cv' && (
+                  <CvUpload data={data} onSaved={onSaved} />
+                )}
+                {mod.id === 'stories' && (
+                  <StoryLibrary data={data} onSaved={onSaved} />
+                )}
+                {mod.id === 'real_interview' && (
+                  <OpenResponseModule
+                    moduleId="real_interview"
+                    intro="Answer these questions exactly as you would in a real interview. Don't polish. Don't perform. Your natural language is what your AI needs."
+                    questions={REAL_INTERVIEW_QUESTIONS}
+                    data={data}
+                    onSaved={onSaved}
+                  />
+                )}
+                {mod.id === 'recruiter_challenge' && (
+                  <OpenResponseModule
+                    moduleId="recruiter_challenge"
+                    intro="These are the uncomfortable questions recruiters actually ask. Your AI needs to know how you defend yourself — not a polished answer, but your real one."
+                    questions={RECRUITER_CHALLENGE_QUESTIONS}
+                    data={data}
+                    onSaved={onSaved}
+                  />
+                )}
+                {mod.id === 'objection_handling' && (
+                  <OpenResponseModule
+                    moduleId="objection_handling"
+                    intro="How you handle objections reveals more about your commercial instinct than any CV. Answer as you would in a real client conversation."
+                    questions={OBJECTION_QUESTIONS}
+                    data={data}
+                    onSaved={onSaved}
+                  />
+                )}
+                {mod.id === 'interview_transcripts' && (
+                  <UploadModule
+                    moduleId="interview_transcripts"
+                    sourceType="interview_transcript"
+                    intro="A single real interview transcript is worth more than all the forms in this system combined. It shows how you actually think, speak, and perform under real pressure."
+                    instructions={`If any interviews were recorded (Teams, Zoom, Meet):
+1. Find the recording in your email or calendar
+2. Transcribe free with: Otter.ai, Fireflies, or your video platform's built-in feature
+3. Export as TXT or PDF and upload here
+
+No recording? Write a reconstruction — even rough notes on what you were asked and how you answered are valuable.`}
+                    data={data}
+                    onSaved={onSaved}
+                    saveMessage="Transcript processed. This is the most authentic training data your AI has received."
+                  />
+                )}
+                {mod.id === 'recruiter_feedback' && (
+                  <UploadModule
+                    moduleId="recruiter_feedback"
+                    sourceType="recruiter_feedback"
+                    intro="External assessment of your profile — even rejections — contains signal your AI needs. This is how others see you, not how you see yourself."
+                    instructions={`Search your inbox for:
+- Post-interview feedback emails
+- Recruiter debrief messages
+- Career coach notes or summaries
+- Any message that assessed your candidacy
+
+Copy/paste directly or upload as PDF.`}
+                    data={data}
+                    onSaved={onSaved}
+                    saveMessage="Feedback added. Your AI now has an external perspective on you."
+                  />
+                )}
+                {mod.id === 'professional_artifacts' && (
+                  <UploadModule
+                    moduleId="professional_artifacts"
+                    sourceType="professional_artifact"
+                    intro="What you have created reveals how you think better than any CV or form."
+                    instructions="Upload LinkedIn posts, project documentation, presentations, case studies, cover letters, portfolio material, or paste a personal website URL."
+                    artifactTypes={[
+                      { value: 'post', label: 'LinkedIn post' },
+                      { value: 'project', label: 'Project / case study' },
+                      { value: 'cover_letter', label: 'Cover letter' },
+                      { value: 'presentation', label: 'Presentation' },
+                      { value: 'application', label: 'Job application' },
+                      { value: 'other', label: 'Other' },
+                    ]}
+                    data={data}
+                    onSaved={onSaved}
+                    saveMessage="Artifact added. Your AI just saw how you work."
+                  />
+                )}
+                {mod.id === 'ai_conversations' && (
+                  <UploadModule
+                    moduleId="ai_conversations"
+                    sourceType="ai_conversation"
+                    intro="Long conversations with AI assistants about your career capture your real reasoning process. This is among the most valuable unstructured data you can give your AI."
+                    instructions={`Export conversations where you discussed career decisions, interview prep, professional challenges, or goals.
+
+- ChatGPT: Settings → Data Controls → Export Data
+- Claude: Download conversation from chat menu
+
+Upload the exported file (TXT, JSON) or paste directly.`}
+                    data={data}
+                    onSaved={onSaved}
+                    saveMessage="Conversation added. Your AI just saw how you reason."
+                  />
+                )}
+                {mod.id === 'free_training' && (
+                  <UploadModule
+                    moduleId="free_training"
+                    sourceType="free_training"
+                    intro="Raw notes, a philosophy, context that doesn't fit anywhere else. Exact wording matters — don't clean it up."
+                    instructions=""
+                    data={data}
+                    onSaved={onSaved}
+                    saveMessage="Added. Your AI will factor this in."
+                  />
+                )}
               </ModuleShell>
             );
           })}
@@ -321,6 +433,34 @@ export default function TrainingHub({ name, email }: Props) {
     </main>
   );
 }
+
+// ── Question data for open-response modules ──────────────────────────────────
+
+const REAL_INTERVIEW_QUESTIONS = [
+  { question: 'Tell me about yourself.', microcopy: 'Your natural answer — not a rehearsed pitch. What do you actually say?' },
+  { question: 'Why are you looking for a new role?', microcopy: 'Honest and grounded. Recruiters hear rehearsed answers constantly.' },
+  { question: 'Tell me about a time you failed.', microcopy: 'Pick a real one. How you talk about failure says more than the failure itself.' },
+  { question: "What's your biggest weakness?", microcopy: 'Avoid clichés. Pick something real and show how you manage it.' },
+  { question: 'Where do you see yourself in three years?', microcopy: 'Be honest about your direction — vague answers are forgettable.' },
+  { question: 'Why do you want to work in this industry?', microcopy: 'What actually draws you here? The real reason matters.' },
+  { question: 'What makes you different from other candidates?', microcopy: "Don't perform. What do you genuinely bring that others don't?" },
+];
+
+const RECRUITER_CHALLENGE_QUESTIONS = [
+  { question: 'Your CV shows only a few months in SaaS. Why are you qualified for this role?', microcopy: 'This is a real objection. How do you actually handle it?' },
+  { question: 'Why should we hire you over someone with more direct experience?', microcopy: 'Make your case. Not a polished one — your real one.' },
+  { question: "You've moved roles quite frequently. How do we know you'll stay?", microcopy: "Answer directly. Don't deflect or over-explain." },
+  { question: "Your background is operations, not sales. Why do you think you can sell?", microcopy: 'Show your commercial instinct through how you argue this.' },
+  { question: "What's the gap between where you are now and where this role needs you to be?", microcopy: 'Honesty here builds more trust than a defensive answer.' },
+];
+
+const OBJECTION_QUESTIONS = [
+  { question: 'The client says your solution is too expensive.', microcopy: 'Answer as you would in a real client conversation — not a training exercise.' },
+  { question: 'The GM refuses to change the current process.', microcopy: 'How do you handle resistance from someone with authority?' },
+  { question: 'The client is happy with their existing vendor.', microcopy: "What's your honest approach when the door seems closed?" },
+  { question: 'The implementation is taking longer than expected and the client is frustrated.', microcopy: 'How you manage this moment reveals your commercial instinct.' },
+  { question: "The client asks for a feature you don't have.", microcopy: "What do you actually say? Don't script it." },
+];
 
 // Re-export for use in module components
 export type { ScoreResult };
