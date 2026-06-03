@@ -27,6 +27,10 @@ export default function RegisterRecruiterPage() {
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/login`,
+          data: { full_name: fullName, company_name: companyName },
+        },
       });
 
       if (signUpError) {
