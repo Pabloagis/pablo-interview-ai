@@ -1,5 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
+import {
+  STORY_TYPES,
+  REAL_INTERVIEW_QUESTIONS,
+  RECRUITER_CHALLENGE_QUESTIONS,
+  OBJECTION_QUESTIONS,
+  scoreLabel,
+} from '@/lib/training-constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,50 +30,6 @@ export interface ScoreResult {
   qualitySignals: string[];
 }
 
-const STORY_TYPES = [
-  'biggest_success',
-  'biggest_failure',
-  'conflict',
-  'stakeholder_disagreement',
-  'difficult_client',
-  'lesson_learned',
-  'leadership_without_authority',
-  'managing_change',
-  'commercial_example',
-];
-
-const REAL_INTERVIEW_QUESTIONS = [
-  'Tell me about yourself.',
-  'Why are you looking for a new role?',
-  'Tell me about a time you failed.',
-  "What's your biggest weakness?",
-  'Where do you see yourself in three years?',
-  'Why do you want to work in this industry?',
-  'What makes you different from other candidates?',
-];
-
-const RECRUITER_CHALLENGE_QUESTIONS = [
-  'Your CV shows only a few months in SaaS. Why are you qualified for this role?',
-  'Why should we hire you over someone with more direct experience?',
-  "You've moved roles quite frequently. How do we know you'll stay?",
-  'Your background is operations, not sales. Why do you think you can sell?',
-  "What's the gap between where you are now and where this role needs you to be?",
-];
-
-const OBJECTION_QUESTIONS = [
-  "The client says your solution is too expensive.",
-  "The GM refuses to change the current process.",
-  "The client is happy with their existing vendor.",
-  "The implementation is taking longer than expected and the client is frustrated.",
-  "The client asks for a feature you don't have.",
-];
-
-function scoreLabel(total: number): string {
-  if (total <= 30) return 'Your AI knows the basics';
-  if (total <= 60) return 'Your AI can represent you in simple conversations';
-  if (total <= 85) return 'Your AI understands how you think';
-  return 'Your AI is ready for real hiring conversations ⭐';
-}
 
 function buildQualitySignals(breakdown: ScoreBreakdown): string[] {
   const signals: string[] = [];
@@ -206,5 +169,3 @@ export async function GET() {
   }
 }
 
-// Named exports for reuse in the reminder route
-export { STORY_TYPES, REAL_INTERVIEW_QUESTIONS, RECRUITER_CHALLENGE_QUESTIONS, OBJECTION_QUESTIONS, scoreLabel };
