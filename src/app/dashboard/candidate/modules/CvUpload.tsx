@@ -40,8 +40,8 @@ export default function CvUpload({ data, onSaved }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed">
-        Upload your CV in PDF, Word (.docx), or plain text format. Claude will extract your career
-        history so your AI understands your background.
+        Upload your CV as a PDF or plain text file. Claude will extract your career history so your
+        AI understands your background. (DOCX not supported — export as PDF from Word.)
       </p>
 
       {/* Upload area */}
@@ -76,7 +76,7 @@ export default function CvUpload({ data, onSaved }: Props) {
             <span className="text-xs text-[rgba(255,255,255,0.4)]">
               {data.cvLoaded ? 'Upload a new CV to replace the existing one' : 'Click to upload CV'}
             </span>
-            <span className="text-[10px] text-[rgba(255,255,255,0.2)]">PDF · DOCX · TXT</span>
+            <span className="text-[10px] text-[rgba(255,255,255,0.2)]">PDF · TXT</span>
           </>
         )}
       </button>
@@ -84,7 +84,7 @@ export default function CvUpload({ data, onSaved }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept=".pdf,.docx,.doc,.txt"
+        accept=".pdf,.txt"
         className="hidden"
         onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
       />
