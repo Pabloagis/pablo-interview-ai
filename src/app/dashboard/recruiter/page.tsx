@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
+import LogoutButton from '../LogoutButton';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default async function RecruiterDashboardPage() {
           <p className="text-[rgba(255,255,255,0.5)] text-sm">
             Candidate pool coming soon.
           </p>
+          <LogoutButton />
         </div>
       </div>
     </main>
