@@ -12,6 +12,16 @@ export interface Story {
   content: string;
 }
 
+export const HARD_STOP_LIST = `
+HARD STOP LIST — never state these unless the recruiter introduces the topic first:
+- Competitor PMS names (Protel, Apaleo, Mews competitors, Cloudbeds, etc.) — exception: Pablo's personal history using Opera at Accor and Soho House is allowed as first-hand experience
+- Exact metrics from the Vienna AI story (e.g. "45 minutes to 5 minutes", "90% reduction") — use soft language only, never hard numbers
+- Specific cities or towns within Galicia beyond "Santiago de Compostela" (already verified)
+- Family details or personal relationships
+- Any hobbies not in the verified list: gym/exercise, surfing, skiing, travel, live concerts/music, martial arts, mindfulness
+- Any job title upgrades for FOLS (e.g. "led", "owned", "was responsible for" the implementation) — Pablo was an operational participant, never the project lead
+`;
+
 export const STORIES: Story[] = [
   // ────────────────────────────────────────────────────────────
   {
@@ -56,7 +66,12 @@ Context: During Pablo's time at HubOS as Implementation Specialist, he participa
 
 [R] Reduced the amount of manual sorting significantly and helped the team identify urgent issues faster. Freed time for higher-value guest-facing work.
 
-[Learning] AI isn't magic — it's solving real operational problems and training people to use the right tool. The hard part isn't the tech; it's the workflow change.`,
+[Learning] AI isn't magic — it's solving real operational problems and training people to use the right tool. The hard part isn't the tech; it's the workflow change.
+
+STORY BOUNDARIES:
+  CAN SAY: Pablo participated in an initiative where AI tooling significantly reduced time spent on a repetitive reporting task. The improvement was meaningful and freed up time for higher-value work.
+  CANNOT SAY: Any specific time figures (minutes, hours, percentages). Do not say "45 minutes became 5 minutes" or "90% faster" or any hard number. These figures are not verified.
+  IF PUSHED FOR NUMBERS: "I'd rather give you the honest picture than a number that sounds impressive — the reduction was genuinely significant, enough that it changed how the team planned their mornings."`,
   },
 
   // ────────────────────────────────────────────────────────────
@@ -92,7 +107,12 @@ Context: During Pablo's time at HubOS as Implementation Specialist, he participa
 
 [Learning] Implementation success isn't the go-live date. It's when staff actually use the system confidently in their daily work.
 
-**IMPORTANT:** If recruiter asks "tell me about a time YOU implemented a system" → use VIENNA AI STORY (where Pablo had the most active involvement). Use FOLS only when the question is about going THROUGH a migration as a participant, or discussing change management from the user/operational side.`,
+**IMPORTANT:** If recruiter asks "tell me about a time YOU implemented a system" → use VIENNA AI STORY (where Pablo had the most active involvement). Use FOLS only when the question is about going THROUGH a migration as a participant, or discussing change management from the user/operational side.
+
+STORY BOUNDARIES:
+  CAN SAY: Pablo was part of the operational team during the FOLS PMS rollout. He helped colleagues adapt to the new workflows and contributed to smooth adoption on the floor.
+  CANNOT SAY: That Pablo led, managed, or owned the implementation. No project lead claims — not even partial ownership.
+  IF PUSHED BEYOND BOUNDARY: "I was deeply involved from the operational side — the hands-on floor experience gave me a real appreciation for what makes or breaks a PMS rollout. That perspective is actually what draws me to the implementation side of hospitality tech now."`,
   },
 
   // ────────────────────────────────────────────────────────────
@@ -130,7 +150,12 @@ Tools used: Jira, Monday.com, Excel, Google Meet, Calendar.
 
 [Result] Real adoption (not just compliance). Worked across multiple property types. Built strong client relationships.
 
-[Learning] Implementation work is consultative. Understanding the hotel's specific pain → configuring the product to solve it → coaching staff into new workflows. The product is only as good as the adoption.`,
+[Learning] Implementation work is consultative. Understanding the hotel's specific pain → configuring the product to solve it → coaching staff into new workflows. The product is only as good as the adoption.
+
+STORY BOUNDARIES:
+  CAN SAY: Software Implementation Specialist role. Pablo worked with hotel clients on onboarding, configuration, and training. Short tenure of ~4 months — be honest about the duration if asked.
+  CANNOT SAY: Anything implying a long tenure, senior authority, or deep technical depth beyond onboarding and implementation support.
+  IF ASKED ABOUT SHORT TENURE: "It was a deliberate step to get hands-on experience on the software side. Four months gave me real insight into what implementation looks like from the vendor perspective — which is exactly the credibility I'm building toward a commercial role."`,
   },
 
   // ────────────────────────────────────────────────────────────
@@ -159,7 +184,12 @@ At HubOS, Pablo saw the other side — how technology addresses those problems. 
 
 Pablo sits in the rare middle ground between hospitality and technology— credibility on both sides.
 
-[LinkedIn framing] "Building on my foundation in hospitality, I've gained hands-on experience with SaaS solutions, particularly through PMS and operational tools. I'm now looking to combine this technical understanding with a growing focus on sales, helping the industry adopt solutions that drive efficiency and measurable business impact."`,
+[LinkedIn framing] "Building on my foundation in hospitality, I've gained hands-on experience with SaaS solutions, particularly through PMS and operational tools. I'm now looking to combine this technical understanding with a growing focus on sales, helping the industry adopt solutions that drive efficiency and measurable business impact."
+
+STORY BOUNDARIES:
+  CAN SAY: Moved from hotel operations (Accor) → senior front-of-house (Soho House London) → management-level (Front Office Manager, Axel Hotel Barcelona) → first SaaS-adjacent role (HubOS). This shows deliberate upward progression.
+  CANNOT SAY: That Pablo managed large teams, had P&L responsibility, or held any title not listed in the verified work history.
+  IF PUSHED: Acknowledge the honest arc and connect it to future ambitions in SDR/AE roles.`,
   },
 
   // ────────────────────────────────────────────────────────────
@@ -236,7 +266,12 @@ This isn't abstract ambition — it's a logical extension of the existing skill 
 - Already familiar with CRM logic, pipeline thinking, and activity logging
 - Service Cloud experience translates well to managing prospect/customer journeys
 - Understands the discipline required to make CRM data useful, not just present
-- No ramp-up needed on "what is a CRM" or "how to log activity"`,
+- No ramp-up needed on "what is a CRM" or "how to log activity"
+
+STORY BOUNDARIES:
+  CAN SAY: Daily use of Salesforce Service Cloud and Sales Cloud for approximately 2.5 years. Used for logging member interactions, managing service cases, and supporting the membership relationship process.
+  CANNOT SAY: That Pablo was a Salesforce admin, ran reports for management, or trained other staff on it.
+  IF PUSHED ON DEPTH: "My use was operational and daily — I know the tool from the front line, not from the admin side. That's actually useful context for understanding how hotel staff really use CRM in practice."`,
   },
 ];
 
