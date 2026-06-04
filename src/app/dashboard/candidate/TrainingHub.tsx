@@ -372,24 +372,46 @@ function CareerGoalStep({
   currentGoal: string | null;
   onSaved: (goal: string) => void;
 }) {
+  // Parse existing value — handles old plain-string format and new JSON format
+  const parseInitial = () => {
+    if (!currentGoal) return { goals: [] as string[], other: '' };
+    try {
+      const p = JSON.parse(currentGoal) as { goals?: string[]; other?: string };
+      return { goals: p.goals ?? [], other: p.other ?? '' };
+    } catch {
+      return { goals: [currentGoal], other: '' }; // migrate old single-select value
+    }
+  };
+
+  const init = parseInitial();
+  const [selected, setSelected] = useState<string[]>(init.goals);
+  const [freeText, setFreeText] = useState(init.other);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  async function handleSelect(goal: string) {
+  function toggle(goal: string) {
+    setSelected(prev =>
+      prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
+    );
+  }
+
+  async function handleSave() {
+    if (selected.length === 0) return;
     setSaving(true);
     setError('');
+    const value = JSON.stringify({ goals: selected, other: freeText.trim() });
     try {
       const res = await fetch('/api/training/career-goal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ career_goal: goal }),
+        body: JSON.stringify({ career_goal: value }),
       });
       if (!res.ok) {
         const j = await res.json() as { error?: string };
         setError(j.error ?? 'Failed to save. Please try again.');
         return;
       }
-      onSaved(goal);
+      onSaved(value);
     } catch {
       setError('Failed to save. Please try again.');
     } finally {
@@ -399,28 +421,61 @@ function CareerGoalStep({
 
   return (
     <div>
-      <div className="flex flex-col gap-2 mb-4">
-        {CAREER_GOALS.map(goal => (
-          <button
-            key={goal}
-            onClick={() => !saving && handleSelect(goal)}
-            disabled={saving}
-            className={[
-              'text-left px-4 py-3.5 rounded-xl border text-sm transition-all',
-              currentGoal === goal
-                ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
-                : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.6)]',
-              saving
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
-            ].join(' ')}
-          >
-            {goal}
-          </button>
-        ))}
+      <div className="flex flex-col gap-2 mb-5">
+        {CAREER_GOALS.map(goal => {
+          const isSelected = selected.includes(goal);
+          return (
+            <button
+              key={goal}
+              onClick={() => !saving && toggle(goal)}
+              disabled={saving}
+              className={[
+                'text-left px-4 py-3.5 rounded-xl border text-sm transition-all flex items-center gap-3',
+                isSelected
+                  ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
+                  : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.6)]',
+                saving ? 'opacity-50 cursor-not-allowed' : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
+              ].join(' ')}
+            >
+              <span className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] border transition-all ${
+                isSelected
+                  ? 'bg-[#4060d0] border-[#4060d0] text-white'
+                  : 'border-[rgba(255,255,255,0.25)]'
+              }`}>
+                {isSelected ? '✓' : ''}
+              </span>
+              {goal}
+            </button>
+          );
+        })}
       </div>
-      {saving && <p className="text-xs text-[rgba(255,255,255,0.4)]">Saving…</p>}
-      {error  && <p className="text-xs text-red-400">{error}</p>}
+
+      {/* Free text */}
+      <div className="mb-5">
+        <label className="block text-xs font-medium text-[rgba(255,255,255,0.4)] mb-1.5">
+          Anything else?
+        </label>
+        <textarea
+          value={freeText}
+          onChange={e => setFreeText(e.target.value)}
+          placeholder="Add your own context if needed..."
+          rows={2}
+          disabled={saving}
+          className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.22)] disabled:opacity-50"
+        />
+      </div>
+
+      {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
+
+      {selected.length > 0 && (
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="inline-flex px-6 py-2.5 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
+        >
+          {saving ? 'Saving…' : 'Continue →'}
+        </button>
+      )}
     </div>
   );
 }
