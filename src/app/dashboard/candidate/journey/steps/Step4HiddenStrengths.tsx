@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { AnalysisResult } from '@/app/api/training/analyze/route';
+import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
 
 interface Props {
   analysis: AnalysisResult | null;
+  moduleOptions: GeneratedModuleOptions | null;
   onAdvance: () => void;
   onBack: () => void;
 }
@@ -14,44 +16,116 @@ type ItemStatus = 'pending' | 'confirmed' | 'editing' | 'rejected';
 interface StrengthItem {
   original: string;
   why: string;
-  how_to_surface: string;
   status: ItemStatus;
   editedText: string;
 }
 
-export default function Step4HiddenStrengths({ analysis, onAdvance, onBack }: Props) {
-  const [items, setItems] = useState<StrengthItem[]>(
-    (analysis?.hidden_strengths ?? []).map(s => ({
-      original: s.strength,
-      why: s.why,
-      how_to_surface: s.how_to_surface,
+function buildItems(
+  opts: GeneratedModuleOptions | null,
+  analysis: AnalysisResult | null
+): StrengthItem[] {
+  if (opts?.options.length) {
+    return opts.options.map(o => ({
+      original: o.label,
+      why: o.detail,
       status: 'pending',
-      editedText: s.strength,
-    }))
-  );
+      editedText: o.label,
+    }));
+  }
+  return (analysis?.hidden_strengths ?? []).map(s => ({
+    original: s.strength,
+    why: s.why,
+    status: 'pending',
+    editedText: s.strength,
+  }));
+}
 
-  const allReviewed = items.length === 0 || items.every(i => i.status !== 'pending' && i.status !== 'editing');
+export default function Step4HiddenStrengths({ analysis, moduleOptions, onAdvance, onBack }: Props) {
+  const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
+  const [items, setItems] = useState<StrengthItem[]>(() => buildItems(moduleOptions, analysis));
+  const [generating, setGenerating] = useState(false);
+  const generatingRef = useRef(false);
+
+  // Trigger generation if no items available from either source
+  useEffect(() => {
+    if (items.length > 0 || generatingRef.current) return;
+    generatingRef.current = true;
+    setGenerating(true);
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'hidden_strengths' }),
+    })
+      .then(r => r.json())
+      .then((j: { options?: GeneratedModuleOptions }) => {
+        if (j.options) {
+          setGeneratedOpts(j.options);
+          setItems(buildItems(j.options, null));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setGenerating(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const allReviewed = items.length > 0 && items.every(i => i.status !== 'pending' && i.status !== 'editing');
 
   function update(idx: number, patch: Partial<StrengthItem>) {
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, ...patch } : item));
   }
 
+  function handleAdvance() {
+    const confirmed = items.filter(i => i.status === 'confirmed').map(i => i.original);
+
+    // Update candidate_context
+    fetch('/api/training/context', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ hidden_strengths: confirmed }),
+    }).catch(() => {});
+
+    // Pre-generate next adaptive step
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'recruiter_concerns' }),
+    }).catch(() => {});
+
+    onAdvance();
+  }
+
+  if (generating && items.length === 0) {
+    return (
+      <div className="max-w-xl">
+        <StepLabel />
+        <h1 className="text-xl font-bold text-white mt-1 mb-8">Review what your Digital Twin found.</h1>
+        <div className="flex items-center gap-3 py-6 text-sm text-[rgba(255,255,255,0.4)]">
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          Personalising your next step…
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
-          Hidden Strengths · Step 4 of 10
-        </span>
+        <StepLabel />
         <h1 className="text-xl font-bold text-white mt-1 mb-1">Review what your Digital Twin found.</h1>
         <p className="text-sm text-[rgba(255,255,255,0.4)]">
           Confirm, edit, or redirect each one. Your Digital Twin will adjust.
         </p>
       </div>
 
+      {generatedOpts?.coaching_tip && (
+        <p className="text-xs text-[rgba(255,255,255,0.38)] italic mb-4">
+          💡 {generatedOpts.coaching_tip}
+        </p>
+      )}
+
       {items.length === 0 ? (
         <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-5 mb-6">
           <p className="text-sm text-[rgba(255,255,255,0.4)]">
-            No strengths identified yet. Go back and run the AI Analysis first.
+            No strengths identified yet. Complete the AI Analysis step first.
           </p>
         </div>
       ) : (
@@ -81,11 +155,6 @@ export default function Step4HiddenStrengths({ analysis, onAdvance, onBack }: Pr
                     {item.original}
                   </p>
                   <p className="text-xs text-[rgba(255,255,255,0.38)] leading-relaxed">{item.why}</p>
-                  {item.how_to_surface && item.status === 'pending' && (
-                    <p className="mt-2 text-xs text-[rgba(255,255,255,0.26)] italic">
-                      💡 {item.how_to_surface}
-                    </p>
-                  )}
                 </div>
               )}
 
@@ -128,26 +197,33 @@ export default function Step4HiddenStrengths({ analysis, onAdvance, onBack }: Pr
         </div>
       )}
 
+      {generatedOpts?.suggested_question && allReviewed && (
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-4 mb-5">
+          <p className="text-[10px] text-[rgba(255,255,255,0.3)] uppercase tracking-wider mb-1">Worth remembering</p>
+          <p className="text-sm text-[rgba(255,255,255,0.6)] italic">{generatedOpts.suggested_question}</p>
+        </div>
+      )}
+
       <div className="flex gap-3">
         <button onClick={onBack} className={BTN_BACK}>← Back</button>
         {allReviewed
-          ? <button onClick={onAdvance} className={BTN_PRIMARY}>Continue →</button>
-          : <button onClick={onAdvance} className={BTN_SKIP}>Skip for now →</button>
+          ? <button onClick={handleAdvance} className={BTN_PRIMARY}>Continue →</button>
+          : <button onClick={handleAdvance} className={BTN_SKIP}>Skip for now →</button>
         }
       </div>
     </div>
   );
 }
 
-function SmallBtn({
-  color,
-  onClick,
-  children,
-}: {
-  color: 'green' | 'blue' | 'red';
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
+function StepLabel() {
+  return (
+    <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
+      Hidden Strengths · Step 4 of 10
+    </span>
+  );
+}
+
+function SmallBtn({ color, onClick, children }: { color: 'green' | 'blue' | 'red'; onClick: () => void; children: React.ReactNode }) {
   const s = {
     green: 'bg-[rgba(96,192,128,0.12)] border-[rgba(96,192,128,0.3)] text-green-400 hover:bg-[rgba(96,192,128,0.2)]',
     blue:  'bg-[rgba(255,255,255,0.06)] border-[rgba(255,255,255,0.10)] text-[rgba(255,255,255,0.6)] hover:text-white hover:bg-[rgba(255,255,255,0.10)]',

@@ -1,10 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { AnalysisResult } from '@/app/api/training/analyze/route';
+import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
 
 interface Props {
   analysis: AnalysisResult | null;
+  moduleOptions: GeneratedModuleOptions | null;
   onAdvance: () => void;
   onBack: () => void;
   onNavigate: (step: number) => void;
@@ -12,117 +14,187 @@ interface Props {
 
 type ConcernStatus = 'pending' | 'building' | 'skipped';
 
-interface ConcernState {
+interface ConcernItem {
   concern: string;
   why: string;
-  priority: 'high' | 'medium';
-  linked_module: string;
   status: ConcernStatus;
 }
 
-// Maps the Claude-returned linked_module to the relevant journey step
-const MODULE_TO_STEP: Record<string, number> = {
-  story_library: 7,
-  recruiter_challenge: 9,
-  objection_handling: 9,
-  real_interview: 6,
-};
-
-export default function Step5RecruiterConcerns({ analysis, onAdvance, onBack, onNavigate }: Props) {
-  const [items, setItems] = useState<ConcernState[]>(
-    (analysis?.objections ?? []).map(obj => ({
-      concern: obj.concern,
-      why: obj.why,
-      priority: obj.priority,
-      linked_module: obj.linked_module,
+function buildItems(
+  opts: GeneratedModuleOptions | null,
+  analysis: AnalysisResult | null
+): ConcernItem[] {
+  if (opts?.options.length) {
+    return opts.options.map(o => ({
+      concern: o.label,
+      why: o.detail,
       status: 'pending',
-    }))
-  );
+    }));
+  }
+  return (analysis?.objections ?? []).map(obj => ({
+    concern: obj.concern,
+    why: obj.why,
+    status: 'pending',
+  }));
+}
 
-  const allDecided = items.length === 0 || items.every(i => i.status !== 'pending');
+export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdvance, onBack, onNavigate }: Props) {
+  const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
+  const [items, setItems] = useState<ConcernItem[]>(() => buildItems(moduleOptions, analysis));
+  const [generating, setGenerating] = useState(false);
+  const generatingRef = useRef(false);
 
-  function update(idx: number, patch: Partial<ConcernState>) {
+  // Trigger generation if no items from either source
+  useEffect(() => {
+    if (items.length > 0 || generatingRef.current) return;
+    generatingRef.current = true;
+    setGenerating(true);
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'recruiter_concerns' }),
+    })
+      .then(r => r.json())
+      .then((j: { options?: GeneratedModuleOptions }) => {
+        if (j.options) {
+          setGeneratedOpts(j.options);
+          setItems(buildItems(j.options, null));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setGenerating(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const allDecided = items.length > 0 && items.every(i => i.status !== 'pending');
+
+  function update(idx: number, patch: Partial<ConcernItem>) {
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, ...patch } : item));
+  }
+
+  function handleAdvance() {
+    const addressed = items.filter(i => i.status === 'building').map(i => i.concern);
+    const skipped   = items.filter(i => i.status === 'skipped').map(i => i.concern);
+
+    // Update candidate_context
+    fetch('/api/training/context', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ recruiter_concerns: { addressed, skipped } }),
+    }).catch(() => {});
+
+    // Pre-generate next adaptive step
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'career_narrative' }),
+    }).catch(() => {});
+
+    onAdvance();
+  }
+
+  if (generating && items.length === 0) {
+    return (
+      <div className="max-w-xl">
+        <StepLabel />
+        <h1 className="text-xl font-bold text-white mt-1 mb-8">Build your responses.</h1>
+        <div className="flex items-center gap-3 py-6 text-sm text-[rgba(255,255,255,0.4)]">
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          Personalising your next step…
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="max-w-xl">
       <div className="mb-6">
-        <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
-          Recruiter Concerns · Step 5 of 10
-        </span>
+        <StepLabel />
         <h1 className="text-xl font-bold text-white mt-1 mb-1">Build your responses.</h1>
         <p className="text-sm text-[rgba(255,255,255,0.4)]">
           These are concerns a recruiter may raise. Decide how to address each one.
         </p>
       </div>
 
+      {generatedOpts?.coaching_tip && (
+        <p className="text-xs text-[rgba(255,255,255,0.38)] italic mb-4">
+          💡 {generatedOpts.coaching_tip}
+        </p>
+      )}
+
       {items.length === 0 ? (
         <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-5 mb-6">
           <p className="text-sm text-[rgba(255,255,255,0.4)]">
-            No concerns identified yet. Go back and run the AI Analysis first.
+            No concerns identified yet. Complete the AI Analysis step first.
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-3 mb-6">
-          {items.map((item, idx) => {
-            const targetStep = MODULE_TO_STEP[item.linked_module] ?? 9;
-            return (
-              <div
-                key={idx}
-                className={`rounded-xl border p-4 transition-colors ${
-                  item.status === 'building' ? 'border-[rgba(64,96,208,0.3)] bg-[rgba(64,96,208,0.04)]' :
-                  item.status === 'skipped'  ? 'border-[rgba(255,255,255,0.05)] opacity-40' :
-                  'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]'
-                }`}
-              >
-                <div className="flex items-start gap-2 mb-2">
-                  <span className={`text-xs shrink-0 mt-0.5 ${item.priority === 'high' ? 'text-red-400' : 'text-amber-400'}`}>
-                    {item.priority === 'high' ? '⚠' : '△'}
-                  </span>
-                  <p className="text-sm text-white font-medium leading-snug">{item.concern}</p>
-                </div>
-                <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed mb-3 pl-4">
-                  {item.why}
-                </p>
-
-                {item.status === 'pending' && (
-                  <div className="flex gap-2 flex-wrap pl-4">
-                    <button
-                      onClick={() => { update(idx, { status: 'building' }); onNavigate(targetStep); }}
-                      className="px-3 py-1.5 rounded-lg bg-[rgba(64,96,208,0.15)] border border-[rgba(64,96,208,0.3)] text-[#6080f0] text-xs hover:bg-[rgba(64,96,208,0.25)] transition-colors"
-                    >
-                      Build a response →
-                    </button>
-                    <button
-                      onClick={() => update(idx, { status: 'skipped' })}
-                      className="px-3 py-1.5 rounded-lg bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] text-xs hover:text-white transition-colors"
-                    >
-                      Skip for now
-                    </button>
-                  </div>
-                )}
-
-                {item.status === 'building' && (
-                  <p className="text-xs text-[#6080f0] pl-4">Working on this in the relevant step.</p>
-                )}
-                {item.status === 'skipped' && (
-                  <p className="text-xs text-[rgba(255,255,255,0.25)] pl-4">Flagged for later.</p>
-                )}
+          {items.map((item, idx) => (
+            <div
+              key={idx}
+              className={`rounded-xl border p-4 transition-colors ${
+                item.status === 'building' ? 'border-[rgba(64,96,208,0.3)] bg-[rgba(64,96,208,0.04)]' :
+                item.status === 'skipped'  ? 'border-[rgba(255,255,255,0.05)] opacity-40' :
+                'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]'
+              }`}
+            >
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-xs text-amber-400 shrink-0 mt-0.5">⚠</span>
+                <p className="text-sm text-white font-medium leading-snug">{item.concern}</p>
               </div>
-            );
-          })}
+              <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed mb-3 pl-4">{item.why}</p>
+
+              {item.status === 'pending' && (
+                <div className="flex gap-2 flex-wrap pl-4">
+                  <button
+                    onClick={() => { update(idx, { status: 'building' }); onNavigate(9); }}
+                    className="px-3 py-1.5 rounded-lg bg-[rgba(64,96,208,0.15)] border border-[rgba(64,96,208,0.3)] text-[#6080f0] text-xs hover:bg-[rgba(64,96,208,0.25)] transition-colors"
+                  >
+                    Build a response →
+                  </button>
+                  <button
+                    onClick={() => update(idx, { status: 'skipped' })}
+                    className="px-3 py-1.5 rounded-lg bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.4)] text-xs hover:text-white transition-colors"
+                  >
+                    Skip for now
+                  </button>
+                </div>
+              )}
+
+              {item.status === 'building' && (
+                <p className="text-xs text-[#6080f0] pl-4">Working on this in Interview Readiness.</p>
+              )}
+              {item.status === 'skipped' && (
+                <p className="text-xs text-[rgba(255,255,255,0.25)] pl-4">Flagged for later.</p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {generatedOpts?.suggested_question && (
+        <div className="rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] p-4 mb-5">
+          <p className="text-[10px] text-[rgba(255,255,255,0.3)] uppercase tracking-wider mb-1">Hardest question to prepare for</p>
+          <p className="text-sm text-[rgba(255,255,255,0.6)] italic">{generatedOpts.suggested_question}</p>
         </div>
       )}
 
       <div className="flex gap-3">
         <button onClick={onBack} className={BTN_BACK}>← Back</button>
         {allDecided
-          ? <button onClick={onAdvance} className={BTN_PRIMARY}>Continue →</button>
-          : <button onClick={onAdvance} className={BTN_SKIP}>Skip for now →</button>
+          ? <button onClick={handleAdvance} className={BTN_PRIMARY}>Continue →</button>
+          : <button onClick={handleAdvance} className={BTN_SKIP}>Skip for now →</button>
         }
       </div>
     </div>
+  );
+}
+
+function StepLabel() {
+  return (
+    <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
+      Recruiter Concerns · Step 5 of 10
+    </span>
   );
 }
 

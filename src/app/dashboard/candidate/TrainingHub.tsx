@@ -165,6 +165,18 @@ export default function TrainingHub({ name, email }: Props) {
   const advance  = () => setCurrentStep(s => Math.min(s + 1, 10));
   const back     = () => setCurrentStep(s => Math.max(s - 1, 1));
 
+  // Sync AI analysis into candidate_context once so generate-module-options can use it
+  useEffect(() => {
+    if (!analysis) return;
+    const existing = (candidateContext?.ai_analysis ?? null);
+    if (existing) return; // already synced
+    fetch('/api/training/context', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ai_analysis: analysis }),
+    }).catch(() => {});
+  }, [analysis, candidateContext]);
+
   // ── Step state computation ────────────────────────────────────────────────
 
   const stepStates: StepState[] = JOURNEY_STEPS.map(step => {
@@ -226,24 +238,30 @@ export default function TrainingHub({ name, email }: Props) {
           />
         );
 
-      case 4:
+      case 4: {
+        const opts4 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.hidden_strengths ?? null;
         return (
           <Step4HiddenStrengths
             analysis={analysis}
+            moduleOptions={opts4}
             onAdvance={advance}
             onBack={back}
           />
         );
+      }
 
-      case 5:
+      case 5: {
+        const opts5 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.recruiter_concerns ?? null;
         return (
           <Step5RecruiterConcerns
             analysis={analysis}
+            moduleOptions={opts5}
             onAdvance={advance}
             onBack={back}
             onNavigate={setCurrentStep}
           />
         );
+      }
 
       case 6:
         return (
