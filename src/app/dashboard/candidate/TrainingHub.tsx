@@ -1,10 +1,19 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import JourneyMap, { type StepState } from './journey/JourneyMap';
 import LogoutButton from '../LogoutButton';
 import CvUpload from './modules/CvUpload';
+import Step3Analysis from './journey/steps/Step3Analysis';
+import Step4HiddenStrengths from './journey/steps/Step4HiddenStrengths';
+import Step5RecruiterConcerns from './journey/steps/Step5RecruiterConcerns';
+import Step6CareerNarrative from './journey/steps/Step6CareerNarrative';
+import Step7StoryEvidence from './journey/steps/Step7StoryEvidence';
+import Step8CommunicationStyle from './journey/steps/Step8CommunicationStyle';
+import Step9InterviewReadiness from './journey/steps/Step9InterviewReadiness';
+import Step10FinalReview from './journey/steps/Step10FinalReview';
 import type { ScoreResult } from '@/app/api/training/score/route';
+import type { AnalysisResult } from '@/app/api/training/analyze/route';
 
 // ── Types shared with module components ───────────────────────────────────────
 
@@ -47,15 +56,15 @@ export type { ScoreResult };
 // ── Journey steps ─────────────────────────────────────────────────────────────
 
 const JOURNEY_STEPS = [
-  { number: 1, label: 'Import CV' },
-  { number: 2, label: 'Career Goal' },
-  { number: 3, label: 'AI Analysis' },
-  { number: 4, label: 'Hidden Strengths' },
-  { number: 5, label: 'Recruiter Concerns' },
-  { number: 6, label: 'Career Narrative' },
-  { number: 7, label: 'Story Evidence' },
-  { number: 8, label: 'Communication Style' },
-  { number: 9, label: 'Interview Readiness' },
+  { number: 1,  label: 'Import CV' },
+  { number: 2,  label: 'Career Goal' },
+  { number: 3,  label: 'AI Analysis' },
+  { number: 4,  label: 'Hidden Strengths' },
+  { number: 5,  label: 'Recruiter Concerns' },
+  { number: 6,  label: 'Career Narrative' },
+  { number: 7,  label: 'Story Evidence' },
+  { number: 8,  label: 'Communication Style' },
+  { number: 9,  label: 'Interview Readiness' },
   { number: 10, label: 'Final Review' },
 ] as const;
 
@@ -67,50 +76,6 @@ const CAREER_GOALS = [
   'Build a stronger professional brand',
   'Explore a new career direction',
 ] as const;
-
-// Placeholder descriptions shown in Phase 2 for steps 3-10
-const STEP_PLACEHOLDER: Record<number, { title: string; subtitle: string; body: string }> = {
-  3: {
-    title: "Here's what I've learned.",
-    subtitle: 'AI Analysis',
-    body: 'Claude will analyse your CV against your career goal and surface hidden strengths and potential recruiter concerns specific to your background.',
-  },
-  4: {
-    title: 'Review what your Digital Twin found.',
-    subtitle: 'Hidden Strengths',
-    body: 'Confirm, edit, or rewrite each strength identified in the AI analysis. This shapes how your Digital Twin represents you.',
-  },
-  5: {
-    title: 'Build your responses.',
-    subtitle: 'Recruiter Concerns',
-    body: 'For each potential concern, decide whether to build a response now or flag it for later.',
-  },
-  6: {
-    title: 'Your professional story, in your own words.',
-    subtitle: 'Career Narrative',
-    body: 'Build your career narrative through conversation — not a form. Your Digital Twin proposes based on your CV; you confirm or redirect.',
-  },
-  7: {
-    title: 'The stories that make your Twin credible.',
-    subtitle: 'Story Evidence',
-    body: 'Walk through your key professional stories using the STAR format. Your Digital Twin proposes; you refine.',
-  },
-  8: {
-    title: 'How you think and work.',
-    subtitle: 'Communication Style',
-    body: 'Answer questions about your work style and motivations. This is how your Digital Twin learns to sound like you.',
-  },
-  9: {
-    title: 'Pressure-test your Digital Twin.',
-    subtitle: 'Interview Readiness',
-    body: 'Answer real interview and challenge questions. Voice recording available per question.',
-  },
-  10: {
-    title: 'Your Digital Twin is ready.',
-    subtitle: 'Final Review',
-    body: 'See your full Identity Confidence Score with a breakdown of what your Digital Twin can and cannot yet discuss confidently.',
-  },
-};
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -125,11 +90,10 @@ export default function TrainingHub({ name, email }: Props) {
   const [score, setScore] = useState<ScoreResult | null>(null);
   const [data, setData] = useState<TrainingData>({ stories: [], responses: [], rawData: [], cvLoaded: false });
   const [careerGoal, setCareerGoal] = useState<string | null>(null);
-  const [analysisExists, setAnalysisExists] = useState(false);
+  const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveConfirmations, setSaveConfirmations] = useState<Record<string, string | null>>({});
 
-  // Prevents auto-step re-triggering on every fetchAll
   const initialStepRef = useRef(false);
 
   const fetchAll = useCallback(async () => {
@@ -154,26 +118,26 @@ export default function TrainingHub({ name, email }: Props) {
         analysisRes.json(),
       ]);
 
-      const cvLoaded = !!cvData.cvData;
-      const goal = goalData.career_goal ?? null;
-      const hasAnalysis = !!analysisData.analysis;
+      const cvLoaded   = !!cvData.cvData;
+      const goal       = goalData.career_goal ?? null;
+      const analysisResult = analysisData.analysis ?? null;
 
       setScore(scoreData);
       setData({
-        stories: storiesData.stories ?? [],
+        stories:  storiesData.stories  ?? [],
         responses: responsesData.responses ?? [],
-        rawData: rawData.items ?? [],
+        rawData:  rawData.items ?? [],
         cvLoaded,
       });
       setCareerGoal(goal);
-      setAnalysisExists(hasAnalysis);
+      setAnalysis(analysisResult);
 
-      // On first load only, jump to the first incomplete step
+      // On first load, jump to first incomplete step
       if (!initialStepRef.current) {
         initialStepRef.current = true;
-        if (!cvLoaded) setCurrentStep(1);
-        else if (!goal) setCurrentStep(2);
-        else if (!hasAnalysis) setCurrentStep(3);
+        if (!cvLoaded)       setCurrentStep(1);
+        else if (!goal)      setCurrentStep(2);
+        else if (!analysisResult) setCurrentStep(3);
       }
     } catch (err) {
       console.error('[TrainingHub] fetch error', err);
@@ -193,10 +157,10 @@ export default function TrainingHub({ name, email }: Props) {
     setTimeout(() => setSaveConfirmations(prev => ({ ...prev, [moduleId]: null })), 4000);
   }, [fetchAll]);
 
-  const advance = () => setCurrentStep(s => Math.min(s + 1, 10));
-  const back = () => setCurrentStep(s => Math.max(s - 1, 1));
+  const advance  = () => setCurrentStep(s => Math.min(s + 1, 10));
+  const back     = () => setCurrentStep(s => Math.max(s - 1, 1));
 
-  // ── Step state computation for sidebar ───────────────────────────────────────
+  // ── Step state computation ────────────────────────────────────────────────
 
   const stepStates: StepState[] = JOURNEY_STEPS.map(step => {
     if (step.number === currentStep) return 'current';
@@ -204,18 +168,17 @@ export default function TrainingHub({ name, email }: Props) {
       case 1: return data.cvLoaded ? 'completed' : 'upcoming';
       case 2: return careerGoal ? 'completed' : 'upcoming';
       case 3:
-        if (analysisExists) return 'completed';
+        if (analysis) return 'completed';
         return (data.cvLoaded && careerGoal) ? 'needs-evidence' : 'upcoming';
       default:
         return currentStep > step.number ? 'completed' : 'upcoming';
     }
   });
 
-  // ── Step renderer ─────────────────────────────────────────────────────────────
+  // ── Step renderer ─────────────────────────────────────────────────────────
 
   const renderStep = () => {
     switch (currentStep) {
-      // ── Step 1: Import CV ────────────────────────────────────────────────────
       case 1:
         return (
           <div className="max-w-xl">
@@ -225,14 +188,13 @@ export default function TrainingHub({ name, email }: Props) {
               <p className="mt-3 text-xs text-green-400">{saveConfirmations.cv}</p>
             )}
             {data.cvLoaded && (
-              <button onClick={advance} className={CONTINUE_BTN + ' mt-6'}>
+              <button onClick={advance} className={`${BTN_PRIMARY} mt-6`}>
                 Continue →
               </button>
             )}
           </div>
         );
 
-      // ── Step 2: Career Goal ──────────────────────────────────────────────────
       case 2:
         return (
           <div className="max-w-xl">
@@ -244,37 +206,91 @@ export default function TrainingHub({ name, email }: Props) {
           </div>
         );
 
-      // ── Steps 3-10: Phase 3 placeholders ────────────────────────────────────
-      default: {
-        const meta = STEP_PLACEHOLDER[currentStep];
+      case 3:
         return (
-          <div className="max-w-xl">
-            <div className="mb-1">
-              <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
-                {meta.subtitle} · Step {currentStep} of 10
-              </span>
-            </div>
-            <h1 className="text-xl font-bold text-white mt-1 mb-5">{meta.title}</h1>
-
-            <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-5 mb-6">
-              <p className="text-sm text-[rgba(255,255,255,0.5)] leading-relaxed">{meta.body}</p>
-            </div>
-
-            <div className="flex gap-3">
-              {currentStep > 1 && (
-                <button onClick={back} className={BACK_BTN}>← Back</button>
-              )}
-              {currentStep < 10 && (
-                <button onClick={advance} className={SKIP_BTN}>Skip for now →</button>
-              )}
-            </div>
-          </div>
+          <Step3Analysis
+            analysis={analysis}
+            onAdvance={advance}
+            onBack={back}
+            onAnalyzed={fetchAll}
+          />
         );
-      }
+
+      case 4:
+        return (
+          <Step4HiddenStrengths
+            analysis={analysis}
+            onAdvance={advance}
+            onBack={back}
+          />
+        );
+
+      case 5:
+        return (
+          <Step5RecruiterConcerns
+            analysis={analysis}
+            onAdvance={advance}
+            onBack={back}
+            onNavigate={setCurrentStep}
+          />
+        );
+
+      case 6:
+        return (
+          <Step6CareerNarrative
+            analysis={analysis}
+            data={data}
+            onSaved={onSaved}
+            onAdvance={advance}
+            onBack={back}
+          />
+        );
+
+      case 7:
+        return (
+          <Step7StoryEvidence
+            data={data}
+            onSaved={onSaved}
+            onAdvance={advance}
+            onBack={back}
+          />
+        );
+
+      case 8:
+        return (
+          <Step8CommunicationStyle
+            data={data}
+            onSaved={onSaved}
+            onAdvance={advance}
+            onBack={back}
+          />
+        );
+
+      case 9:
+        return (
+          <Step9InterviewReadiness
+            data={data}
+            onSaved={onSaved}
+            onAdvance={advance}
+            onBack={back}
+          />
+        );
+
+      case 10:
+        return (
+          <Step10FinalReview
+            score={score}
+            onNavigate={setCurrentStep}
+            onBack={back}
+          />
+        );
+
+      default:
+        return null;
     }
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────────
+  // ── Loading ───────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
@@ -284,12 +300,11 @@ export default function TrainingHub({ name, email }: Props) {
     );
   }
 
-  // ── Layout ────────────────────────────────────────────────────────────────────
+  // ── Layout ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex h-screen overflow-hidden bg-[#0d0f14]">
 
-      {/* Left: Journey map */}
       <JourneyMap
         steps={JOURNEY_STEPS.map((s, i) => ({ number: s.number, label: s.label, state: stepStates[i] }))}
         currentStep={currentStep}
@@ -299,10 +314,8 @@ export default function TrainingHub({ name, email }: Props) {
         onMobileToggle={() => setMobileMapOpen(o => !o)}
       />
 
-      {/* Right: Main content */}
       <main className="flex-1 overflow-y-auto flex flex-col min-w-0">
 
-        {/* Top bar */}
         <header className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.06)]">
           <button
             onClick={() => setMobileMapOpen(true)}
@@ -310,26 +323,25 @@ export default function TrainingHub({ name, email }: Props) {
           >
             ☰ Journey
           </button>
-          <span className="hidden lg:block text-xs text-[rgba(255,255,255,0.3)]">
+          <span className="hidden lg:block text-xs text-[rgba(255,255,255,0.28)]">
             Build your Career Digital Twin
           </span>
           <div className="flex items-center gap-4">
-            <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.25)]">{name}</span>
+            <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.22)]">{name}</span>
             <LogoutButton />
           </div>
         </header>
 
-        {/* Step content */}
         <div className="flex-1 px-6 py-8">
           {renderStep()}
         </div>
 
-        {/* Footer */}
         <footer className="shrink-0 px-6 pb-5">
-          <p className="text-[10px] text-[rgba(255,255,255,0.18)] text-center">
+          <p className="text-[10px] text-[rgba(255,255,255,0.15)] text-center">
             {email} · A professional representation built from evidence rather than assumptions.
           </p>
         </footer>
+
       </main>
     </div>
   );
@@ -337,11 +349,9 @@ export default function TrainingHub({ name, email }: Props) {
 
 // ── Button styles ─────────────────────────────────────────────────────────────
 
-const CONTINUE_BTN = 'inline-flex px-6 py-2.5 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white text-sm font-medium transition-colors';
-const BACK_BTN = 'inline-flex px-5 py-2.5 rounded-xl border border-[rgba(255,255,255,0.10)] text-[rgba(255,255,255,0.5)] hover:text-white text-sm transition-colors';
-const SKIP_BTN = 'inline-flex px-5 py-2.5 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.10)] text-[rgba(255,255,255,0.6)] hover:text-white text-sm transition-colors';
+const BTN_PRIMARY = 'inline-flex px-6 py-2.5 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white text-sm font-medium transition-colors';
 
-// ── Sub-components ────────────────────────────────────────────────────────────
+// ── Sub-components (Steps 1 & 2 are simple enough to inline) ─────────────────
 
 function StepHeader({ number, title, subtitle }: { number: number; title: string; subtitle: string }) {
   return (
@@ -400,7 +410,9 @@ function CareerGoalStep({
               currentGoal === goal
                 ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
                 : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.6)]',
-              saving ? 'opacity-50 cursor-not-allowed' : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
+              saving
+                ? 'opacity-50 cursor-not-allowed'
+                : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
             ].join(' ')}
           >
             {goal}
@@ -408,7 +420,7 @@ function CareerGoalStep({
         ))}
       </div>
       {saving && <p className="text-xs text-[rgba(255,255,255,0.4)]">Saving…</p>}
-      {error && <p className="text-xs text-red-400">{error}</p>}
+      {error  && <p className="text-xs text-red-400">{error}</p>}
     </div>
   );
 }
