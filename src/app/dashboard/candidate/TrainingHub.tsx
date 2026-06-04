@@ -1,16 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import EvidenceScore from './components/EvidenceScore';
-import ModuleShell from './components/ModuleShell';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import JourneyMap, { type StepState } from './journey/JourneyMap';
 import LogoutButton from '../LogoutButton';
 import CvUpload from './modules/CvUpload';
-import StoryLibrary from './modules/StoryLibrary';
-import OpenResponseModule from './modules/OpenResponseModule';
-import UploadModule from './modules/UploadModule';
 import type { ScoreResult } from '@/app/api/training/score/route';
 
-// ── Types shared across modules ──────────────────────────────────────────────
+// ── Types shared with module components ───────────────────────────────────────
 
 export interface Story {
   id: string;
@@ -45,154 +41,78 @@ export interface TrainingData {
   cvLoaded: boolean;
 }
 
-// ── Module metadata ───────────────────────────────────────────────────────────
+// Re-exports used by consumers
+export type { ScoreResult };
 
-const MODULE_META = [
-  {
-    id: 'cv',
-    title: 'CV Upload',
-    description: 'Give your AI your career history. The foundation — not the ceiling.',
-    valueLabel: '+10%',
-    isHighValue: false,
-  },
-  {
-    id: 'stories',
-    title: 'Story Library',
-    description: 'Interviewers always return to the same stories. Your AI needs to know yours — in detail, with specifics, in your own words.',
-    valueLabel: '+5% per story, max +45%',
-    isHighValue: false,
-  },
-  {
-    id: 'real_interview',
-    title: 'Real Interview Answers',
-    description: "Answer these questions exactly as you would in a real interview. Don't polish. Don't perform. Your natural language is what your AI needs.",
-    valueLabel: '+15%',
-    isHighValue: false,
-  },
-  {
-    id: 'recruiter_challenge',
-    title: 'Recruiter Challenge',
-    description: "These are the uncomfortable questions recruiters actually ask. Your AI needs to know how you defend yourself — not a polished answer, but your real one.",
-    valueLabel: '+10%',
-    isHighValue: false,
-  },
-  {
-    id: 'objection_handling',
-    title: 'Objection Handling',
-    description: 'How you handle objections reveals more about your commercial instinct than any CV. Answer as you would in a real client conversation.',
-    valueLabel: '+10%',
-    isHighValue: false,
-  },
-  {
-    id: 'interview_transcripts',
-    title: 'Interview Transcripts',
-    description: 'A single real interview transcript is worth more than all the forms in this system combined. It shows how you actually think, speak, and perform under real pressure.',
-    valueLabel: '+20%',
-    isHighValue: true,
-  },
-  {
-    id: 'recruiter_feedback',
-    title: 'Recruiter & Coach Feedback',
-    description: 'External assessment of your profile — even rejections — contains signal your AI needs. This is how others see you, not how you see yourself.',
-    valueLabel: '+15%',
-    isHighValue: false,
-  },
-  {
-    id: 'professional_artifacts',
-    title: 'Professional Artifacts',
-    description: 'What you have created reveals how you think better than any CV or form.',
-    valueLabel: '+8%',
-    isHighValue: false,
-  },
-  {
-    id: 'ai_conversations',
-    title: 'AI Conversation Exports',
-    description: 'Long conversations with AI assistants about your career capture your real reasoning process. This is among the most valuable unstructured data you can give your AI.',
-    valueLabel: '+8%',
-    isHighValue: false,
-  },
-  {
-    id: 'free_training',
-    title: 'Free Training',
-    description: "Raw notes, a philosophy, context that doesn't fit anywhere else. Exact wording matters — don't clean it up.",
-    valueLabel: '+5%',
-    isHighValue: false,
-  },
+// ── Journey steps ─────────────────────────────────────────────────────────────
+
+const JOURNEY_STEPS = [
+  { number: 1, label: 'Import CV' },
+  { number: 2, label: 'Career Goal' },
+  { number: 3, label: 'AI Analysis' },
+  { number: 4, label: 'Hidden Strengths' },
+  { number: 5, label: 'Recruiter Concerns' },
+  { number: 6, label: 'Career Narrative' },
+  { number: 7, label: 'Story Evidence' },
+  { number: 8, label: 'Communication Style' },
+  { number: 9, label: 'Interview Readiness' },
+  { number: 10, label: 'Final Review' },
 ] as const;
 
-// ── Completion helpers ────────────────────────────────────────────────────────
+const CAREER_GOALS = [
+  'Land more interviews',
+  'Win the interviews I already have',
+  'Change industry or sector',
+  'Move into a more commercial role',
+  'Build a stronger professional brand',
+  'Explore a new career direction',
+] as const;
 
-function getCompletionLabel(
-  moduleId: string,
-  data: TrainingData,
-  score: ScoreResult | null
-): { label: string; complete: boolean } {
-  const { stories, responses, rawData, cvLoaded } = data;
+// Placeholder descriptions shown in Phase 2 for steps 3-10
+const STEP_PLACEHOLDER: Record<number, { title: string; subtitle: string; body: string }> = {
+  3: {
+    title: "Here's what I've learned.",
+    subtitle: 'AI Analysis',
+    body: 'Claude will analyse your CV against your career goal and surface hidden strengths and potential recruiter concerns specific to your background.',
+  },
+  4: {
+    title: 'Review what your Digital Twin found.',
+    subtitle: 'Hidden Strengths',
+    body: 'Confirm, edit, or rewrite each strength identified in the AI analysis. This shapes how your Digital Twin represents you.',
+  },
+  5: {
+    title: 'Build your responses.',
+    subtitle: 'Recruiter Concerns',
+    body: 'For each potential concern, decide whether to build a response now or flag it for later.',
+  },
+  6: {
+    title: 'Your professional story, in your own words.',
+    subtitle: 'Career Narrative',
+    body: 'Build your career narrative through conversation — not a form. Your Digital Twin proposes based on your CV; you confirm or redirect.',
+  },
+  7: {
+    title: 'The stories that make your Twin credible.',
+    subtitle: 'Story Evidence',
+    body: 'Walk through your key professional stories using the STAR format. Your Digital Twin proposes; you refine.',
+  },
+  8: {
+    title: 'How you think and work.',
+    subtitle: 'Communication Style',
+    body: 'Answer questions about your work style and motivations. This is how your Digital Twin learns to sound like you.',
+  },
+  9: {
+    title: 'Pressure-test your Digital Twin.',
+    subtitle: 'Interview Readiness',
+    body: 'Answer real interview and challenge questions. Voice recording available per question.',
+  },
+  10: {
+    title: 'Your Digital Twin is ready.',
+    subtitle: 'Final Review',
+    body: 'See your full Identity Confidence Score with a breakdown of what your Digital Twin can and cannot yet discuss confidently.',
+  },
+};
 
-  const answeredIn = (mod: string) =>
-    responses.filter(r => r.module === mod && (r.answer_text?.trim() || r.answer_audio_transcript?.trim())).length;
-
-  const rawCount = (type: string) => rawData.filter(r => r.source_type === type).length;
-
-  switch (moduleId) {
-    case 'cv':
-      return cvLoaded
-        ? { label: 'CV uploaded', complete: true }
-        : { label: 'Not uploaded', complete: false };
-    case 'stories': {
-      const done = stories.filter(s => s.situation || s.task || s.action || s.result).length;
-      return done === 0
-        ? { label: '0 / 9 stories', complete: false }
-        : { label: `${done} / 9 ${done === 9 ? '✓' : 'stories'}`, complete: done === 9 };
-    }
-    case 'real_interview': {
-      const done = answeredIn('real_interview');
-      return { label: `${done} / 7 answered`, complete: done === 7 };
-    }
-    case 'recruiter_challenge': {
-      const done = answeredIn('recruiter_challenge');
-      return { label: `${done} / 5 answered`, complete: done === 5 };
-    }
-    case 'objection_handling': {
-      const done = answeredIn('objection_handling');
-      return { label: `${done} / 5 answered`, complete: done === 5 };
-    }
-    case 'interview_transcripts': {
-      const n = rawCount('interview_transcript');
-      return n === 0
-        ? { label: 'Nothing uploaded yet', complete: false }
-        : { label: `${n} transcript${n !== 1 ? 's' : ''} uploaded`, complete: true };
-    }
-    case 'recruiter_feedback': {
-      const n = rawCount('recruiter_feedback');
-      return n === 0
-        ? { label: 'Nothing added yet', complete: false }
-        : { label: `${n} item${n !== 1 ? 's' : ''} added`, complete: true };
-    }
-    case 'professional_artifacts': {
-      const n = rawCount('professional_artifact');
-      return n === 0
-        ? { label: 'Nothing uploaded yet', complete: false }
-        : { label: `${n} artifact${n !== 1 ? 's' : ''} uploaded`, complete: true };
-    }
-    case 'ai_conversations': {
-      const n = rawCount('ai_conversation');
-      return n === 0
-        ? { label: 'Nothing uploaded yet', complete: false }
-        : { label: `${n} export${n !== 1 ? 's' : ''} uploaded`, complete: true };
-    }
-    case 'free_training': {
-      const n = rawCount('free_training');
-      return n === 0
-        ? { label: 'Nothing added yet', complete: false }
-        : { label: `${n} item${n !== 1 ? 's' : ''} added`, complete: true };
-    }
-    default:
-      return { label: '', complete: false };
-  }
-}
-
-// ── Main component ─────────────────────────────────────────────────────────────
+// ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
   name: string;
@@ -200,268 +120,295 @@ interface Props {
 }
 
 export default function TrainingHub({ name, email }: Props) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [mobileMapOpen, setMobileMapOpen] = useState(false);
   const [score, setScore] = useState<ScoreResult | null>(null);
-  const [data, setData] = useState<TrainingData>({
-    stories: [],
-    responses: [],
-    rawData: [],
-    cvLoaded: false,
-  });
-  const [openModule, setOpenModule] = useState<string | null>(null);
-  const [saveConfirmations, setSaveConfirmations] = useState<Record<string, string | null>>({});
+  const [data, setData] = useState<TrainingData>({ stories: [], responses: [], rawData: [], cvLoaded: false });
+  const [careerGoal, setCareerGoal] = useState<string | null>(null);
+  const [analysisExists, setAnalysisExists] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saveConfirmations, setSaveConfirmations] = useState<Record<string, string | null>>({});
+
+  // Prevents auto-step re-triggering on every fetchAll
+  const initialStepRef = useRef(false);
 
   const fetchAll = useCallback(async () => {
     try {
-      const [scoreRes, storiesRes, responsesRes, rawRes, cvRes] = await Promise.all([
+      const [scoreRes, storiesRes, responsesRes, rawRes, cvRes, goalRes, analysisRes] = await Promise.all([
         fetch('/api/training/score'),
         fetch('/api/training/stories'),
         fetch('/api/training/responses'),
         fetch('/api/training/raw-data'),
         fetch('/api/training/cv'),
+        fetch('/api/training/career-goal'),
+        fetch('/api/training/analyze'),
       ]);
 
-      const [scoreData, storiesData, responsesData, rawData, cvData] = await Promise.all([
+      const [scoreData, storiesData, responsesData, rawData, cvData, goalData, analysisData] = await Promise.all([
         scoreRes.json(),
         storiesRes.json(),
         responsesRes.json(),
         rawRes.json(),
         cvRes.json(),
+        goalRes.json(),
+        analysisRes.json(),
       ]);
+
+      const cvLoaded = !!cvData.cvData;
+      const goal = goalData.career_goal ?? null;
+      const hasAnalysis = !!analysisData.analysis;
 
       setScore(scoreData);
       setData({
         stories: storiesData.stories ?? [],
         responses: responsesData.responses ?? [],
         rawData: rawData.items ?? [],
-        cvLoaded: !!cvData.cvData,
+        cvLoaded,
       });
+      setCareerGoal(goal);
+      setAnalysisExists(hasAnalysis);
+
+      // On first load only, jump to the first incomplete step
+      if (!initialStepRef.current) {
+        initialStepRef.current = true;
+        if (!cvLoaded) setCurrentStep(1);
+        else if (!goal) setCurrentStep(2);
+        else if (!hasAnalysis) setCurrentStep(3);
+      }
     } catch (err) {
       console.error('[TrainingHub] fetch error', err);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
-  // Called by module components after a successful save
   const onSaved = useCallback((moduleId: string, message?: string) => {
     setSaveConfirmations(prev => ({
       ...prev,
-      [moduleId]: message ?? 'Your AI just learned something new.',
+      [moduleId]: message ?? 'Your Digital Twin just learned something new.',
     }));
     fetchAll();
-    // Clear after 4s so the effect re-triggers next save
-    setTimeout(() => {
-      setSaveConfirmations(prev => ({ ...prev, [moduleId]: null }));
-    }, 4000);
+    setTimeout(() => setSaveConfirmations(prev => ({ ...prev, [moduleId]: null })), 4000);
   }, [fetchAll]);
 
-  const toggleModule = (id: string) =>
-    setOpenModule(prev => (prev === id ? null : id));
+  const advance = () => setCurrentStep(s => Math.min(s + 1, 10));
+  const back = () => setCurrentStep(s => Math.max(s - 1, 1));
+
+  // ── Step state computation for sidebar ───────────────────────────────────────
+
+  const stepStates: StepState[] = JOURNEY_STEPS.map(step => {
+    if (step.number === currentStep) return 'current';
+    switch (step.number) {
+      case 1: return data.cvLoaded ? 'completed' : 'upcoming';
+      case 2: return careerGoal ? 'completed' : 'upcoming';
+      case 3:
+        if (analysisExists) return 'completed';
+        return (data.cvLoaded && careerGoal) ? 'needs-evidence' : 'upcoming';
+      default:
+        return currentStep > step.number ? 'completed' : 'upcoming';
+    }
+  });
+
+  // ── Step renderer ─────────────────────────────────────────────────────────────
+
+  const renderStep = () => {
+    switch (currentStep) {
+      // ── Step 1: Import CV ────────────────────────────────────────────────────
+      case 1:
+        return (
+          <div className="max-w-xl">
+            <StepHeader number={1} title="Let's start with what you have." subtitle="Upload your CV and we'll take it from there." />
+            <CvUpload data={data} onSaved={onSaved} />
+            {saveConfirmations.cv && (
+              <p className="mt-3 text-xs text-green-400">{saveConfirmations.cv}</p>
+            )}
+            {data.cvLoaded && (
+              <button onClick={advance} className={CONTINUE_BTN + ' mt-6'}>
+                Continue →
+              </button>
+            )}
+          </div>
+        );
+
+      // ── Step 2: Career Goal ──────────────────────────────────────────────────
+      case 2:
+        return (
+          <div className="max-w-xl">
+            <StepHeader number={2} title="What are you trying to achieve?" subtitle="Your Digital Twin will be built around this." />
+            <CareerGoalStep
+              currentGoal={careerGoal}
+              onSaved={goal => { setCareerGoal(goal); advance(); }}
+            />
+          </div>
+        );
+
+      // ── Steps 3-10: Phase 3 placeholders ────────────────────────────────────
+      default: {
+        const meta = STEP_PLACEHOLDER[currentStep];
+        return (
+          <div className="max-w-xl">
+            <div className="mb-1">
+              <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
+                {meta.subtitle} · Step {currentStep} of 10
+              </span>
+            </div>
+            <h1 className="text-xl font-bold text-white mt-1 mb-5">{meta.title}</h1>
+
+            <div className="rounded-xl border border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] p-5 mb-6">
+              <p className="text-sm text-[rgba(255,255,255,0.5)] leading-relaxed">{meta.body}</p>
+            </div>
+
+            <div className="flex gap-3">
+              {currentStep > 1 && (
+                <button onClick={back} className={BACK_BTN}>← Back</button>
+              )}
+              {currentStep < 10 && (
+                <button onClick={advance} className={SKIP_BTN}>Skip for now →</button>
+              )}
+            </div>
+          </div>
+        );
+      }
+    }
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────────────
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center">
-        <div className="text-[rgba(255,255,255,0.3)] text-sm">Loading your training hub…</div>
+        <p className="text-[rgba(255,255,255,0.3)] text-sm">Loading your Digital Twin…</p>
       </div>
     );
   }
 
-  return (
-    <main className="min-h-screen bg-[#0d0f14] px-4 py-10">
-      <div className="w-full max-w-2xl mx-auto">
+  // ── Layout ────────────────────────────────────────────────────────────────────
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-start justify-between gap-4 mb-1">
-            <h1 className="text-xl font-bold text-white">Training Hub</h1>
+  return (
+    <div className="flex h-screen overflow-hidden bg-[#0d0f14]">
+
+      {/* Left: Journey map */}
+      <JourneyMap
+        steps={JOURNEY_STEPS.map((s, i) => ({ number: s.number, label: s.label, state: stepStates[i] }))}
+        currentStep={currentStep}
+        onStepClick={setCurrentStep}
+        confidenceScore={score?.total ?? 0}
+        mobileOpen={mobileMapOpen}
+        onMobileToggle={() => setMobileMapOpen(o => !o)}
+      />
+
+      {/* Right: Main content */}
+      <main className="flex-1 overflow-y-auto flex flex-col min-w-0">
+
+        {/* Top bar */}
+        <header className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-[rgba(255,255,255,0.06)]">
+          <button
+            onClick={() => setMobileMapOpen(true)}
+            className="lg:hidden text-xs text-[rgba(255,255,255,0.38)] hover:text-white transition-colors"
+          >
+            ☰ Journey
+          </button>
+          <span className="hidden lg:block text-xs text-[rgba(255,255,255,0.3)]">
+            Build your Career Digital Twin
+          </span>
+          <div className="flex items-center gap-4">
+            <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.25)]">{name}</span>
             <LogoutButton />
           </div>
-          <p className="text-[rgba(255,255,255,0.4)] text-sm">
-            Welcome back, {name}. Every module you complete makes your AI more authentic.
-          </p>
-        </div>
+        </header>
 
-        {/* Evidence Quality Score */}
-        {score && <EvidenceScore score={score} />}
-
-        {/* Module list */}
-        <div className="flex flex-col gap-3">
-          {MODULE_META.map(mod => {
-            const completion = getCompletionLabel(mod.id, data, score);
-
-            return (
-              <ModuleShell
-                key={mod.id}
-                id={mod.id}
-                title={mod.title}
-                description={mod.description}
-                valueLabel={mod.valueLabel}
-                isHighValue={mod.isHighValue}
-                completionLabel={completion.label}
-                isComplete={completion.complete}
-                isOpen={openModule === mod.id}
-                onToggle={() => toggleModule(mod.id)}
-                saveConfirmation={saveConfirmations[mod.id] ?? null}
-              >
-                {mod.id === 'cv' && (
-                  <CvUpload data={data} onSaved={onSaved} />
-                )}
-                {mod.id === 'stories' && (
-                  <StoryLibrary data={data} onSaved={onSaved} />
-                )}
-                {mod.id === 'real_interview' && (
-                  <OpenResponseModule
-                    moduleId="real_interview"
-                    intro="Answer these questions exactly as you would in a real interview. Don't polish. Don't perform. Your natural language is what your AI needs."
-                    questions={REAL_INTERVIEW_QUESTIONS}
-                    data={data}
-                    onSaved={onSaved}
-                  />
-                )}
-                {mod.id === 'recruiter_challenge' && (
-                  <OpenResponseModule
-                    moduleId="recruiter_challenge"
-                    intro="These are the uncomfortable questions recruiters actually ask. Your AI needs to know how you defend yourself — not a polished answer, but your real one."
-                    questions={RECRUITER_CHALLENGE_QUESTIONS}
-                    data={data}
-                    onSaved={onSaved}
-                  />
-                )}
-                {mod.id === 'objection_handling' && (
-                  <OpenResponseModule
-                    moduleId="objection_handling"
-                    intro="How you handle objections reveals more about your commercial instinct than any CV. Answer as you would in a real client conversation."
-                    questions={OBJECTION_QUESTIONS}
-                    data={data}
-                    onSaved={onSaved}
-                  />
-                )}
-                {mod.id === 'interview_transcripts' && (
-                  <UploadModule
-                    moduleId="interview_transcripts"
-                    sourceType="interview_transcript"
-                    intro="A single real interview transcript is worth more than all the forms in this system combined. It shows how you actually think, speak, and perform under real pressure."
-                    instructions={`If any interviews were recorded (Teams, Zoom, Meet):
-1. Find the recording in your email or calendar
-2. Transcribe free with: Otter.ai, Fireflies, or your video platform's built-in feature
-3. Export as TXT or PDF and upload here
-
-No recording? Write a reconstruction — even rough notes on what you were asked and how you answered are valuable.`}
-                    data={data}
-                    onSaved={onSaved}
-                    saveMessage="Transcript processed. This is the most authentic training data your AI has received."
-                  />
-                )}
-                {mod.id === 'recruiter_feedback' && (
-                  <UploadModule
-                    moduleId="recruiter_feedback"
-                    sourceType="recruiter_feedback"
-                    intro="External assessment of your profile — even rejections — contains signal your AI needs. This is how others see you, not how you see yourself."
-                    instructions={`Search your inbox for:
-- Post-interview feedback emails
-- Recruiter debrief messages
-- Career coach notes or summaries
-- Any message that assessed your candidacy
-
-Copy/paste directly or upload as PDF.`}
-                    data={data}
-                    onSaved={onSaved}
-                    saveMessage="Feedback added. Your AI now has an external perspective on you."
-                  />
-                )}
-                {mod.id === 'professional_artifacts' && (
-                  <UploadModule
-                    moduleId="professional_artifacts"
-                    sourceType="professional_artifact"
-                    intro="What you have created reveals how you think better than any CV or form."
-                    instructions="Upload LinkedIn posts, project documentation, presentations, case studies, cover letters, portfolio material, or paste a personal website URL."
-                    artifactTypes={[
-                      { value: 'post', label: 'LinkedIn post' },
-                      { value: 'project', label: 'Project / case study' },
-                      { value: 'cover_letter', label: 'Cover letter' },
-                      { value: 'presentation', label: 'Presentation' },
-                      { value: 'application', label: 'Job application' },
-                      { value: 'other', label: 'Other' },
-                    ]}
-                    data={data}
-                    onSaved={onSaved}
-                    saveMessage="Artifact added. Your AI just saw how you work."
-                  />
-                )}
-                {mod.id === 'ai_conversations' && (
-                  <UploadModule
-                    moduleId="ai_conversations"
-                    sourceType="ai_conversation"
-                    intro="Long conversations with AI assistants about your career capture your real reasoning process. This is among the most valuable unstructured data you can give your AI."
-                    instructions={`Export conversations where you discussed career decisions, interview prep, professional challenges, or goals.
-
-- ChatGPT: Settings → Data Controls → Export Data
-- Claude: Download conversation from chat menu
-
-Upload the exported file (TXT, JSON) or paste directly.`}
-                    data={data}
-                    onSaved={onSaved}
-                    saveMessage="Conversation added. Your AI just saw how you reason."
-                  />
-                )}
-                {mod.id === 'free_training' && (
-                  <UploadModule
-                    moduleId="free_training"
-                    sourceType="free_training"
-                    intro="Raw notes, a philosophy, context that doesn't fit anywhere else. Exact wording matters — don't clean it up."
-                    instructions=""
-                    data={data}
-                    onSaved={onSaved}
-                    saveMessage="Added. Your AI will factor this in."
-                  />
-                )}
-              </ModuleShell>
-            );
-          })}
+        {/* Step content */}
+        <div className="flex-1 px-6 py-8">
+          {renderStep()}
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center">
-          <p className="text-[10px] text-[rgba(255,255,255,0.2)]">
-            {email} · Training saves automatically
+        <footer className="shrink-0 px-6 pb-5">
+          <p className="text-[10px] text-[rgba(255,255,255,0.18)] text-center">
+            {email} · A professional representation built from evidence rather than assumptions.
           </p>
-        </div>
-      </div>
-    </main>
+        </footer>
+      </main>
+    </div>
   );
 }
 
-// ── Question data for open-response modules ──────────────────────────────────
+// ── Button styles ─────────────────────────────────────────────────────────────
 
-const REAL_INTERVIEW_QUESTIONS = [
-  { question: 'Tell me about yourself.', microcopy: 'Your natural answer — not a rehearsed pitch. What do you actually say?' },
-  { question: 'Why are you looking for a new role?', microcopy: 'Honest and grounded. Recruiters hear rehearsed answers constantly.' },
-  { question: 'Tell me about a time you failed.', microcopy: 'Pick a real one. How you talk about failure says more than the failure itself.' },
-  { question: "What's your biggest weakness?", microcopy: 'Avoid clichés. Pick something real and show how you manage it.' },
-  { question: 'Where do you see yourself in three years?', microcopy: 'Be honest about your direction — vague answers are forgettable.' },
-  { question: 'Why do you want to work in this industry?', microcopy: 'What actually draws you here? The real reason matters.' },
-  { question: 'What makes you different from other candidates?', microcopy: "Don't perform. What do you genuinely bring that others don't?" },
-];
+const CONTINUE_BTN = 'inline-flex px-6 py-2.5 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white text-sm font-medium transition-colors';
+const BACK_BTN = 'inline-flex px-5 py-2.5 rounded-xl border border-[rgba(255,255,255,0.10)] text-[rgba(255,255,255,0.5)] hover:text-white text-sm transition-colors';
+const SKIP_BTN = 'inline-flex px-5 py-2.5 rounded-xl bg-[rgba(255,255,255,0.06)] hover:bg-[rgba(255,255,255,0.10)] text-[rgba(255,255,255,0.6)] hover:text-white text-sm transition-colors';
 
-const RECRUITER_CHALLENGE_QUESTIONS = [
-  { question: 'Your CV shows only a few months in SaaS. Why are you qualified for this role?', microcopy: 'This is a real objection. How do you actually handle it?' },
-  { question: 'Why should we hire you over someone with more direct experience?', microcopy: 'Make your case. Not a polished one — your real one.' },
-  { question: "You've moved roles quite frequently. How do we know you'll stay?", microcopy: "Answer directly. Don't deflect or over-explain." },
-  { question: "Your background is operations, not sales. Why do you think you can sell?", microcopy: 'Show your commercial instinct through how you argue this.' },
-  { question: "What's the gap between where you are now and where this role needs you to be?", microcopy: 'Honesty here builds more trust than a defensive answer.' },
-];
+// ── Sub-components ────────────────────────────────────────────────────────────
 
-const OBJECTION_QUESTIONS = [
-  { question: 'The client says your solution is too expensive.', microcopy: 'Answer as you would in a real client conversation — not a training exercise.' },
-  { question: 'The GM refuses to change the current process.', microcopy: 'How do you handle resistance from someone with authority?' },
-  { question: 'The client is happy with their existing vendor.', microcopy: "What's your honest approach when the door seems closed?" },
-  { question: 'The implementation is taking longer than expected and the client is frustrated.', microcopy: 'How you manage this moment reveals your commercial instinct.' },
-  { question: "The client asks for a feature you don't have.", microcopy: "What do you actually say? Don't script it." },
-];
+function StepHeader({ number, title, subtitle }: { number: number; title: string; subtitle: string }) {
+  return (
+    <div className="mb-6">
+      <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
+        Step {number} of 10
+      </span>
+      <h1 className="text-xl font-bold text-white mt-1 mb-1">{title}</h1>
+      <p className="text-sm text-[rgba(255,255,255,0.5)]">{subtitle}</p>
+    </div>
+  );
+}
 
-// Re-export for use in module components
-export type { ScoreResult };
-export { MODULE_META };
+function CareerGoalStep({
+  currentGoal,
+  onSaved,
+}: {
+  currentGoal: string | null;
+  onSaved: (goal: string) => void;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function handleSelect(goal: string) {
+    setSaving(true);
+    setError('');
+    try {
+      const res = await fetch('/api/training/career-goal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ career_goal: goal }),
+      });
+      if (!res.ok) {
+        const j = await res.json() as { error?: string };
+        setError(j.error ?? 'Failed to save. Please try again.');
+        return;
+      }
+      onSaved(goal);
+    } catch {
+      setError('Failed to save. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div>
+      <div className="flex flex-col gap-2 mb-4">
+        {CAREER_GOALS.map(goal => (
+          <button
+            key={goal}
+            onClick={() => !saving && handleSelect(goal)}
+            disabled={saving}
+            className={[
+              'text-left px-4 py-3.5 rounded-xl border text-sm transition-all',
+              currentGoal === goal
+                ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
+                : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.6)]',
+              saving ? 'opacity-50 cursor-not-allowed' : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
+            ].join(' ')}
+          >
+            {goal}
+          </button>
+        ))}
+      </div>
+      {saving && <p className="text-xs text-[rgba(255,255,255,0.4)]">Saving…</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+    </div>
+  );
+}
