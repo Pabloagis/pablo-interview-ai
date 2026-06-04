@@ -263,46 +263,57 @@ export default function TrainingHub({ name, email }: Props) {
         );
       }
 
-      case 6:
+      case 6: {
+        const opts6 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.career_narrative ?? null;
         return (
           <Step6CareerNarrative
-            analysis={analysis}
             data={data}
+            moduleOptions={opts6}
             onSaved={onSaved}
             onAdvance={advance}
             onBack={back}
           />
         );
+      }
 
-      case 7:
+      case 7: {
+        const opts7 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.story_evidence ?? null;
         return (
           <Step7StoryEvidence
             data={data}
+            moduleOptions={opts7}
             onSaved={onSaved}
             onAdvance={advance}
             onBack={back}
           />
         );
+      }
 
-      case 8:
+      case 8: {
+        const opts8 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.communication_style ?? null;
         return (
           <Step8CommunicationStyle
             data={data}
+            moduleOptions={opts8}
             onSaved={onSaved}
             onAdvance={advance}
             onBack={back}
           />
         );
+      }
 
-      case 9:
+      case 9: {
+        const opts9 = ((candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined))?.interview_readiness ?? null;
         return (
           <Step9InterviewReadiness
             data={data}
+            moduleOptions={opts9}
             onSaved={onSaved}
             onAdvance={advance}
             onBack={back}
           />
         );
+      }
 
       case 10:
         return (

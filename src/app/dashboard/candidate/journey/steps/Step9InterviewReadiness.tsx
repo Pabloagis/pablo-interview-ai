@@ -1,62 +1,69 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { TrainingData } from '../../TrainingHub';
+import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
 import VoiceRecorder from '../../components/VoiceRecorder';
 
 interface Props {
   data: TrainingData;
+  moduleOptions: GeneratedModuleOptions | null;
   onSaved: (moduleId: string, message?: string) => void;
   onAdvance: () => void;
   onBack: () => void;
 }
 
-// Matches exact strings in training-constants.ts for score tracking
-const ALL_QUESTIONS = [
-  // Real interview (excludes "Tell me about yourself" — covered in Step 6)
-  { module: 'real_interview',     q: 'Why are you looking for a new role?',                                           hint: 'Honest and grounded. Recruiters hear rehearsed answers constantly.' },
-  { module: 'real_interview',     q: 'Tell me about a time you failed.',                                              hint: 'Pick a real one. How you talk about failure says more than the failure itself.' },
-  { module: 'real_interview',     q: "What's your biggest weakness?",                                                 hint: 'Avoid clichés. Pick something real and show how you manage it.' },
-  { module: 'real_interview',     q: 'Where do you see yourself in three years?',                                     hint: 'Be honest about your direction — vague answers are forgettable.' },
-  { module: 'real_interview',     q: 'Why do you want to work in this industry?',                                     hint: 'What actually draws you here? The real reason matters.' },
-  { module: 'real_interview',     q: 'What makes you different from other candidates?',                               hint: "Don't perform. What do you genuinely bring that others don't?" },
-  // Recruiter challenge
+// Fallback questions matching exact strings in training-constants.ts for score tracking
+const FALLBACK_QUESTIONS = [
+  { module: 'real_interview',      q: 'Why are you looking for a new role?',                                           hint: 'Honest and grounded. Recruiters hear rehearsed answers constantly.' },
+  { module: 'real_interview',      q: 'Tell me about a time you failed.',                                              hint: 'Pick a real one. How you talk about failure says more than the failure itself.' },
+  { module: 'real_interview',      q: "What's your biggest weakness?",                                                 hint: 'Avoid clichés. Pick something real and show how you manage it.' },
   { module: 'recruiter_challenge', q: 'Your CV shows only a few months in SaaS. Why are you qualified for this role?', hint: 'This is a real objection. How do you actually handle it?' },
   { module: 'recruiter_challenge', q: 'Why should we hire you over someone with more direct experience?',               hint: 'Make your case. Not a polished one — your real one.' },
-  { module: 'recruiter_challenge', q: "You've moved roles quite frequently. How do we know you'll stay?",               hint: "Answer directly. Don't deflect or over-explain." },
-  { module: 'recruiter_challenge', q: 'Your background is operations, not sales. Why do you think you can sell?',       hint: 'Show your commercial instinct through how you argue this.' },
   { module: 'recruiter_challenge', q: "What's the gap between where you are now and where this role needs you to be?",  hint: 'Honesty here builds more trust than a defensive answer.' },
-] as const;
+];
 
-type QuestionKey = `${string}::${string}`;
+interface Question { module: string; q: string; hint: string }
 
-export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBack }: Props) {
-  const makeKey = (m: string, q: string): QuestionKey => `${m}::${q}` as QuestionKey;
+function QuestionsForm({
+  questions,
+  data,
+  coaching_tip,
+  onSaved,
+  onAdvance,
+  onBack,
+}: {
+  questions: Question[];
+  data: TrainingData;
+  coaching_tip?: string;
+  onSaved: Props['onSaved'];
+  onAdvance: () => void;
+  onBack: () => void;
+}) {
+  const makeKey = (m: string, q: string) => `${m}::${q}`;
 
   const [qIdx, setQIdx] = useState(() => {
-    const first = ALL_QUESTIONS.findIndex(({ module: m, q }) => {
-      const existing = data.responses.find(r => r.module === m && r.question === q);
-      return !(existing?.answer_text?.trim() || existing?.answer_audio_transcript?.trim());
+    const first = questions.findIndex(({ module: m, q }) => {
+      const ex = data.responses.find(r => r.module === m && r.question === q);
+      return !(ex?.answer_text?.trim() || ex?.answer_audio_transcript?.trim());
     });
     return first >= 0 ? first : 0;
   });
 
-  const [answers, setAnswers] = useState<Record<QuestionKey, string>>(
-    () => Object.fromEntries(
-      ALL_QUESTIONS.map(({ module: m, q }) => {
-        const existing = data.responses.find(r => r.module === m && r.question === q);
-        return [makeKey(m, q), existing?.answer_text ?? ''];
+  const [answers, setAnswers] = useState<Record<string, string>>(
+    Object.fromEntries(
+      questions.map(({ module: m, q }) => {
+        const ex = data.responses.find(r => r.module === m && r.question === q);
+        return [makeKey(m, q), ex?.answer_text ?? ''];
       })
-    ) as Record<QuestionKey, string>
+    )
   );
-
   const [saving, setSaving] = useState(false);
 
-  const current = ALL_QUESTIONS[qIdx];
+  const current = questions[qIdx];
   const key = makeKey(current.module, current.q);
-  const isLast = qIdx === ALL_QUESTIONS.length - 1;
-  const answeredCount = ALL_QUESTIONS.filter(({ module: m, q }) => answers[makeKey(m, q)]?.trim()).length;
-  const sectionLabel = current.module === 'real_interview' ? 'Real Interview' : 'Recruiter Challenge';
+  const isLast = qIdx === questions.length - 1;
+  const answeredCount = questions.filter(({ module: m, q }) => answers[makeKey(m, q)]?.trim()).length;
 
   async function saveAndAdvance() {
     const text = answers[key]?.trim();
@@ -72,8 +79,22 @@ export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBa
       } catch { /* silent */ }
       setSaving(false);
     }
-    if (isLast) onAdvance();
-    else setQIdx(i => i + 1);
+
+    if (isLast) {
+      const answeredPairs = Object.fromEntries(
+        questions.map(({ module: m, q }) => [q, answers[makeKey(m, q)] ?? ''])
+      );
+
+      fetch('/api/training/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ interview_answers: answeredPairs }),
+      }).catch(() => {});
+
+      onAdvance();
+    } else {
+      setQIdx(i => i + 1);
+    }
   }
 
   function skip() {
@@ -88,21 +109,20 @@ export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBa
           Interview Readiness · Step 9 of 10
         </span>
         <h1 className="text-xl font-bold text-white mt-1 mb-1">Pressure-test your Digital Twin.</h1>
-        <p className="text-sm text-[rgba(255,255,255,0.4)]">
-          {answeredCount} of {ALL_QUESTIONS.length} answered.
-        </p>
+        <p className="text-sm text-[rgba(255,255,255,0.4)]">{answeredCount} of {questions.length} answered.</p>
       </div>
+
+      {coaching_tip && (
+        <p className="text-xs text-[rgba(255,255,255,0.38)] italic mb-4">💡 {coaching_tip}</p>
+      )}
 
       {/* Progress track */}
       <div className="flex gap-1 mb-5">
-        {ALL_QUESTIONS.map((item, i) => (
-          <button
-            key={i}
-            onClick={() => setQIdx(i)}
+        {questions.map((item, i) => (
+          <button key={i} onClick={() => setQIdx(i)}
             className={`h-1.5 rounded-full transition-all flex-1 ${
               i === qIdx ? 'bg-[#4060d0]' :
-              answers[makeKey(item.module, item.q)]?.trim() ? 'bg-green-500/50' :
-              'bg-[rgba(255,255,255,0.10)]'
+              answers[makeKey(item.module, item.q)]?.trim() ? 'bg-green-500/50' : 'bg-[rgba(255,255,255,0.10)]'
             }`}
           />
         ))}
@@ -111,7 +131,7 @@ export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBa
       <div className="rounded-xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-5 mb-4">
         <div className="mb-3">
           <span className="text-[10px] text-[rgba(255,255,255,0.3)] uppercase tracking-wider">
-            {sectionLabel} · {qIdx + 1} of {ALL_QUESTIONS.length}
+            Question {qIdx + 1} of {questions.length}
           </span>
           <p className="text-sm font-medium text-white mt-1 mb-0.5">{current.q}</p>
           <p className="text-xs text-[rgba(255,255,255,0.35)] italic">{current.hint}</p>
@@ -124,12 +144,7 @@ export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBa
           className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-lg px-3 py-2 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors mb-3"
         />
         <VoiceRecorder
-          onTranscript={t =>
-            setAnswers(prev => ({
-              ...prev,
-              [key]: prev[key] ? prev[key] + ' ' + t : t,
-            }))
-          }
+          onTranscript={t => setAnswers(prev => ({ ...prev, [key]: prev[key] ? prev[key] + ' ' + t : t }))}
         />
       </div>
 
@@ -146,6 +161,59 @@ export default function Step9InterviewReadiness({ data, onSaved, onAdvance, onBa
         )}
       </div>
     </div>
+  );
+}
+
+export default function Step9InterviewReadiness({ data, moduleOptions, onSaved, onAdvance, onBack }: Props) {
+  const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
+  const [generating, setGenerating] = useState(!moduleOptions);
+  const generatingRef = useRef(false);
+
+  useEffect(() => {
+    if (generatedOpts || generatingRef.current) return;
+    generatingRef.current = true;
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'interview_readiness' }),
+    })
+      .then(r => r.json())
+      .then((j: { options?: GeneratedModuleOptions }) => { if (j.options) setGeneratedOpts(j.options); })
+      .catch(() => {})
+      .finally(() => setGenerating(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (generating && !generatedOpts) {
+    return (
+      <div className="max-w-xl">
+        <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
+          Interview Readiness · Step 9 of 10
+        </span>
+        <h1 className="text-xl font-bold text-white mt-1 mb-8">Pressure-test your Digital Twin.</h1>
+        <div className="flex items-center gap-3 py-6 text-sm text-[rgba(255,255,255,0.4)]">
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          Personalising your next step…
+        </div>
+      </div>
+    );
+  }
+
+  // Adaptive questions use 'interview_readiness' module; fallback uses original modules for score tracking
+  const questions: Question[] = generatedOpts?.options.map(o => ({
+    module: 'interview_readiness',
+    q: o.label,
+    hint: o.detail,
+  })) ?? FALLBACK_QUESTIONS;
+
+  return (
+    <QuestionsForm
+      questions={questions}
+      data={data}
+      coaching_tip={generatedOpts?.coaching_tip}
+      onSaved={onSaved}
+      onAdvance={onAdvance}
+      onBack={onBack}
+    />
   );
 }
 

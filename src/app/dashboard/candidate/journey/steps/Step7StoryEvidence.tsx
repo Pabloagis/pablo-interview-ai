@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { TrainingData, Story } from '../../TrainingHub';
+import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
 import { STORY_TYPES, STORY_OPTIONS } from '../../modules/storyData';
 
 interface Props {
   data: TrainingData;
+  moduleOptions: GeneratedModuleOptions | null;
   onSaved: (moduleId: string, message?: string) => void;
   onAdvance: () => void;
   onBack: () => void;
@@ -18,7 +20,6 @@ const STAR_FIELDS: { key: keyof Omit<Story, 'id' | 'story_type'>; label: string;
   { key: 'result',    label: 'Result',          hint: 'What happened? Add a metric if you have one — even approximate.' },
 ];
 
-// Single story editor — replicates StoryLibrary's editing patterns for one-at-a-time UX
 function SingleStoryEditor({
   storyType,
   initial,
@@ -91,8 +92,26 @@ function SingleStoryEditor({
   );
 }
 
-export default function Step7StoryEvidence({ data, onSaved, onAdvance, onBack }: Props) {
+export default function Step7StoryEvidence({ data, moduleOptions, onSaved, onAdvance, onBack }: Props) {
+  const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
+  const [generating, setGenerating] = useState(false);
+  const generatingRef = useRef(false);
   const [activeIdx, setActiveIdx] = useState(0);
+
+  useEffect(() => {
+    if (generatedOpts || generatingRef.current) return;
+    generatingRef.current = true;
+    setGenerating(true);
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'story_evidence' }),
+    })
+      .then(r => r.json())
+      .then((j: { options?: GeneratedModuleOptions }) => { if (j.options) setGeneratedOpts(j.options); })
+      .catch(() => {})
+      .finally(() => setGenerating(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getStory = (type: string): Story | null =>
     data.stories.find(s => s.story_type === type) ?? null;
@@ -105,6 +124,22 @@ export default function Step7StoryEvidence({ data, onSaved, onAdvance, onBack }:
   const completedCount = STORY_TYPES.filter(t => isStarted(t.id)).length;
   const activeType = STORY_TYPES[activeIdx];
 
+  function handleAdvance() {
+    fetch('/api/training/context', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ stories_started: completedCount }),
+    }).catch(() => {});
+
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'communication_style' }),
+    }).catch(() => {});
+
+    onAdvance();
+  }
+
   return (
     <div className="max-w-xl">
       <div className="mb-4">
@@ -116,6 +151,28 @@ export default function Step7StoryEvidence({ data, onSaved, onAdvance, onBack }:
           {completedCount} of {STORY_TYPES.length} stories added. Complete as many as you have.
         </p>
       </div>
+
+      {/* Adaptive recommendation banner */}
+      {(generatedOpts?.coaching_tip || generatedOpts?.suggested_question) && (
+        <div className="rounded-xl border border-[rgba(64,96,208,0.18)] bg-[rgba(64,96,208,0.04)] p-4 mb-5">
+          {generatedOpts.coaching_tip && (
+            <p className="text-xs text-[rgba(255,255,255,0.45)] italic mb-2">💡 {generatedOpts.coaching_tip}</p>
+          )}
+          {generatedOpts.suggested_question && (
+            <p className="text-sm text-white">
+              <span className="text-[10px] text-[#6080f0] uppercase tracking-wider font-semibold block mb-0.5">Start here</span>
+              {generatedOpts.suggested_question}
+            </p>
+          )}
+        </div>
+      )}
+
+      {generating && !generatedOpts && (
+        <div className="flex items-center gap-3 mb-4 text-sm text-[rgba(255,255,255,0.4)]">
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          Personalising your next step…
+        </div>
+      )}
 
       {/* Story type selector chips */}
       <div className="flex gap-1.5 flex-wrap mb-5">
@@ -145,19 +202,13 @@ export default function Step7StoryEvidence({ data, onSaved, onAdvance, onBack }:
               onClick={() => setActiveIdx(i => Math.max(i - 1, 0))}
               disabled={activeIdx === 0}
               className="px-2 py-1 text-[10px] text-[rgba(255,255,255,0.4)] hover:text-white disabled:opacity-20 transition-colors"
-            >
-              ←
-            </button>
-            <span className="text-[10px] text-[rgba(255,255,255,0.3)]">
-              {activeIdx + 1} / {STORY_TYPES.length}
-            </span>
+            >←</button>
+            <span className="text-[10px] text-[rgba(255,255,255,0.3)]">{activeIdx + 1} / {STORY_TYPES.length}</span>
             <button
               onClick={() => setActiveIdx(i => Math.min(i + 1, STORY_TYPES.length - 1))}
               disabled={activeIdx === STORY_TYPES.length - 1}
               className="px-2 py-1 text-[10px] text-[rgba(255,255,255,0.4)] hover:text-white disabled:opacity-20 transition-colors"
-            >
-              →
-            </button>
+            >→</button>
           </div>
         </div>
         <SingleStoryEditor
@@ -171,8 +222,8 @@ export default function Step7StoryEvidence({ data, onSaved, onAdvance, onBack }:
       <div className="flex gap-3">
         <button onClick={onBack} className={BTN_BACK}>← Back</button>
         {completedCount > 0
-          ? <button onClick={onAdvance} className={BTN_PRIMARY}>Continue →</button>
-          : <button onClick={onAdvance} className={BTN_SKIP}>Skip for now →</button>
+          ? <button onClick={handleAdvance} className={BTN_PRIMARY}>Continue →</button>
+          : <button onClick={handleAdvance} className={BTN_SKIP}>Skip for now →</button>
         }
       </div>
     </div>
