@@ -9,15 +9,16 @@ interface Props {
   moduleOptions: GeneratedModuleOptions | null;
   onAdvance: () => void;
   onBack: () => void;
-  onNavigate: (step: number) => void;
+  onNavigate: (step: number) => void; // kept for API compatibility, not used internally
 }
 
-type ConcernStatus = 'pending' | 'building' | 'skipped';
+type ConcernStatus = 'pending' | 'building' | 'responded' | 'skipped';
 
 interface ConcernItem {
   concern: string;
   why: string;
   status: ConcernStatus;
+  response: string;
 }
 
 function buildItems(
@@ -25,26 +26,22 @@ function buildItems(
   analysis: AnalysisResult | null
 ): ConcernItem[] {
   if (opts?.options.length) {
-    return opts.options.map(o => ({
-      concern: o.label,
-      why: o.detail,
-      status: 'pending',
-    }));
+    return opts.options.map(o => ({ concern: o.label, why: o.detail, status: 'pending', response: '' }));
   }
   return (analysis?.objections ?? []).map(obj => ({
     concern: obj.concern,
     why: obj.why,
     status: 'pending',
+    response: '',
   }));
 }
 
-export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdvance, onBack, onNavigate }: Props) {
+export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdvance, onBack }: Props) {
   const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
   const [items, setItems] = useState<ConcernItem[]>(() => buildItems(moduleOptions, analysis));
   const [generating, setGenerating] = useState(false);
   const generatingRef = useRef(false);
 
-  // Trigger generation if no items from either source
   useEffect(() => {
     if (items.length > 0 || generatingRef.current) return;
     generatingRef.current = true;
@@ -65,24 +62,22 @@ export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdva
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const allDecided = items.length > 0 && items.every(i => i.status !== 'pending');
+  const allDecided = items.length > 0 && items.every(i => i.status === 'responded' || i.status === 'skipped');
 
   function update(idx: number, patch: Partial<ConcernItem>) {
     setItems(prev => prev.map((item, i) => i === idx ? { ...item, ...patch } : item));
   }
 
   function handleAdvance() {
-    const addressed = items.filter(i => i.status === 'building').map(i => i.concern);
+    const addressed = items.filter(i => i.status === 'responded').map(i => ({ concern: i.concern, response: i.response }));
     const skipped   = items.filter(i => i.status === 'skipped').map(i => i.concern);
 
-    // Update candidate_context
     fetch('/api/training/context', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ recruiter_concerns: { addressed, skipped } }),
     }).catch(() => {});
 
-    // Pre-generate next adaptive step
     fetch('/api/generate-module-options', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -133,21 +128,24 @@ export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdva
             <div
               key={idx}
               className={`rounded-xl border p-4 transition-colors ${
-                item.status === 'building' ? 'border-[rgba(64,96,208,0.3)] bg-[rgba(64,96,208,0.04)]' :
-                item.status === 'skipped'  ? 'border-[rgba(255,255,255,0.05)] opacity-40' :
+                item.status === 'responded' ? 'border-[rgba(96,192,128,0.25)] bg-[rgba(96,192,128,0.04)]' :
+                item.status === 'building'  ? 'border-[rgba(64,96,208,0.35)] bg-[rgba(64,96,208,0.04)]' :
+                item.status === 'skipped'   ? 'border-[rgba(255,255,255,0.05)] opacity-40' :
                 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)]'
               }`}
             >
+              {/* Concern header */}
               <div className="flex items-start gap-2 mb-2">
                 <span className="text-xs text-amber-400 shrink-0 mt-0.5">⚠</span>
                 <p className="text-sm text-white font-medium leading-snug">{item.concern}</p>
               </div>
               <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed mb-3 pl-4">{item.why}</p>
 
+              {/* Pending — show action buttons */}
               {item.status === 'pending' && (
                 <div className="flex gap-2 flex-wrap pl-4">
                   <button
-                    onClick={() => { update(idx, { status: 'building' }); onNavigate(9); }}
+                    onClick={() => update(idx, { status: 'building' })}
                     className="px-3 py-1.5 rounded-lg bg-[rgba(64,96,208,0.15)] border border-[rgba(64,96,208,0.3)] text-[#6080f0] text-xs hover:bg-[rgba(64,96,208,0.25)] transition-colors"
                   >
                     Build a response →
@@ -161,11 +159,65 @@ export default function Step5RecruiterConcerns({ analysis, moduleOptions, onAdva
                 </div>
               )}
 
+              {/* Building — inline textarea */}
               {item.status === 'building' && (
-                <p className="text-xs text-[#6080f0] pl-4">Working on this in Interview Readiness.</p>
+                <div className="pl-4">
+                  <p className="text-[10px] text-[rgba(255,255,255,0.35)] mb-2">
+                    How would you respond to this in an interview?
+                  </p>
+                  <textarea
+                    value={item.response}
+                    onChange={e => update(idx, { response: e.target.value })}
+                    rows={4}
+                    autoFocus
+                    placeholder="Write your honest, natural response — not a polished script…"
+                    className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(64,96,208,0.3)] rounded-lg px-3 py-2 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.6)] transition-colors mb-3"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => update(idx, { status: 'responded' })}
+                      disabled={!item.response.trim()}
+                      className="px-3 py-1.5 rounded-lg bg-[rgba(96,192,128,0.15)] border border-[rgba(96,192,128,0.3)] text-green-400 text-xs hover:bg-[rgba(96,192,128,0.25)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      Save response ✓
+                    </button>
+                    <button
+                      onClick={() => update(idx, { status: 'pending', response: '' })}
+                      className="px-3 py-1.5 text-[rgba(255,255,255,0.35)] text-xs hover:text-white transition-colors"
+                    >
+                      Never mind
+                    </button>
+                  </div>
+                </div>
               )}
+
+              {/* Responded */}
+              {item.status === 'responded' && (
+                <div className="pl-4">
+                  <p className="text-xs text-green-400 mb-1">✓ Response saved</p>
+                  <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed italic">
+                    &ldquo;{item.response.slice(0, 120)}{item.response.length > 120 ? '…' : ''}&rdquo;
+                  </p>
+                  <button
+                    onClick={() => update(idx, { status: 'building' })}
+                    className="mt-2 text-[10px] text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
+                  >
+                    Edit
+                  </button>
+                </div>
+              )}
+
+              {/* Skipped */}
               {item.status === 'skipped' && (
-                <p className="text-xs text-[rgba(255,255,255,0.25)] pl-4">Flagged for later.</p>
+                <div className="flex items-center justify-between pl-4">
+                  <p className="text-xs text-[rgba(255,255,255,0.25)]">Flagged for later.</p>
+                  <button
+                    onClick={() => update(idx, { status: 'pending' })}
+                    className="text-[10px] text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
+                  >
+                    Reconsider
+                  </button>
+                </div>
               )}
             </div>
           ))}
