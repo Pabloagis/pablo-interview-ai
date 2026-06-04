@@ -14,6 +14,7 @@ import Step9InterviewReadiness from './journey/steps/Step9InterviewReadiness';
 import Step10FinalReview from './journey/steps/Step10FinalReview';
 import type { ScoreResult } from '@/app/api/training/score/route';
 import type { AnalysisResult } from '@/app/api/training/analyze/route';
+import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
 
 // ── Types shared with module components ───────────────────────────────────────
 
@@ -91,6 +92,7 @@ export default function TrainingHub({ name, email }: Props) {
   const [data, setData] = useState<TrainingData>({ stories: [], responses: [], rawData: [], cvLoaded: false });
   const [careerGoal, setCareerGoal] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
+  const [candidateContext, setCandidateContext] = useState<Record<string, unknown> | null>(null);
   const [loading, setLoading] = useState(true);
   const [saveConfirmations, setSaveConfirmations] = useState<Record<string, string | null>>({});
 
@@ -98,7 +100,7 @@ export default function TrainingHub({ name, email }: Props) {
 
   const fetchAll = useCallback(async () => {
     try {
-      const [scoreRes, storiesRes, responsesRes, rawRes, cvRes, goalRes, analysisRes] = await Promise.all([
+      const [scoreRes, storiesRes, responsesRes, rawRes, cvRes, goalRes, analysisRes, contextRes] = await Promise.all([
         fetch('/api/training/score'),
         fetch('/api/training/stories'),
         fetch('/api/training/responses'),
@@ -106,9 +108,10 @@ export default function TrainingHub({ name, email }: Props) {
         fetch('/api/training/cv'),
         fetch('/api/training/career-goal'),
         fetch('/api/training/analyze'),
+        fetch('/api/training/context'),
       ]);
 
-      const [scoreData, storiesData, responsesData, rawData, cvData, goalData, analysisData] = await Promise.all([
+      const [scoreData, storiesData, responsesData, rawData, cvData, goalData, analysisData, contextData] = await Promise.all([
         scoreRes.json(),
         storiesRes.json(),
         responsesRes.json(),
@@ -116,6 +119,7 @@ export default function TrainingHub({ name, email }: Props) {
         cvRes.json(),
         goalRes.json(),
         analysisRes.json(),
+        contextRes.json(),
       ]);
 
       const cvLoaded   = !!cvData.cvData;
@@ -131,6 +135,7 @@ export default function TrainingHub({ name, email }: Props) {
       });
       setCareerGoal(goal);
       setAnalysis(analysisResult);
+      setCandidateContext(contextData.context ?? null);
 
       // On first load, jump to first incomplete step
       if (!initialStepRef.current) {
@@ -195,16 +200,21 @@ export default function TrainingHub({ name, email }: Props) {
           </div>
         );
 
-      case 2:
+      case 2: {
+        const goalOptions = (
+          (candidateContext?.generated_options as Record<string, GeneratedModuleOptions> | undefined)
+        )?.career_goal ?? null;
         return (
           <div className="max-w-xl">
             <StepHeader number={2} title="What are you trying to achieve?" subtitle="Your Digital Twin will be built around this." />
             <CareerGoalStep
               currentGoal={careerGoal}
+              moduleOptions={goalOptions}
               onSaved={goal => { setCareerGoal(goal); advance(); }}
             />
           </div>
         );
+      }
 
       case 3:
         return (
@@ -367,19 +377,20 @@ function StepHeader({ number, title, subtitle }: { number: number; title: string
 
 function CareerGoalStep({
   currentGoal,
+  moduleOptions,
   onSaved,
 }: {
   currentGoal: string | null;
+  moduleOptions: GeneratedModuleOptions | null;
   onSaved: (goal: string) => void;
 }) {
-  // Parse existing value — handles old plain-string format and new JSON format
   const parseInitial = () => {
     if (!currentGoal) return { goals: [] as string[], other: '' };
     try {
       const p = JSON.parse(currentGoal) as { goals?: string[]; other?: string };
       return { goals: p.goals ?? [], other: p.other ?? '' };
     } catch {
-      return { goals: [currentGoal], other: '' }; // migrate old single-select value
+      return { goals: [currentGoal], other: '' };
     }
   };
 
@@ -389,9 +400,30 @@ function CareerGoalStep({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  function toggle(goal: string) {
+  // Adaptive options state
+  const [options, setOptions] = useState<GeneratedModuleOptions | null>(moduleOptions);
+  const [generating, setGenerating] = useState(false);
+  const generatingRef = useRef(false);
+
+  // Trigger generation on arrival if no options cached yet
+  useEffect(() => {
+    if (options || generatingRef.current) return;
+    generatingRef.current = true;
+    setGenerating(true);
+    fetch('/api/generate-module-options', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ module: 'career_goal' }),
+    })
+      .then(r => r.json())
+      .then((j: { options?: GeneratedModuleOptions }) => { if (j.options) setOptions(j.options); })
+      .catch(() => {})
+      .finally(() => setGenerating(false));
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function toggle(label: string) {
     setSelected(prev =>
-      prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]
+      prev.includes(label) ? prev.filter(g => g !== label) : [...prev, label]
     );
   }
 
@@ -411,6 +443,21 @@ function CareerGoalStep({
         setError(j.error ?? 'Failed to save. Please try again.');
         return;
       }
+
+      // Update candidate_context with career goals
+      fetch('/api/training/context', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ career_goals: selected, career_goal_text: freeText.trim() }),
+      }).catch(() => {});
+
+      // Pre-generate options for the next adaptive module
+      fetch('/api/generate-module-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ module: 'hidden_strengths' }),
+      }).catch(() => {});
+
       onSaved(value);
     } catch {
       setError('Failed to save. Please try again.');
@@ -419,32 +466,53 @@ function CareerGoalStep({
     }
   }
 
+  // Loading state while generating
+  if (generating && !options) {
+    return (
+      <div className="flex items-center gap-3 py-8 text-sm text-[rgba(255,255,255,0.4)]">
+        <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+        Analysing your CV…
+      </div>
+    );
+  }
+
+  const displayOptions = options?.options ?? [];
+
   return (
     <div>
+      {options?.coaching_tip && (
+        <p className="text-xs text-[rgba(255,255,255,0.38)] italic mb-4">
+          💡 {options.coaching_tip}
+        </p>
+      )}
+
       <div className="flex flex-col gap-2 mb-5">
-        {CAREER_GOALS.map(goal => {
-          const isSelected = selected.includes(goal);
+        {displayOptions.map(opt => {
+          const isSelected = selected.includes(opt.label);
           return (
             <button
-              key={goal}
-              onClick={() => !saving && toggle(goal)}
+              key={opt.label}
+              onClick={() => !saving && toggle(opt.label)}
               disabled={saving}
               className={[
-                'text-left px-4 py-3.5 rounded-xl border text-sm transition-all flex items-center gap-3',
+                'text-left px-4 py-3.5 rounded-xl border text-sm transition-all flex items-start gap-3',
                 isSelected
                   ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
                   : 'border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] text-[rgba(255,255,255,0.6)]',
                 saving ? 'opacity-50 cursor-not-allowed' : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
               ].join(' ')}
             >
-              <span className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center text-[10px] border transition-all ${
-                isSelected
-                  ? 'bg-[#4060d0] border-[#4060d0] text-white'
-                  : 'border-[rgba(255,255,255,0.25)]'
+              <span className={`w-4 h-4 rounded mt-0.5 flex-shrink-0 flex items-center justify-center text-[10px] border transition-all ${
+                isSelected ? 'bg-[#4060d0] border-[#4060d0] text-white' : 'border-[rgba(255,255,255,0.25)]'
               }`}>
                 {isSelected ? '✓' : ''}
               </span>
-              {goal}
+              <span>
+                <span className="block">{opt.label}</span>
+                {opt.detail && (
+                  <span className="block text-xs text-[rgba(255,255,255,0.35)] mt-0.5 font-normal">{opt.detail}</span>
+                )}
+              </span>
             </button>
           );
         })}
