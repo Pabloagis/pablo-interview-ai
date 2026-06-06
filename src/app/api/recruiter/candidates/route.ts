@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
 import { createServerSupabaseClient } from '@/lib/supabase';
-import { REAL_INTERVIEW_QUESTIONS, RECRUITER_CHALLENGE_QUESTIONS } from '@/lib/training-constants';
+import { REAL_INTERVIEW_QUESTIONS, RECRUITER_CHALLENGE_QUESTIONS, OBJECTION_QUESTIONS } from '@/lib/training-constants';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,6 +87,13 @@ function computeScore(
   ).length;
   if (challengeCount > 0) {
     score += Math.round((challengeCount / RECRUITER_CHALLENGE_QUESTIONS.length) * 10);
+  }
+
+  const objectionCount = OBJECTION_QUESTIONS.filter(q =>
+    hasAnswer(q, 'objection_handling')
+  ).length;
+  if (objectionCount > 0) {
+    score += Math.round((objectionCount / OBJECTION_QUESTIONS.length) * 10);
   }
 
   return Math.min(score, 100);
