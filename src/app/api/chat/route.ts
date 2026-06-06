@@ -5,6 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import { getAnthropicClient } from '@/lib/anthropic';
 import { CORE_SYSTEM_PROMPT, buildDynamicPrompt } from '@/lib/prompts';
 import { retrieveKnowledge, detectTone, logRetrieval } from '@/lib/retrieval';
+import { buildCandidateSystemPrompt } from '@/lib/candidate-prompt';
 import {
   CLAUDE_MODEL,
   CLAUDE_FALLBACK_MODEL,
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest) {
         // Load conversation history from session
         const { data: session, error: sessionError } = await supabase
           .from('sessions')
-          .select('messages, recruiter_name, company, role, email')
+          .select('messages, recruiter_name, company, role, email, candidate_id')
           .eq('id', sessionId)
           .single();
 
@@ -196,9 +197,24 @@ export async function POST(request: NextRequest) {
 
         // Two-block system: static core is cached by Anthropic (5-min TTL, 10% cost on cache hit),
         // dynamic block carries per-request context and is never cached.
+        // If the session is linked to a candidate, build a dynamic prompt from their training data.
+        // Otherwise fall back to the hardcoded Pablo prompt (v2 behaviour).
+        let corePrompt = CORE_SYSTEM_PROMPT;
+        let retrievedText = retrieved.formattedText;
+
+        if (session.candidate_id) {
+          try {
+            corePrompt = await buildCandidateSystemPrompt(session.candidate_id, supabase);
+            // Stories and background are embedded in the candidate core prompt — skip Pablo-specific retrieval.
+            retrievedText = '';
+          } catch (promptErr) {
+            console.error('[chat] buildCandidateSystemPrompt failed, falling back to Pablo prompt:', promptErr);
+          }
+        }
+
         const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
-          { type: 'text', text: CORE_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
-          { type: 'text', text: buildDynamicPrompt(enrichedContext, relevantMemories, retrieved.formattedText) },
+          { type: 'text', text: corePrompt, cache_control: { type: 'ephemeral' } },
+          { type: 'text', text: buildDynamicPrompt(enrichedContext, relevantMemories, retrievedText) },
         ];
         const anthropic = getAnthropicClient();
         let fullResponse = '';
