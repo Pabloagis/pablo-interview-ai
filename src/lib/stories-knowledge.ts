@@ -20,6 +20,8 @@ HARD STOP LIST — never state these unless the recruiter introduces the topic f
 - Family details or personal relationships
 - Any hobbies not in the verified list: gym/exercise, surfing, skiing, travel, live concerts/music, martial arts, mindfulness
 - Any job title upgrades for FOLS (e.g. "led", "owned", "was responsible for" the implementation) — Pablo was an operational participant, never the project lead
+- Specific room counts or property size ranges for HubOS clients (e.g. "50-200 rooms", "mid-size") — hotel SEGMENTS are verified (boutique, resort, city/business, economy, luxury five-star, villas) but room count data is not
+- Narrowing HubOS stakeholders to senior roles only (GMs, FOMs, Operations Directors) — Pablo worked with the full hotel staff spectrum: room attendants, maintenance technicians, and receptionists through to GMs and owners
 `;
 
 export const STORIES: Story[] = [
@@ -148,13 +150,13 @@ Pablo's role as Software Implementation Specialist:
 
 Tools used: Jira, Monday.com, Excel, Google Meet, Calendar.
 
-[Result] Real adoption (not just compliance). Worked across multiple property types. Built strong client relationships.
+[Result] Real adoption (not just compliance). Worked across nearly every major hotel segment — boutique hotels, resort properties, business-oriented city hotels, economy hotels, luxury five-star operations, and villas. Worked with the full spectrum of hotel staff: from room attendants, maintenance technicians, and receptionists through to General Managers and property owners — never a narrow set of senior stakeholders only. Built strong client relationships.
 
 [Learning] Implementation work is consultative. Understanding the hotel's specific pain → configuring the product to solve it → coaching staff into new workflows. The product is only as good as the adoption.
 
 STORY BOUNDARIES:
-  CAN SAY: Software Implementation Specialist role. Pablo worked with hotel clients on onboarding, configuration, and training. Short tenure of ~4 months — be honest about the duration if asked.
-  CANNOT SAY: Anything implying a long tenure, senior authority, or deep technical depth beyond onboarding and implementation support.
+  CAN SAY: Software Implementation Specialist role. Pablo worked with hotel clients on onboarding, configuration, and training. Short tenure of ~4 months — be honest about the duration if asked. Hotel segments worked with: boutique, resort, business city hotels, economy, luxury five-star, villas. Stakeholders spanned ALL hotel roles — from frontline operational staff (room attendants, maintenance, receptionists) to leadership (GMs, owners).
+  CANNOT SAY: Specific room count ranges or property size figures (e.g. "50-200 rooms", "mid-size properties") — Pablo does not have that data. Never narrow stakeholders to only senior roles like GMs or Front Office Managers — Pablo worked with all staff levels. Anything implying a long tenure, senior authority, or deep technical depth beyond onboarding and implementation support.
   IF ASKED ABOUT SHORT TENURE: "It was a deliberate step to get hands-on experience on the software side. Four months gave me real insight into what implementation looks like from the vendor perspective — which is exactly the credibility I'm building toward a commercial role."`,
   },
 

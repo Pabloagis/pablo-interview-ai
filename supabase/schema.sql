@@ -127,3 +127,13 @@ CREATE TABLE IF NOT EXISTS message_events (
 CREATE INDEX IF NOT EXISTS idx_message_events_session_id ON message_events(session_id);
 CREATE INDEX IF NOT EXISTS idx_message_events_created_at ON message_events(created_at DESC);
 
+-- Added: link sessions to a candidate profile for multi-candidate dynamic prompts (2026-06-06)
+-- NULL = Pablo fallback (v2 behaviour). Set to a profiles.id UUID to use that candidate's training data.
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS candidate_id UUID REFERENCES profiles(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_sessions_candidate_id ON sessions(candidate_id);
+
+-- Added: link sessions to the authenticated recruiter who created them (2026-06-06)
+-- Enables interview history per recruiter and recruiter-initiated session flow.
+ALTER TABLE sessions ADD COLUMN IF NOT EXISTS recruiter_id UUID REFERENCES profiles(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_sessions_recruiter_id ON sessions(recruiter_id);
+
