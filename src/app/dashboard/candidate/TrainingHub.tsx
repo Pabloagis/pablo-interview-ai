@@ -428,6 +428,8 @@ function CareerGoalStep({
   const [freeText, setFreeText] = useState(init.other);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Adaptive options state
   const [options, setOptions] = useState<GeneratedModuleOptions | null>(moduleOptions);
@@ -450,10 +452,34 @@ function CareerGoalStep({
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  function scheduleAutosave(goals: string[], text: string) {
+    if (goals.length === 0) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    setSaveStatus('saving');
+    autosaveTimer.current = setTimeout(async () => {
+      try {
+        await fetch('/api/training/career-goal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ career_goal: JSON.stringify({ goals, other: text.trim() }) }),
+        });
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch { setSaveStatus('idle'); }
+    }, 1000);
+  }
+
   function toggle(label: string) {
-    setSelected(prev =>
-      prev.includes(label) ? prev.filter(g => g !== label) : [...prev, label]
-    );
+    setSelected(prev => {
+      const next = prev.includes(label) ? prev.filter(g => g !== label) : [...prev, label];
+      scheduleAutosave(next, freeText);
+      return next;
+    });
+  }
+
+  function handleFreeTextChange(text: string) {
+    setFreeText(text);
+    scheduleAutosave(selected, text);
   }
 
   async function handleSave() {
@@ -554,12 +580,19 @@ function CareerGoalStep({
         </label>
         <textarea
           value={freeText}
-          onChange={e => setFreeText(e.target.value)}
+          onChange={e => handleFreeTextChange(e.target.value)}
           placeholder="Add your own context if needed..."
           rows={2}
           disabled={saving}
           className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.22)] disabled:opacity-50"
         />
+        {saveStatus !== 'idle' && (
+          <p className="text-[10px] text-[rgba(255,255,255,0.28)] mt-1 flex items-center gap-1">
+            {saveStatus === 'saving'
+              ? <><span className="inline-block w-2.5 h-2.5 rounded-full border border-t-[rgba(255,255,255,0.4)] border-[rgba(255,255,255,0.12)] animate-spin" />Saving…</>
+              : '✓ Saved'}
+          </p>
+        )}
       </div>
 
       {error && <p className="text-xs text-red-400 mb-3">{error}</p>}
