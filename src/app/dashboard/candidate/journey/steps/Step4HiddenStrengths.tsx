@@ -19,31 +19,20 @@ interface StrengthItem {
   draftWhy: string;
 }
 
-function buildItems(
-  opts: GeneratedModuleOptions | null,
-  analysis: AnalysisResult | null
-): StrengthItem[] {
-  if (opts?.options.length) {
-    return opts.options.map(o => ({
-      label: o.label,
-      why: o.detail,
-      included: true,
-      draftLabel: o.label,
-      draftWhy: o.detail,
-    }));
-  }
-  return (analysis?.hidden_strengths ?? []).map(s => ({
-    label: s.strength,
-    why: s.why,
+function buildItems(opts: GeneratedModuleOptions | null): StrengthItem[] {
+  if (!opts?.options.length) return [];
+  return opts.options.map(o => ({
+    label: o.label,
+    why: o.detail,
     included: true,
-    draftLabel: s.strength,
-    draftWhy: s.why,
+    draftLabel: o.label,
+    draftWhy: o.detail,
   }));
 }
 
-export default function Step4HiddenStrengths({ analysis, moduleOptions, onAdvance, onBack }: Props) {
+export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack }: Props) {
   const [generatedOpts, setGeneratedOpts] = useState<GeneratedModuleOptions | null>(moduleOptions);
-  const [items, setItems] = useState<StrengthItem[]>(() => buildItems(moduleOptions, analysis));
+  const [items, setItems] = useState<StrengthItem[]>(() => buildItems(moduleOptions));
   const [generating, setGenerating] = useState(false);
   const [current, setCurrent] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -62,7 +51,7 @@ export default function Step4HiddenStrengths({ analysis, moduleOptions, onAdvanc
       .then((j: { options?: GeneratedModuleOptions }) => {
         if (j.options) {
           setGeneratedOpts(j.options);
-          setItems(buildItems(j.options, null));
+          setItems(buildItems(j.options));
         }
       })
       .catch(() => {})
