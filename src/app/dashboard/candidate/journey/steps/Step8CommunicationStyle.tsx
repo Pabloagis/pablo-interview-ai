@@ -54,10 +54,30 @@ export default function Step8CommunicationStyle({ data, moduleOptions, onSaved, 
     )
   );
   const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const current = questions[qIdx];
   const isFirst = qIdx === 0;
   const isLast  = qIdx === questions.length - 1;
+
+  function handleAnswerChange(text: string) {
+    setAnswers(prev => ({ ...prev, [current.q]: text }));
+    if (!text.trim()) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    setSaveStatus('saving');
+    autosaveTimer.current = setTimeout(async () => {
+      try {
+        await fetch('/api/training/responses', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ module: 'communication_style', question: current.q, answer_text: text }),
+        });
+        setSaveStatus('saved');
+        setTimeout(() => setSaveStatus('idle'), 2000);
+      } catch { setSaveStatus('idle'); }
+    }, 1500);
+  }
   const answeredCount = questions.filter(({ q }) => answers[q]?.trim()).length;
 
   async function saveAndNext() {
@@ -147,15 +167,16 @@ export default function Step8CommunicationStyle({ data, moduleOptions, onSaved, 
         <textarea
           key={current.q}
           value={answers[current.q] ?? ''}
-          onChange={e => setAnswers(prev => ({ ...prev, [current.q]: e.target.value }))}
+          onChange={e => handleAnswerChange(e.target.value)}
           rows={5}
           placeholder="Your honest answer…"
           className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
         />
-        <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+        <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
           <VoiceRecorder
-            onTranscript={t => setAnswers(prev => ({ ...prev, [current.q]: prev[current.q] ? prev[current.q] + ' ' + t : t }))}
+            onTranscript={t => handleAnswerChange(answers[current.q] ? answers[current.q] + ' ' + t : t)}
           />
+          <AutosaveIndicator status={saveStatus} />
         </div>
       </div>
 
@@ -189,6 +210,17 @@ export default function Step8CommunicationStyle({ data, moduleOptions, onSaved, 
         )}
       </div>
     </div>
+  );
+}
+
+function AutosaveIndicator({ status }: { status: 'idle' | 'saving' | 'saved' }) {
+  if (status === 'idle') return null;
+  return (
+    <span className="text-[10px] text-[rgba(255,255,255,0.28)] flex items-center gap-1">
+      {status === 'saving'
+        ? <><span className="inline-block w-2.5 h-2.5 rounded-full border border-t-[rgba(255,255,255,0.4)] border-[rgba(255,255,255,0.12)] animate-spin" />Saving…</>
+        : '✓ Saved'}
+    </span>
   );
 }
 

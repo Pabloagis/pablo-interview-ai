@@ -34,7 +34,9 @@ export default function Step5RecruiterConcerns({ moduleOptions, onAdvance, onBac
   const [items, setItems] = useState<ConcernItem[]>(() => buildItems(moduleOptions));
   const [generating, setGenerating] = useState(false);
   const [current, setCurrent] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
   const generatingRef = useRef(false);
+  const autosaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (items.length > 0 || generatingRef.current) return;
@@ -58,6 +60,29 @@ export default function Step5RecruiterConcerns({ moduleOptions, onAdvance, onBac
 
   function updateCurrent(patch: Partial<ConcernItem>) {
     setItems(prev => prev.map((item, i) => i === current ? { ...item, ...patch } : item));
+  }
+
+  function handleResponseChange(text: string) {
+    updateCurrent({ response: text });
+    if (!text.trim()) return;
+    if (autosaveTimer.current) clearTimeout(autosaveTimer.current);
+    setSaveStatus('saving');
+    autosaveTimer.current = setTimeout(() => {
+      // Build latest items snapshot inline to avoid stale closure
+      setItems(prev => {
+        const latest = prev.map((it, i) => i === current ? { ...it, response: text } : it);
+        const addressed = latest.filter(i => i.response.trim()).map(i => ({ concern: i.concern, response: i.response.trim() }));
+        const skipped   = latest.filter(i => !i.response.trim()).map(i => i.concern);
+        fetch('/api/training/context', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ recruiter_concerns: { addressed, skipped } }),
+        })
+          .then(() => { setSaveStatus('saved'); setTimeout(() => setSaveStatus('idle'), 2000); })
+          .catch(() => setSaveStatus('idle'));
+        return latest;
+      });
+    }, 1500);
   }
 
   function goNext() {
@@ -188,11 +213,14 @@ export default function Step5RecruiterConcerns({ moduleOptions, onAdvance, onBac
           </label>
           <textarea
             value={item.response}
-            onChange={e => updateCurrent({ response: e.target.value })}
+            onChange={e => handleResponseChange(e.target.value)}
             rows={4}
             placeholder="How would you address this in an interview? Write naturally — not a polished script…"
             className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.09)] rounded-xl px-4 py-3 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
           />
+          <div className="flex justify-end mt-1.5">
+            <AutosaveIndicator status={saveStatus} />
+          </div>
         </div>
       </div>
 
@@ -242,6 +270,17 @@ function StepLabel() {
   return (
     <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
       Recruiter Concerns · Step 5 of 10
+    </span>
+  );
+}
+
+function AutosaveIndicator({ status }: { status: 'idle' | 'saving' | 'saved' }) {
+  if (status === 'idle') return null;
+  return (
+    <span className="text-[10px] text-[rgba(255,255,255,0.28)] flex items-center gap-1">
+      {status === 'saving'
+        ? <><span className="inline-block w-2.5 h-2.5 rounded-full border border-t-[rgba(255,255,255,0.4)] border-[rgba(255,255,255,0.12)] animate-spin" />Saving…</>
+        : '✓ Saved'}
     </span>
   );
 }
