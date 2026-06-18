@@ -35,17 +35,9 @@ export default function Step6CareerNarrative({ data, moduleOptions, onSaved, onA
       .finally(() => setGenerating(false));
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const question = generatedOpts?.suggested_question ?? FALLBACK_QUESTION;
   const existing = data.responses.find(r => r.module === 'real_interview' && r.question === FALLBACK_QUESTION);
   const [answer, setAnswer] = useState(existing?.answer_text ?? '');
-  const [selectedHook, setSelectedHook] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
-
-  function pickHook(label: string) {
-    setSelectedHook(label);
-    if (!answer.trim()) setAnswer(label + ' ');
-  }
 
   async function saveAndAdvance() {
     if (!answer.trim()) { onAdvance(); return; }
@@ -56,93 +48,79 @@ export default function Step6CareerNarrative({ data, moduleOptions, onSaved, onA
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ module: 'real_interview', question: FALLBACK_QUESTION, answer_text: answer }),
       });
-      setSaved(true);
       onSaved('real_interview', 'Career narrative saved.');
-
       fetch('/api/training/context', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ career_narrative: answer }),
       }).catch(() => {});
-
       fetch('/api/generate-module-options', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ module: 'story_evidence' }),
       }).catch(() => {});
-
       onAdvance();
     } catch { /* silent */ }
     setSaving(false);
   }
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-lg">
       <div className="mb-6">
         <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.3)] uppercase tracking-widest">
           Career Narrative · Step 6 of 10
         </span>
-        <h1 className="text-xl font-bold text-white mt-1 mb-1">Your professional story, in your own words.</h1>
+        <h1 className="text-xl font-bold text-white mt-1 mb-1">Your story, in your own words.</h1>
+        <p className="text-sm text-[rgba(255,255,255,0.45)]">
+          How would you answer "Tell me about yourself"? Write naturally — not a rehearsed pitch.
+        </p>
       </div>
 
-      {/* Loading state */}
-      {generating && !generatedOpts && (
-        <div className="flex items-center gap-3 mb-5 text-sm text-[rgba(255,255,255,0.4)]">
-          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
-          Personalising your next step…
+      {/* Compact hook chips */}
+      {generating && !generatedOpts ? (
+        <div className="flex items-center gap-2 mb-5 text-xs text-[rgba(255,255,255,0.35)]">
+          <div className="w-3.5 h-3.5 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          Generating angles…
         </div>
-      )}
-
-      {/* Narrative angle hooks */}
-      {generatedOpts?.options.length ? (
+      ) : generatedOpts?.options.length ? (
         <div className="mb-5">
-          {generatedOpts.coaching_tip && (
-            <p className="text-xs text-[rgba(255,255,255,0.38)] italic mb-3">💡 {generatedOpts.coaching_tip}</p>
-          )}
-          <p className="text-[10px] text-[rgba(255,255,255,0.35)] uppercase tracking-wider mb-2">
-            Pick a narrative angle to start from
+          <p className="text-[10px] text-[rgba(255,255,255,0.3)] uppercase tracking-wider mb-2">
+            Start from an angle — or write from scratch below
           </p>
-          <div className="flex flex-col gap-1.5 mb-5">
+          <div className="flex flex-wrap gap-1.5">
             {generatedOpts.options.map(opt => (
               <button
                 key={opt.label}
-                onClick={() => pickHook(opt.label)}
-                className={`text-left px-3 py-2.5 rounded-lg border text-sm transition-all ${
-                  selectedHook === opt.label
-                    ? 'border-[#4060d0] bg-[rgba(64,96,208,0.12)] text-white'
-                    : 'border-[rgba(255,255,255,0.07)] bg-[rgba(255,255,255,0.02)] text-[rgba(255,255,255,0.55)] hover:text-white hover:border-[rgba(255,255,255,0.18)]'
-                }`}
+                onClick={() => { if (!answer.trim()) setAnswer(opt.label + ' '); }}
+                title={opt.detail}
+                className="px-3 py-1.5 rounded-lg border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] text-xs text-[rgba(255,255,255,0.55)] hover:text-white hover:border-[rgba(64,96,208,0.4)] hover:bg-[rgba(64,96,208,0.08)] transition-all"
               >
-                <span className="block font-medium">{opt.label}</span>
-                {opt.detail && (
-                  <span className="block text-xs text-[rgba(255,255,255,0.32)] mt-0.5 font-normal">{opt.detail}</span>
-                )}
+                {opt.label}
               </button>
             ))}
           </div>
         </div>
       ) : null}
 
-      <p className="text-sm font-medium text-white mb-1">{question}</p>
-      <p className="text-xs text-[rgba(255,255,255,0.35)] italic mb-3">Your natural answer — not a rehearsed pitch.</p>
-
-      <textarea
-        value={answer}
-        onChange={e => setAnswer(e.target.value)}
-        rows={7}
-        placeholder="Start with where you are now, then what led you here…"
-        className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-3 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors mb-3"
-      />
-
-      <div className="mb-5">
-        <VoiceRecorder onTranscript={t => setAnswer(prev => prev ? prev + ' ' + t : t)} />
+      {/* Main textarea */}
+      <div className="rounded-2xl border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.03)] p-6 mb-5">
+        <p className="text-sm font-medium text-white mb-1">{FALLBACK_QUESTION}</p>
+        <p className="text-xs text-[rgba(255,255,255,0.32)] italic mb-4">
+          Ground it in something real — where you are now, what led you here.
+        </p>
+        <textarea
+          value={answer}
+          onChange={e => setAnswer(e.target.value)}
+          rows={7}
+          placeholder="Start with where you are now, then what led you here…"
+          className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
+        />
+        <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)]">
+          <VoiceRecorder onTranscript={t => setAnswer(prev => prev ? prev + ' ' + t : t)} />
+        </div>
       </div>
 
-      {saved && (
-        <p className="text-xs text-green-400 mb-4">✓ Saved — your Digital Twin knows how you introduce yourself.</p>
-      )}
-
-      <div className="flex gap-3 flex-wrap">
+      <div className="flex gap-3">
         <button onClick={onBack} className={BTN_BACK}>← Back</button>
         <button
           onClick={saveAndAdvance}
@@ -152,6 +130,12 @@ export default function Step6CareerNarrative({ data, moduleOptions, onSaved, onA
           {saving ? 'Saving…' : answer.trim() ? 'Save & Continue →' : 'Skip →'}
         </button>
       </div>
+
+      {generatedOpts?.coaching_tip && (
+        <p className="text-xs text-[rgba(255,255,255,0.28)] italic mt-5">
+          💡 {generatedOpts.coaching_tip}
+        </p>
+      )}
     </div>
   );
 }
