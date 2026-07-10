@@ -79,7 +79,6 @@ export default function PrivacyModal({ onClose }: Props) {
             </ul>
             <p className="mt-3 text-gray-400 text-[12.5px]">{t.privacyCollectNote}</p>
           </Section>
-
           <Section icon="🎯" title={t.privacyUsedTitle}>
             <ul className="space-y-1.5 mt-2">
               {t.privacyUsedItems.map((item) => (
@@ -114,8 +113,8 @@ export default function PrivacyModal({ onClose }: Props) {
             <p className="mt-2">{t.privacyStorageP1}</p>
             <p className="mt-2">
               {t.privacyStorageP2Pre}{' '}
-              <a href="mailto:pabloagisburgos@gmail.com" className="text-blue-500 hover:underline">
-                pabloagisburgos@gmail.com
+              <a href="mailto:pablointerviewmind@gmail.com" className="text-blue-500 hover:underline">
+                pablointerviewmind@gmail.com
               </a>{' '}
               {t.privacyStorageP2Post}
             </p>
