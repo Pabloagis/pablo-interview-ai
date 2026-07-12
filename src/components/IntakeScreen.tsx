@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useLayoutEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { SessionCreateRequest } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggleButton from './ThemeToggleButton';
@@ -10,8 +9,6 @@ import HowItWorksModal from './HowItWorksModal';
 import WhatItIsModal from './WhatItIsModal';
 import Footer from './Footer';
 import Background from './Background';
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 type ResumeState = {
   sessionId: string;
@@ -23,24 +20,15 @@ type ResumeState = {
 export default function IntakeScreen() {
   const router = useRouter();
   const { t } = useLanguage();
-  const [recruiterName, setRecruiterName]   = useState('');
-  const [nameTouched,   setNameTouched]     = useState(false);
-  const [email,         setEmail]           = useState('');
-  const [emailTouched,  setEmailTouched]    = useState(false);
-  const [company,       setCompany]         = useState('');
-  const [role,          setRole]            = useState('');
-  const [isLoading,     setIsLoading]       = useState(false);
-  const [isResuming,    setIsResuming]      = useState(false);
-  const [error,         setError]           = useState('');
-  const [resumeSession, setResumeSession]   = useState<ResumeState>(null);
-  const [avatarOpen,    setAvatarOpen]      = useState(false);
-  const [splashDone,    setSplashDone]      = useState(false);
-  const [pageReady,     setPageReady]       = useState(false);
-  const [showContextWarn, setShowContextWarn] = useState(false);
-  const [whatItIsOpen,   setWhatItIsOpen]    = useState(false);
-  const [hiwOpen,        setHiwOpen]         = useState(false);
-  const companyInputRef = useRef<HTMLInputElement>(null);
-  const formRef = useRef<HTMLFormElement>(null);
+  const [isLoading,     setIsLoading]     = useState(false);
+  const [isResuming,    setIsResuming]    = useState(false);
+  const [error,         setError]         = useState('');
+  const [resumeSession, setResumeSession] = useState<ResumeState>(null);
+  const [avatarOpen,    setAvatarOpen]    = useState(false);
+  const [splashDone,    setSplashDone]    = useState(false);
+  const [pageReady,     setPageReady]     = useState(false);
+  const [whatItIsOpen,  setWhatItIsOpen]  = useState(false);
+  const [hiwOpen,       setHiwOpen]       = useState(false);
   const welcomeAvRef = useRef<HTMLButtonElement>(null);
 
   // Splash refs
@@ -54,7 +42,7 @@ export default function IntakeScreen() {
     if (sessionStorage.getItem('im_splash_shown')) { setSplashDone(true); setPageReady(true); }
   }, []);
 
-  // ── Splash 1 ──
+  // ── Splash ──
   useEffect(() => {
     if (splashRanRef.current) return;
     splashRanRef.current = true;
@@ -87,27 +75,22 @@ export default function IntakeScreen() {
     const dayMode  = document.documentElement.getAttribute('data-theme') === 'day';
     const glowRgb  = dayMode ? '58,85,192' : '100,130,255';
 
-    // InterviewMind wordmark — Apple-style: clean opacity fade + subtle scale
     animate(p => {
       wm.style.opacity   = p.toFixed(4);
       wm.style.transform = `scale(${(0.96 + 0.04 * p).toFixed(4)})`;
     }, 800, 0, eO, () => { wm.style.transform = ''; });
 
-    // Vision phrase — fades in after wordmark is established
     if (vision) {
       animate(p => { vision.style.opacity = p.toFixed(4); }, 600, 500, eO);
-      // Fade out 1s later than before (extra second for highlight)
       animate(p => { vision.style.opacity = (1 - p).toFixed(4); }, 400, 3700, eIO);
     }
 
-    // Wordmark highlight — glow pulses in as the extra second begins
     after(() => {
       animate(p => {
         wm.style.textShadow = `0 0 ${(22 * p).toFixed(1)}px rgba(${glowRgb},${(0.5 * p).toFixed(3)})`;
       }, 600, 0, eO);
     }, 2700);
 
-    // Exit: wordmark fades out (1s later), then page appears
     after(() => {
       animate(p => { wm.style.opacity = (1 - p).toFixed(4); }, 400, 0, eO, () => {
         wm.style.textShadow = '';
@@ -155,44 +138,24 @@ export default function IntakeScreen() {
     setResumeSession(null);
   };
 
-  const isNameValid      = recruiterName.trim().length > 0;
-  const showNameError    = nameTouched && !isNameValid;
-  const isEmailValid     = EMAIL_REGEX.test(email.trim());
-  const showEmailError   = emailTouched && email.trim() !== '' && !isEmailValid;
-  const isNameEmailReady = isNameValid && isEmailValid;
-  const isFullyFilled    = isNameEmailReady && company.trim().length > 0 && role.trim().length > 0;
-  const isSubmitDisabled = isLoading || !isNameEmailReady;
-
-  const handleStart = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-
-    // Gate: require company + role if not already confirmed
-    if (!showContextWarn && (!company.trim() || !role.trim())) {
-      setShowContextWarn(true);
-      return;
-    }
-    setShowContextWarn(false);
+  const handleStart = async () => {
     setIsLoading(true);
+    setError('');
     try {
-      const body: SessionCreateRequest & { email:string; consentToEmail:boolean } = {
-        recruiterName: recruiterName.trim(),
-        company: company.trim() || undefined,
-        role: role.trim() || undefined,
-        email: email.trim(),
-        consentToEmail: true,
-      };
-      const response = await fetch('/api/session', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      const response = await fetch('/api/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        setError(data.error || 'Something went wrong. Please try again.');
+        setError((data as { error?: string }).error || 'Something went wrong. Please try again.');
         setIsLoading(false);
         return;
       }
       const { sessionId } = await response.json();
-      const ctx = { recruiterName:recruiterName.trim(), email:email.trim(), company:company.trim()||undefined, role:role.trim()||undefined, consentToEmail:true };
-      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(ctx));
-      localStorage.setItem('im_last_session', JSON.stringify({ sessionId, ...ctx }));
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify({}));
+      localStorage.setItem('im_last_session', JSON.stringify({ sessionId }));
       router.push(`/interview/${sessionId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -277,7 +240,7 @@ export default function IntakeScreen() {
           </div>
         )}
 
-        <form ref={formRef} onSubmit={handleStart} className="w-full max-w-[440px] sm:max-w-[600px]">
+        <div className="w-full max-w-[440px] sm:max-w-[600px]">
 
           {/* ── Hero header ── */}
           <div className="flex flex-col items-center gap-3 mb-7 text-center">
@@ -378,76 +341,17 @@ export default function IntakeScreen() {
           {/* ── Divider ── */}
           <div style={{ height:0.5, background:'var(--glass-border)', margin:'6px 0 10px', ...emerge(460, { sc: 0.9, blur: 2, dur: 400 }) }} />
 
-
-          {/* ── Form ── */}
-          <div className="glass p-5 mb-2.5" style={emerge(720, { ty: 28, blur: 8, dur: 560 })}>
-            <div className="flex flex-col gap-3">
-              <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
-                  {t.labelName} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder={t.placeholderName}
-                  value={recruiterName}
-                  onChange={(e) => setRecruiterName(e.target.value)}
-                  onBlur={() => setNameTouched(true)}
-                  className={`input-glass${showNameError ? ' error' : ''}`}
-                  maxLength={100}
-                  autoComplete="given-name"
-                  required
-                />
-                {showNameError && <p style={{ marginTop:4, fontSize:12, color:'rgba(220,80,80,0.85)' }}>{t.nameError}</p>}
-              </div>
-
-              <div>
-                <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5 }}>
-                  {t.labelEmail} <span style={{ color:'rgba(220,80,80,0.8)' }}>*</span>
-                </label>
-                <input
-                  type="email"
-                  placeholder="alex@company.com"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setError(''); }}
-                  onBlur={() => setEmailTouched(true)}
-                  className={`input-glass${showEmailError ? ' error' : ''}`}
-                  maxLength={254}
-                  autoComplete="email"
-                  required
-                />
-                {showEmailError && <p style={{ marginTop:4, fontSize:12, color:'rgba(220,80,80,0.85)' }}>{t.emailError}</p>}
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5 items-end">
-                <div className="flex flex-col">
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
-                    {t.labelCompany}
-                  </label>
-                  <input ref={companyInputRef} type="text" value={company} onChange={(e) => { setCompany(e.target.value); if (showContextWarn) setShowContextWarn(false); }} className="input-glass" maxLength={100} autoComplete="organization" />
-                </div>
-                <div className="flex flex-col">
-                  <label style={{ display:'block', fontSize:11, fontWeight:600, color:'var(--text-muted)', textTransform:'uppercase', letterSpacing:'0.4px', marginBottom:5, minHeight:'2.4em' }}>
-                    {t.labelRole}
-                  </label>
-                  <input type="text" value={role} onChange={(e) => { setRole(e.target.value); if (showContextWarn) setShowContextWarn(false); }} className="input-glass" maxLength={100} />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginBottom:10 }}>{error}</p>}
-
-
-          {/* ── CTA Button ── */}
+          {/* ── CTA ── */}
           <div style={emerge(820, { sc: 0.9, blur: 4, dur: 500 })}>
             <p className="text-center mb-3" style={{ fontSize:12, color:'var(--wordmark-color)', letterSpacing:'0.1px' }}>
               {t.timeHint}
             </p>
             <button
-              type="submit"
-              disabled={isSubmitDisabled}
-              className={`w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200 flex items-center justify-center gap-2${!isSubmitDisabled ? ' btn-primary-cta' : ''}`}
-              style={isSubmitDisabled ? {
+              type="button"
+              onClick={handleStart}
+              disabled={isLoading}
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-[15px] transition-all duration-200 flex items-center justify-center gap-2${!isLoading ? ' btn-primary-cta' : ''}`}
+              style={isLoading ? {
                 background: 'var(--btn-disabled-bg)',
                 color: 'var(--btn-disabled-color)',
                 cursor: 'not-allowed',
@@ -464,14 +368,15 @@ export default function IntakeScreen() {
               )}
               {isLoading ? t.buttonStarting : t.buttonStart}
             </button>
+            {error && <p style={{ color:'rgba(220,80,80,0.85)', fontSize:13, marginTop:10, textAlign:'center' }}>{error}</p>}
           </div>
 
-        </form>
+        </div>
 
         <Footer />
       </div>
 
-      {/* ── What it is modal ── */}
+      {/* ── How it works modal ── */}
       {hiwOpen && (
         <HowItWorksModal onClose={() => setHiwOpen(false)} />
       )}
@@ -489,7 +394,7 @@ export default function IntakeScreen() {
         </div>
       )}
 
-      {/* ── SPLASH 1 ── */}
+      {/* ── SPLASH ── */}
       {!splashDone && (
         <div
           ref={splashOverlayRef}
@@ -498,7 +403,6 @@ export default function IntakeScreen() {
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 32 }}>
 
-            {/* InterviewMind — Apple-style animated wordmark */}
             <p ref={splashWmRef} style={{
               margin: 0,
               fontSize: 11, fontWeight: 600,
@@ -509,9 +413,7 @@ export default function IntakeScreen() {
               InterviewMind
             </p>
 
-            {/* Vision phrase */}
             <div ref={splashVisionRef} style={{ opacity: 0, maxWidth: 400, width: '88%', textAlign: 'center' }}>
-              {/* Thin separator */}
               <div style={{
                 width: 32, height: 1, margin: '0 auto 20px',
                 background: 'linear-gradient(90deg, transparent, var(--glass-border), transparent)',
@@ -525,73 +427,6 @@ export default function IntakeScreen() {
               </p>
             </div>
 
-          </div>
-        </div>
-      )}
-
-      {/* ── Context warning modal ── */}
-      {showContextWarn && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.42)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
-          onClick={() => { setShowContextWarn(false); setTimeout(() => companyInputRef.current?.focus(), 50); }}
-        >
-          <div
-            className="mx-5 w-full max-w-sm rounded-2xl p-6"
-            style={{
-              background: 'var(--modal-bg)',
-              border: '0.5px solid var(--modal-border)',
-              boxShadow: 'var(--modal-shadow)',
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Icon */}
-            <div className="flex justify-center mb-4">
-              <div
-                className="w-12 h-12 rounded-full flex items-center justify-center"
-                style={{ background: 'rgba(200,130,0,0.12)', border: '0.5px solid rgba(200,130,0,0.25)' }}
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-                  stroke="rgba(200,130,0,0.95)" strokeWidth={2}
-                  strokeLinecap="round" strokeLinejoin="round"
-                >
-                  <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                  <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-              </div>
-            </div>
-
-            {/* Title + body */}
-            <p className="text-center font-semibold mb-2" style={{ fontSize: 15, color: 'var(--modal-title)' }}>
-              {t.contextWarningTitle}
-            </p>
-            <p className="text-center text-sm leading-relaxed mb-5" style={{ color: 'var(--modal-body)' }}>
-              {t.contextWarningBody}
-            </p>
-
-            {/* Actions */}
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => formRef.current?.requestSubmit()}
-                className="w-full py-2.5 rounded-xl text-sm font-semibold"
-                style={{
-                  background: 'rgba(200,130,0,0.14)',
-                  border: '0.5px solid rgba(200,130,0,0.35)',
-                  color: 'rgba(180,110,0,0.95)',
-                  cursor: 'pointer',
-                }}
-              >
-                {t.contextWarningConfirm}
-              </button>
-              <button
-                type="button"
-                onClick={() => { setShowContextWarn(false); setTimeout(() => companyInputRef.current?.focus(), 50); }}
-                className="theme-modal-cancel w-full py-2.5 rounded-xl text-sm"
-              >
-                {t.contextWarningCancel}
-              </button>
-            </div>
           </div>
         </div>
       )}

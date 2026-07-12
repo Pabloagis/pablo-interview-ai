@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { SessionCreateRequest, SessionCreateResponse } from '@/lib/types';
-import { isValidEmail } from '@/lib/utils';
 
 const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
 
 function notifyNewSession(
   name: string | null,
-  email: string,
+  email: string | null,
   company: string | null,
   role: string | null
 ): void {
+  if (!email) return;
   const key = process.env.RESEND_API_KEY;
   if (!key) return;
   const resend = new Resend(key);
@@ -34,15 +34,8 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const body: SessionCreateRequest = await request.json();
+    const body: SessionCreateRequest = await request.json().catch(() => ({}));
     const { recruiterName, company, role, email, consentToEmail } = body;
-
-    if (!email || !isValidEmail(email)) {
-      return NextResponse.json(
-        { error: 'Please enter a valid email address' },
-        { status: 400 }
-      );
-    }
 
     const supabase = createServerSupabaseClient();
 
@@ -52,7 +45,7 @@ export async function POST(request: NextRequest) {
         recruiter_name: recruiterName || null,
         company: company || null,
         role: role || null,
-        email: email,
+        email: email || null,
         consent_to_email: consentToEmail ?? false,
         messages: [],
       })
@@ -64,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message, code: error.code }, { status: 500 });
     }
 
-    notifyNewSession(recruiterName || null, email, company || null, role || null);
+    notifyNewSession(recruiterName || null, email || null, company || null, role || null);
 
     const response: SessionCreateResponse = {
       sessionId: data.id,

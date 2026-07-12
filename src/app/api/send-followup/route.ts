@@ -1,18 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { sendFollowUpEmail } from '@/lib/followup-email';
+import { isValidEmail } from '@/lib/utils';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { sessionId } = await request.json();
+    const body = await request.json();
+    const { sessionId, email: bodyEmail, consentToEmail: bodyConsent } = body as {
+      sessionId?: string;
+      email?: string;
+      consentToEmail?: boolean;
+    };
 
     if (!sessionId) {
       return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
     }
 
     const supabase = createServerSupabaseClient();
+
+    // If email + consent provided in the request body, save them to the session first
+    if (bodyEmail || bodyConsent !== undefined) {
+      const updatePayload: Record<string, unknown> = {};
+      if (bodyEmail && isValidEmail(bodyEmail)) updatePayload.email = bodyEmail;
+      if (bodyConsent !== undefined) updatePayload.consent_to_email = bodyConsent;
+      if (Object.keys(updatePayload).length > 0) {
+        await supabase.from('sessions').update(updatePayload).eq('id', sessionId);
+      }
+    }
 
     const { data: session, error: fetchError } = await supabase
       .from('sessions')
@@ -25,14 +41,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Session not found' }, { status: 404 });
     }
 
-    if (!session.consent_to_email) {
+    // Use body values as override if session hasn't been updated yet (race condition safety)
+    const effectiveEmail = (bodyEmail && isValidEmail(bodyEmail)) ? bodyEmail : session.email;
+    const effectiveConsent = bodyConsent ?? session.consent_to_email;
+
+    if (!effectiveConsent) {
       return NextResponse.json(
         { error: 'Recruiter has not consented to receive emails' },
         { status: 403 }
       );
     }
 
-    if (!session.email) {
+    if (!effectiveEmail) {
       return NextResponse.json({ error: 'No email address on session' }, { status: 400 });
     }
 
@@ -56,10 +76,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No conversation to summarize' }, { status: 400 });
     }
 
-    console.log(`[send-followup] Sending to ${session.email} for session ${sessionId}`);
+    console.log(`[send-followup] Sending to ${effectiveEmail} for session ${sessionId}`);
 
     const { emailId, html } = await sendFollowUpEmail({
-      to: session.email,
+      to: effectiveEmail,
       transcript,
       messages: messages ?? [],
       recruiterName: session.recruiter_name || null,

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Message, RecruiterContext } from '@/lib/types';
 import { useLanguage } from '@/context/LanguageContext';
+import { isValidEmail } from '@/lib/utils';
 import Tooltip from './Tooltip';
 
 interface EndInterviewButtonProps {
@@ -34,6 +35,8 @@ export default function EndInterviewButton({
   const [portalRoot, setPortalRoot] = useState<Element | null>(null);
   const [panelReady, setPanelReady] = useState(false);
   const [previewSlide, setPreviewSlide] = useState(0);
+  const [emailInput, setEmailInput] = useState('');
+  const [gdprChecked, setGdprChecked] = useState(false);
 
   useEffect(() => { setPortalRoot(document.body); }, []);
 
@@ -52,6 +55,7 @@ export default function EndInterviewButton({
 
 
   const isActive = messages.filter((m) => m.role === 'user').length >= 2;
+  const canSend = isValidEmail(emailInput) && gdprChecked && !isSending;
 
   const handleButtonClick = () => {
     if (!isActive) return;
@@ -59,6 +63,8 @@ export default function EndInterviewButton({
       onOpenInsights();
     } else {
       setErrorMsg(null);
+      setEmailInput('');
+      setGdprChecked(false);
       setModalOpen(true);
     }
   };
@@ -67,33 +73,26 @@ export default function EndInterviewButton({
     if (isSending) return;
     setModalOpen(false);
     setErrorMsg(null);
+    setEmailInput('');
+    setGdprChecked(false);
   };
 
   const handleConfirm = async () => {
     if (isSending) return;
     setErrorMsg(null);
-
-    if (!context.consentToEmail) {
-      setModalOpen(false);
-      if (onOpenInsights) {
-        onOpenInsights();
-      } else {
-        onInterviewEnded(false);
-      }
-      return;
-    }
-
     setIsSending(true);
     try {
       const res = await fetch('/api/send-followup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId, email: emailInput, consentToEmail: true }),
       });
 
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || 'Request failed');
+        if (!(data as { skipped?: boolean }).skipped) {
+          throw new Error((data as { error?: string }).error || 'Request failed');
+        }
       }
 
       setModalOpen(false);
@@ -106,6 +105,15 @@ export default function EndInterviewButton({
       console.error('[EndInterview] send-followup failed:', err);
       setErrorMsg(t.endModalError);
       setIsSending(false);
+    }
+  };
+
+  const handleSkip = () => {
+    setModalOpen(false);
+    if (onOpenInsights) {
+      onOpenInsights();
+    } else {
+      onInterviewEnded(false);
     }
   };
 
@@ -184,20 +192,73 @@ export default function EndInterviewButton({
             }}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ── Follow-up offer ── */}
+            <div style={{ marginBottom: 14 }}>
+              <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>
+                {t.closingModalTitle}
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 10 }}>
+                {t.closingModalSubtitle}
+              </p>
+
+              {/* Bullets */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 12 }}>
+                {(['My CV (PDF)', 'LinkedIn profile', 'This conversation transcript'] as const).map((item) => (
+                  <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Email input */}
+              <input
+                type="email"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder={t.closingModalEmailPlaceholder}
+                className="input-glass w-full"
+                style={{ fontSize: 13, marginBottom: 8 }}
+                autoComplete="email"
+                disabled={isSending}
+              />
+
+              {/* GDPR checkbox */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={gdprChecked}
+                  onChange={(e) => setGdprChecked(e.target.checked)}
+                  disabled={isSending}
+                  style={{ marginTop: 2, accentColor: 'var(--accent-primary)', flexShrink: 0 }}
+                />
+                <span style={{ fontSize: 11.5, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                  {t.closingModalGdprText}
+                </span>
+              </label>
+            </div>
+
             {/* CTA */}
             <button
               onClick={handleConfirm}
-              disabled={isSending}
-              className="btn-primary-cta"
+              disabled={!canSend}
               style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 width: '100%', padding: '13px',
                 fontSize: 14, fontWeight: 600,
                 borderRadius: 13,
-                cursor: isSending ? 'not-allowed' : 'pointer',
-                opacity: isSending ? 0.65 : 1,
+                cursor: canSend ? 'pointer' : 'not-allowed',
                 fontFamily: 'inherit',
                 marginBottom: 12,
+                background: canSend
+                  ? 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))'
+                  : 'var(--btn-disabled-bg)',
+                color: canSend ? '#fff' : 'var(--btn-disabled-color)',
+                border: canSend ? 'none' : '0.5px solid var(--btn-disabled-border)',
+                boxShadow: canSend ? '0 4px 20px var(--accent-glow)' : 'none',
+                transition: 'all 200ms ease',
               }}
             >
               {isSending && (
@@ -206,7 +267,7 @@ export default function EndInterviewButton({
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
               )}
-              {isSending ? t.endModalSending : t.endModalOpenReport}
+              {isSending ? t.endModalSending : t.closingModalConfirm}
             </button>
 
             {/* ── 3-part preview ────────────────────────────────── */}
@@ -289,7 +350,7 @@ export default function EndInterviewButton({
                 </div>
               </div>
 
-              {/* ── Slide 2: Report sections — all open, staggered fade-in ── */}
+              {/* ── Slide 2: Report sections ── */}
               <div style={{
                 position: 'absolute', inset: 0,
                 display: 'flex', flexDirection: 'column', justifyContent: 'center',
@@ -359,7 +420,7 @@ export default function EndInterviewButton({
 
             <div style={{ textAlign: 'center', marginTop: 8 }}>
               <button
-                onClick={closeModal}
+                onClick={handleSkip}
                 disabled={isSending}
                 style={{
                   fontSize: 12, color: 'var(--text-tertiary)',
@@ -371,7 +432,7 @@ export default function EndInterviewButton({
                 onMouseEnter={(e) => { if (!isSending) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
               >
-                {t.endModalBackToChat}
+                {t.closingModalDismiss}
               </button>
             </div>
           </div>

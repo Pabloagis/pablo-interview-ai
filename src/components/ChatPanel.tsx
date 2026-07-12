@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Message, RecruiterContext, ToastMessage } from '@/lib/types';
-import { generateId, parseSSELine } from '@/lib/utils';
+import { generateId, parseSSELine, isValidEmail } from '@/lib/utils';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
 import Header from './Header';
 import MessageBubble from './MessageBubble';
@@ -24,22 +24,25 @@ function pickRandom<T>(pool: T[], n: number): T[] {
 }
 
 function ClosingModal({
-  t, email, onEmailChange, onConfirm, onDismiss, sending, error, consentToEmail,
+  t, email, onEmailChange, gdprChecked, onGdprChange, onConfirm, onSkip, sending, error,
 }: {
   t: ReturnType<typeof import('@/context/LanguageContext').useLanguage>['t'];
   email: string;
   onEmailChange: (v: string) => void;
+  gdprChecked: boolean;
+  onGdprChange: (v: boolean) => void;
   onConfirm: (email: string) => void;
-  onDismiss: () => void;
+  onSkip: () => void;
   sending: boolean;
   error: string | null;
-  consentToEmail: boolean;
 }) {
   const [visible, setVisible] = useState(false);
   useEffect(() => {
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
     return () => cancelAnimationFrame(id);
   }, []);
+
+  const canSend = isValidEmail(email) && gdprChecked && !sending;
 
   return (
     <div
@@ -51,7 +54,7 @@ function ClosingModal({
         transition: 'background 280ms ease, backdrop-filter 280ms ease',
         pointerEvents: 'auto',
       }}
-      onClick={(e) => { if (e.target === e.currentTarget) onDismiss(); }}
+      onClick={(e) => { if (e.target === e.currentTarget) onSkip(); }}
     >
       <div
         className="w-full sm:max-w-sm mx-auto"
@@ -71,8 +74,8 @@ function ClosingModal({
           }}
         >
           {/* Header */}
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 6 }}>
+          <div style={{ marginBottom: 14 }}>
+            <p style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1.4, marginBottom: 4 }}>
               {t.closingModalTitle}
             </p>
             <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
@@ -80,21 +83,45 @@ function ClosingModal({
             </p>
           </div>
 
-          {/* Email input — only show if consent was given at intake */}
-          {consentToEmail && (
-            <div style={{ marginBottom: 14 }}>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => onEmailChange(e.target.value)}
-                placeholder={t.closingModalEmailPlaceholder}
-                className="input-glass w-full"
-                style={{ fontSize: 14 }}
-                autoComplete="email"
-                disabled={sending}
-              />
-            </div>
-          )}
+          {/* Bullets */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
+            {(['My CV (PDF)', 'LinkedIn profile', 'This conversation transcript'] as const).map((item) => (
+              <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Email input */}
+          <div style={{ marginBottom: 10 }}>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => onEmailChange(e.target.value)}
+              placeholder={t.closingModalEmailPlaceholder}
+              className="input-glass w-full"
+              style={{ fontSize: 14 }}
+              autoComplete="email"
+              disabled={sending}
+            />
+          </div>
+
+          {/* GDPR checkbox */}
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer', marginBottom: 14 }}>
+            <input
+              type="checkbox"
+              checked={gdprChecked}
+              onChange={(e) => onGdprChange(e.target.checked)}
+              disabled={sending}
+              style={{ marginTop: 2, accentColor: 'var(--accent-primary)', flexShrink: 0 }}
+            />
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              {t.closingModalGdprText}
+            </span>
+          </label>
 
           {error && (
             <p style={{ fontSize: 12, color: 'rgba(220,80,80,0.9)', marginBottom: 10 }}>{error}</p>
@@ -103,22 +130,25 @@ function ClosingModal({
           {/* Primary CTA */}
           <button
             onClick={() => onConfirm(email)}
-            disabled={sending}
-            className="w-full py-3 rounded-xl font-bold text-[15px] transition-all duration-200 disabled:opacity-60"
+            disabled={!canSend}
+            className="w-full py-3 rounded-xl font-bold text-[15px] transition-all duration-200"
             style={{
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-              color: '#fff',
-              boxShadow: '0 4px 20px var(--accent-glow)',
-              border: 'none',
+              background: canSend
+                ? 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))'
+                : 'var(--btn-disabled-bg)',
+              color: canSend ? '#fff' : 'var(--btn-disabled-color)',
+              boxShadow: canSend ? '0 4px 20px var(--accent-glow)' : 'none',
+              border: canSend ? 'none' : '0.5px solid var(--btn-disabled-border)',
+              cursor: canSend ? 'pointer' : 'not-allowed',
               marginBottom: 10,
             }}
           >
             {sending ? t.closingModalSending : t.closingModalConfirm}
           </button>
 
-          {/* Secondary dismiss */}
+          {/* Skip */}
           <button
-            onClick={onDismiss}
+            onClick={onSkip}
             disabled={sending}
             className="w-full py-2.5 text-sm font-medium transition-colors disabled:opacity-40"
             style={{ color: 'var(--text-tertiary)', background: 'none', border: 'none', cursor: 'pointer' }}
@@ -234,6 +264,7 @@ interface ChatPanelProps {
 }
 
 const INSIGHTS_MODAL_TRIGGER = '[SHOW_INSIGHTS_MODAL]';
+const CTX_MARKER_REGEX = /\[CTX:(\{[^}]*\})\]\s*$/;
 
 export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const { lang, t } = useLanguage();
@@ -264,6 +295,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   // Closing modal (auto-triggered by [SHOW_INSIGHTS_MODAL] marker in AI response)
   const [closingModalOpen, setClosingModalOpen] = useState(false);
   const [closingModalEmail, setClosingModalEmail] = useState('');
+  const [closingModalGdprChecked, setClosingModalGdprChecked] = useState(false);
   const [closingModalSending, setClosingModalSending] = useState(false);
   const [closingModalError, setClosingModalError] = useState<string | null>(null);
   const closingModalShownRef = useRef(false);
@@ -458,18 +490,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     setClosingModalError(null);
     setClosingModalSending(true);
     try {
-      if (contextRef.current.consentToEmail && email) {
-        const res = await fetch('/api/send-followup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ sessionId }),
-        });
-        if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          // skipped (already sent) is fine — still open insights
-          if (!(data as { skipped?: boolean }).skipped) {
-            throw new Error((data as { error?: string }).error || 'Request failed');
-          }
+      const res = await fetch('/api/send-followup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId, email, consentToEmail: true }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (!(data as { skipped?: boolean }).skipped) {
+          throw new Error((data as { error?: string }).error || 'Request failed');
         }
       }
       setClosingModalOpen(false);
@@ -480,6 +509,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
       setClosingModalSending(false);
     }
   }, [sessionId, openInsights, t.closingModalError]);
+
+  const handleClosingModalSkip = useCallback(() => {
+    setClosingModalOpen(false);
+    openInsights();
+  }, [openInsights]);
 
   const playResponse = useCallback(async (text: string, messageId?: string) => {
     if (currentAudioRef.current) {
@@ -551,9 +585,11 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           for (const line of decoder.decode(value, { stream: true }).split('\n')) {
             const event = parseSSELine(line) as { type: string; text?: string } | null;
             if (!event) continue;
-            if (event.type === 'content' && event.text) { accumulated += event.text; setStreamingText(accumulated); }
+            if (event.type === 'content' && event.text) { accumulated += event.text; setStreamingText(accumulated.replace(CTX_MARKER_REGEX, '')); }
             else if (event.type === 'done') {
-              setMessages([{ id: generateId(), role: 'assistant', content: accumulated, createdAt: new Date().toISOString() }]);
+              applyCtxMarker(accumulated);
+              const clean = accumulated.replace(CTX_MARKER_REGEX, '').trim();
+              setMessages([{ id: generateId(), role: 'assistant', content: clean, createdAt: new Date().toISOString() }]);
               setStreamingText('');
               setIsStreaming(false);
             } else if (event.type === 'error') { setStreamingText(''); setIsStreaming(false); }
@@ -564,9 +600,37 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         setStreamingText('');
         setIsStreaming(false);
       }
-    }, 30_000);
+    }, 200);
     return () => { clearTimeout(timer); introAbort.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Helper: extract and apply [CTX:{...}] marker from AI response text
+  const applyCtxMarker = useCallback((text: string) => {
+    const match = text.match(CTX_MARKER_REGEX);
+    if (!match) return;
+    try {
+      const extracted = JSON.parse(match[1]) as { name?: string | null; company?: string | null; role?: string | null };
+      setContext(prev => {
+        const updated: typeof prev = {
+          ...prev,
+          ...(extracted.name   ? { recruiterName: extracted.name }   : {}),
+          ...(extracted.company ? { company: extracted.company }     : {}),
+          ...(extracted.role    ? { role: extracted.role }           : {}),
+        };
+        try {
+          sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(updated));
+          const lsRaw = localStorage.getItem('im_last_session');
+          if (lsRaw) {
+            const lsData = JSON.parse(lsRaw) as { sessionId?: string };
+            if (lsData.sessionId === sessionId) {
+              localStorage.setItem('im_last_session', JSON.stringify({ ...lsData, ...updated }));
+            }
+          }
+        } catch {}
+        return updated;
+      });
+    } catch {}
+  }, [sessionId]);
 
   sendCheckInRef.current = async () => {
     if (messages.length === 0 || isStreaming || interviewEnded) return;
@@ -684,11 +748,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
             if (event.type === 'content' && event.text) {
               accumulated += event.text;
-              // Strip hidden marker from live display so it never flashes to the user
-              setStreamingText(accumulated.replace(INSIGHTS_MODAL_TRIGGER, ''));
+              // Strip hidden markers from live display so they never flash to the user
+              setStreamingText(accumulated.replace(INSIGHTS_MODAL_TRIGGER, '').replace(CTX_MARKER_REGEX, ''));
             } else if (event.type === 'done') {
+              applyCtxMarker(accumulated);
               const hasModalTrigger = accumulated.includes(INSIGHTS_MODAL_TRIGGER);
-              const cleanContent = accumulated.replace(INSIGHTS_MODAL_TRIGGER, '').trim();
+              const cleanContent = accumulated.replace(INSIGHTS_MODAL_TRIGGER, '').replace(CTX_MARKER_REGEX, '').trim();
               const assistantMessage: Message = {
                 id: generateId(),
                 role: 'assistant',
@@ -706,7 +771,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               if (hasModalTrigger && !closingModalShownRef.current && !insightsUnlocked) {
                 closingModalShownRef.current = true;
                 setTimeout(() => {
-                  setClosingModalEmail(contextRef.current.email ?? '');
+                  setClosingModalEmail('');
+                  setClosingModalGdprChecked(false);
                   setClosingModalOpen(true);
                 }, 2200);
               }
@@ -1187,11 +1253,12 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
           t={t}
           email={closingModalEmail}
           onEmailChange={setClosingModalEmail}
+          gdprChecked={closingModalGdprChecked}
+          onGdprChange={setClosingModalGdprChecked}
           onConfirm={handleClosingModalConfirm}
-          onDismiss={() => setClosingModalOpen(false)}
+          onSkip={handleClosingModalSkip}
           sending={closingModalSending}
           error={closingModalError}
-          consentToEmail={!!context.consentToEmail}
         />
       )}
 
