@@ -610,12 +610,13 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
     if (!match) return;
     try {
       const extracted = JSON.parse(match[1]) as { name?: string | null; company?: string | null; role?: string | null };
+      const hasData = extracted.name || extracted.company || extracted.role;
       setContext(prev => {
         const updated: typeof prev = {
           ...prev,
-          ...(extracted.name   ? { recruiterName: extracted.name }   : {}),
-          ...(extracted.company ? { company: extracted.company }     : {}),
-          ...(extracted.role    ? { role: extracted.role }           : {}),
+          ...(extracted.name    ? { recruiterName: extracted.name }  : {}),
+          ...(extracted.company ? { company: extracted.company }      : {}),
+          ...(extracted.role    ? { role: extracted.role }            : {}),
         };
         try {
           sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(updated));
@@ -629,6 +630,19 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
         } catch {}
         return updated;
       });
+      // Persist to Supabase in the background — non-blocking
+      if (hasData) {
+        fetch('/api/session', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId,
+            ...(extracted.name    ? { recruiterName: extracted.name }  : {}),
+            ...(extracted.company ? { company: extracted.company }      : {}),
+            ...(extracted.role    ? { role: extracted.role }            : {}),
+          }),
+        }).catch(() => {});
+      }
     } catch {}
   }, [sessionId]);
 
@@ -767,14 +781,15 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 voiceTriggeredRef.current = false;
                 playResponse(cleanContent, assistantMessage.id);
               }
-              // Show closing modal after a short delay so the user can read the farewell first
+              // Show closing modal after a delay scaled to message length so the recruiter can read first
               if (hasModalTrigger && !closingModalShownRef.current && !insightsUnlocked) {
                 closingModalShownRef.current = true;
+                const readDelay = Math.min(5000, Math.max(4000, cleanContent.length * 12));
                 setTimeout(() => {
                   setClosingModalEmail('');
                   setClosingModalGdprChecked(false);
                   setClosingModalOpen(true);
-                }, 2200);
+                }, readDelay);
               }
               return;
             } else if (event.type === 'error' && event.message) {

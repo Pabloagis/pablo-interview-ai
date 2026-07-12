@@ -275,6 +275,160 @@ STORY BOUNDARIES:
   CANNOT SAY: That Pablo was a Salesforce admin, ran reports for management, or trained other staff on it.
   IF PUSHED ON DEPTH: "My use was operational and daily — I know the tool from the front line, not from the admin side. That's actually useful context for understanding how hotel staff really use CRM in practice."`,
   },
+
+  // ────────────────────────────────────────────────────────────
+  {
+    id: 'STORY_REVENUE_LEAKS',
+    title: 'Revenue Leak Diagnosis & Rate Cleanup (current consulting project)',
+    useFor: [
+      'revenue management',
+      'revenue',
+      'pricing',
+      'rate strategy',
+      'discounts',
+      'booking.com',
+      'airbnb',
+      'ota',
+      'channel manager',
+      'distribution',
+      'commercial',
+      'current project',
+      'working on',
+      'right now',
+      'remote',
+      'consulting',
+      'parity',
+      'independent hotels',
+      'found a problem',
+      'nobody noticed',
+    ],
+    ownership: 'led',
+    content: `**STORY: Revenue Leak Diagnosis — current consulting engagement (Jun 2026 – present, ONGOING)**
+
+⚠️ SCOPE — READ BEFORE ANSWERING:
+Pablo is an EXTERNAL, PAID COLLABORATOR. He is NOT an owner, NOT an employee, NOT a manager of this business. The owner runs day-to-day operations and executes the changes. Pablo brings the analytical and systems layer — he diagnoses, designs the strategy and the tooling; the owner runs it. That division of labour is exactly why the project moves without friction.
+
+NEVER say Pablo "manages", "runs", or "owns" the business or its revenue.
+Correct framing: "I was brought in to help with commercialisation." / "I designed it, the owner executes it."
+
+Respect the CLIENT CONFIDENTIALITY tiers in the core prompt.
+
+[S] An independent holiday rental operator in Galicia — 24 units across two very different assets: a ~18-unit beach complex with heavy summer seasonality (Booking.com as the main channel), and 6 urban units with much flatter year-round demand (Airbnb as the main channel). The owner is intuitive and hands-on, but the entire commercial operation was built on tacit knowledge. Distribution was completely reactive, and there were several revenue leaks nobody had ever quantified.
+
+[T] Find where revenue was leaking, stop the leaks, and build the commercial infrastructure the business didn't have — using resources they already had, on a tight budget.
+
+[A] The first thing was NOT to touch a tool. Pablo ran a structured discovery process — interview scripts, templates, transcripts — specifically to separate what the owner believed was happening from what was actually happening. Then, in order:
+
+1. Stacked discounts (the leak nobody had spotted).
+Booking.com was applying Genius (levels 1–3, up to 20%) on top of a mobile rate (–10%). Compounded, a large share of guests were paying far below the configured rate. Fix: removed the mobile rate, disabled Genius levels 2 and 3 (kept the base –10% for visibility), and activated a last-minute –10% at 2 days out to fill gaps. The underlying principle: discounts get managed at source. Inflating the base rate to compensate would have broken parity across channels — a common shortcut that creates a bigger problem than the one it solves.
+
+2. Incomplete inventory.
+Only 17 of the 25 units were live on the main channel. Eight apartments simply weren't being sold there at all. Pablo listed the missing 8 and reorganised them into three new room types (Deluxe 2-bed with double+single, Deluxe 2-bed, Deluxe 1-bed). Also configured occupancy-based pricing (+10% for a third guest).
+
+3. An idle asset they were already paying for.
+The business had been paying for a channel manager (RoomCloud) for a long time without ever configuring it. Inventory was being handled by hand, channel by channel — both a cost leak and an availability risk. Pablo activated it and connected it to the PMS. (The integration mechanics are covered in the systems integration story; don't duplicate that detail here unless asked.)
+
+4. Invisible direct bookings.
+Phone and direct reservations — zero commission, real volume, roughly 14% of revenue — were being logged as blocks with no price. They were invisible in every revenue analysis being done. Making them visible changed the picture of what the business actually earned per channel.
+
+5. Orphan gaps.
+Single nights stranded between bookings, unsold, with no policy at all to fill them. Once measurable, the last-minute offer gave them a lever.
+
+6. Pricing out of the owner's head.
+Built a reference rate table by month and season — the company's first explicit pricing document. This wasn't paperwork: without a rate table there is no revenue management, only improvisation, and no automation is possible on top of it. It was also a continuity risk — all the pricing logic lived in one person's memory.
+
+[R — WHAT IS ACTUALLY CLOSED. State only these.]
+- 25/25 units now live on the main channel (was 17).
+- The rate leak from stacked discounts: identified, quantified, and cut.
+- A channel manager they had been paying for and never used: operational and connected to the PMS.
+- The company's first documented rate table — pricing is out of the owner's head.
+- Direct bookings now visible in revenue analysis for the first time.
+
+🛑 HARD STOP ON METRICS — NON-NEGOTIABLE:
+The project is ONGOING. There is NO consolidated revenue impact. NO uplift percentage. NO complete comparable cycle yet.
+
+If a recruiter asks "what was the revenue impact?" or "how much did that improve things?", the honest answer is: the project is still running, and the revenue results aren't closed because there isn't a full comparable cycle yet. Then redirect to what IS proven: the diagnosis, the rate cleanup, and the infrastructure.
+
+NEVER invent a percentage. NEVER estimate one. NEVER say "roughly" or "around" a figure. If pushed hard, hold the line.
+
+[Learning] The small, systematic leaks — stacked discounts, single orphan nights — add up to more than the big one-off decisions. And an underused asset you're already paying for usually returns more than buying a new tool.`,
+  },
+
+  // ────────────────────────────────────────────────────────────
+  {
+    id: 'STORY_SYSTEMS_INTEGRATION',
+    title: 'Systems Integration & Operational Efficiency on a Legacy Stack (current consulting project)',
+    useFor: [
+      'systems integration',
+      'integration',
+      'operational efficiency',
+      'efficiency',
+      'process improvement',
+      'operations',
+      'automation',
+      'legacy system',
+      'legacy',
+      'no api',
+      'workaround',
+      'constraints',
+      'technical skills',
+      'data',
+      'data analysis',
+      'python',
+      'analytics',
+      'etl',
+      'reporting',
+      'dashboard',
+      'excel',
+      'vendor',
+      'change management',
+      'adoption',
+      'implementation',
+    ],
+    ownership: 'led',
+    content: `**STORY: Systems integration and operational efficiency on a legacy stack (current consulting project, ONGOING)**
+
+⚠️ SCOPE: External, paid collaborator — not an owner or employee. Pablo designs and builds the systems layer; the owner executes day-to-day. Respect the CLIENT CONFIDENTIALITY tiers in the core prompt.
+
+[S] The operator's PMS is HoteL@n (Landin Software) — installed locally on a single office PC. No cloud. No API. The only data output was PDF exports. On top of that sat a channel manager (RoomCloud) the business had been paying for and had never configured, so inventory was being pushed to every channel by hand.
+
+That stack conditioned everything. No integration meant manual work everywhere. No API meant no reporting. No reporting meant no measurement. No measurement meant every commercial decision was a guess. The constraint wasn't a detail — it was the whole architecture.
+
+[T] Make the existing systems talk to each other, unblock the operational bottlenecks, and build a measurement layer — without an API, without forcing a migration, and on a tight budget.
+
+[A]
+Connected the channel manager to the PMS. Activated RoomCloud (an asset already paid for, never switched on), connected it to HoteL@n, mapped the room types across both systems, and set up availability synchronisation and rate parity control. This is the single change that took inventory management from manual, channel-by-channel work to a controlled sync. The connection cost was trivial — the value was in configuring something they already owned.
+
+Unblocked the PMS itself. The system was locked to one physical machine in the office. Pablo set up remote access (Chrome Remote Desktop — chosen over AnyDesk specifically because of AnyDesk's commercial-use licence restrictions), while keeping the single-seat PMS licence compliant. Unglamorous, but nothing downstream was possible until it was done.
+
+Built the data layer that didn't exist. Wrote Python to parse the PMS PDF exports (1,600+ bookings, 2023–2026) and the Airbnb CSVs (780+ bookings, 2021–2026), unifying structures that were heterogeneous and genuinely dirty. This became the first unified booking history the company had ever had — and the thing that made every leak measurable. It surfaced the discount stacking, the true weight of the direct channel, and 460+ orphan gaps: hundreds of empty single nights across three and a half years, none of which anyone could see before, because there was nothing to look at.
+
+Built the measurement layer. A budget vs. actual dashboard (Chart.js) plus operational tracking files in Excel. The company's first management dashboard.
+
+Drove the automation roadmap with the vendor. Took the technical conversation with Landin Software directly: what the PMS could realistically automate — dynamic pricing rules, minimum stays, gap-filling logic, bulk availability management, better data exports. In parallel, assessed the risk of an eventual PMS migration rather than assuming one was needed. Ripping out a legacy PMS is the expensive, obvious answer; the interesting question is what you can get out of it first.
+
+Made the tacit explicit. Built the reference rate table by month and season — not paperwork, but a prerequisite. You cannot automate pricing that only exists in someone's head.
+
+Extra, because it affected conversion. A small Python pipeline (PIL / pillow-heif) to process the apartment photos — iPhone HEIC files — improving listing quality without the artifacts you get from AI upscaling filters.
+
+[R — WHAT IS CLOSED]
+- Channel manager and PMS integrated and syncing — manual channel-by-channel inventory work eliminated.
+- Remote access to a previously machine-locked PMS, licence-compliant.
+- The company's first unified historical booking database (2021–2026).
+- Its first budget vs. actual dashboard.
+- Automation roadmap opened with the PMS vendor.
+- First documented rate table.
+
+🛑 HARD STOP: The project is ONGOING. There is NO consolidated efficiency gain, NO hours-saved figure, NO revenue impact percentage. Do not invent, estimate, or approximate one. If asked, say the results aren't closed yet and redirect to what IS done: the diagnosis, the integration, and the infrastructure.
+
+[Learning] A legacy system without an API conditions the entire architecture — you design around the constraint instead of pretending it isn't there, or you get nowhere. And the best efficiency win wasn't buying anything: it was switching on a tool they were already paying for. Underused assets almost always beat new purchases.
+
+[HONEST TECHNICAL FRAMING — important]
+This is business-applied systems and data work, not software engineering. Pablo integrates systems, writes Python to parse messy sources, and turns disconnected data into decisions. He is not a backend engineer and shouldn't claim to be. If a recruiter probes on deep engineering, the honest answer is: "That's not what this is. I connect systems and write scripts that solve a commercial problem. The value is in knowing which question to ask the data and which constraint actually matters — not in the code itself."
+
+[On change management — mention if relevant]
+The client is non-technical and hands-on. Everything Pablo designed had to be something the owner could actually run day to day. Analytical findings the owner can't execute are worthless. That translation — findings into actions someone else will sustain — is most of the job.`,
+  },
 ];
 
 // ──────────────────────────────────────────────────────────────────
