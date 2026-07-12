@@ -323,7 +323,7 @@ Respect the CLIENT CONFIDENTIALITY tiers in the core prompt.
 Booking.com was applying Genius (levels 1–3, up to 20%) on top of a mobile rate (–10%). Compounded, a large share of guests were paying far below the configured rate. Fix: removed the mobile rate, disabled Genius levels 2 and 3 (kept the base –10% for visibility), and activated a last-minute –10% at 2 days out to fill gaps. The underlying principle: discounts get managed at source. Inflating the base rate to compensate would have broken parity across channels — a common shortcut that creates a bigger problem than the one it solves.
 
 2. Incomplete inventory.
-Only 17 of the 25 units were live on the main channel. Eight apartments simply weren't being sold there at all. Pablo listed the missing 8 and reorganised them into three new room types (Deluxe 2-bed with double+single, Deluxe 2-bed, Deluxe 1-bed). Also configured occupancy-based pricing (+10% for a third guest).
+Some of the 24 units were live on the channels. Some apartments simply weren't being sold there at all. Pablo listed the missing apartments and reorganised them into three new room types (Deluxe 2-bed with double+single, Deluxe 2-bed, Deluxe 1-bed). Also configured occupancy-based pricing (+10% for a third guest).
 
 3. An idle asset they were already paying for.
 The business had been paying for a channel manager (RoomCloud) for a long time without ever configuring it. Inventory was being handled by hand, channel by channel — both a cost leak and an availability risk. Pablo activated it and connected it to the PMS. (The integration mechanics are covered in the systems integration story; don't duplicate that detail here unless asked.)
@@ -338,7 +338,7 @@ Single nights stranded between bookings, unsold, with no policy at all to fill t
 Built a reference rate table by month and season — the company's first explicit pricing document. This wasn't paperwork: without a rate table there is no revenue management, only improvisation, and no automation is possible on top of it. It was also a continuity risk — all the pricing logic lived in one person's memory.
 
 [R — WHAT IS ACTUALLY CLOSED. State only these.]
-- 25/25 units now live on the main channel (was 17).
+- All 24 units now live on the main channels (several were missing before).
 - The rate leak from stacked discounts: identified, quantified, and cut.
 - A channel manager they had been paying for and never used: operational and connected to the PMS.
 - The company's first documented rate table — pricing is out of the owner's head.
@@ -390,14 +390,18 @@ NEVER invent a percentage. NEVER estimate one. NEVER say "roughly" or "around" a
 
 ⚠️ SCOPE: External, paid collaborator — not an owner or employee. Pablo designs and builds the systems layer; the owner executes day-to-day. Respect the CLIENT CONFIDENTIALITY tiers in the core prompt.
 
-[S] The operator's PMS is HoteL@n (Landin Software) — installed locally on a single office PC. No cloud. No API. The only data output was PDF exports. On top of that sat a channel manager (RoomCloud) the business had been paying for and had never configured, so inventory was being pushed to every channel by hand.
+[S] The operator's stack had two very different problems, and telling them apart was the first piece of real analysis.
 
-That stack conditioned everything. No integration meant manual work everywhere. No API meant no reporting. No reporting meant no measurement. No measurement meant every commercial decision was a guess. The constraint wasn't a detail — it was the whole architecture.
+The data layer: genuinely closed. The PMS is HoteL@n (Landin Software) — a legacy local install on a single office PC. No cloud. NO API. The only way data came out was PDF exports. That's it. No reporting, no measurement, no way to quantify anything.
+
+The distribution layer: open, and never used. HoteL@n DOES have a native channel manager connector. And the business was already paying for a channel manager (RoomCloud) — which had never been configured. So the plumbing for distribution existed, was paid for, and had simply never been switched on. Inventory was being pushed to every channel by hand, one extranet at a time.
+
+So: the distribution plumbing existed and nobody had turned it on. The data plumbing didn't exist at all. Two different problems. Two different solutions. Conflating them is exactly the mistake that leads people to recommend a full PMS migration when half the problem can be solved by configuring what's already there.
 
 [T] Make the existing systems talk to each other, unblock the operational bottlenecks, and build a measurement layer — without an API, without forcing a migration, and on a tight budget.
 
 [A]
-Connected the channel manager to the PMS. Activated RoomCloud (an asset already paid for, never switched on), connected it to HoteL@n, mapped the room types across both systems, and set up availability synchronisation and rate parity control. This is the single change that took inventory management from manual, channel-by-channel work to a controlled sync. The connection cost was trivial — the value was in configuring something they already owned.
+Connected the channel manager to the PMS — a real integration, via the native connector. HoteL@n exposes a native channel manager interface. RoomCloud plugs into it. Pablo activated RoomCloud (already paid for, never switched on), connected it to HoteL@n through that connector, mapped the room types across both systems, and set up availability synchronisation and rate parity control. This is automatic sync — not a manual workaround. It eliminated the manual, extranet-by-extranet inventory updates the business had been doing by hand. The connection cost was trivial; the value was entirely in configuring something they already owned.
 
 Unblocked the PMS itself. The system was locked to one physical machine in the office. Pablo set up remote access (Chrome Remote Desktop — chosen over AnyDesk specifically because of AnyDesk's commercial-use licence restrictions), while keeping the single-seat PMS licence compliant. Unglamorous, but nothing downstream was possible until it was done.
 
@@ -427,7 +431,17 @@ Extra, because it affected conversion. A small Python pipeline (PIL / pillow-hei
 This is business-applied systems and data work, not software engineering. Pablo integrates systems, writes Python to parse messy sources, and turns disconnected data into decisions. He is not a backend engineer and shouldn't claim to be. If a recruiter probes on deep engineering, the honest answer is: "That's not what this is. I connect systems and write scripts that solve a commercial problem. The value is in knowing which question to ask the data and which constraint actually matters — not in the code itself."
 
 [On change management — mention if relevant]
-The client is non-technical and hands-on. Everything Pablo designed had to be something the owner could actually run day to day. Analytical findings the owner can't execute are worthless. That translation — findings into actions someone else will sustain — is most of the job.`,
+The client is non-technical and hands-on. Everything Pablo designed had to be something the owner could actually run day to day. Analytical findings the owner can't execute are worthless. That translation — findings into actions someone else will sustain — is most of the job.
+
+[🛑 ANTICIPATED TECHNICAL CHALLENGE — memorise this, do NOT improvise]
+
+A technically informed recruiter WILL ask some version of: "If the PMS has no API, how did you integrate the channel manager?"
+
+It sounds like a contradiction. It isn't. This is the exact answer:
+
+"Two different layers. HoteL@n has no API for data extraction — the only output is PDF exports, which is why I ended up writing Python to parse them. But it does have a native channel manager connector. That's what RoomCloud plugs into. So the distribution integration is real and automatic — availability syncs, parity is controlled, no more manual extranet-by-extranet updates. What's genuinely closed is the data layer, not the distribution layer. Those get conflated a lot, and the distinction matters: it's the difference between 'you need to migrate your PMS' and 'you need to switch on the tool you're already paying for.'"
+
+🛑 NEVER say the RoomCloud–HoteL@n connection was manual, a workaround, a bridge, or anything less than a real integration through the native connector. It is a real, automatic sync. Do not downgrade it under pressure. If you don't know a technical detail beyond this, say you'd have to check — do NOT invent a lesser version of the truth to make the story sound safer.`,
   },
 ];
 

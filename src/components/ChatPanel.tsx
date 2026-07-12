@@ -85,7 +85,7 @@ function ClosingModal({
 
           {/* Bullets */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, marginBottom: 14 }}>
-            {(['My CV (PDF)', 'LinkedIn profile', 'This conversation transcript'] as const).map((item) => (
+            {[t.closingModalBullet1, t.closingModalBullet2, t.closingModalBullet3].map((item) => (
               <div key={item} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
                   <polyline points="20 6 9 17 4 12" />
