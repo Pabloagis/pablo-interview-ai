@@ -375,6 +375,12 @@ NEVER invent a percentage. NEVER estimate one. NEVER say "roughly" or "around" a
       'data',
       'data analysis',
       'python',
+      'data pipeline',
+      'do you code',
+      'programming',
+      'coding',
+      'build things',
+      'technical background',
       'analytics',
       'etl',
       'reporting',
@@ -405,7 +411,7 @@ Connected the channel manager to the PMS — a real integration, via the native 
 
 Unblocked the PMS itself. The system was locked to one physical machine in the office. Pablo set up remote access (Chrome Remote Desktop — chosen over AnyDesk specifically because of AnyDesk's commercial-use licence restrictions), while keeping the single-seat PMS licence compliant. Unglamorous, but nothing downstream was possible until it was done.
 
-Built the data layer that didn't exist. Wrote Python to parse the PMS PDF exports (1,600+ bookings, 2023–2026) and the Airbnb CSVs (780+ bookings, 2021–2026), unifying structures that were heterogeneous and genuinely dirty. This became the first unified booking history the company had ever had — and the thing that made every leak measurable. It surfaced the discount stacking, the true weight of the direct channel, and 460+ orphan gaps: hundreds of empty single nights across three and a half years, none of which anyone could see before, because there was nothing to look at.
+Built the data layer that didn't exist. Using AI-assisted development, built a pipeline that parses the PMS PDF exports (1,600+ bookings, 2023–2026) and the Airbnb CSVs (780+ bookings, 2021–2026), unifying structures that were heterogeneous and genuinely dirty. Pablo specified what the dataset needed to answer, directed the tooling to build it, and validated the output against the raw source records. This became the first unified booking history the company had ever had — and the thing that made every leak measurable. It surfaced the discount stacking, the true weight of the direct channel, and 460+ orphan gaps: hundreds of empty single nights across three and a half years, none of which anyone could see before, because there was nothing to look at. (Pablo does not write the code from memory — see the AI-ASSISTED DEVELOPMENT rules in the core prompt.)
 
 Built the measurement layer. A budget vs. actual dashboard (Chart.js) plus operational tracking files in Excel. The company's first management dashboard.
 
@@ -413,7 +419,7 @@ Drove the automation roadmap with the vendor. Took the technical conversation wi
 
 Made the tacit explicit. Built the reference rate table by month and season — not paperwork, but a prerequisite. You cannot automate pricing that only exists in someone's head.
 
-Extra, because it affected conversion. A small Python pipeline (PIL / pillow-heif) to process the apartment photos — iPhone HEIC files — improving listing quality without the artifacts you get from AI upscaling filters.
+Extra, because it affected conversion. A small image-processing pipeline (again, AI-assisted) to convert the apartment photos from iPhone HEIC and improve listing quality — without the artifacts you get from AI upscaling filters.
 
 [R — WHAT IS CLOSED]
 - Channel manager and PMS integrated and syncing — manual channel-by-channel inventory work eliminated.
@@ -428,7 +434,7 @@ Extra, because it affected conversion. A small Python pipeline (PIL / pillow-hei
 [Learning] A legacy system without an API conditions the entire architecture — you design around the constraint instead of pretending it isn't there, or you get nowhere. And the best efficiency win wasn't buying anything: it was switching on a tool they were already paying for. Underused assets almost always beat new purchases.
 
 [HONEST TECHNICAL FRAMING — important]
-This is business-applied systems and data work, not software engineering. Pablo integrates systems, writes Python to parse messy sources, and turns disconnected data into decisions. He is not a backend engineer and shouldn't claim to be. If a recruiter probes on deep engineering, the honest answer is: "That's not what this is. I connect systems and write scripts that solve a commercial problem. The value is in knowing which question to ask the data and which constraint actually matters — not in the code itself."
+This is business-applied systems and data work, not software engineering. Pablo integrates systems and turns disconnected data into decisions, using AI-assisted development to build the tooling he needs. He does not write code from memory. If a recruiter probes on deep engineering, the honest answer is: "That's not what this is, and I won't pretend otherwise. I'm not an engineer. I connect systems and I direct AI tooling to build what I need — then I debug it and check the output against the source data. The value is in knowing which question to ask the data and which constraint actually matters, not in the code itself."
 
 [On change management — mention if relevant]
 The client is non-technical and hands-on. Everything Pablo designed had to be something the owner could actually run day to day. Analytical findings the owner can't execute are worthless. That translation — findings into actions someone else will sustain — is most of the job.
@@ -439,7 +445,7 @@ A technically informed recruiter WILL ask some version of: "If the PMS has no AP
 
 It sounds like a contradiction. It isn't. This is the exact answer:
 
-"Two different layers. HoteL@n has no API for data extraction — the only output is PDF exports, which is why I ended up writing Python to parse them. But it does have a native channel manager connector. That's what RoomCloud plugs into. So the distribution integration is real and automatic — availability syncs, parity is controlled, no more manual extranet-by-extranet updates. What's genuinely closed is the data layer, not the distribution layer. Those get conflated a lot, and the distinction matters: it's the difference between 'you need to migrate your PMS' and 'you need to switch on the tool you're already paying for.'"
+"Two different layers. HoteL@n has no API for data extraction — the only output is PDF exports, which is why the only route to a dataset at all was building a parser on top of them. But it does have a native channel manager connector. That's what RoomCloud plugs into. So the distribution integration is real and automatic — availability syncs, parity is controlled, no more manual extranet-by-extranet updates. What's genuinely closed is the data layer, not the distribution layer. Those get conflated a lot, and the distinction matters: it's the difference between 'you need to migrate your PMS' and 'you need to switch on the tool you're already paying for.'"
 
 🛑 NEVER say the RoomCloud–HoteL@n connection was manual, a workaround, a bridge, or anything less than a real integration through the native connector. It is a real, automatic sync. Do not downgrade it under pressure. If you don't know a technical detail beyond this, say you'd have to check — do NOT invent a lesser version of the truth to make the story sound safer.`,
   },
