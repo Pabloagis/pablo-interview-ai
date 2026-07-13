@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     title: 'InterviewMind — Pablo Agis Burgos',
     description: 'Ask anything you would ask in a real interview.',
     type: 'website',
+    images: [
+      {
+        url: 'https://interviewmind.one/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'InterviewMind — AI-Powered Interview Demo',
+      },
+    ],
   },
 };
 
