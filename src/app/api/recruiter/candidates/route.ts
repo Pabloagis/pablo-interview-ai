@@ -2,6 +2,14 @@ import { NextResponse } from 'next/server';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { REAL_INTERVIEW_QUESTIONS, RECRUITER_CHALLENGE_QUESTIONS, OBJECTION_QUESTIONS } from '@/lib/training-constants';
+import {
+  COVERAGE_NODES,
+  computeReadiness,
+  derivePublishLevel,
+  type CoverageNodeKey,
+  type NodeState,
+  type PublishLevel,
+} from '@/lib/coverage-nodes';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +46,8 @@ export interface CandidateDirectoryItem {
   skills: string[];
   confidence_score: number;
   onboarding_complete: boolean;
+  publish_level: PublishLevel;     // always derived live from coverage_nodes
+  published_at: string | null;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -120,13 +130,14 @@ export async function GET() {
 
     const supabase = createServerSupabaseClient();
 
-    // All 4 queries in parallel — O(1) queries regardless of candidate count
-    const [profilesRes, cvRes, storiesRes, responsesRes] = await Promise.all([
+    // 5 queries in parallel — published candidates only
+    const [profilesRes, cvRes, storiesRes, responsesRes, coverageRes] = await Promise.all([
+      // Only candidates who have explicitly published their agent
       supabase
         .from('profiles')
-        .select('id, full_name, career_goal')
+        .select('id, full_name, career_goal, published_at')
         .eq('role', 'candidate')
-        .not('career_goal', 'is', null),
+        .not('published_at', 'is', null),
       supabase
         .from('candidate_profiles')
         .select('candidate_id, cv_data')
@@ -137,6 +148,10 @@ export async function GET() {
       supabase
         .from('candidate_responses')
         .select('candidate_id, module, question, answer_text, answer_audio_transcript'),
+      // Coverage nodes for live publish-level computation
+      supabase
+        .from('coverage_nodes')
+        .select('candidate_id, node_key, state'),
     ]);
 
     // Build lookup maps for O(1) per-candidate access
@@ -158,21 +173,41 @@ export async function GET() {
       responsesMap.set(r.candidate_id, arr);
     }
 
-    // Only candidates who have both career_goal AND a cv_data row
+    // Coverage nodes → readiness per candidate
+    const coverageMap = new Map<string, Array<{ node_key: string; state: string }>>();
+    for (const row of (coverageRes.data ?? [])) {
+      const arr = coverageMap.get(row.candidate_id) ?? [];
+      arr.push(row);
+      coverageMap.set(row.candidate_id, arr);
+    }
+
+    function computePublishLevel(candidateId: string): PublishLevel {
+      const rows = coverageMap.get(candidateId) ?? [];
+      const states: Record<CoverageNodeKey, NodeState> = Object.fromEntries(
+        COVERAGE_NODES.map(n => [n.key, 'dark' as NodeState])
+      ) as Record<CoverageNodeKey, NodeState>;
+      for (const row of rows) {
+        const key = row.node_key as CoverageNodeKey;
+        if (key in states) states[key] = row.state as NodeState;
+      }
+      return derivePublishLevel(computeReadiness(states));
+    }
+
     const candidates: CandidateDirectoryItem[] = (profilesRes.data ?? [])
-      .filter(p => cvMap.has(p.id))
       .map(p => {
-        const cv = cvMap.get(p.id)!;
+        const cv    = cvMap.get(p.id);
         const score = computeScore(p.id, storiesMap, responsesMap);
         return {
-          id: p.id,
-          full_name: p.full_name ?? 'Unknown',
-          current_role: cv.current_role ?? '',
-          years_experience: cv.years_experience ?? 0,
-          career_goal: parseCareerGoal(p.career_goal),
-          skills: (cv.skills ?? []).slice(0, 5),
-          confidence_score: score,
+          id:                  p.id,
+          full_name:           p.full_name ?? 'Unknown',
+          current_role:        cv?.current_role ?? '',
+          years_experience:    cv?.years_experience ?? 0,
+          career_goal:         parseCareerGoal(p.career_goal),
+          skills:              (cv?.skills ?? []).slice(0, 5),
+          confidence_score:    score,
           onboarding_complete: score >= 60,
+          publish_level:       computePublishLevel(p.id),
+          published_at:        p.published_at ?? null,
         };
       });
 

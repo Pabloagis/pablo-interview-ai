@@ -26,6 +26,34 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
+type PublishLevel = 'basic' | 'solid' | 'sharp' | 'unpublished';
+
+const LEVEL_COLOR: Record<PublishLevel, string> = {
+  sharp:       '#60c080',
+  solid:       '#5080f0',
+  basic:       '#4060d0',
+  unpublished: '#6080a0',
+};
+
+const LEVEL_LABEL: Record<PublishLevel, string> = {
+  sharp:       'Sharp',
+  solid:       'Solid',
+  basic:       'Basic',
+  unpublished: 'Unpublished',
+};
+
+function PublishLevelBadge({ level }: { level: PublishLevel }) {
+  const color = LEVEL_COLOR[level];
+  return (
+    <span
+      className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
+      style={{ color, background: `${color}1a` }}
+    >
+      {LEVEL_LABEL[level]}
+    </span>
+  );
+}
+
 function SkillChip({ label }: { label: string }) {
   return (
     <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-medium bg-[rgba(64,96,208,0.12)] border border-[rgba(64,96,208,0.2)] text-[rgba(160,180,255,0.8)]">
@@ -47,9 +75,12 @@ function CandidateCard({
     <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-5 flex flex-col gap-4 hover:border-[rgba(255,255,255,0.13)] transition-colors">
       {/* Header */}
       <div>
-        <p className="text-sm font-semibold text-white leading-snug">
-          {candidate.full_name}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-white leading-snug">
+            {candidate.full_name}
+          </p>
+          <PublishLevelBadge level={(candidate.publish_level as PublishLevel) ?? 'basic'} />
+        </div>
         {candidate.current_role && (
           <p className="text-xs text-[rgba(255,255,255,0.45)] mt-0.5">
             {candidate.current_role}
@@ -113,9 +144,9 @@ function EmptyState({ search }: { search: string }) {
         </>
       ) : (
         <>
-          <p className="text-sm font-medium text-white mb-1">No candidates ready yet</p>
+          <p className="text-sm font-medium text-white mb-1">No candidates published yet</p>
           <p className="text-xs text-[rgba(255,255,255,0.35)]">
-            Candidates appear here once they've uploaded their CV and set a career goal.
+            Candidates appear here once they've published their agent — Basic, Solid, or Sharp.
           </p>
         </>
       )}
@@ -202,19 +233,16 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
     if (tab === 'history' && sessions.length === 0) loadHistory();
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Client-side search filter
+  // Client-side search filter (server already limits to published candidates)
   const filteredCandidates = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return candidates.filter(c => c.onboarding_complete);
-    return candidates.filter(c => {
-      if (!c.onboarding_complete) return false;
-      return (
-        c.full_name.toLowerCase().includes(q) ||
-        c.current_role.toLowerCase().includes(q) ||
-        c.career_goal.toLowerCase().includes(q) ||
-        c.skills.some(s => s.toLowerCase().includes(q))
-      );
-    });
+    if (!q) return candidates;
+    return candidates.filter(c =>
+      c.full_name.toLowerCase().includes(q) ||
+      c.current_role.toLowerCase().includes(q) ||
+      c.career_goal.toLowerCase().includes(q) ||
+      c.skills.some(s => s.toLowerCase().includes(q))
+    );
   }, [candidates, search]);
 
   const handleInterview = async (candidateId: string) => {
@@ -337,13 +365,7 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
               </div>
             )}
 
-            {/* Incomplete profiles note */}
-            {!loadingCandidates && candidates.some(c => !c.onboarding_complete) && (
-              <p className="mt-6 text-xs text-[rgba(255,255,255,0.22)] text-center">
-                {candidates.filter(c => !c.onboarding_complete).length} candidate
-                {candidates.filter(c => !c.onboarding_complete).length !== 1 ? 's' : ''} still completing their Digital Twin — not shown yet.
-              </p>
-            )}
+            {/* Note: candidates filter already limits to published_at IS NOT NULL — no note needed */}
           </>
         )}
 

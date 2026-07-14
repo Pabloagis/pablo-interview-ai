@@ -1,4 +1,26 @@
 import { createServerSupabaseClient } from './supabase';
+import {
+  deriveNodeStates,
+  computeReadiness,
+  derivePublishLevel,
+  buildCoverageMapSection,
+  COVERAGE_NODES,
+  COVERAGE_NODE_MAP,
+  type CoverageInput,
+  type CoverageNodeKey,
+  type EvidenceQuality,
+} from './coverage-nodes';
+
+// Row shape from evidence_items (conversational trainer output).
+interface EvidenceRow {
+  node_key: string;
+  content: string;
+  quality: EvidenceQuality;
+  created_at: string;
+}
+
+// Max conversational-evidence items injected into the prompt (bounds prompt size).
+const MAX_EVIDENCE_ITEMS = 40;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -425,6 +447,51 @@ How this candidate thinks, works, and communicates. Use this to inform tone and 
 ${entries.join('\n\n')}`;
 }
 
+function buildConversationalEvidenceSection(evidenceRows: EvidenceRow[]): string {
+  // Only verified + solid reach the agent's mouth. vague / missing_detail are
+  // EXCLUDED entirely — the candidate could not substantiate them, so the agent
+  // must not repeat them. [COVERAGE_MAP] handles the still-unsupported topics.
+  const usable = evidenceRows.filter(
+    r => r.quality === 'verified' || r.quality === 'solid'
+  );
+
+  if (usable.length === 0) return '';
+
+  // Cap at MAX_EVIDENCE_ITEMS, keeping the most recent overall.
+  const capped = [...usable]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, MAX_EVIDENCE_ITEMS);
+
+  // Group by node, preserving COVERAGE_NODES order for stable output.
+  const byNode = new Map<CoverageNodeKey, EvidenceRow[]>();
+  for (const row of capped) {
+    const key = row.node_key as CoverageNodeKey;
+    if (!COVERAGE_NODE_MAP.has(key)) continue;
+    const arr = byNode.get(key) ?? [];
+    arr.push(row);
+    byNode.set(key, arr);
+  }
+
+  if (byNode.size === 0) return '';
+
+  const blocks: string[] = [];
+  for (const node of COVERAGE_NODES) {
+    const rows = byNode.get(node.key);
+    if (!rows?.length) continue;
+    const lines = rows
+      .map(r => `- ${r.content}  (${r.quality})`)
+      .join('\n');
+    blocks.push(`${node.label}:\n${lines}`);
+  }
+
+  return `## [CONVERSATIONAL_EVIDENCE]
+
+Additional facts this candidate confirmed during training, grouped by topic.
+Treat these as true and usable. Do not embellish them.
+
+${blocks.join('\n\n')}`;
+}
+
 function buildBehaviorRulesSection(
   name: string,
   completeness: ReturnType<typeof getCandidateDataCompleteness>
@@ -506,6 +573,8 @@ export async function buildCandidateSystemPrompt(
     responsesRes,
     objectionsRes,
     contextRes,
+    rawDataRes,
+    evidenceRes,
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -534,7 +603,17 @@ export async function buildCandidateSystemPrompt(
       .select('context')
       .eq('candidate_id', userId)
       .single(),
+    supabase
+      .from('candidate_raw_data')
+      .select('source_type')
+      .eq('candidate_id', userId),
+    supabase
+      .from('evidence_items')
+      .select('node_key, content, quality, created_at')
+      .eq('candidate_id', userId),
   ]);
+
+  const evidenceRows = (evidenceRes.data ?? []) as EvidenceRow[];
 
   const data: CandidateTrainingData = {
     profile: {
@@ -552,6 +631,31 @@ export async function buildCandidateSystemPrompt(
   const name =
     data.profile.full_name || data.cvData?.full_name || 'the candidate';
 
+  // Conversational evidence — verified/solid facts confirmed in training chats.
+  const conversationalEvidenceSection = buildConversationalEvidenceSection(evidenceRows);
+
+  // Coverage map — non-blocking: if derivation throws, skip the section.
+  // Union'd with evidence so a topic lit only by conversation is not falsely refused.
+  let coverageSection = '';
+  try {
+    const coverageInput: CoverageInput = {
+      profile: { career_goal: data.profile.career_goal },
+      cvData: data.cvData as CoverageInput['cvData'],
+      stories: data.stories,
+      responses: data.responses,
+      context: data.context,
+      rawDataSourceTypes: (rawDataRes.data ?? []).map(r => r.source_type as string),
+      evidenceItems: evidenceRows.map(r => ({ node_key: r.node_key, quality: r.quality })),
+    };
+    const states = deriveNodeStates(coverageInput);
+    const readiness = computeReadiness(states);
+    const publishLevel = derivePublishLevel(readiness);
+    coverageSection = buildCoverageMapSection(states);
+    console.log('[candidate-prompt] coverage readiness:', readiness, 'level:', publishLevel);
+  } catch (err) {
+    console.error('[candidate-prompt] coverage derivation failed (non-fatal):', err);
+  }
+
   console.log(
     '[candidate-prompt] built for userId:',
     userId,
@@ -559,6 +663,9 @@ export async function buildCandidateSystemPrompt(
     completeness
   );
 
+  // Order: identity → training data → [CONVERSATIONAL_EVIDENCE] → [COVERAGE_MAP] → rules.
+  // Evidence sits with the factual data; the coverage-map refusals come AFTER all
+  // known facts so they act as the final gate on what the agent still cannot claim.
   return [
     buildIdentitySection(data),
     buildWorkHistorySection(data.cvData),
@@ -568,6 +675,8 @@ export async function buildCandidateSystemPrompt(
     buildStoriesSection(data.stories),
     buildInterviewResponsesSection(data.responses),
     buildCommunicationStyleSection(data.context, data.responses),
+    conversationalEvidenceSection,
+    coverageSection,
     buildBehaviorRulesSection(name, completeness),
-  ].join('\n\n');
+  ].filter(Boolean).join('\n\n');
 }
