@@ -102,28 +102,28 @@ export const COVERAGE_NODES: CoverageNodeConfig[] = [
     cluster: 'track_record',
     label: 'Role history',
     description: 'Work history, tenures, and progression from CV',
-    darkRefusal: "I haven't uploaded my CV yet, so I can't speak to specific dates or company names right now.",
+    darkRefusal: "I'd rather walk you through my background properly than rattle off dates and titles — where would you like me to start?",
   },
   {
     key: 'signature_stories',
     cluster: 'track_record',
     label: 'Signature stories',
     description: 'STAR behavioral examples across story types',
-    darkRefusal: "I haven't added behavioral examples to my profile yet — happy to discuss one directly.",
+    darkRefusal: "I'd rather give you a real example in context than reach for a rehearsed one — what kind of situation are you trying to get a read on?",
   },
   {
     key: 'metrics_impact',
     cluster: 'track_record',
     label: 'Metrics & impact',
     description: 'Quantified results and verified professional artefacts',
-    darkRefusal: "I don't have specific metrics captured in my profile yet — happy to speak to the impact qualitatively.",
+    darkRefusal: "I'd rather not throw out numbers I can't stand behind — I can tell you concretely what changed and how I got there.",
   },
   {
     key: 'tools_systems',
     cluster: 'track_record',
     label: 'Tools & systems',
     description: 'Technical tools, platforms, and systems from CV',
-    darkRefusal: "My specific tools and systems aren't captured in my profile yet.",
+    darkRefusal: "I'd rather walk you through the systems I've actually operated than hand you a list — what's relevant to the role?",
   },
   // ── Judgement ─────────────────────────────────────────────────────
   {
@@ -131,28 +131,28 @@ export const COVERAGE_NODES: CoverageNodeConfig[] = [
     cluster: 'judgement',
     label: 'Failure modes',
     description: 'Biggest failure and lesson-learned stories',
-    darkRefusal: "I haven't added a failure or lesson-learned example to my profile yet — happy to discuss one directly.",
+    darkRefusal: "That's a conversation I'd rather have with you directly than reach for a tidy, rehearsed answer.",
   },
   {
     key: 'conflict_disagreement',
     cluster: 'judgement',
     label: 'Conflict & disagreement',
     description: 'How I handle conflict and stakeholder disagreement',
-    darkRefusal: "I don't have a conflict or disagreement story captured yet.",
+    darkRefusal: "I'd rather talk through how I actually handle disagreement than pull one story out of context — happy to get into it.",
   },
   {
     key: 'decision_style',
     cluster: 'judgement',
     label: 'Decision style',
     description: 'Communication style self-assessment responses',
-    darkRefusal: "My communication and decision-making style responses aren't in my profile yet.",
+    darkRefusal: "You'll probably get a better feel for how I make decisions from how this conversation goes than from me describing it.",
   },
   {
     key: 'limits_gaps',
     cluster: 'judgement',
     label: 'Limits & gaps',
     description: 'Recruiter challenge question responses — honest self-awareness',
-    darkRefusal: "I haven't recorded my responses to challenge questions yet.",
+    darkRefusal: "I'd rather be straight with you about where I'm strong and where I'm still building — in the context of what the role actually needs.",
   },
   // ── Motivation ────────────────────────────────────────────────────
   {
@@ -160,14 +160,14 @@ export const COVERAGE_NODES: CoverageNodeConfig[] = [
     cluster: 'motivation',
     label: 'Career narrative',
     description: '"Tell me about yourself" answer and career goal',
-    darkRefusal: "I haven't set up my career narrative yet — happy to walk you through it directly.",
+    darkRefusal: "I'd rather walk you through where I've been and where I'm headed in my own words — want me to start there?",
   },
   {
     key: 'company_fit',
     cluster: 'motivation',
     label: 'Company fit',
     description: 'Career goals and interview readiness responses',
-    darkRefusal: "I haven't articulated my specific company fit criteria in detail yet.",
+    darkRefusal: "What I'm looking for depends a lot on the specifics — tell me about the role and I'll be honest about the fit.",
   },
   // ── Logistics ─────────────────────────────────────────────────────
   {
@@ -175,14 +175,14 @@ export const COVERAGE_NODES: CoverageNodeConfig[] = [
     cluster: 'logistics',
     label: 'Constraints',
     description: 'Location, availability, visa, notice period — no collection mechanism yet',
-    darkRefusal: "My availability and constraints are a conversation I'd prefer to have directly.",
+    darkRefusal: "That's something I'd rather work out with you directly — what does the role need on timing?",
   },
   {
     key: 'compensation',
     cluster: 'logistics',
     label: 'Compensation',
     description: 'Salary expectations — no collection mechanism yet',
-    darkRefusal: "Compensation expectations are something I'd prefer to discuss directly.",
+    darkRefusal: "I'd rather talk numbers once we both know there's a real fit — where are you on the range for the role?",
   },
 ];
 
@@ -478,23 +478,20 @@ export function buildCoverageMapSection(
   const darkNodes = COVERAGE_NODES.filter(n => states[n.key] === 'dark');
 
   if (darkNodes.length === 0) {
-    return `## [COVERAGE_MAP]\n\nAll coverage nodes have some evidence. Use the training data above freely.`;
+    return `## [COVERAGE_MAP]\n\nYou have usable information on every topic that follows. Draw on everything above freely and speak naturally.`;
   }
 
   const refusals = darkNodes
     .map(n => `- ${n.label}: "${n.darkRefusal}"`)
     .join('\n');
 
-  const readiness = computeReadiness(states);
-  const publishLevel = derivePublishLevel(readiness);
-
   return `## [COVERAGE_MAP]
 
-Readiness: ${readiness}/100 — Publish level: ${publishLevel.toUpperCase()}
+This block is internal routing only. It is never spoken about. Never mention coverage, readiness, scores, levels, a profile, a record, or how any of your knowledge is organised — you are a person in a conversation, not a system reporting on itself.
 
-The following topics have NO evidence in this candidate's profile. When these topics arise, use the exact refusal phrase provided — do not improvise, do not guess, do not construct plausible-sounding answers.
+For each topic listed below you do not have usable information. When one of these comes up, respond with the exact phrasing given for that topic. Do not improvise around it, do not guess, do not construct a plausible-sounding answer, and do not explain why you can't go further — the phrasing already handles it.
 
 ${refusals}
 
-For all other topics (non-dark nodes), draw from the training data above freely and honestly.`;
+For every other topic, draw on the information above freely and honestly.`;
 }
