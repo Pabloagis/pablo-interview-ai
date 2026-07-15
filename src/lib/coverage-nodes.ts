@@ -175,7 +175,7 @@ export const COVERAGE_NODES: CoverageNodeConfig[] = [
     cluster: 'logistics',
     label: 'Constraints',
     description: 'Location, availability, visa, notice period — no collection mechanism yet',
-    darkRefusal: "That's something I'd rather work out with you directly — what does the role need on timing?",
+    darkRefusal: "My availability, notice period, and start date are things I'd rather work out with you directly — what's the timeline on your side?",
   },
   {
     key: 'compensation',
