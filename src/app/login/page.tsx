@@ -43,12 +43,12 @@ export default function LoginPage() {
         .single();
 
       if (profileError || !profile) {
-        // Profile missing — send to candidate dashboard as fallback
-        router.push('/dashboard/candidate');
+        // Profile missing — send to the candidate hub as fallback
+        router.push('/dashboard/candidate/trainer');
         return;
       }
 
-      router.push(profile.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidate');
+      router.push(profile.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidate/trainer');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {

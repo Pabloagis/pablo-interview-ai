@@ -165,6 +165,12 @@ export default function TrainerShell({
             Test agent
           </button>
         )}
+        <a
+          href="/dashboard/candidate"
+          className="text-[10px] text-[rgba(255,255,255,0.35)] hover:text-white transition-colors"
+        >
+          Setup ↗
+        </a>
         <button
           onClick={() => setSheetOpen(true)}
           className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"
@@ -191,6 +197,12 @@ export default function TrainerShell({
           <div className="sticky top-0 z-10 bg-[#0d0f14] shrink-0 h-14 flex items-center px-5 border-b border-white/[0.08] gap-3">
             <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={32} />
             <div className="flex-1 min-w-0" />
+            <a
+              href="/dashboard/candidate"
+              className="shrink-0 text-[10px] text-[rgba(255,255,255,0.35)] hover:text-white transition-colors"
+            >
+              Profile setup ↗
+            </a>
             <span className="text-[11px] text-[rgba(255,255,255,0.28)] truncate">
               {candidateName}
             </span>

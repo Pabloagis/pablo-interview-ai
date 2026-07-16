@@ -366,6 +366,12 @@ export default function TrainingHub({ name, email }: Props) {
             Build your Career Digital Twin
           </span>
           <div className="flex items-center gap-4">
+            <a
+              href="/dashboard/candidate/trainer"
+              className="text-xs text-[#6080f0] hover:text-white transition-colors"
+            >
+              Trainer ↗
+            </a>
             <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.22)]">{name}</span>
             <LogoutButton />
           </div>
