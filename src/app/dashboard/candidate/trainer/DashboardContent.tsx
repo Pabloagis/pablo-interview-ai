@@ -4,6 +4,7 @@ import AgentCore from './AgentCore';
 import CoverageMap from './CoverageMap';
 import EvidenceCard, { EvidenceCardStyles } from './EvidenceCard';
 import PublishPanel from './PublishPanel';
+import AnticipatedQuestions from './AnticipatedQuestions';
 import {
   COVERAGE_NODES,
   type CoverageNodeKey,
@@ -73,6 +74,9 @@ export default function DashboardContent({
       <div className="w-full">
         <CoverageMap nodes={nodes} onTrainNode={onTrainNode} />
       </div>
+
+      {/* Anticipated questions — AI proposes the gap, the user authors the answer */}
+      <AnticipatedQuestions />
 
       {/* Evidence log — appears as extraction runs */}
       {evidenceCards.length > 0 && (
