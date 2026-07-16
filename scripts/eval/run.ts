@@ -1,16 +1,21 @@
-// Hallucination eval runner.
-//   npx tsx scripts/eval/run.ts --target v3-local
-//   npx tsx scripts/eval/run.ts --target v2-prod
-//   npx tsx scripts/eval/run.ts --target both      (default; runs v3-local first)
+// Hallucination eval runner — the platform's pre-publish quality gate, any candidate.
+//   npx tsx scripts/eval/run.ts --candidate <profiles.id> --target v3-local
+//   npx tsx scripts/eval/run.ts --candidate <id> --target both   (default target: both)
+//
+// --candidate resolves to a hand-authored ground-truth file (e.g. Pablo) or, for an
+// unknown candidate, a generic battery templated from their CV roles. Falls back to
+// EVAL_CANDIDATE_ID if --candidate is omitted.
 //
 // Requires env (from .env.local): ANTHROPIC_API_KEY, NEXT_PUBLIC_SUPABASE_URL,
-// SUPABASE_SERVICE_KEY, and EVAL_CANDIDATE_ID (Pablo's profiles.id) for v3-local.
+// SUPABASE_SERVICE_KEY.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { loadEnv } from './env';
-import { BATTERY, type TrapCase, type TrapCategory } from './battery';
+import { createClient } from '@supabase/supabase-js';
+import { loadEnv, getEnv } from './env';
+import type { TrapCase, TrapCategory, CandidateGroundTruth } from './types';
 import { makeTarget, type AgentTarget } from './targets';
 import { gradeAnswer, type GradeResult } from './grade';
+import { resolveCandidate } from './candidates/registry';
 
 const DELAY_MS = 1200;               // be gentle — do not hammer production
 const RESULTS_DIR = resolve(process.cwd(), 'scripts/eval/results');
@@ -48,14 +53,14 @@ function parseTargets(): string[] {
   return [val];
 }
 
-async function runTarget(target: AgentTarget): Promise<TargetReport> {
+async function runTarget(target: AgentTarget, battery: TrapCase[]): Promise<TargetReport> {
   // Fail loudly if the target is unreachable — never silently score 0.
   await target.preflight();
 
   const rows: Row[] = [];
-  for (let i = 0; i < BATTERY.length; i++) {
-    const trap: TrapCase = BATTERY[i];
-    process.stdout.write(`  [${target.name}] ${i + 1}/${BATTERY.length} ${trap.id} … `);
+  for (let i = 0; i < battery.length; i++) {
+    const trap: TrapCase = battery[i];
+    process.stdout.write(`  [${target.name}] ${i + 1}/${battery.length} ${trap.id} … `);
     try {
       const answer = await target.ask(trap.question);
       const g = await gradeAnswer(trap, answer);
@@ -73,7 +78,7 @@ async function runTarget(target: AgentTarget): Promise<TargetReport> {
       });
       console.log('ERROR — ' + msg);
     }
-    if (i < BATTERY.length - 1) await sleep(DELAY_MS);
+    if (i < battery.length - 1) await sleep(DELAY_MS);
   }
 
   const passed = rows.filter(r => r.outcome === 'pass').length;
@@ -97,11 +102,11 @@ function categoryBreakdown(rows: Row[]): Map<TrapCategory, { pass: number; fail:
 
 const pct = (n: number) => `${(n * 100).toFixed(1)}%`;
 
-function buildMarkdown(reports: TargetReport[], stamp: string): string {
+function buildMarkdown(reports: TargetReport[], stamp: string, gt: CandidateGroundTruth): string {
   const lines: string[] = [];
   lines.push(`# Hallucination Eval — ${stamp}`);
   lines.push('');
-  lines.push(`Battery: ${BATTERY.length} trap cases. Grader: Haiku + deterministic red-flag gate.`);
+  lines.push(`Candidate: **${gt.label}** (\`${gt.id}\`). Battery: ${gt.battery.length} trap cases. Grader: Haiku + deterministic red-flag gate.`);
   lines.push('');
 
   // Headline per target
@@ -173,17 +178,30 @@ function buildMarkdown(reports: TargetReport[], stamp: string): string {
   return lines.join('\n');
 }
 
+function parseCandidateId(): string {
+  const argv = process.argv.slice(2);
+  const i = argv.indexOf('--candidate');
+  const val = i >= 0 ? argv[i + 1] : process.env.EVAL_CANDIDATE_ID;
+  if (!val) throw new Error('Provide --candidate <profiles.id> (or set EVAL_CANDIDATE_ID).');
+  return val;
+}
+
 async function main() {
   loadEnv();
   const targetNames = parseTargets();
+  const candidateId = parseCandidateId();
   mkdirSync(RESULTS_DIR, { recursive: true });
+
+  const db = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('SUPABASE_SERVICE_KEY'));
+  const gt = await resolveCandidate(candidateId, db);
+  console.log(`Candidate: ${gt.label} (${gt.id}) — ${gt.battery.length} traps`);
 
   const reports: TargetReport[] = [];
   for (const name of targetNames) {
-    console.log(`\n=== Running ${name} (${BATTERY.length} cases) ===`);
+    console.log(`\n=== Running ${name} (${gt.battery.length} cases) ===`);
     let report: TargetReport;
     try {
-      report = await runTarget(makeTarget(name));
+      report = await runTarget(makeTarget(name, gt.id), gt.battery);
     } catch (err) {
       // Preflight / unreachable → fail loudly, do NOT record a fake 0/40.
       console.error(`\n!! ${name} ABORTED: ${(err as Error).message}`);
@@ -202,8 +220,8 @@ async function main() {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
   const jsonPath = resolve(RESULTS_DIR, `eval-${stamp}.json`);
   const mdPath = resolve(RESULTS_DIR, `eval-${stamp}.md`);
-  writeFileSync(jsonPath, JSON.stringify({ stamp, battery: BATTERY.length, reports }, null, 2));
-  writeFileSync(mdPath, buildMarkdown(reports, stamp));
+  writeFileSync(jsonPath, JSON.stringify({ stamp, candidate: { id: gt.id, label: gt.label }, battery: gt.battery.length, reports }, null, 2));
+  writeFileSync(mdPath, buildMarkdown(reports, stamp, gt));
 
   console.log('\n================ HEADLINE ================');
   for (const r of reports) {

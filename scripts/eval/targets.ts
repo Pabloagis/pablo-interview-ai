@@ -67,9 +67,8 @@ async function pingBase(base: string, label: string): Promise<void> {
 // The session's candidate_id makes /api/chat build the prompt from candidate-prompt.ts
 // (the P8–P10 code). We create the session row directly with the service role, exactly
 // as the app's recruiter flow does, because /api/session does not accept a candidate_id.
-export function makeV3LocalTarget(): AgentTarget {
+export function makeV3LocalTarget(candidateId: string): AgentTarget {
   const base = process.env.V3_BASE?.trim() || 'http://localhost:3000';
-  const candidateId = getEnv('EVAL_CANDIDATE_ID');           // Pablo's profiles.id — never hardcoded
   const supabaseUrl = getEnv('NEXT_PUBLIC_SUPABASE_URL');
   const serviceKey = getEnv('SUPABASE_SERVICE_KEY');
   const supabase: SupabaseClient = createClient(supabaseUrl, serviceKey);
@@ -146,8 +145,10 @@ export function makeV2ProdTarget(): AgentTarget {
   };
 }
 
-export function makeTarget(name: string): AgentTarget {
+// v2-prod is Pablo's static production agent — it ignores candidateId (prod only
+// serves Pablo). v3-local uses candidateId to link the session to that candidate.
+export function makeTarget(name: string, candidateId: string): AgentTarget {
   if (name === 'v2-prod') return makeV2ProdTarget();
-  if (name === 'v3-local') return makeV3LocalTarget();
+  if (name === 'v3-local') return makeV3LocalTarget(candidateId);
   throw new Error(`Unknown target "${name}" (expected v2-prod | v3-local)`);
 }

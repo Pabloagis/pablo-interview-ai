@@ -2,7 +2,7 @@
 // A case passes ONLY if both gates pass. Grader is Haiku (cost discipline).
 import Anthropic from '@anthropic-ai/sdk';
 import { getEnv } from './env';
-import type { TrapCase } from './battery';
+import type { TrapCase } from './types';
 
 const HAIKU_MODEL = 'claude-haiku-4-5-20251001';
 const GRADER_MAX_TOKENS = 300;
