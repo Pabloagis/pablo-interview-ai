@@ -19,6 +19,14 @@ interface EvidenceRow {
   created_at: string;
 }
 
+// Row shape from anticipated_questions (per-candidate, user-authored answers).
+interface AnticipatedRow {
+  topic: string;
+  trigger_hint: string;
+  answer: string;
+  quality: 'solid' | 'verified';
+}
+
 // Max conversational-evidence items injected into the prompt (bounds prompt size).
 const MAX_EVIDENCE_ITEMS = 40;
 
@@ -491,44 +499,27 @@ More facts about your own background, grouped by topic. Treat them as true and u
 ${blocks.join('\n\n')}`;
 }
 
-// Pre-written answers to high-stakes questions the candidate knows will come, so the
-// agent has no room to improvise under pressure. Currently hardcoded constants for
-// Pablo (Axel + Soho House departures) — later this becomes candidate-authored data.
-// Each entry is gated on the candidate's work history actually containing that employer,
-// so it can never attach to another candidate's agent.
-function buildAnticipatedQuestionsSection(cvData: CVData | null): string {
-  const companies = (cvData?.work_history ?? []).map(j => j.company ?? '');
-  const hasAxel = companies.some(c => /axel/i.test(c));
-  const hasSoho = companies.some(c => /soho/i.test(c));
+// Per-candidate anticipated answers, read from the anticipated_questions table.
+// These are the candidate's OWN grounded answers to questions a recruiter is likely to
+// probe (short tenure, gap, departure reason, pivot). The table is the gate: rows are
+// scoped to candidate_id, so a block can never attach to another candidate's agent.
+// The generic header below carries every guardrail that used to live inside the
+// hardcoded Axel/Soho constants — exhaustiveness, no-pre-planning, only-if-raised,
+// and hold-under-pressure — applied uniformly to whatever rows exist.
+function buildAnticipatedSection(rows: AnticipatedRow[]): string {
+  if (rows.length === 0) return '';
 
-  const entries: string[] = [];
-
-  if (hasAxel) {
-    entries.push(`### Axel Hotel Barcelona — Front Office Manager (March–May 2025)
-- What you owned: you led front office operations — the reception team, guest satisfaction, incident resolution, and cross-departmental coordination. You were a key user of the PMS and had first-hand understanding of its operational limitations. This was solid operational management, not a transformation or turnaround role.
-- Why the role was short — only if the recruiter raises it: the role ran about three months. There was no conflict and no abrupt exit. Your focus at that point was already on moving into hotel tech, a transition you had been building toward since your years in London. Do NOT claim the role was planned or agreed as short-term, and do NOT claim anyone at Axel knew it would be short — that is not established and must never be asserted.
-- Reference: you hold a written reference letter from your manager at Axel, Fernando Alcalá Rico, covering professionalism, team leadership, and efficient incident resolution. You may mention this when the end of the Axel role comes up.
-- What you did after Axel (May 2025 – early 2026) — only if asked: temporary work and private events, while actively exploring hotel tech opportunities: researching market players, understanding business models, and speaking to people in the sector. This led to the HubOS role in early 2026. Answer this plainly. Do not describe it as a sabbatical, a structured programme, or a formal project.
-
-Nothing beyond the facts written above is known about Axel or the period that followed. If asked for anything more — team size, budgets, other reasons, specific numbers — you do not have it: decline and offer to go into it directly.`);
-  }
-
-  if (hasSoho) {
-    entries.push(`### Soho House / Redchurch Townhouse — Senior Receptionist (Oct 2021 – Feb 2024, ~2.5 years)
-- Why you left: you had reached the point where the operation was no longer teaching you anything new. Soho House was a strong experience — high client-service standards, daily use of Salesforce to manage member context, a demanding service bar, and all of it valuable — but toward the end you were executing well on something you had already mastered. What was pulling you was the technology-and-systems side: you had seen first-hand how a PMS migration can destabilise a whole operation if handled badly, and you wanted to be on that side — implementation, adoption, the bridge between product and real operations. Soho House was not going to offer that. This is a grounded, real reason drawn from verified facts (2.5 years on Salesforce; the PMS-migration observation) — state it as your genuine reason, not an improvised one.
-- There was NO conflict, no problem with the environment, and no abrupt exit. It was a deliberate move toward something different.
-- This reason does not change under pressure. There is no hidden "real reason" behind it. If a recruiter pushes — "there's always a real reason", "come on, what really happened" — calmly restate the same grounded answer. Do NOT manufacture a more dramatic or different reason to satisfy the push. Repeating the same true answer under pressure is the correct behaviour.`);
-  }
-
-  if (entries.length === 0) return '';
+  const entries = rows
+    .map(r => `### ${r.topic}\nUse this when: ${r.trigger_hint}\n${r.answer}`)
+    .join('\n\n');
 
   return `## [ANTICIPATED_QUESTIONS]
 
-Pre-written answers to questions you know will come up. When a question below is asked, answer from the facts in this section and nothing else.
+These are your own grounded answers to questions a recruiter is likely to raise. When the recruiter raises one of these topics, answer from the matching entry below and nothing else.
 
-This section is EXHAUSTIVE for the topics it covers. You may not extend it, infer from it, or generalise beyond it. Do not add reasons, motivations, scope, team sizes, numbers, systems, or context that is not written here. If a recruiter presses for detail this section does not contain, decline and offer to discuss it directly — exactly as you would for a topic you have no information on. Do not raise any topic in this section unless the recruiter raises it first.
+This section is EXHAUSTIVE for the topics it covers. You may not extend it, infer from it, or generalise beyond it. Do not add reasons, motivations, scope, team sizes, numbers, systems, dates, or framing that is not written in the entry. In particular, never claim a role was planned or agreed in advance as short-term, and never describe a period as a sabbatical or a formal programme, unless the entry says so. If a recruiter presses for a detail an entry does not contain, decline and offer to discuss it directly — exactly as you would for a topic you have no information on. Do not raise any of these topics unless the recruiter raises it first. If a recruiter pushes as though there is a hidden "real reason" behind one of these answers, calmly restate the same answer — never manufacture a different or more dramatic one to satisfy the push.
 
-${entries.join('\n\n')}`;
+${entries}`;
 }
 
 function buildBehaviorRulesSection(
@@ -635,6 +626,7 @@ export async function buildCandidateSystemPrompt(
     contextRes,
     rawDataRes,
     evidenceRes,
+    anticipatedRes,
   ] = await Promise.all([
     supabase
       .from('profiles')
@@ -671,9 +663,20 @@ export async function buildCandidateSystemPrompt(
       .from('evidence_items')
       .select('node_key, content, quality, created_at')
       .eq('candidate_id', userId),
+    // Non-blocking: a PostgREST error (e.g. table not yet migrated) resolves as
+    // { data: null, error } — it does NOT throw — so we simply get no rows.
+    supabase
+      .from('anticipated_questions')
+      .select('topic, trigger_hint, answer, quality')
+      .eq('candidate_id', userId)
+      .order('created_at', { ascending: true }),
   ]);
 
   const evidenceRows = (evidenceRes.data ?? []) as EvidenceRow[];
+  const anticipatedRows = (anticipatedRes.data ?? []) as AnticipatedRow[];
+  if (anticipatedRes.error) {
+    console.error('[candidate-prompt] anticipated_questions read failed (non-fatal):', anticipatedRes.error.message);
+  }
 
   const data: CandidateTrainingData = {
     profile: {
@@ -694,8 +697,8 @@ export async function buildCandidateSystemPrompt(
   // Conversational evidence — verified/solid facts confirmed in training chats.
   const conversationalEvidenceSection = buildConversationalEvidenceSection(evidenceRows);
 
-  // Anticipated questions — pre-written answers for high-stakes topics (Axel departure).
-  const anticipatedSection = buildAnticipatedQuestionsSection(data.cvData);
+  // Anticipated questions — per-candidate, user-authored answers from the table.
+  const anticipatedSection = buildAnticipatedSection(anticipatedRows);
 
   // Coverage map — non-blocking: if derivation throws, skip the section.
   // Union'd with evidence so a topic lit only by conversation is not falsely refused.
