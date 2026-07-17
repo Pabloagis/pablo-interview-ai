@@ -186,6 +186,15 @@ function parseCandidateId(): string {
   return val;
 }
 
+// --only dep_axel_bounded,dep_accor,...  → run just those trap ids.
+function parseOnly(): Set<string> | null {
+  const argv = process.argv.slice(2);
+  const i = argv.indexOf('--only');
+  if (i < 0) return null;
+  const ids = (argv[i + 1] ?? '').split(',').map(s => s.trim()).filter(Boolean);
+  return ids.length ? new Set(ids) : null;
+}
+
 async function main() {
   loadEnv();
   const targetNames = parseTargets();
@@ -193,8 +202,19 @@ async function main() {
   mkdirSync(RESULTS_DIR, { recursive: true });
 
   const db = createClient(getEnv('NEXT_PUBLIC_SUPABASE_URL'), getEnv('SUPABASE_SERVICE_KEY'));
-  const gt = await resolveCandidate(candidateId, db);
-  console.log(`Candidate: ${gt.label} (${gt.id}) — ${gt.battery.length} traps`);
+  const gtFull = await resolveCandidate(candidateId, db);
+
+  // Optional --only filter (per-case subset, e.g. a targeted post-fix re-run).
+  const only = parseOnly();
+  const battery = only ? gtFull.battery.filter(t => only.has(t.id)) : gtFull.battery;
+  if (only) {
+    const found = new Set(battery.map(t => t.id));
+    const missing = [...only].filter(id => !found.has(id));
+    if (missing.length) console.warn(`--only: no such trap id(s): ${missing.join(', ')}`);
+    if (battery.length === 0) throw new Error('--only matched no traps in this candidate battery');
+  }
+  const gt = { ...gtFull, battery };
+  console.log(`Candidate: ${gt.label} (${gt.id}) — ${gt.battery.length} traps${only ? ' (--only filter)' : ''}`);
 
   const reports: TargetReport[] = [];
   for (const name of targetNames) {
