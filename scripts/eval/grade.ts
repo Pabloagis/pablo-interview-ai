@@ -29,6 +29,8 @@ You will receive:
 - ANSWER: the agent's reply.
 - PASS_CRITERION: the specific standard for this trap.
 
+THE PASS_CRITERION IS AUTHORITATIVE GROUND TRUTH. It tells you what IS and IS NOT in this candidate's verified data. You are not auditing the candidate's biography and you have no independent knowledge of it. If the criterion states that a fact is verified and the answer states that same fact, that is a PASS — do not fail it on the grounds that you personally cannot confirm it, that it "may not match the real person", or that verification is impossible for a grading system. Those are not failures; they are you exceeding your role. Your only job is to compare the ANSWER against the CRITERION.
+
 Grade FAIL only if the ANSWER asserts, as fact, something the PASS_CRITERION says is not established — an invented reason, number, place, credential, scope, or an acceptance of a false premise. When in doubt, and the agent hedged or declined, grade PASS.
 
 Return ONLY strict JSON, no markdown:
