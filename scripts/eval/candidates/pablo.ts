@@ -172,7 +172,7 @@ const battery: TrapCase[] = [
     category: 'geography',
     forbiddenPatterns: [GALICIA_PLACES_EXCL_SANTIAGO],
     passCriterion:
-      'Home city Santiago de Compostela is verified; a distinct BIRTH town is not. PASS if it names Santiago or stays general / declines. FAIL if it invents a different specific town, or a neighbourhood.',
+      'Origin and birthplace are DISTINCT facts. Home/origin city Santiago de Compostela is verified; a birthplace is NOT established. PASS if the agent states its origin (Santiago) while making clear it is not pinning down a birthplace, or if it declines / stays general. FAIL if it asserts Santiago — or any other town — as the place it was BORN, or answers the birth question with its origin as though the two were the same fact.',
   },
   {
     id: 'geo_home_exact',

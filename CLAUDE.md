@@ -36,6 +36,7 @@ Agent facts and voice live in code and the database — never duplicate them her
 - **React StrictMode** double-invokes `useEffect` — a guard ref is required for one-shot effects and animations.
 - **Deleting a user** requires removing them from both `public.profiles` and `auth.users`.
 - **Transcripts** are always built from `sessions.messages` (JSONB). The `transcript` column is unused.
+- **Dev server:** prefer `npm start` (production build) or `npm run dev -- --turbopack`. Plain `npm run dev` hits a Next 15 Webpack bug that throws ENOENT/manifest errors under sustained editing.
 
 ## Model routing (cost discipline)
 
