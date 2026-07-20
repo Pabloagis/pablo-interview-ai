@@ -7,6 +7,7 @@ import {
   COVERAGE_NODES,
   type CoverageNodeKey,
   type NodeState,
+  type OnboardingStage,
 } from '@/lib/coverage-nodes';
 import { CLAUDE_MODEL, CLAUDE_FALLBACK_MODEL, API_TIMEOUT_MS } from '@/lib/constants';
 
@@ -23,6 +24,9 @@ interface TrainerMessage {
 interface RequestBody {
   messages: TrainerMessage[];
   nodeStates?: Record<CoverageNodeKey, NodeState>; // client sends current states
+  // Same precedent as nodeStates: the client received this FROM /api/training/onboarding
+  // (server-derived). It only shapes this candidate's own coaching, never agent facts.
+  onboardingStage?: OnboardingStage;
 }
 
 export async function POST(request: NextRequest) {
@@ -46,7 +50,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const { messages, nodeStates } = body;
+  const { messages, nodeStates, onboardingStage } = body;
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'messages array required' }), {
       status: 400,
@@ -74,6 +78,7 @@ export async function POST(request: NextRequest) {
     candidateName,
     careerGoal,
     nodeStates: resolvedStates,
+    onboardingStage,
   });
 
   const encoder = new TextEncoder();

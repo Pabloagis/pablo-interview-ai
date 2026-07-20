@@ -169,7 +169,7 @@ export default function TrainerShell({
           href="/dashboard/candidate"
           className="text-[10px] text-[rgba(255,255,255,0.35)] hover:text-white transition-colors"
         >
-          Setup ↗
+          Full profile ↗
         </a>
         <button
           onClick={() => setSheetOpen(true)}
@@ -201,7 +201,7 @@ export default function TrainerShell({
               href="/dashboard/candidate"
               className="shrink-0 text-[10px] text-[rgba(255,255,255,0.35)] hover:text-white transition-colors"
             >
-              Profile setup ↗
+              Edit full profile ↗
             </a>
             <span className="text-[11px] text-[rgba(255,255,255,0.28)] truncate">
               {candidateName}

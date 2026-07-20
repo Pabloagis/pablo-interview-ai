@@ -1,15 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   COVERAGE_NODES,
   type CoverageNodeKey,
   type NodeState,
   type EvidenceItem,
   type PublishLevel,
+  type OnboardingStage,
 } from '@/lib/coverage-nodes';
 import TrainerShell from './TrainerShell';
-import ConversationPanel, { type TrainerMessage } from './ConversationPanel';
+import ConversationPanel, { type TrainerMessage, type OnboardingAction } from './ConversationPanel';
 import DashboardContent from './DashboardContent';
 import AgentTestOverlay from './AgentTestOverlay';
 
@@ -52,6 +53,112 @@ export default function TrainerClient({
   const [publishedAt,    setPublishedAt]    = useState<string | null>(initialPublishedAt);
   const [isPublishing,   setIsPublishing]   = useState(false);
 
+  // ── Onboarding state ─────────────────────────────────────────────────
+  // Derived on the SERVER (/api/training/onboarding) and never patched optimistically:
+  // an inline write and a coverage recompute are separate paths, so the client always
+  // re-reads derived state before advancing a stage.
+  const [stage,      setStage]      = useState<OnboardingStage | null>(null);
+  const [cvLoaded,   setCvLoaded]   = useState(false);
+  const [careerGoal, setCareerGoal] = useState<string | null>(null);
+  const seededRef = useRef(false);   // StrictMode double-invokes effects — seed once
+
+  // What the trainer says at each onboarding stage, and which inline control it carries.
+  const stagePrompt = useCallback((s: OnboardingStage, name: string): TrainerMessage | null => {
+    const base = { id: crypto.randomUUID(), role: 'assistant' as const };
+    switch (s) {
+      case 'needs_cv':
+        return { ...base,
+          content: `Hi ${name} — before we can train anything, I need your career history. Upload your CV below and I'll read it; that gives your agent dates, roles and systems to work from.`,
+          action: 'cv_upload' as OnboardingAction };
+      case 'needs_career_goal':
+        return { ...base,
+          content: `Got your CV. Now — what are you actually aiming at? Pick what fits below. Everything I ask you from here is judged against that goal.`,
+          action: 'career_goal' as OnboardingAction };
+      case 'needs_first_stories':
+        return { ...base,
+          content: `Good. Last foundational piece: I need a couple of real examples from your work — the kind a recruiter probes. Let's do the first one now. Tell me about something you actually delivered: what the situation was, what you specifically did, and how it ended.` };
+      default:
+        return null;   // 'trained' — no onboarding messaging at all
+    }
+  }, []);
+
+  // Single source of truth for onboarding + coverage. Called on mount and after every
+  // inline write. Appends the next stage's prompt when the stage actually advances.
+  const syncOnboarding = useCallback(async (opts?: { acknowledge?: string }) => {
+    try {
+      const res = await fetch('/api/training/onboarding');
+      if (!res.ok) return;
+      const data = await res.json() as {
+        stage: OnboardingStage;
+        nodeStates: Record<CoverageNodeKey, NodeState>;
+        readiness: number;
+        publishLevel: PublishLevel;
+        hasCv: boolean;
+      };
+
+      // Adopt server-derived coverage wholesale (same rule as the extraction loop).
+      setNodeStates(data.nodeStates);
+      setReadiness(data.readiness);
+      setPublishLevel(data.publishLevel);
+      setCvLoaded(data.hasCv);
+
+      setStage(prev => {
+        if (prev === data.stage) return prev;          // no advance → no new messaging
+        const next = stagePrompt(data.stage, candidateName);
+        setMessages(m => [
+          ...m,
+          ...(opts?.acknowledge
+            ? [{ id: crypto.randomUUID(), role: 'assistant' as const, content: opts.acknowledge }]
+            : []),
+          ...(next ? [next] : []),
+        ]);
+        return data.stage;
+      });
+    } catch {
+      /* non-fatal — the trainer still works, it just won't guide */
+    }
+  }, [candidateName, stagePrompt]);
+
+  // Mount: seed the guide only for a candidate who still needs foundations.
+  // A trained candidate (e.g. Pablo) gets exactly the experience they had before.
+  useEffect(() => {
+    if (seededRef.current) return;
+    seededRef.current = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/training/onboarding');
+        if (!res.ok) return;
+        const data = await res.json() as {
+          stage: OnboardingStage;
+          nodeStates: Record<CoverageNodeKey, NodeState>;
+          readiness: number;
+          publishLevel: PublishLevel;
+          hasCv: boolean;
+        };
+        setStage(data.stage);
+        setCvLoaded(data.hasCv);
+        setNodeStates(data.nodeStates);
+        setReadiness(data.readiness);
+        setPublishLevel(data.publishLevel);
+
+        if (data.stage !== 'trained') {
+          const first = stagePrompt(data.stage, candidateName);
+          if (first) setMessages(m => (m.length === 0 ? [first] : m));
+        }
+      } catch { /* non-fatal */ }
+    })();
+  }, [candidateName, stagePrompt]);
+
+  // Inline control callbacks — always re-read from the server, never patch locally.
+  const handleCvUploaded = useCallback(async () => {
+    await syncOnboarding({ acknowledge: "CV read — I've got your roles and dates." });
+  }, [syncOnboarding]);
+
+  const handleCareerGoalSaved = useCallback(async (goal?: string) => {
+    if (typeof goal === 'string') setCareerGoal(goal);
+    await syncOnboarding({ acknowledge: 'Locked in.' });
+  }, [syncOnboarding]);
+
   // ── Send a candidate message ─────────────────────────────────────────
   const handleSend = useCallback(async (userText: string) => {
     if (isStreaming) return;
@@ -79,6 +186,7 @@ export default function TrainerClient({
         body:    JSON.stringify({
           messages:   nextMessages.map(({ role, content }) => ({ role, content })),
           nodeStates,
+          onboardingStage: stage ?? undefined,
         }),
       });
 
@@ -184,12 +292,18 @@ export default function TrainerClient({
         setReadiness(coverage.readiness);
         setPublishLevel(coverage.publishLevel as PublishLevel);
       }
+
+      // A candidate still finishing onboarding may have just cleared the "first
+      // stories" gate with this answer — re-derive on the server and advance if so.
+      if (stage && stage !== 'trained') {
+        await syncOnboarding({ acknowledge: "That's the kind of detail that holds up. Your agent can use that." });
+      }
     } catch (err) {
       console.error('[TrainerClient] extraction error (non-fatal):', err);
     } finally {
       setIsExtracting(false);
     }
-  }, [isStreaming, messages, nodeStates]);
+  }, [isStreaming, messages, nodeStates, stage, syncOnboarding]);
 
   // ── Follow-up: inject the probe question as a trainer message ────────
   // No API call — the question is added as an assistant turn and the
@@ -257,6 +371,10 @@ export default function TrainerClient({
           isStreaming={isStreaming}
           isExtracting={isExtracting}
           onSend={handleSend}
+          cvLoaded={cvLoaded}
+          careerGoal={careerGoal}
+          onCvUploaded={handleCvUploaded}
+          onCareerGoalSaved={handleCareerGoalSaved}
         />
       }
       dashboardSlot={

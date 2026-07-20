@@ -2,13 +2,23 @@
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import VoiceRecorder from '../components/VoiceRecorder';
+import CvUpload from '../modules/CvUpload';
+import CareerGoalPicker from '../modules/CareerGoalPicker';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
+
+// Some onboarding steps need real UI (a file picker, a chip select) — chat can't
+// "receive" a CV as text. An assistant message can therefore carry an inline
+// control, rendered directly under its bubble. The controls are the SAME components
+// the wizard uses and hit the SAME API routes; this is UI relocation, not a second
+// implementation.
+export type OnboardingAction = 'cv_upload' | 'career_goal';
 
 export interface TrainerMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  action?: OnboardingAction;
 }
 
 interface Props {
@@ -17,6 +27,11 @@ interface Props {
   isStreaming: boolean;
   isExtracting: boolean;
   onSend: (text: string) => void;
+  // Inline onboarding controls (omitted once the candidate is past onboarding)
+  cvLoaded?: boolean;
+  careerGoal?: string | null;
+  onCvUploaded?: () => void;
+  onCareerGoalSaved?: () => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -27,6 +42,10 @@ export default function ConversationPanel({
   isStreaming,
   isExtracting,
   onSend,
+  cvLoaded = false,
+  careerGoal = null,
+  onCvUploaded,
+  onCareerGoalSaved,
 }: Props) {
   const [draft, setDraft] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -70,9 +89,30 @@ export default function ConversationPanel({
           </div>
         )}
 
-        {/* Message bubbles */}
+        {/* Message bubbles — an assistant message may carry an inline control */}
         {messages.map(msg => (
-          <MessageBubble key={msg.id} message={msg} />
+          <div key={msg.id} className="flex flex-col gap-2">
+            <MessageBubble message={msg} />
+
+            {msg.action === 'cv_upload' && (
+              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+                <CvUpload
+                  cvLoaded={cvLoaded}
+                  onSaved={() => onCvUploaded?.()}
+                />
+              </div>
+            )}
+
+            {msg.action === 'career_goal' && (
+              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+                <CareerGoalPicker
+                  currentGoal={careerGoal}
+                  moduleOptions={null}
+                  onSaved={() => onCareerGoalSaved?.()}
+                />
+              </div>
+            )}
+          </div>
         ))}
 
         {/* Streaming bubble — assistant text being built token by token */}

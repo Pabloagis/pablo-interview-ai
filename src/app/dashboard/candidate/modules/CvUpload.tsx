@@ -1,14 +1,16 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import type { TrainingData } from '../TrainingHub';
 
+// Host-agnostic: used by both the wizard (Step 1) and the trainer's inline
+// onboarding control. Takes a plain boolean rather than the wizard's TrainingData
+// so neither host owns it.
 interface Props {
-  data: TrainingData;
+  cvLoaded: boolean;
   onSaved: (moduleId: string, message?: string) => void;
 }
 
-export default function CvUpload({ data, onSaved }: Props) {
+export default function CvUpload({ cvLoaded, onSaved }: Props) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +76,7 @@ export default function CvUpload({ data, onSaved }: Props) {
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <span className="text-xs text-[rgba(255,255,255,0.4)]">
-              {data.cvLoaded ? 'Upload a new CV to replace the existing one' : 'Click to upload CV'}
+              {cvLoaded ? 'Upload a new CV to replace the existing one' : 'Click to upload CV'}
             </span>
             <span className="text-[10px] text-[rgba(255,255,255,0.2)]">PDF · TXT</span>
           </>
@@ -89,7 +91,7 @@ export default function CvUpload({ data, onSaved }: Props) {
         onChange={e => { if (e.target.files?.[0]) handleFile(e.target.files[0]); }}
       />
 
-      {data.cvLoaded && !uploading && (
+      {cvLoaded && !uploading && (
         <div className="flex items-center gap-2 text-xs text-[rgba(96,192,128,0.8)]">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

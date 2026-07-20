@@ -133,12 +133,42 @@ Return ONLY valid JSON, no markdown:
 
 // De-duplicate proposed gaps against topics the candidate has ALREADY answered
 // (rows in anticipated_questions). Fuzzy: compares on the leading company token.
+// Topics are written "<Company> — <what it's about>" (or "Gap between A and B").
+// Matching on raw strings is unreliable: a stored "Axel — short tenure & departure"
+// and a proposed "Axel — reason for leaving" are the SAME question in different words.
+// So compare on (company, intent) instead.
+type TopicKey = { company: string; intent: 'departure' | 'gap' | 'other' };
+
+const CORP_NOISE = /\b(hotels?|and|co|the|group|ltd|limited|inc|sa|sl|bv|gmbh)\b/g;
+
+function topicKey(topic: string): TopicKey {
+  const lower = topic.toLowerCase();
+  // Company is the part before the em-dash separator; "Gap between …" has none.
+  const head = lower.split('—')[0];
+  const company = head.replace(CORP_NOISE, ' ').replace(/[^a-z0-9]+/g, '');
+
+  // "Why did the role end?" is one question however it is phrased — short tenure and
+  // reason-for-leaving collapse to the same intent so we never ask it twice.
+  const intent: TopicKey['intent'] =
+    /\bgap\b|between/.test(lower)                                  ? 'gap'
+    : /leav|depart|exit|resign|left|short tenure|tenure|ended/.test(lower) ? 'departure'
+    : 'other';
+
+  return { company, intent };
+}
+
+function sameTopic(a: TopicKey, b: TopicKey): boolean {
+  if (a.intent !== b.intent) return false;
+  if (!a.company || !b.company) return a.company === b.company;
+  // One company label may be a fuller version of the other
+  // ("Soho House" vs "Soho House and Co. - Redchurch Townhouse").
+  return a.company === b.company || a.company.includes(b.company) || b.company.includes(a.company);
+}
+
 export function dropAlreadyAnswered(proposed: ProposedGap[], existingTopics: string[]): ProposedGap[] {
-  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const existing = existingTopics.map(norm);
+  const existing = existingTopics.map(topicKey);
   return proposed.filter(p => {
-    const pn = norm(p.topic);
-    // Consider answered if an existing topic shares the same company label + intent.
-    return !existing.some(e => e === pn || (e.split(' ')[0] && pn.startsWith(e.split(' ')[0]) && e.includes(pn.split(' ').slice(-1)[0])));
+    const pk = topicKey(p.topic);
+    return !existing.some(e => sameTopic(e, pk));
   });
 }

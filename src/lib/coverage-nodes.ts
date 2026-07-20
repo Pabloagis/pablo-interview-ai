@@ -401,6 +401,47 @@ export function computeReadiness(states: Record<CoverageNodeKey, NodeState>): nu
   return Math.round(total);
 }
 
+// ── Onboarding stage ──────────────────────────────────────────────────────────
+// Derived live (never stored), like everything else here. This is the trainer's
+// guide script for a new user — NOT a separate wizard.
+//
+// Why these three gates: they are what it takes to clear the Basic publish line
+// (PUBLISH_THRESHOLDS.basic = 30). A CV alone lights role_history + tools_systems
+// (~20 readiness, track_record carries 0.40). A career goal adds partial
+// career_narrative + company_fit (~27). One or two real stories light
+// signature_stories/metrics_impact and cross 30. Below that the agent is not worth
+// putting in front of a recruiter.
+//
+// Note the distinction the node states alone cannot express: `cvData === null`
+// means "no CV at all", whereas a CV row with an empty work_history is merely thin.
+export type OnboardingStage =
+  | 'needs_cv'
+  | 'needs_career_goal'
+  | 'needs_first_stories'
+  | 'trained';
+
+export const MIN_STORIES_FOR_TRAINED = 2;
+
+export function deriveOnboardingStage(input: CoverageInput): OnboardingStage {
+  if (!input.cvData) return 'needs_cv';
+  if (!input.profile.career_goal?.trim()) return 'needs_career_goal';
+
+  // Behavioural examples arrive by EITHER path: candidate_stories rows (wizard) or
+  // conversational evidence (trainer, which writes evidence_items — not stories).
+  // Counting rows alone would keep nagging a user who just did their first stories
+  // by chat, so accept the union the coverage map already computes.
+  const filledStories = input.stories.filter(
+    s => s.situation || s.task || s.action || s.result
+  ).length;
+  const litByConversation = deriveNodeStates(input).signature_stories !== 'dark';
+
+  if (filledStories < MIN_STORIES_FOR_TRAINED && !litByConversation) {
+    return 'needs_first_stories';
+  }
+
+  return 'trained';
+}
+
 export function derivePublishLevel(readiness: number): PublishLevel {
   if (readiness >= PUBLISH_THRESHOLDS.sharp) return 'sharp';
   if (readiness >= PUBLISH_THRESHOLDS.solid) return 'solid';

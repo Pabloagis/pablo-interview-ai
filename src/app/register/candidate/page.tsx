@@ -61,7 +61,7 @@ export default function RegisterCandidatePage() {
         return;
       }
 
-      router.push('/dashboard/candidate');
+      router.push('/dashboard/candidate/trainer');
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
