@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import VoiceRecorder from '../components/VoiceRecorder';
 import CvUpload from '../modules/CvUpload';
 import CareerGoalPicker from '../modules/CareerGoalPicker';
+import DocumentUpload from '../modules/DocumentUpload';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -12,7 +13,11 @@ import CareerGoalPicker from '../modules/CareerGoalPicker';
 // control, rendered directly under its bubble. The controls are the SAME components
 // the wizard uses and hit the SAME API routes; this is UI relocation, not a second
 // implementation.
-export type OnboardingAction = 'cv_upload' | 'career_goal';
+//
+// 'document_upload' is not a blocking onboarding gate like cv_upload / career_goal —
+// it's an invitation the agent can attach when a document would strengthen a node.
+// The same control is always reachable from the composer paperclip regardless.
+export type OnboardingAction = 'cv_upload' | 'career_goal' | 'document_upload';
 
 export interface TrainerMessage {
   id: string;
@@ -32,6 +37,9 @@ interface Props {
   careerGoal?: string | null;
   onCvUploaded?: () => void;
   onCareerGoalSaved?: () => void;
+  // Supporting-document upload — reachable any time from the composer, and also
+  // rendered inline when an assistant message carries the 'document_upload' action.
+  onDocumentUploaded?: (message?: string) => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -46,8 +54,10 @@ export default function ConversationPanel({
   careerGoal = null,
   onCvUploaded,
   onCareerGoalSaved,
+  onDocumentUploaded,
 }: Props) {
   const [draft, setDraft] = useState('');
+  const [docPanelOpen, setDocPanelOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -112,6 +122,12 @@ export default function ConversationPanel({
                 />
               </div>
             )}
+
+            {msg.action === 'document_upload' && (
+              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+                <DocumentUpload compact onSaved={msg => onDocumentUploaded?.(msg)} />
+              </div>
+            )}
           </div>
         ))}
 
@@ -144,8 +160,49 @@ export default function ConversationPanel({
         <div ref={bottomRef} />
       </div>
 
+      {/* ── Document panel (toggled by the composer paperclip) ───────────── */}
+      {docPanelOpen && (
+        <div className="shrink-0 border-t border-white/[0.06] px-4 py-3">
+          <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-wider">
+                Add a supporting document
+              </span>
+              <button
+                onClick={() => setDocPanelOpen(false)}
+                className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
+                aria-label="Close document upload"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <DocumentUpload
+              compact
+              onSaved={msg => { setDocPanelOpen(false); onDocumentUploaded?.(msg); }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* ── Input area ───────────────────────────────────────────────── */}
       <div className="shrink-0 border-t border-white/[0.06] px-4 py-3 flex items-end gap-3">
+
+        {/* Attach a document — always available */}
+        <button
+          onClick={() => setDocPanelOpen(o => !o)}
+          className="shrink-0 self-end p-3 rounded-xl border border-white/[0.09] bg-white/[0.05] text-[rgba(255,255,255,0.45)] hover:text-white transition-colors"
+          style={docPanelOpen ? { color: '#8098f0', borderColor: 'rgba(64,96,208,0.5)' } : undefined}
+          aria-label="Attach a document"
+          title="Attach a document"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+          </svg>
+        </button>
 
         <div className="flex-1 min-w-0 rounded-xl bg-white/[0.05] border border-white/[0.09] px-4 py-3 flex flex-col gap-2">
           <textarea

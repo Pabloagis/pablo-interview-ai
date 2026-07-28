@@ -58,7 +58,7 @@ Agent facts and voice live in code and the database — never duplicate them her
 
 - Agent facts and voice: `src/lib/prompts.ts` + `stories-knowledge.ts` (main); per-candidate DB tables (dev).
 - Schema and migrations: `supabase/*.sql`. Tunable values: `src/lib/constants.ts`.
-- On `dev`, the candidate hub is the trainer at `/dashboard/candidate/trainer`; the onboarding wizard is `/dashboard/candidate`.
+- On `dev`, the candidate hub is the trainer chat at `/dashboard/candidate/trainer` — the single home for building an agent. `/dashboard/candidate` now **redirects** there; the old 10-step wizard (`./journey`, `./modules`, `TrainingHub.tsx`) remains in the repo but is no longer reachable by candidates. Onboarding (CV → career goal → first story → supporting documents) happens inline in the chat via controls that hit the same `/api/training/*` routes the wizard used.
 
 ## Working with this user
 

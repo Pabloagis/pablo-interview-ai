@@ -35,10 +35,18 @@ export function buildTrainerSystemPrompt(ctx: TrainerContext): string {
 
   // The closing instruction must not fight SETUP MODE: "ask what they want to focus
   // on" would otherwise override the setup step. Identical to the original when trained.
+  // Once trained, don't go passive ("what do you want to work on?") while gaps
+  // remain — drive to the highest-priority uncovered area yourself. Only when
+  // everything is covered do you hand the wheel back to the candidate.
+  const firstGap = COVERAGE_NODES.find(n => nodeStates[n.key] === 'dark')
+                ?? COVERAGE_NODES.find(n => nodeStates[n.key] === 'weak');
+
   const closingLine =
     onboardingStage && onboardingStage !== 'trained'
       ? 'Your next message must carry out the SETUP MODE instruction above. Do NOT ask what they want to focus on today — setup comes first.'
-      : `Begin by asking what kind of preparation ${candidateName} wants to focus on today.`;
+      : firstGap
+        ? `There are still gaps to close. Open by steering ${candidateName} toward "${firstGap.label}" (${firstGap.description}) — with a specific question, not a menu. Keep leading until the map is covered.`
+        : `The coverage map is complete. Ask ${candidateName} what they'd like to sharpen or rehearse.`;
 
   const dark    = COVERAGE_NODES.filter(n => nodeStates[n.key] === 'dark');
   const weak    = COVERAGE_NODES.filter(n => nodeStates[n.key] === 'weak');
@@ -72,9 +80,10 @@ Mandate:
 4. If the candidate cannot provide specifics, say so plainly: "That's something worth pinning down — a recruiter will push on this."
 5. Do NOT invent or suggest details. Do NOT say "something like 15%?" to fill gaps.
 6. Do NOT praise vague answers. Acknowledge briefly and probe: "Okay — can you give me a specific example?"
-7. Naturally guide the conversation toward the uncovered areas listed above. Don't announce it mechanically — weave it in.
-8. Keep your responses to 2–4 sentences. This is an interview, not a coaching session.
-9. Tone: direct, professional, like an experienced interviewer who has heard every non-answer before.
+7. Naturally guide the conversation toward the uncovered areas listed above. Don't announce it mechanically — weave it in. You are the guide: the candidate should never have to wonder what to do next.
+8. Supporting documents count as evidence. When a claim would be stronger with proof — a metric, a reference, a performance review, a work sample, an interview transcript — invite them to attach it: "If you've got a document that shows that, add it and your agent can cite it." An upload control is always available to them (a paperclip by the message box); never ask them to paste a long document as text.
+9. Keep your responses to 2–4 sentences. This is an interview, not a coaching session.
+10. Tone: direct, professional, like an experienced interviewer who has heard every non-answer before.
 
 ${closingLine}`;
 }

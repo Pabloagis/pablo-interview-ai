@@ -105,12 +105,27 @@ export default function TrainerClient({
       setStage(prev => {
         if (prev === data.stage) return prev;          // no advance → no new messaging
         const next = stagePrompt(data.stage, candidateName);
+
+        // Crossing into 'trained' for the first time this session: foundations are
+        // done, so invite (don't require) a supporting document. Only on the
+        // transition — a candidate who loads in already trained never sees this.
+        const crossedIntoTrained = prev != null && prev !== 'trained' && data.stage === 'trained';
+        const docInvite = crossedIntoTrained
+          ? [{
+              id: crypto.randomUUID(),
+              role: 'assistant' as const,
+              content: "Foundations are in. If you've got anything that backs up your work — a reference, a performance review, a project write-up — add it here and your agent can cite it. Or skip it and we'll keep talking.",
+              action: 'document_upload' as OnboardingAction,
+            }]
+          : [];
+
         setMessages(m => [
           ...m,
           ...(opts?.acknowledge
             ? [{ id: crypto.randomUUID(), role: 'assistant' as const, content: opts.acknowledge }]
             : []),
           ...(next ? [next] : []),
+          ...docInvite,
         ]);
         return data.stage;
       });
@@ -157,6 +172,21 @@ export default function TrainerClient({
   const handleCareerGoalSaved = useCallback(async (goal?: string) => {
     if (typeof goal === 'string') setCareerGoal(goal);
     await syncOnboarding({ acknowledge: 'Locked in.' });
+  }, [syncOnboarding]);
+
+  // A supporting document (reference, work sample, transcript…) landed. Documents
+  // feed candidate_raw_data, which the coverage model reads — so re-derive from the
+  // server rather than patching locally, same rule as every other inline write.
+  const handleDocumentUploaded = useCallback(async (message?: string) => {
+    setMessages(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: message ?? "Got it — that's on file as evidence your agent can use.",
+      },
+    ]);
+    await syncOnboarding();
   }, [syncOnboarding]);
 
   // ── Send a candidate message ─────────────────────────────────────────
@@ -375,6 +405,7 @@ export default function TrainerClient({
           careerGoal={careerGoal}
           onCvUploaded={handleCvUploaded}
           onCareerGoalSaved={handleCareerGoalSaved}
+          onDocumentUploaded={handleDocumentUploaded}
         />
       }
       dashboardSlot={
