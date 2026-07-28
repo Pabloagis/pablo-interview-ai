@@ -26,7 +26,9 @@ const DOC_KINDS: { value: string; label: string; sourceType: string; artifactTyp
   { value: 'other',        label: 'Something else',               sourceType: 'free_training',         artifactType: 'other' },
 ];
 
-const ACCEPTED = '.pdf,.txt,.md,.json,.docx,.doc';
+// DOCX/DOC are binary with no text layer we can hand Claude — the raw-data route
+// rejects them, so don't offer them here. (Export to PDF from Word.)
+const ACCEPTED = '.pdf,.txt,.md,.json';
 
 export default function DocumentUpload({ onSaved, compact = false }: Props) {
   const [kind, setKind] = useState(DOC_KINDS[0].value);
@@ -119,7 +121,7 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            Upload file (PDF, TXT, DOCX, JSON)
+            Upload file (PDF, TXT, MD, JSON)
           </>
         )}
       </button>
