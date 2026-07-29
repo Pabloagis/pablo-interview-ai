@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
 import { createServerSupabaseClient } from '@/lib/supabase';
+import { generateUniqueSlug } from '@/lib/slug';
 import {
   COVERAGE_NODES,
   computeReadiness,
@@ -76,7 +77,7 @@ export async function POST(_request: NextRequest) {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, full_name, slug')
     .eq('id', user.id)
     .single();
 
@@ -98,9 +99,16 @@ export async function POST(_request: NextRequest) {
     );
   }
 
+  // Every published candidate needs a public URL. Generate one if they never set it.
+  const db = createServerSupabaseClient();
+  let slug = profile.slug ?? null;
+  if (!slug) {
+    slug = await generateUniqueSlug(profile.full_name, db, user.id);
+  }
+
   const { error: updateErr } = await supabase
     .from('profiles')
-    .update({ published_at: new Date().toISOString() })
+    .update({ published_at: new Date().toISOString(), slug })
     .eq('id', user.id);
 
   if (updateErr) {
@@ -117,6 +125,7 @@ export async function POST(_request: NextRequest) {
     publishedAt:  new Date().toISOString(),
     publishLevel,
     readiness,
+    slug,
     darkNodeKeys, // returned so the UI can show the refusal list immediately
   });
 }

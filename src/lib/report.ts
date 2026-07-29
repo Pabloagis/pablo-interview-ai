@@ -24,16 +24,22 @@ export async function generateReport(params: {
   messages: Array<{ role: string; content: string }>;
   recruiterName: string | null;
   company: string | null;
+  // Optional so the existing Pablo flow is byte-identical when omitted.
+  candidateName?: string | null;
 }): Promise<ReportData> {
   const { messages, recruiterName, company } = params;
 
+  // Default preserves the original Pablo strings exactly.
+  const fullName  = params.candidateName ?? 'Pablo Agis Burgos';
+  const firstName = params.candidateName ? params.candidateName.split(' ')[0] : 'Pablo';
+
   const transcript = messages
-    .map(m => `${m.role === 'user' ? (recruiterName || 'Recruiter') : 'Pablo'}: ${m.content}`)
+    .map(m => `${m.role === 'user' ? (recruiterName || 'Recruiter') : firstName}: ${m.content}`)
     .join('\n\n');
 
   const anthropic = getAnthropicClient();
 
-  const prompt = `You are generating a structured insights report for a recruiter who just interviewed Pablo Agis Burgos via AI.
+  const prompt = `You are generating a structured insights report for a recruiter who just interviewed ${fullName} via AI.
 
 Context:
 - Recruiter: ${recruiterName || 'the recruiter'}
@@ -47,15 +53,15 @@ Return ONLY this exact JSON structure. No markdown fences. No extra text.
 
 {
   "language": "en",
-  "intro": "2-3 sentences written in Pablo's own voice, in first person (I / me / my), directly addressing the recruiter by name. Must sound like a genuine personal note — reference something specific from THIS conversation. Example style: 'Sarah, I genuinely enjoyed our conversation about [topic]. Your questions on [X] helped me articulate [Y] in a way I hadn't before — and I think [Z] is exactly where I can add real value at [company].'",
+  "intro": "2-3 sentences written in ${firstName}'s own voice, in first person (I / me / my), directly addressing the recruiter by name. Must sound like a genuine personal note — reference something specific from THIS conversation. Example style: 'Sarah, I genuinely enjoyed our conversation about [topic]. Your questions on [X] helped me articulate [Y] in a way I hadn't before — and I think [Z] is exactly where I can add real value at [company].'",
   "executiveSummary": {
-    "headline": "One bold sentence summarising Pablo's fit for this recruiter's context",
+    "headline": "One bold sentence summarising ${firstName}'s fit for this recruiter's context",
     "chips": ["3-5 short keyword tags: skills, traits, or strengths relevant to this role"],
-    "points": ["3 concise bullet points — each max 15 words — on Pablo's positioning for this role"]
+    "points": ["3 concise bullet points — each max 15 words — on ${firstName}'s positioning for this role"]
   },
   "coreExperience": {
     "items": [
-      { "label": "Company · Role", "detail": "One sentence on what Pablo did and why it matters here" }
+      { "label": "Company · Role", "detail": "One sentence on what ${firstName} did and why it matters here" }
     ]
   },
   "conversationInsights": {
@@ -64,16 +70,16 @@ Return ONLY this exact JSON structure. No markdown fences. No extra text.
     ]
   },
   "recruiterTakeaways": {
-    "items": ["4-5 short reasons why Pablo stands out — written for the recruiter to keep, each max 12 words"]
+    "items": ["4-5 short reasons why ${firstName} stands out — written for the recruiter to keep, each max 12 words"]
   }
 }
 
 Rules:
 - language: "es" if Spanish, "it" if Italian, "pt" if Portuguese, "en" otherwise
-- intro MUST be in first person as Pablo speaking directly — never third person, never generic
+- intro MUST be in first person as ${firstName} speaking directly — never third person, never generic
 - Be specific to THIS conversation — reference actual topics, questions, and moments
 - chips: short (1-3 words each), scannable, no duplicates
-- points and items: concrete, not generic — no "Pablo has experience in X" unless tied to a real moment
+- points and items: concrete, not generic — no "${firstName} has experience in X" unless tied to a real moment
 - Return ONLY valid JSON`;
 
   const response = await anthropic.messages.create({

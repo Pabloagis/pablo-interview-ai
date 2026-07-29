@@ -2,7 +2,6 @@ import { Resend } from 'resend';
 import { generateReport } from '@/lib/report';
 import type { ReportData } from '@/lib/report';
 
-const PABLO_EMAIL = 'pabloagisburgos@gmail.com';
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
 const BASE_URL = 'https://interviewmind.one';
 
@@ -343,6 +342,8 @@ export interface SendFollowUpEmailParams {
   sessionId?: string | null;
   bcc?: string[];
   recruiterEmail?: string | null;
+  // Optional; when omitted the email is byte-identical to the original Pablo flow.
+  candidateName?: string | null;
 }
 
 export async function sendFollowUpEmail({
@@ -354,11 +355,13 @@ export async function sendFollowUpEmail({
   exitNotify,
   sessionId,
   bcc,
+  candidateName,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const report = await generateReport({
     messages,
     recruiterName: recruiterName ?? null,
     company: companyName ?? null,
+    candidateName: candidateName ?? null,
   });
 
   const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
@@ -367,14 +370,17 @@ export async function sendFollowUpEmail({
 
   const resend = getResendClient();
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
+  const who = candidateName ?? 'Pablo Agis Burgos';
   const subject = [jobTitle, companyName].filter(Boolean).length > 0
-    ? `Pablo Agis Burgos · ${[jobTitle, companyName].filter(Boolean).join(' at ')}`
-    : `Pablo Agis Burgos — ${REPORT_BADGE[lang]}`;
+    ? `${who} · ${[jobTitle, companyName].filter(Boolean).join(' at ')}`
+    : `${who} — ${REPORT_BADGE[lang]}`;
 
+  // Pablo BCC removed. A dev copy is gated behind DEV_BCC_EMAIL (unset in production).
+  const devBcc = process.env.DEV_BCC_EMAIL;
   const result = await resend.emails.send({
     from: FROM_ADDRESS,
     to: [to],
-    bcc: bcc ?? [PABLO_EMAIL],
+    bcc: bcc ?? (devBcc ? [devBcc] : []),
     subject,
     html,
   });

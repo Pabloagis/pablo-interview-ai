@@ -14,6 +14,14 @@ import {
   type NodeState,
   type PublishLevel,
 } from '@/lib/coverage-nodes';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
+import SlugManager from './SlugManager';
+
+const LEVEL_LABEL_KEY: Record<Exclude<PublishLevel, 'unpublished'>, keyof PlatformStrings> = {
+  sharp: 'level_sharp',
+  solid: 'level_solid',
+  basic: 'level_basic',
+};
 
 interface Props {
   readiness:    number;
@@ -33,13 +41,6 @@ const LEVEL_COLOR: Record<PublishLevel, string> = {
   unpublished: '#6080a0',
 };
 
-const LEVEL_LABEL: Record<PublishLevel, string> = {
-  sharp:       'Sharp',
-  solid:       'Solid',
-  basic:       'Basic',
-  unpublished: 'Unpublished',
-};
-
 export default function PublishPanel({
   readiness,
   publishLevel,
@@ -49,6 +50,7 @@ export default function PublishPanel({
   onPublish,
   onTrainNode,
 }: Props) {
+  const t = usePlatformT();
   const levelColor = LEVEL_COLOR[publishLevel];
   const darkNodes  = COVERAGE_NODES.filter(n => nodeStates[n.key] === 'dark');
   const isLive     = publishedAt !== null;
@@ -62,9 +64,9 @@ export default function PublishPanel({
     return (
       <div className="w-full rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-4 flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-white/60">Publish agent</span>
+          <span className="text-xs font-semibold text-white/60">{t.pub_publish_agent}</span>
           <span className="text-[10px] text-white/25">
-            {readiness}/{PUBLISH_THRESHOLDS.basic} to Basic
+            {t.pub_to_basic(readiness, PUBLISH_THRESHOLDS.basic)}
           </span>
         </div>
         {/* Progress toward Basic */}
@@ -75,14 +77,13 @@ export default function PublishPanel({
           />
         </div>
         <p className="text-[11px] text-white/35 leading-relaxed">
-          {needed} more point{needed !== 1 ? 's' : ''} to reach Basic.
-          Add your CV and two stories to get there in ~10 minutes.
+          {t.pub_points_to_basic(needed)}
         </p>
         <button
           disabled
           className="w-full py-2 rounded-lg text-xs font-semibold text-white/25 bg-white/[0.04] border border-white/[0.07] cursor-not-allowed"
         >
-          Publish agent
+          {t.pub_publish_agent}
         </button>
       </div>
     );
@@ -95,15 +96,12 @@ export default function PublishPanel({
         style={{ borderColor: `${levelColor}30`, background: `${levelColor}08` }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-white/80">Ready to publish</span>
+          <span className="text-xs font-semibold text-white/80">{t.pub_ready}</span>
           <LevelBadge publishLevel={publishLevel} />
         </div>
         <p className="text-[11px] text-white/45 leading-relaxed">
-          Recruiters will see you in the candidate directory.
-          {darkNodes.length > 0
-            ? ` ${darkNodes.length} dark node${darkNodes.length !== 1 ? 's' : ''} will cause refusals — visible to any recruiter who asks.`
-            : ' Your agent can answer every topic.'
-          }
+          {t.pub_recruiters_see}
+          {darkNodes.length > 0 ? t.pub_dark_refusals(darkNodes.length) : t.pub_answer_every}
         </p>
         <button
           onClick={onPublish}
@@ -111,8 +109,9 @@ export default function PublishPanel({
           className="w-full py-2 rounded-lg text-xs font-semibold transition-colors disabled:opacity-50"
           style={{ background: levelColor, color: '#0d0f14' }}
         >
-          {isPublishing ? 'Publishing…' : 'Publish agent'}
+          {isPublishing ? t.pub_publishing : t.pub_publish_agent}
         </button>
+        <SlugManager locked={false} />
       </div>
     );
   }
@@ -126,7 +125,7 @@ export default function PublishPanel({
           className="w-1.5 h-1.5 rounded-full shrink-0"
           style={{ background: levelColor, boxShadow: `0 0 6px ${levelColor}80` }}
         />
-        <span className="text-xs font-semibold text-white/80">Live</span>
+        <span className="text-xs font-semibold text-white/80">{t.pub_live}</span>
         <LevelBadge publishLevel={publishLevel} />
         <div className="flex-1 min-w-0" />
         <button
@@ -134,26 +133,26 @@ export default function PublishPanel({
           disabled={isPublishing}
           className="text-[10px] font-medium text-white/35 hover:text-white/70 transition-colors disabled:opacity-40"
         >
-          {isPublishing ? 'Updating…' : 'Update ↑'}
+          {isPublishing ? t.pub_updating : t.pub_update}
         </button>
       </div>
 
       {/* Dark node refusal list — the argument to keep training */}
       {darkNodes.length === 0 ? (
         <p className="text-[11px] text-white/40">
-          Your agent answers every topic. No refusals.
+          {t.pub_no_refusals}
         </p>
       ) : (
         <div className="flex flex-col gap-1.5">
           <p className="text-[10px] font-semibold text-white/25 uppercase tracking-wider">
-            What recruiters hear on dark topics
+            {t.pub_what_recruiters_hear}
           </p>
           <div className="flex flex-col gap-2.5 mt-0.5">
             {darkNodes.map(node => (
               <RefusalRow
                 key={node.key}
-                label={node.label}
-                refusal={node.darkRefusal}
+                label={t.nodes[node.key].label}
+                refusal={t.nodes[node.key].darkRefusal}
                 nodeKey={node.key}
                 onTrain={onTrainNode}
               />
@@ -161,6 +160,7 @@ export default function PublishPanel({
           </div>
         </div>
       )}
+      <SlugManager locked={true} />
     </div>
   );
 }
@@ -168,6 +168,7 @@ export default function PublishPanel({
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function LevelBadge({ publishLevel }: { publishLevel: PublishLevel }) {
+  const t = usePlatformT();
   const color = LEVEL_COLOR[publishLevel];
   if (publishLevel === 'unpublished') return null;
   return (
@@ -175,7 +176,7 @@ function LevelBadge({ publishLevel }: { publishLevel: PublishLevel }) {
       className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded uppercase"
       style={{ color, background: `${color}1a` }}
     >
-      {LEVEL_LABEL[publishLevel]}
+      {t[LEVEL_LABEL_KEY[publishLevel]] as string}
     </span>
   );
 }
@@ -191,6 +192,7 @@ function RefusalRow({
   nodeKey:  CoverageNodeKey;
   onTrain:  (key: CoverageNodeKey) => void;
 }) {
+  const t = usePlatformT();
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between gap-2">
@@ -199,7 +201,7 @@ function RefusalRow({
           onClick={() => onTrain(nodeKey)}
           className="shrink-0 text-[10px] font-medium text-[#5080f0] hover:opacity-80 transition-opacity"
         >
-          Train ↗
+          {t.pub_train}
         </button>
       </div>
       <blockquote className="pl-2 border-l border-white/[0.12] text-[10px] text-white/35 leading-relaxed italic">

@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/expire-sessions",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cron/sweep-public-sessions",
+      "schedule": "0 0 * * *"
     }
   ]
 }
