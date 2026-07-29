@@ -1,8 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from 'react';
-import Background from '@/components/Background';
-import StreamingResponse from '@/components/StreamingResponse';
 
 interface Candidate {
   slug: string;
@@ -148,22 +146,18 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   // ── Unavailable (kill switch) ──────────────────────────────────────────────
   if (!enabled || startError === 'unavailable') {
     return (
-      <>
-        <Background />
-        <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
-          <Header candidate={candidate} initials={initials} />
-          <p className="mt-6 text-sm text-[rgba(255,255,255,0.5)] max-w-sm">
-            This agent is temporarily unavailable. Please check back shortly.
-          </p>
-        </div>
-      </>
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center bg-[#0d0f14]">
+        <Header candidate={candidate} initials={initials} />
+        <p className="mt-6 text-sm text-[rgba(255,255,255,0.5)] max-w-sm">
+          This agent is temporarily unavailable. Please check back shortly.
+        </p>
+      </div>
     );
   }
 
   return (
     <>
-      <Background />
-      <div className="fixed inset-0 flex flex-col">
+      <div className="fixed inset-0 flex flex-col bg-[#0d0f14]">
         {/* Header */}
         <div className="shrink-0 px-5 pt-6 pb-4 border-b border-white/[0.07]">
           <Header candidate={candidate} initials={initials} />
@@ -184,7 +178,12 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
           )}
           {messages.map(m => <Bubble key={m.id} msg={m} />)}
           {isStreaming && streamingText && (
-            <div className="self-start max-w-[82%]"><StreamingResponse text={streamingText} thinkingPhrase="" /></div>
+            <div className="flex justify-start">
+              <div className="max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]">
+                {streamingText}
+                <span className="inline-block w-0.5 h-3.5 bg-[rgba(255,255,255,0.5)] ml-0.5 animate-pulse" />
+              </div>
+            </div>
           )}
           {isStreaming && !streamingText && (
             <div className="self-start text-xs text-[rgba(255,255,255,0.35)] italic px-2">Thinking…</div>

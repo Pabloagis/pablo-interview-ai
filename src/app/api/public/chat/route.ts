@@ -25,6 +25,14 @@ import {
   PUBLIC_MAX_TOKENS,
   HISTORY_MAX_EXCHANGES,
 } from '@/lib/rate-limit';
+import {
+  extractVisitorContext,
+  mergeVisitor,
+  buildVisitorContextBlock,
+  hasAnyVisitor,
+  OPENING_ASK,
+  type VisitorFields,
+} from '@/lib/visitor-context';
 
 export const dynamic = 'force-dynamic';
 
@@ -89,7 +97,7 @@ export async function POST(request: NextRequest) {
   // Identity comes from the session row — never from the request body.
   const { data: session } = await supabase
     .from('sessions')
-    .select('id, candidate_id, source, messages, turn_count, ended_at, recruiter_name, recruiter_role, recruiter_company')
+    .select('id, candidate_id, source, messages, turn_count, ended_at, recruiter_name, recruiter_role, recruiter_company, recruiter_email, context_captured_at')
     .eq('id', sessionId)
     .single();
 
@@ -156,10 +164,24 @@ export async function POST(request: NextRequest) {
           '',
         );
 
+        // Visitor context is UNVERIFIED session metadata. Append it as a SEPARATE block
+        // AFTER the verified candidate core — never merged, never embedded into memory.
+        const visitor: VisitorFields = {
+          name: session.recruiter_name ?? null,
+          role: session.recruiter_role ?? null,
+          company: session.recruiter_company ?? null,
+          email: session.recruiter_email ?? null,
+        };
         const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
           { type: 'text', text: corePrompt, cache_control: { type: 'ephemeral' } },
-          { type: 'text', text: dynamic },
         ];
+        if (hasAnyVisitor(visitor)) {
+          systemBlocks.push({ type: 'text', text: buildVisitorContextBlock(visitor) });
+        }
+        systemBlocks.push({ type: 'text', text: dynamic });
+        if (rawHistory.length === 0) {
+          systemBlocks.push({ type: 'text', text: OPENING_ASK });
+        }
 
         const anthropic = getAnthropicClient();
 
@@ -212,6 +234,30 @@ export async function POST(request: NextRequest) {
 
           storeMemory(supabase, sid, message, 'user_message', embedding);
           embed(full).then(e => storeMemory(supabase, sid, full, 'assistant_response', e));
+
+          // ── Visitor-context capture — first 3 visitor messages, AFTER the stream so it
+          //    never delays the first token. Stored as session metadata, never as memory. ──
+          const visitorMsgs = updated.filter(m => m.role === 'user').map(m => m.content);
+          if (visitorMsgs.length <= 3 && !session.context_captured_at) {
+            try {
+              const { fields, usage } = await extractVisitorContext(visitorMsgs);
+              logUsage(supabase, {
+                candidateId, sessionId: sid, model: CLAUDE_FALLBACK_MODEL,
+                inputTokens: usage.input, outputTokens: usage.output,
+              });
+              const merged = mergeVisitor(visitor, fields); // never overwrites a non-null
+              const patch: Record<string, string> = {};
+              if (merged.name && merged.name !== visitor.name) patch.recruiter_name = merged.name;
+              if (merged.role && merged.role !== visitor.role) patch.recruiter_role = merged.role;
+              if (merged.company && merged.company !== visitor.company) patch.recruiter_company = merged.company;
+              if (merged.email && merged.email !== visitor.email) patch.recruiter_email = merged.email;
+              const allThree = !!(merged.name && merged.role && merged.company);
+              if (allThree || visitorMsgs.length >= 3) patch.context_captured_at = new Date().toISOString();
+              if (Object.keys(patch).length > 0) await supabase.from('sessions').update(patch).eq('id', sid);
+            } catch (e) {
+              console.error('[public/chat] visitor extraction failed (non-fatal):', e);
+            }
+          }
         }
       } catch (error) {
         console.error('[public/chat] stream error:', error);
