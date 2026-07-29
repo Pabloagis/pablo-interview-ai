@@ -6,6 +6,7 @@
 import { useState, useCallback, useRef, useEffect, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { COVERAGE_NODES, type CoverageNodeKey } from '@/lib/coverage-nodes';
 import type { Gap } from '@/app/api/trainer/analyze-gaps/route';
+import { usePlatformT } from '@/context/platform-i18n';
 
 interface TestMessage {
   id:      string;
@@ -20,12 +21,13 @@ interface Props {
 
 type Phase = 'interviewing' | 'analyzing' | 'results';
 
-const GAP_TYPE_STYLE: Record<'refusal' | 'weak', { label: string; color: string; bg: string }> = {
-  refusal: { label: 'REFUSAL', color: '#c04040', bg: 'rgba(192,64,64,0.12)'  },
-  weak:    { label: 'WEAK',    color: '#b07030', bg: 'rgba(176,112,48,0.12)' },
+const GAP_TYPE_STYLE: Record<'refusal' | 'weak', { color: string; bg: string }> = {
+  refusal: { color: '#c04040', bg: 'rgba(192,64,64,0.12)'  },
+  weak:    { color: '#b07030', bg: 'rgba(176,112,48,0.12)' },
 };
 
 export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
+  const t = usePlatformT();
   const [phase,       setPhase]       = useState<Phase>('interviewing');
   const [messages,    setMessages]    = useState<TestMessage[]>([]);
   const [draft,       setDraft]       = useState('');
@@ -178,11 +180,11 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
       <div className="shrink-0 h-14 flex items-center px-5 gap-3 border-b border-white/[0.08]">
         <div className="flex flex-col">
           <span className="text-xs font-semibold text-white/90 leading-tight">
-            {phase === 'results' ? 'What a recruiter just experienced' : 'Testing your agent'}
+            {phase === 'results' ? t.test_results_title : t.test_testing_title}
           </span>
           {phase === 'interviewing' && (
             <span className="text-[10px] text-white/35 leading-tight mt-0.5">
-              Ask your agent anything. You're the recruiter.
+              {t.test_subtitle}
             </span>
           )}
         </div>
@@ -195,14 +197,14 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                        border-white/20 text-white/60 hover:text-white hover:border-white/40
                        disabled:opacity-30 disabled:cursor-not-allowed"
           >
-            End interview
+            {t.test_end}
           </button>
         )}
         {phase === 'results' && (
           <button
             onClick={onClose}
             className="shrink-0 text-white/40 hover:text-white transition-colors"
-            aria-label="Close"
+            aria-label={t.test_close}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
               <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -224,7 +226,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
             {messages.length === 0 && !isStreaming && (
               <div className="flex-1 flex flex-col items-center justify-center py-16">
                 <p className="text-sm text-white/25 text-center max-w-xs leading-relaxed">
-                  Start with any question a recruiter might ask. The agent will respond exactly as it would in a live interview.
+                  {t.test_empty}
                 </p>
               </div>
             )}
@@ -260,12 +262,12 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                 onChange={e => setDraft(e.target.value)}
                 onKeyDown={handleKeyDown}
                 rows={2}
-                placeholder="Ask your agent a question…"
+                placeholder={t.test_placeholder}
                 disabled={isStreaming}
                 className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-white/20 leading-relaxed disabled:opacity-50"
               />
               <div className="flex justify-end mt-1">
-                <span className="text-[10px] text-white/18 select-none">Enter to send</span>
+                <span className="text-[10px] text-white/18 select-none">{t.conv_enter_to_send}</span>
               </div>
             </div>
             <button
@@ -277,7 +279,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                 color: 'white',
               }}
             >
-              Ask
+              {t.test_ask}
             </button>
           </div>
         </div>
@@ -286,7 +288,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
       {phase === 'analyzing' && (
         <div className="flex-1 min-w-0 flex flex-col items-center justify-center gap-4">
           <div className="w-7 h-7 rounded-full border-2 border-t-white/60 border-white/10 animate-spin" />
-          <p className="text-sm text-white/40">Analysing what recruiters heard…</p>
+          <p className="text-sm text-white/40">{t.test_analyzing}</p>
         </div>
       )}
 
@@ -296,22 +298,19 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           {gaps.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
               <p className="text-sm text-white/60 text-center">
-                No gaps detected. Your agent handled every question.
+                {t.test_no_gaps}
               </p>
               <button
                 onClick={onClose}
                 className="mt-2 text-xs text-white/35 hover:text-white/70 transition-colors underline underline-offset-2"
               >
-                Return to training
+                {t.test_return}
               </button>
             </div>
           ) : (
             <>
               <p className="text-xs text-white/35 max-w-sm leading-relaxed">
-                {gaps.length === 1
-                  ? 'One node where the agent failed or hedged.'
-                  : `${gaps.length} nodes where the agent failed or hedged.`}{' '}
-                Train them to close the gap before your next real interview.
+                {t.test_gaps(gaps.length)}
               </p>
 
               <div className="flex flex-col gap-3">
@@ -329,10 +328,10 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                           className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded"
                           style={{ color: style.color, background: style.bg }}
                         >
-                          {style.label}
+                          {gap.type === 'refusal' ? t.test_gap_refusal : t.test_gap_weak}
                         </span>
                         <span className="text-sm text-white/80 font-medium">
-                          {node?.label ?? gap.nodeKey}
+                          {node ? t.nodes[gap.nodeKey].label : gap.nodeKey}
                         </span>
                       </div>
 
@@ -350,7 +349,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                           className="text-xs font-medium transition-colors hover:opacity-80"
                           style={{ color: '#5080f0' }}
                         >
-                          Train this ↗
+                          {t.test_train_this}
                         </button>
                       </div>
                     </div>
@@ -374,13 +373,14 @@ function TestBubble({
   message: TestMessage;
   isStreaming?: boolean;
 }) {
+  const t = usePlatformT();
   const isUser = message.role === 'user'; // user = recruiter in this context
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} flex-col gap-0.5`}>
       {/* Role label */}
       <span className={`text-[9px] font-semibold uppercase tracking-wider ${isUser ? 'text-right' : 'text-left'} text-white/20`}>
-        {isUser ? 'You (recruiter)' : 'Your agent'}
+        {isUser ? t.test_you_recruiter : t.test_your_agent}
       </span>
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
         <div

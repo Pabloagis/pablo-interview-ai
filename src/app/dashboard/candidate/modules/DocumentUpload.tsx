@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // Host-agnostic inline document uploader for the trainer chat. Mirrors CvUpload's
 // contract (a plain onSaved callback, no wizard TrainingData) so the chat owns no
@@ -17,13 +18,15 @@ interface Props {
   compact?: boolean;   // tighter padding when shown inside a chat bubble
 }
 
-// The candidate picks in plain language; we map to the API's source_type.
-const DOC_KINDS: { value: string; label: string; sourceType: string; artifactType: string | null }[] = [
-  { value: 'work_sample',  label: 'Project or work sample',       sourceType: 'professional_artifact', artifactType: 'project' },
-  { value: 'reference',    label: 'Reference or recommendation',  sourceType: 'recruiter_feedback',    artifactType: null },
-  { value: 'review',       label: 'Performance review / feedback', sourceType: 'recruiter_feedback',   artifactType: null },
-  { value: 'transcript',   label: 'Interview transcript',         sourceType: 'interview_transcript',  artifactType: null },
-  { value: 'other',        label: 'Something else',               sourceType: 'free_training',         artifactType: 'other' },
+// The candidate picks in plain language; we map to the API's source_type. The label
+// is looked up from the translation dictionary at render (labelKey), so the picker
+// follows the selected language.
+const DOC_KINDS: { value: string; labelKey: keyof PlatformStrings; sourceType: string; artifactType: string | null }[] = [
+  { value: 'work_sample',  labelKey: 'doc_kind_work_sample', sourceType: 'professional_artifact', artifactType: 'project' },
+  { value: 'reference',    labelKey: 'doc_kind_reference',   sourceType: 'recruiter_feedback',    artifactType: null },
+  { value: 'review',       labelKey: 'doc_kind_review',      sourceType: 'recruiter_feedback',    artifactType: null },
+  { value: 'transcript',   labelKey: 'doc_kind_transcript',  sourceType: 'interview_transcript',  artifactType: null },
+  { value: 'other',        labelKey: 'doc_kind_other',       sourceType: 'free_training',         artifactType: 'other' },
 ];
 
 // DOCX/DOC are binary with no text layer we can hand Claude — the raw-data route
@@ -31,6 +34,7 @@ const DOC_KINDS: { value: string; label: string; sourceType: string; artifactTyp
 const ACCEPTED = '.pdf,.txt,.md,.json';
 
 export default function DocumentUpload({ onSaved, compact = false }: Props) {
+  const t = usePlatformT();
   const [kind, setKind] = useState(DOC_KINDS[0].value);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
@@ -50,12 +54,12 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
       const res = await fetch('/api/training/raw-data', { method: 'POST', body: formData });
       const json = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(json.error ?? 'Upload failed. Please try again.');
+        setError(json.error ?? t.doc_failed);
         return;
       }
-      onSaved(`Got "${file.name}". Your agent can draw on that as evidence now.`);
+      onSaved(t.doc_saved(file.name));
     } catch {
-      setError('Upload failed. Please try again.');
+      setError(t.doc_failed);
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
@@ -65,13 +69,12 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
   return (
     <div className={`flex flex-col gap-3 ${compact ? '' : 'py-1'}`}>
       <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed">
-        Add a supporting document — a work sample, a reference, a review, an interview transcript.
-        Anything that backs up what you tell me becomes evidence your agent can stand behind.
+        {t.doc_intro}
       </p>
 
       <div>
         <label className="block text-[10px] text-[rgba(255,255,255,0.35)] uppercase tracking-wide mb-1.5">
-          What is it?
+          {t.doc_what_is_it}
         </label>
         <select
           value={kind}
@@ -87,7 +90,7 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
         >
           {DOC_KINDS.map(k => (
             <option key={k.value} value={k.value} style={{ background: '#161a28' }}>
-              {k.label}
+              {t[k.labelKey] as string}
             </option>
           ))}
         </select>
@@ -111,7 +114,7 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
               <circle cx="12" cy="12" r="10" stroke="rgba(100,130,255,0.3)" strokeWidth="3" />
               <path d="M12 2a10 10 0 0 1 10 10" stroke="rgba(100,130,255,0.8)" strokeWidth="3" strokeLinecap="round" />
             </svg>
-            Reading document…
+            {t.doc_reading}
           </>
         ) : (
           <>
@@ -121,7 +124,7 @@ export default function DocumentUpload({ onSaved, compact = false }: Props) {
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            Upload file (PDF, TXT, MD, JSON)
+            {t.doc_upload_button}
           </>
         )}
       </button>

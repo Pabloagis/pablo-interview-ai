@@ -5,6 +5,7 @@ import VoiceRecorder from '../components/VoiceRecorder';
 import CvUpload from '../modules/CvUpload';
 import CareerGoalPicker from '../modules/CareerGoalPicker';
 import DocumentUpload from '../modules/DocumentUpload';
+import { usePlatformT } from '@/context/platform-i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,7 @@ export default function ConversationPanel({
   onCareerGoalSaved,
   onDocumentUploaded,
 }: Props) {
+  const t = usePlatformT();
   const [draft, setDraft] = useState('');
   const [docPanelOpen, setDocPanelOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -94,7 +96,7 @@ export default function ConversationPanel({
         {messages.length === 0 && !isStreaming && (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 py-12">
             <p className="text-sm text-[rgba(255,255,255,0.25)] text-center max-w-xs">
-              Your AI interview trainer is ready. It will push you for specifics — dates, numbers, named systems.
+              {t.conv_empty}
             </p>
           </div>
         )}
@@ -152,7 +154,7 @@ export default function ConversationPanel({
         {isExtracting && (
           <div className="self-center text-[10px] text-[rgba(255,255,255,0.25)] flex items-center gap-1.5 mt-1">
             <div className="w-2 h-2 rounded-full border border-t-[rgba(255,255,255,0.3)] border-[rgba(255,255,255,0.08)] animate-spin" />
-            Extracting evidence…
+            {t.conv_extracting}
           </div>
         )}
 
@@ -166,12 +168,12 @@ export default function ConversationPanel({
           <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
             <div className="flex items-center justify-between mb-1">
               <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-wider">
-                Add a supporting document
+                {t.conv_add_document}
               </span>
               <button
                 onClick={() => setDocPanelOpen(false)}
                 className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
-                aria-label="Close document upload"
+                aria-label={t.conv_close}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -195,8 +197,8 @@ export default function ConversationPanel({
           onClick={() => setDocPanelOpen(o => !o)}
           className="shrink-0 self-end p-3 rounded-xl border border-white/[0.09] bg-white/[0.05] text-[rgba(255,255,255,0.45)] hover:text-white transition-colors"
           style={docPanelOpen ? { color: '#8098f0', borderColor: 'rgba(64,96,208,0.5)' } : undefined}
-          aria-label="Attach a document"
-          title="Attach a document"
+          aria-label={t.conv_attach_document}
+          title={t.conv_attach_document}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -211,7 +213,7 @@ export default function ConversationPanel({
             onChange={e => setDraft(e.target.value)}
             onKeyDown={handleKeyDown}
             rows={2}
-            placeholder="Answer the question…"
+            placeholder={t.conv_placeholder}
             disabled={isStreaming}
             className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.20)] leading-relaxed disabled:opacity-50"
           />
@@ -220,7 +222,7 @@ export default function ConversationPanel({
               onTranscript={t => setDraft(prev => prev ? `${prev} ${t}` : t)}
             />
             <span className="text-[10px] text-[rgba(255,255,255,0.18)] select-none">
-              Enter to send
+              {t.conv_enter_to_send}
             </span>
           </div>
         </div>
@@ -233,9 +235,9 @@ export default function ConversationPanel({
             background: canSend ? '#4060d0' : 'rgba(64,96,208,0.35)',
             color: 'white',
           }}
-          aria-label="Send message"
+          aria-label={t.conv_send}
         >
-          Send
+          {t.conv_send}
         </button>
       </div>
     </div>

@@ -13,6 +13,8 @@ import TrainerShell from './TrainerShell';
 import ConversationPanel, { type TrainerMessage, type OnboardingAction } from './ConversationPanel';
 import DashboardContent from './DashboardContent';
 import AgentTestOverlay from './AgentTestOverlay';
+import { useLanguage } from '@/context/LanguageContext';
+import { usePlatformT, LANG_NAME } from '@/context/platform-i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,6 +35,9 @@ export default function TrainerClient({
   initialPublishLevel,
   initialPublishedAt,
 }: InitialTrainerData) {
+  const { lang } = useLanguage();
+  const t = usePlatformT();
+
   // ── Conversation state ───────────────────────────────────────────────
   const [messages,      setMessages]      = useState<TrainerMessage[]>([]);
   const [streamingText, setStreamingText] = useState('');
@@ -67,20 +72,15 @@ export default function TrainerClient({
     const base = { id: crypto.randomUUID(), role: 'assistant' as const };
     switch (s) {
       case 'needs_cv':
-        return { ...base,
-          content: `Hi ${name} — before we can train anything, I need your career history. Upload your CV below and I'll read it; that gives your agent dates, roles and systems to work from.`,
-          action: 'cv_upload' as OnboardingAction };
+        return { ...base, content: t.g_needs_cv(name),   action: 'cv_upload'   as OnboardingAction };
       case 'needs_career_goal':
-        return { ...base,
-          content: `Got your CV. Now — what are you actually aiming at? Pick what fits below. Everything I ask you from here is judged against that goal.`,
-          action: 'career_goal' as OnboardingAction };
+        return { ...base, content: t.g_needs_goal(name), action: 'career_goal' as OnboardingAction };
       case 'needs_first_stories':
-        return { ...base,
-          content: `Good. Last foundational piece: I need a couple of real examples from your work — the kind a recruiter probes. Let's do the first one now. Tell me about something you actually delivered: what the situation was, what you specifically did, and how it ended.` };
+        return { ...base, content: t.g_needs_first_story };
       default:
         return null;   // 'trained' — no onboarding messaging at all
     }
-  }, []);
+  }, [t]);
 
   // Single source of truth for onboarding + coverage. Called on mount and after every
   // inline write. Appends the next stage's prompt when the stage actually advances.
@@ -114,7 +114,7 @@ export default function TrainerClient({
           ? [{
               id: crypto.randomUUID(),
               role: 'assistant' as const,
-              content: "Foundations are in. If you've got anything that backs up your work — a reference, a performance review, a project write-up — add it here and your agent can cite it. Or skip it and we'll keep talking.",
+              content: t.g_doc_invite,
               action: 'document_upload' as OnboardingAction,
             }]
           : [];
@@ -132,7 +132,7 @@ export default function TrainerClient({
     } catch {
       /* non-fatal — the trainer still works, it just won't guide */
     }
-  }, [candidateName, stagePrompt]);
+  }, [candidateName, stagePrompt, t]);
 
   // Mount: seed the guide only for a candidate who still needs foundations.
   // A trained candidate (e.g. Pablo) gets exactly the experience they had before.
@@ -166,13 +166,13 @@ export default function TrainerClient({
 
   // Inline control callbacks — always re-read from the server, never patch locally.
   const handleCvUploaded = useCallback(async () => {
-    await syncOnboarding({ acknowledge: "CV read — I've got your roles and dates." });
-  }, [syncOnboarding]);
+    await syncOnboarding({ acknowledge: t.g_ack_cv });
+  }, [syncOnboarding, t]);
 
   const handleCareerGoalSaved = useCallback(async (goal?: string) => {
     if (typeof goal === 'string') setCareerGoal(goal);
-    await syncOnboarding({ acknowledge: 'Locked in.' });
-  }, [syncOnboarding]);
+    await syncOnboarding({ acknowledge: t.g_ack_goal });
+  }, [syncOnboarding, t]);
 
   // A supporting document (reference, work sample, transcript…) landed. Documents
   // feed candidate_raw_data, which the coverage model reads — so re-derive from the
@@ -183,11 +183,11 @@ export default function TrainerClient({
       {
         id: crypto.randomUUID(),
         role: 'assistant',
-        content: message ?? "Got it — that's on file as evidence your agent can use.",
+        content: message ?? t.g_doc_ack,
       },
     ]);
     await syncOnboarding();
-  }, [syncOnboarding]);
+  }, [syncOnboarding, t]);
 
   // ── Send a candidate message ─────────────────────────────────────────
   const handleSend = useCallback(async (userText: string) => {
@@ -217,6 +217,7 @@ export default function TrainerClient({
           messages:   nextMessages.map(({ role, content }) => ({ role, content })),
           nodeStates,
           onboardingStage: stage ?? undefined,
+          language: LANG_NAME[lang],   // trainer replies in the user's chosen language
         }),
       });
 
@@ -326,14 +327,14 @@ export default function TrainerClient({
       // A candidate still finishing onboarding may have just cleared the "first
       // stories" gate with this answer — re-derive on the server and advance if so.
       if (stage && stage !== 'trained') {
-        await syncOnboarding({ acknowledge: "That's the kind of detail that holds up. Your agent can use that." });
+        await syncOnboarding({ acknowledge: t.g_ack_story });
       }
     } catch (err) {
       console.error('[TrainerClient] extraction error (non-fatal):', err);
     } finally {
       setIsExtracting(false);
     }
-  }, [isStreaming, messages, nodeStates, stage, syncOnboarding]);
+  }, [isStreaming, messages, nodeStates, stage, syncOnboarding, t, lang]);
 
   // ── Follow-up: inject the probe question as a trainer message ────────
   // No API call — the question is added as an assistant turn and the

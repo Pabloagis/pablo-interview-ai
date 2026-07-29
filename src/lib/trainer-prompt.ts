@@ -11,6 +11,9 @@ interface TrainerContext {
   nodeStates: Record<CoverageNodeKey, NodeState>;
   // Omitted or 'trained' → the prompt is byte-identical to the pre-onboarding version.
   onboardingStage?: OnboardingStage;
+  // Human-readable language the trainer must reply in ('Spanish', 'Italian', …).
+  // Omitted or 'English' → no extra instruction (default behaviour unchanged).
+  language?: string;
 }
 
 // Guidance injected ONLY while foundational inputs are missing. The inline control is
@@ -26,7 +29,14 @@ const ONBOARDING_GUIDANCE: Record<Exclude<OnboardingStage, 'trained'>, string> =
 };
 
 export function buildTrainerSystemPrompt(ctx: TrainerContext): string {
-  const { candidateName, careerGoal, nodeStates, onboardingStage } = ctx;
+  const { candidateName, careerGoal, nodeStates, onboardingStage, language } = ctx;
+
+  // Language directive. Whatever language the candidate types in, the trainer replies
+  // in the language they selected in the app. Proper nouns stay in their original form.
+  const languageBlock =
+    language && language.toLowerCase() !== 'english'
+      ? `\n\nLANGUAGE: Reply ONLY in ${language}, regardless of the language the candidate writes in. Keep names of companies, tools, and systems in their original spelling.`
+      : '';
 
   const onboardingBlock =
     onboardingStage && onboardingStage !== 'trained'
@@ -85,5 +95,5 @@ Mandate:
 9. Keep your responses to 2–4 sentences. This is an interview, not a coaching session.
 10. Tone: direct, professional, like an experienced interviewer who has heard every non-answer before.
 
-${closingLine}`;
+${closingLine}${languageBlock}`;
 }

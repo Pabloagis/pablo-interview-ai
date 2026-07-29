@@ -27,6 +27,8 @@ interface RequestBody {
   // Same precedent as nodeStates: the client received this FROM /api/training/onboarding
   // (server-derived). It only shapes this candidate's own coaching, never agent facts.
   onboardingStage?: OnboardingStage;
+  // Human-readable language name ('Spanish', 'Italian', …) the trainer should reply in.
+  language?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -50,7 +52,7 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  const { messages, nodeStates, onboardingStage } = body;
+  const { messages, nodeStates, onboardingStage, language } = body;
   if (!Array.isArray(messages) || messages.length === 0) {
     return new Response(JSON.stringify({ error: 'messages array required' }), {
       status: 400,
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
     careerGoal,
     nodeStates: resolvedStates,
     onboardingStage,
+    language,
   });
 
   const encoder = new TextEncoder();

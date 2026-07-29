@@ -6,6 +6,7 @@
 // proposed gap is "Write your answer." Vague answers are probed, not stored.
 
 import { useCallback, useEffect, useState } from 'react';
+import { usePlatformT } from '@/context/platform-i18n';
 
 interface ProposedGap {
   topic: string;
@@ -24,6 +25,7 @@ interface StoredItem {
 const QUALITY_COLOR: Record<string, string> = { verified: '#3ec870', solid: '#5580f0' };
 
 export default function AnticipatedQuestions() {
+  const t = usePlatformT();
   const [proposed, setProposed] = useState<ProposedGap[]>([]);
   const [stored, setStored] = useState<StoredItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,14 +74,14 @@ export default function AnticipatedQuestions() {
         await load();
       } else {
         // Vague / missing detail — probe, do not store.
-        setProbes(p => ({ ...p, [gap.topic]: data.followUpQuestion ?? 'Add a specific detail — a date, a name, or a concrete outcome you can defend.' }));
+        setProbes(p => ({ ...p, [gap.topic]: data.followUpQuestion ?? t.ant_default_probe }));
       }
     } catch {
-      setProbes(p => ({ ...p, [gap.topic]: 'Something went wrong — try again.' }));
+      setProbes(p => ({ ...p, [gap.topic]: t.ant_error }));
     } finally {
       setBusy(b => ({ ...b, [gap.topic]: false }));
     }
-  }, [drafts, busy, load]);
+  }, [drafts, busy, load, t]);
 
   const removeStored = useCallback(async (item: StoredItem) => {
     await fetch(`/api/training/anticipated?id=${item.id}`, { method: 'DELETE' });
@@ -90,7 +92,7 @@ export default function AnticipatedQuestions() {
     return (
       <div className="w-full flex flex-col gap-2">
         <SectionLabel />
-        <p className="text-[11px] text-white/25">Scanning your background for questions recruiters will ask…</p>
+        <p className="text-[11px] text-white/25">{t.ant_scanning}</p>
       </div>
     );
   }
@@ -101,7 +103,7 @@ export default function AnticipatedQuestions() {
     <div className="w-full flex flex-col gap-3">
       <SectionLabel />
       <p className="text-[11px] text-white/40 leading-relaxed -mt-1">
-        A recruiter will ask these. Answer each one in your own words — your agent speaks only what you write here, never a version it made up.
+        {t.ant_intro}
       </p>
 
       {/* ── Proposed gaps — needs your answer ──────────────────────────────── */}
@@ -109,7 +111,7 @@ export default function AnticipatedQuestions() {
         <div key={gap.topic} className="rounded-xl border border-[#c0884033] bg-[#c0884008] px-4 py-3.5 flex flex-col gap-2.5">
           <div className="flex items-center gap-2">
             <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded" style={{ color: '#c08840', background: '#c0884018' }}>
-              Needs your answer
+              {t.ant_needs_answer}
             </span>
             <span className="text-xs font-semibold text-white/80">{gap.topic}</span>
           </div>
@@ -119,13 +121,13 @@ export default function AnticipatedQuestions() {
             value={drafts[gap.topic] ?? ''}
             onChange={e => setDrafts(d => ({ ...d, [gap.topic]: e.target.value }))}
             rows={3}
-            placeholder="Write your answer — the real reason, in your own words."
+            placeholder={t.ant_placeholder}
             className="w-full rounded-lg bg-white/[0.04] border border-white/[0.09] px-3 py-2 text-xs text-white resize-none focus:outline-none focus:border-white/25 placeholder-white/20 leading-relaxed"
           />
 
           {probes[gap.topic] && (
             <p className="text-[11px] text-[#c08840] leading-relaxed">
-              Needs more to be usable: {probes[gap.topic]}
+              {t.ant_needs_more(probes[gap.topic])}
             </p>
           )}
 
@@ -135,7 +137,7 @@ export default function AnticipatedQuestions() {
             className="self-start px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors disabled:opacity-40"
             style={{ background: '#4060d0', color: 'white' }}
           >
-            {busy[gap.topic] ? 'Checking…' : 'Write your answer'}
+            {busy[gap.topic] ? t.ant_checking : t.ant_write_answer}
           </button>
         </div>
       ))}
@@ -143,7 +145,7 @@ export default function AnticipatedQuestions() {
       {/* ── Stored / answered ──────────────────────────────────────────────── */}
       {stored.length > 0 && (
         <div className="flex flex-col gap-2 mt-1">
-          <p className="text-[10px] font-semibold text-white/25 uppercase tracking-wider">Your answers</p>
+          <p className="text-[10px] font-semibold text-white/25 uppercase tracking-wider">{t.ant_your_answers}</p>
           {stored.map(item => (
             <div key={item.id} className="rounded-xl border border-white/[0.07] bg-white/[0.025] px-4 py-3 flex flex-col gap-1.5">
               <div className="flex items-center gap-2">
@@ -154,7 +156,7 @@ export default function AnticipatedQuestions() {
                 <span className="text-xs font-semibold text-white/75">{item.topic}</span>
                 <div className="flex-1 min-w-0" />
                 <button onClick={() => removeStored(item)} className="text-[10px] text-white/30 hover:text-white/70 transition-colors">
-                  Remove
+                  {t.ant_remove}
                 </button>
               </div>
               <p className="text-[11px] text-white/50 leading-relaxed">{item.answer}</p>
@@ -167,9 +169,10 @@ export default function AnticipatedQuestions() {
 }
 
 function SectionLabel() {
+  const t = usePlatformT();
   return (
     <p className="text-[10px] font-semibold text-white/25 uppercase tracking-wider">
-      Anticipated questions
+      {t.ant_section}
     </p>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { PublishLevel } from '@/lib/coverage-nodes';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // Level colours — single source of truth (matches TrainerShell)
 const LEVEL_COLOR: Record<PublishLevel, string> = {
@@ -11,11 +12,11 @@ const LEVEL_COLOR: Record<PublishLevel, string> = {
   unpublished: '#6080a0',
 };
 
-const LEVEL_LABEL: Record<PublishLevel, string> = {
-  sharp:       'Sharp',
-  solid:       'Solid',
-  basic:       'Basic',
-  unpublished: '',
+// unpublished shows NO badge, so it maps to no key (empty label handled below)
+const LEVEL_LABEL_KEY: Record<Exclude<PublishLevel, 'unpublished'>, keyof PlatformStrings> = {
+  sharp: 'level_sharp',
+  solid: 'level_solid',
+  basic: 'level_basic',
 };
 
 // ── Hexagon geometry ──────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export default function AgentCore({ readiness, publishLevel, size = 200 }: Props) {
+  const t = usePlatformT();
   // ── Spring pulse guard ───────────────────────────────────────────────────
   // prevReadinessRef is initialised to the *current* readiness so the very first
   // render (and StrictMode's synthetic unmount/remount) never fires the pulse.
@@ -71,7 +73,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
   const dotR    = Math.round(coreR * 0.28);
 
   const color    = LEVEL_COLOR[publishLevel];
-  const label    = LEVEL_LABEL[publishLevel];
+  const label    = publishLevel === 'unpublished' ? '' : (t[LEVEL_LABEL_KEY[publishLevel]] as string);
   const filterId = `agent-glow-${size}`;
 
   return (

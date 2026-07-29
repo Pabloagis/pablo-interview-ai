@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import type { GeneratedModuleOptions } from '@/app/api/generate-module-options/route';
+import { usePlatformT } from '@/context/platform-i18n';
 
 export default function CareerGoalPicker({
   currentGoal,
@@ -17,6 +18,7 @@ export default function CareerGoalPicker({
   moduleOptions: GeneratedModuleOptions | null;
   onSaved: (goal: string) => void;
 }) {
+  const t = usePlatformT();
   const parseInitial = () => {
     if (!currentGoal) return { goals: [] as string[], other: '' };
     try {
@@ -99,7 +101,7 @@ export default function CareerGoalPicker({
       });
       if (!res.ok) {
         const j = await res.json() as { error?: string };
-        setError(j.error ?? 'Failed to save. Please try again.');
+        setError(j.error ?? t.goal_failed);
         return;
       }
 
@@ -119,7 +121,7 @@ export default function CareerGoalPicker({
 
       onSaved(value);
     } catch {
-      setError('Failed to save. Please try again.');
+      setError(t.goal_failed);
     } finally {
       setSaving(false);
     }
@@ -130,7 +132,7 @@ export default function CareerGoalPicker({
     return (
       <div className="flex items-center gap-3 py-8 text-sm text-[rgba(255,255,255,0.4)]">
         <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
-        Analysing your CV…
+        {t.goal_analysing}
       </div>
     );
   }
@@ -180,12 +182,12 @@ export default function CareerGoalPicker({
       {/* Free text */}
       <div className="mb-5">
         <label className="block text-xs font-medium text-[rgba(255,255,255,0.4)] mb-1.5">
-          Anything else?
+          {t.goal_anything_else}
         </label>
         <textarea
           value={freeText}
           onChange={e => handleFreeTextChange(e.target.value)}
-          placeholder="Add your own context if needed..."
+          placeholder={t.goal_placeholder}
           rows={2}
           disabled={saving}
           className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.22)] disabled:opacity-50"
@@ -193,8 +195,8 @@ export default function CareerGoalPicker({
         {saveStatus !== 'idle' && (
           <p className="text-[10px] text-[rgba(255,255,255,0.28)] mt-1 flex items-center gap-1">
             {saveStatus === 'saving'
-              ? <><span className="inline-block w-2.5 h-2.5 rounded-full border border-t-[rgba(255,255,255,0.4)] border-[rgba(255,255,255,0.12)] animate-spin" />Saving…</>
-              : '✓ Saved'}
+              ? <><span className="inline-block w-2.5 h-2.5 rounded-full border border-t-[rgba(255,255,255,0.4)] border-[rgba(255,255,255,0.12)] animate-spin" />{t.goal_saving}</>
+              : `✓ ${t.goal_saved}`}
           </p>
         )}
       </div>
@@ -207,7 +209,7 @@ export default function CareerGoalPicker({
           disabled={saving}
           className="inline-flex px-6 py-2.5 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors"
         >
-          {saving ? 'Saving…' : 'Continue →'}
+          {saving ? t.goal_saving : t.goal_continue}
         </button>
       )}
     </div>

@@ -2,6 +2,16 @@
 
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { PublishLevel } from '@/lib/coverage-nodes';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
+
+// publishLevel → translation key for its label.
+const LEVEL_LABEL_KEY: Record<PublishLevel, keyof PlatformStrings> = {
+  sharp:       'level_sharp',
+  solid:       'level_solid',
+  basic:       'level_basic',
+  unpublished: 'level_unpublished',
+};
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,13 +31,6 @@ const LEVEL_COLOR: Record<PublishLevel, string> = {
   solid:       '#5080f0',
   basic:       '#4060d0',
   unpublished: '#6080a0',
-};
-
-const LEVEL_LABEL: Record<PublishLevel, string> = {
-  sharp:       'Sharp',
-  solid:       'Solid',
-  basic:       'Basic',
-  unpublished: 'Unpublished',
 };
 
 // ── Readiness ring SVG ────────────────────────────────────────────────────────
@@ -94,6 +97,7 @@ function ReadinessWidget({
   publishLevel: PublishLevel;
   size?: number;
 }) {
+  const t = usePlatformT();
   const color = LEVEL_COLOR[publishLevel];
   return (
     <div className="flex items-center gap-2">
@@ -105,7 +109,7 @@ function ReadinessWidget({
         className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
         style={{ color, background: `${color}1a` }}
       >
-        {LEVEL_LABEL[publishLevel]}
+        {t[LEVEL_LABEL_KEY[publishLevel]] as string}
       </span>
     </div>
   );
@@ -121,6 +125,7 @@ export default function TrainerShell({
   dashboardSlot,
   onTestAgent,
 }: Props) {
+  const t = usePlatformT();
   const [sheetOpen, setSheetOpen] = useState(false);
   const sheetRef = useRef<HTMLDivElement>(null);
 
@@ -151,6 +156,7 @@ export default function TrainerShell({
       <div className="lg:hidden shrink-0 h-12 flex items-center px-4 gap-3 border-b border-white/[0.08]">
         <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={28} />
         <div className="flex-1 min-w-0" />
+        <LanguageSwitcher />
         {onTestAgent && (
           <button
             onClick={onTestAgent}
@@ -160,17 +166,17 @@ export default function TrainerShell({
               borderColor:  `${LEVEL_COLOR[publishLevel]}40`,
               background:   `${LEVEL_COLOR[publishLevel]}0d`,
             }}
-            aria-label="Test your agent"
+            aria-label={t.shell_test_agent}
           >
-            Test agent
+            {t.shell_test_agent}
           </button>
         )}
         <button
           onClick={() => setSheetOpen(true)}
           className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"
-          aria-label="Open coverage dashboard"
+          aria-label={t.shell_coverage}
         >
-          Coverage
+          {t.shell_coverage}
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M4.5 2.5L7.5 6L4.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -191,6 +197,7 @@ export default function TrainerShell({
           <div className="sticky top-0 z-10 bg-[#0d0f14] shrink-0 h-14 flex items-center px-5 border-b border-white/[0.08] gap-3">
             <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={32} />
             <div className="flex-1 min-w-0" />
+            <LanguageSwitcher />
             <span className="text-[11px] text-[rgba(255,255,255,0.28)] truncate">
               {candidateName}
             </span>
@@ -203,9 +210,9 @@ export default function TrainerShell({
                   borderColor: `${LEVEL_COLOR[publishLevel]}40`,
                   background:  `${LEVEL_COLOR[publishLevel]}0d`,
                 }}
-                aria-label="Test your agent"
+                aria-label={t.shell_test_agent}
               >
-                Test agent
+                {t.shell_test_agent}
               </button>
             )}
           </div>
@@ -233,12 +240,12 @@ export default function TrainerShell({
           <button
             onClick={() => setSheetOpen(false)}
             className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"
-            aria-label="Close coverage dashboard"
+            aria-label={t.shell_back}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
               <path d="M7.5 2.5L4.5 6L7.5 9.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Back
+            {t.shell_back}
           </button>
         </div>
         {/* Sheet content — independently scrollable */}

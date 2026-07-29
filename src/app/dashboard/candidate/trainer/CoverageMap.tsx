@@ -7,21 +7,20 @@ import {
   type CoverageNodeConfig,
   type NodeState,
 } from '@/lib/coverage-nodes';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
-// ── Recruiter questions per node (UI concern — kept local, not in data model) ──
-const RECRUITER_QUESTIONS: Record<CoverageNodeKey, string[]> = {
-  role_history:          ['Walk me through your career.', 'How long were you at [company]?', 'What does your progression look like?'],
-  signature_stories:     ['Tell me about a time you…', 'Give me an example of handling [situation].', 'Walk me through a project you\'re proud of.'],
-  metrics_impact:        ['What results did you drive?', 'Can you quantify that impact?', 'What improved because of your work?'],
-  tools_systems:         ['What systems have you worked with?', 'Are you familiar with [tool]?', 'How do you learn a new platform quickly?'],
-  failure_modes:         ['Tell me about a time you failed.', 'What\'s your biggest professional mistake?', 'Tell me about a lesson that changed how you work.'],
-  conflict_disagreement: ['Tell me about a conflict with a colleague.', 'How do you handle disagreement with a manager?', 'Give me an example of managing a difficult stakeholder.'],
-  decision_style:        ['How do you make decisions under pressure?', 'Describe your working style.', 'How do you prioritise when everything is urgent?'],
-  limits_gaps:           ['What\'s your biggest weakness?', 'Where\'s the gap between your experience and this role?', 'Why should we pick you over someone with more direct experience?'],
-  career_narrative:      ['Tell me about yourself.', 'Walk me through your background.', 'Why are you looking for this type of role?'],
-  company_fit:           ['Why this company?', 'Where do you see yourself in 3 years?', 'What kind of environment do you thrive in?'],
-  constraints:           ['When can you start?', 'Are you open to relocation?', 'Do you have any visa or work permit requirements?'],
-  compensation:          ['What are your salary expectations?', 'What\'s your current package?', 'What range are you targeting?'],
+// state → translation key for its short label
+const STATE_LABEL_KEY: Record<NodeState, keyof PlatformStrings> = {
+  dark:     'cov_state_no_data',
+  weak:     'cov_state_partial',
+  solid:    'cov_state_solid',
+  verified: 'cov_state_verified',
+};
+// non-dark state → translation key for the "what the agent says now" line
+const AGENT_TEXT_KEY: Record<Exclude<NodeState, 'dark'>, keyof PlatformStrings> = {
+  weak:     'cov_agent_weak',
+  solid:    'cov_agent_solid',
+  verified: 'cov_agent_verified',
 };
 
 // ── Node positions in SVG viewBox 0 0 360 238 ─────────────────────────────────
@@ -107,13 +106,6 @@ const NODE_VISUAL: Record<NodeState, {
   },
 };
 
-// What the agent says for each state (non-dark — dark uses node.darkRefusal verbatim)
-const AGENT_BEHAVIOR_TEXT: Record<Exclude<NodeState, 'dark'>, string> = {
-  weak:     'Partial coverage — answers with caveats and limited specifics.',
-  solid:    'Sufficient coverage — answers from verified data.',
-  verified: 'Complete coverage — answers with specific, cited examples.',
-};
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface NodeData {
@@ -132,6 +124,7 @@ const HIT_R  = 16;  // invisible hit area radius (touch-friendly)
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function CoverageMap({ nodes, onTrainNode }: Props) {
+  const t = usePlatformT();
   const [selected, setSelected] = useState<CoverageNodeKey | null>(null);
 
   const selectedConfig = selected
@@ -181,10 +174,10 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
 
         {/* ── Cluster labels ───────────────────────────────────────────── */}
         {[
-          { label: 'Track record', x: 8,   y: 10,  anchor: 'start' },
-          { label: 'Judgement',    x: 352, y: 10,  anchor: 'end'   },
-          { label: 'Motivation',   x: 8,   y: 140, anchor: 'start' },
-          { label: 'Logistics',    x: 352, y: 140, anchor: 'end'   },
+          { label: t.cluster_track_record, x: 8,   y: 10,  anchor: 'start' },
+          { label: t.cluster_judgement,    x: 352, y: 10,  anchor: 'end'   },
+          { label: t.cluster_motivation,   x: 8,   y: 140, anchor: 'start' },
+          { label: t.cluster_logistics,    x: 352, y: 140, anchor: 'end'   },
         ].map(({ label, x, y, anchor }) => (
           <text
             key={label}
@@ -229,7 +222,7 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
               onClick={() => handleNodeClick(node.key)}
               style={{ cursor: 'pointer' }}
               role="button"
-              aria-label={`${node.label} — ${vis.stateLabel}`}
+              aria-label={`${t.nodes[node.key].label} — ${t[STATE_LABEL_KEY[data.state]]}`}
               aria-pressed={isSelected}
             >
               {/* ── Selection indicator — outer ring ──────────────────── */}
@@ -265,7 +258,7 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
                 fontFamily="system-ui, sans-serif"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
               >
-                {node.label}
+                {t.nodes[node.key].label}
               </text>
             </g>
           );
@@ -298,13 +291,15 @@ function NodePanel({
   onClose: () => void;
   onTrain: () => void;
 }) {
+  const t = usePlatformT();
+  const node = t.nodes[config.key];
   const vis = NODE_VISUAL[data.state];
-  const questions = RECRUITER_QUESTIONS[config.key];
+  const questions = node.questions;
 
   const isDark = data.state === 'dark';
   const agentText = isDark
-    ? config.darkRefusal
-    : AGENT_BEHAVIOR_TEXT[data.state as Exclude<NodeState, 'dark'>];
+    ? node.darkRefusal
+    : (t[AGENT_TEXT_KEY[data.state as Exclude<NodeState, 'dark'>]] as string);
 
   return (
     <div className="border-t border-white/[0.07] mt-1 pt-5 flex flex-col gap-5">
@@ -313,7 +308,7 @@ function NodePanel({
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5 min-w-0">
           <span className="text-sm font-semibold text-white leading-none">
-            {config.label}
+            {node.label}
           </span>
           <span
             className="self-start text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm"
@@ -323,13 +318,13 @@ function NodePanel({
               border: `1px solid ${vis.stateColor}28`,
             }}
           >
-            {vis.stateLabel}
+            {t[STATE_LABEL_KEY[data.state]] as string}
           </span>
         </div>
         <button
           onClick={onClose}
           className="shrink-0 text-[rgba(255,255,255,0.30)] hover:text-white transition-colors text-lg leading-none mt-0.5"
-          aria-label="Close node panel"
+          aria-label={t.conv_close}
         >
           ×
         </button>
@@ -338,17 +333,17 @@ function NodePanel({
       {/* ── What this node covers ───────────────────────────────────────── */}
       <div>
         <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
-          What this covers
+          {t.cov_what_covers}
         </p>
         <p className="text-xs text-[rgba(255,255,255,0.50)] leading-relaxed">
-          {config.description}
+          {node.description}
         </p>
       </div>
 
       {/* ── Recruiter questions ─────────────────────────────────────────── */}
       <div>
         <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
-          Unlocks answers to
+          {t.cov_unlocks}
         </p>
         <ul className="flex flex-col gap-1">
           {questions.map(q => (
@@ -363,7 +358,7 @@ function NodePanel({
       {/* ── What the agent says right now ──────────────────────────────── */}
       <div>
         <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
-          What the agent says right now
+          {t.cov_agent_says_now}
         </p>
 
         {isDark ? (
@@ -375,7 +370,7 @@ function NodePanel({
               </p>
             </blockquote>
             <p className="text-[11px] text-[rgba(255,255,255,0.28)]">
-              No data. This is what recruiters will hear.
+              {t.cov_no_data_recruiters}
             </p>
           </div>
         ) : (
@@ -401,7 +396,7 @@ function NodePanel({
           (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}14`;
         }}
       >
-        Train this
+        {t.cov_train_this}
         <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
           <path d="M2 9L9 2M9 2H4M9 2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>

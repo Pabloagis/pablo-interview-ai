@@ -1,14 +1,21 @@
 'use client';
 
-import { COVERAGE_NODE_MAP, type EvidenceItem, type EvidenceQuality } from '@/lib/coverage-nodes';
+import { type EvidenceItem, type EvidenceQuality } from '@/lib/coverage-nodes';
+import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // ── Quality visual config ─────────────────────────────────────────────────────
 
-const QUALITY_CONFIG: Record<EvidenceQuality, { label: string; color: string }> = {
-  verified:       { label: 'Verified',        color: '#3ec870' },
-  solid:          { label: 'Solid',           color: '#5580f0' },
-  vague:          { label: 'Vague',           color: '#c08840' },
-  missing_detail: { label: 'Missing detail',  color: 'rgba(255,255,255,0.38)' },
+const QUALITY_COLOR: Record<EvidenceQuality, string> = {
+  verified:       '#3ec870',
+  solid:          '#5580f0',
+  vague:          '#c08840',
+  missing_detail: 'rgba(255,255,255,0.38)',
+};
+const QUALITY_LABEL_KEY: Record<EvidenceQuality, keyof PlatformStrings> = {
+  verified:       'ev_quality_verified',
+  solid:          'ev_quality_solid',
+  vague:          'ev_quality_vague',
+  missing_detail: 'ev_quality_missing_detail',
 };
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -20,8 +27,10 @@ interface Props {
 }
 
 export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props) {
-  const node    = COVERAGE_NODE_MAP.get(item.nodeKey);
-  const quality = QUALITY_CONFIG[item.quality];
+  const t = usePlatformT();
+  const nodeLabel   = t.nodes[item.nodeKey]?.label ?? item.nodeKey;
+  const qualityColor = QUALITY_COLOR[item.quality];
+  const qualityLabel = t[QUALITY_LABEL_KEY[item.quality]] as string;
   const canFollowUp = (item.quality === 'vague' || item.quality === 'missing_detail')
     && !!item.followUpQuestion
     && !item.followUpSent;
@@ -30,7 +39,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
     <div
       className="rounded-xl border bg-[rgba(255,255,255,0.03)] px-3.5 py-3 flex flex-col gap-2"
       style={{
-        borderColor: `${quality.color}22`,
+        borderColor: `${qualityColor}22`,
         // Entrance: slide from left (conversation side) + scale, mimicking "evidence flying in"
         animation: isNew ? 'evidence-enter 0.38s cubic-bezier(0.2, 0, 0, 1) forwards' : undefined,
       }}
@@ -39,19 +48,19 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
       <div className="flex items-center justify-between gap-2">
         {/* Node label */}
         <span className="text-[10px] text-[rgba(255,255,255,0.35)] font-medium uppercase tracking-wider truncate">
-          {node?.label ?? item.nodeKey}
+          {nodeLabel}
         </span>
 
         {/* Quality badge */}
         <span
           className="shrink-0 text-[9px] font-semibold uppercase tracking-widest px-1.5 py-0.5 rounded"
           style={{
-            color:      quality.color,
-            background: `${quality.color}18`,
-            border:     `1px solid ${quality.color}28`,
+            color:      qualityColor,
+            background: `${qualityColor}18`,
+            border:     `1px solid ${qualityColor}28`,
           }}
         >
-          {quality.label}
+          {qualityLabel}
         </span>
       </div>
 
@@ -65,9 +74,9 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
         <button
           onClick={() => onFollowUp(item)}
           className="self-start flex items-center gap-1.5 text-[10px] font-medium transition-colors mt-0.5"
-          style={{ color: quality.color }}
+          style={{ color: qualityColor }}
         >
-          Probe this
+          {t.ev_probe}
           <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
             <path d="M1.5 7.5L7.5 1.5M7.5 1.5H3.5M7.5 1.5V5.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -77,7 +86,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
       {/* Sent indicator */}
       {item.followUpSent && (
         <span className="text-[10px] text-[rgba(255,255,255,0.22)]">
-          Follow-up sent
+          {t.ev_followup_sent}
         </span>
       )}
 
@@ -89,7 +98,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
             <path d="M4.5 3.6V5.2" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/>
             <circle cx="4.5" cy="6.3" r="0.5" fill="currentColor"/>
           </svg>
-          Not saved — reload may lose this
+          {t.ev_not_saved}
         </span>
       )}
     </div>

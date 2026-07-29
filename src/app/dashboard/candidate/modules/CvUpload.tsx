@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import { usePlatformT } from '@/context/platform-i18n';
 
 // Host-agnostic: used by both the wizard (Step 1) and the trainer's inline
 // onboarding control. Takes a plain boolean rather than the wizard's TrainingData
@@ -11,6 +12,7 @@ interface Props {
 }
 
 export default function CvUpload({ cvLoaded, onSaved }: Props) {
+  const t = usePlatformT();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
@@ -25,15 +27,12 @@ export default function CvUpload({ cvLoaded, onSaved }: Props) {
       const res = await fetch('/api/training/cv', { method: 'POST', body: formData });
       const json = await res.json();
       if (!res.ok) {
-        setError(json.error ?? 'Upload failed. Please try again.');
+        setError(json.error ?? t.cv_failed);
         return;
       }
-      onSaved(
-        'cv',
-        "CV processed. Your AI knows your career history. But it doesn't yet know how you think or communicate. The modules below are where the real training happens."
-      );
+      onSaved('cv', t.cv_saved_msg);
     } catch {
-      setError('Upload failed. Please try again.');
+      setError(t.cv_failed);
     } finally {
       setUploading(false);
     }
@@ -42,8 +41,7 @@ export default function CvUpload({ cvLoaded, onSaved }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <p className="text-xs text-[rgba(255,255,255,0.4)] leading-relaxed">
-        Upload your CV as a PDF or plain text file. Claude will extract your career history so your
-        AI understands your background. (DOCX not supported — export as PDF from Word.)
+        {t.cv_intro}
       </p>
 
       {/* Upload area */}
@@ -64,7 +62,7 @@ export default function CvUpload({ cvLoaded, onSaved }: Props) {
               <circle cx="12" cy="12" r="10" stroke="rgba(100,130,255,0.3)" strokeWidth="3"/>
               <path d="M12 2a10 10 0 0 1 10 10" stroke="rgba(100,130,255,0.8)" strokeWidth="3" strokeLinecap="round"/>
             </svg>
-            <span className="text-xs text-[rgba(100,130,255,0.8)]">Extracting with AI…</span>
+            <span className="text-xs text-[rgba(100,130,255,0.8)]">{t.cv_extracting}</span>
           </>
         ) : (
           <>
@@ -76,7 +74,7 @@ export default function CvUpload({ cvLoaded, onSaved }: Props) {
               <line x1="12" y1="3" x2="12" y2="15"/>
             </svg>
             <span className="text-xs text-[rgba(255,255,255,0.4)]">
-              {cvLoaded ? 'Upload a new CV to replace the existing one' : 'Click to upload CV'}
+              {cvLoaded ? t.cv_replace : t.cv_click_upload}
             </span>
             <span className="text-[10px] text-[rgba(255,255,255,0.2)]">PDF · TXT</span>
           </>
@@ -97,7 +95,7 @@ export default function CvUpload({ cvLoaded, onSaved }: Props) {
             stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
-          CV on file — your AI knows your career history
+          {t.cv_on_file}
         </div>
       )}
 

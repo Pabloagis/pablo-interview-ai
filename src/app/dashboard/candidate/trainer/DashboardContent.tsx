@@ -5,6 +5,7 @@ import CoverageMap from './CoverageMap';
 import EvidenceCard, { EvidenceCardStyles } from './EvidenceCard';
 import PublishPanel from './PublishPanel';
 import AnticipatedQuestions from './AnticipatedQuestions';
+import { usePlatformT } from '@/context/platform-i18n';
 import {
   COVERAGE_NODES,
   type CoverageNodeKey,
@@ -44,6 +45,7 @@ export default function DashboardContent({
   isPublishing = false,
   onPublish,
 }: Props) {
+  const t = usePlatformT();
   const nodeStates = Object.fromEntries(
     Object.entries(nodes).map(([k, v]) => [k, v.state])
   ) as Record<CoverageNodeKey, NodeState>;
@@ -82,7 +84,7 @@ export default function DashboardContent({
       {evidenceCards.length > 0 && (
         <div className="w-full flex flex-col gap-2">
           <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.25)] uppercase tracking-wider">
-            Evidence log
+            {t.dash_evidence_log}
           </p>
           {evidenceCards.map(item => (
             <EvidenceCard
