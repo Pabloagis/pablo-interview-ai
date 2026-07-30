@@ -138,10 +138,19 @@ export async function POST(request: NextRequest) {
     async start(controller) {
       const send = (d: object) => controller.enqueue(sse(encoder, d));
       try {
-        // Build per-candidate prompt (unchanged) with the same Pablo fallback as /api/chat.
-        let corePrompt = CORE_SYSTEM_PROMPT;
-        try { corePrompt = await buildCandidateSystemPrompt(candidateId, supabase); }
-        catch (e) { console.error('[public/chat] buildCandidateSystemPrompt failed, fallback:', e); }
+        // NO FALLBACK. This route serves every candidate's public agent, so falling back
+        // to a hardcoded prompt would make one person's agent answer with another person's
+        // biography — the worst hallucination this product can produce, and silent. If the
+        // candidate's own prompt cannot be built, the conversation stops.
+        let corePrompt: string;
+        try {
+          corePrompt = await buildCandidateSystemPrompt(candidateId, supabase);
+        } catch (e) {
+          console.error('[public/chat] buildCandidateSystemPrompt FAILED — refusing to answer as anyone else:', e);
+          send({ type: 'error', message: 'This agent is temporarily unavailable. Please try again shortly.' });
+          controller.close();
+          return;
+        }
 
         const userMsg: Msg = { role: 'user', content: message.trim() };
         // Last 12 exchanges (24 messages) to the model — never the unbounded transcript.

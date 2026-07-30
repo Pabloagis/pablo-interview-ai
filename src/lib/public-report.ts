@@ -58,7 +58,7 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
   // Resolve candidate identity + recipient.
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, notification_email, notify_on_session')
+    .select('full_name, slug, notification_email, notify_on_session')
     .eq('id', session.candidate_id)
     .single();
   if (!profile) { await rollback(); return; }
@@ -114,6 +114,7 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
         jobTitle: visitor.role,
         companyName: visitor.company,
         candidateName: profile.full_name,
+        candidateSlug: profile.slug,
         sessionId,
       });
     } catch (err) {

@@ -39,6 +39,7 @@ interface ResponseRow {
 
 export interface CandidateDirectoryItem {
   id: string;
+  slug: string | null;
   full_name: string;
   current_role: string;
   years_experience: number;
@@ -135,7 +136,7 @@ export async function GET() {
       // Only candidates who have explicitly published their agent
       supabase
         .from('profiles')
-        .select('id, full_name, career_goal, published_at')
+        .select('id, slug, full_name, career_goal, published_at')
         .eq('role', 'candidate')
         .not('published_at', 'is', null),
       supabase
@@ -199,6 +200,7 @@ export async function GET() {
         const score = computeScore(p.id, storiesMap, responsesMap);
         return {
           id:                  p.id,
+          slug:                p.slug ?? null,
           full_name:           p.full_name ?? 'Unknown',
           current_role:        cv?.current_role ?? '',
           years_experience:    cv?.years_experience ?? 0,

@@ -51,19 +51,27 @@ const FOOTER_TEXT: Record<Lang, string> = {
   pt: 'Obrigado pelo seu tempo e consideração!',
 };
 
-const REFER_SUBJECT: Record<Lang, string> = {
-  en: 'Meet Pablo Agis Burgos — Hospitality Tech & SaaS Professional',
-  es: 'Te presento a Pablo Agis Burgos — Hospitality Tech & SaaS',
-  it: 'Ti presento Pablo Agis Burgos — Hospitality Tech & SaaS',
-  pt: 'Apresento-te Pablo Agis Burgos — Hospitality Tech & SaaS',
-};
+// v2 hardcoded Pablo's name and biography here in four languages. In a multi-user
+// product that meant every candidate's referral email described Pablo. Both the
+// subject and the body are now built from the candidate this session was about, and
+// they claim nothing about the person beyond what the recipient just saw for
+// themselves — no years of experience, no industry, no employers.
+function getReferSubject(lang: Lang, name: string): string {
+  const subjects: Record<Lang, string> = {
+    en: `Meet ${name} — interview their AI profile`,
+    es: `Te presento a ${name} — habla con su perfil de IA`,
+    it: `Ti presento ${name} — parla con il suo profilo AI`,
+    pt: `Apresento-te ${name} — fala com o seu perfil de IA`,
+  };
+  return subjects[lang];
+}
 
-function getReferBody(lang: Lang, insightsUrl: string): string {
+function getReferBody(lang: Lang, name: string, profileUrl: string): string {
   const bodies: Record<Lang, string> = {
-    en: `Hi,\n\nI wanted to share something a little different with you.\n\nInstead of relying on a static CV, Pablo Agis built an interactive AI profile that lets you explore his professional background through conversation — shaped around his real experience, client work, projects and transition into hospitality tech.\n\nIt's a thoughtful way to get a sense of how he communicates, thinks and approaches problems — much closer to a real conversation than a traditional CV ever could.\n\nYou can explore it here:\nhttps://interviewmind.one\n\nAnd if useful, here are the insights from my own conversation:\n${insightsUrl}\n\nBest,\n\n`,
-    es: `Hola,\n\nQuería compartir algo un poco diferente contigo.\n\nEn lugar de un CV estático, Pablo Agis ha creado un perfil interactivo con IA que permite explorar su trayectoria profesional a través de una conversación — basada en su experiencia real, proyectos y evolución hacia la tecnología hotelera.\n\nEs una forma muy natural de ver cómo comunica, cómo piensa y cómo afronta los problemas — mucho más cercana a una conversación real de lo que podría serlo un CV tradicional.\n\nPuedes explorarlo aquí:\nhttps://interviewmind.one\n\nY si te resulta útil, aquí tienes los insights de mi propia conversación:\n${insightsUrl}\n\nUn saludo,\n\n`,
-    it: `Ciao,\n\nVolevo condividere con te qualcosa di un po' diverso.\n\nInvece di affidarsi a un CV statico, Pablo Agis ha creato un profilo interattivo con AI che permette di esplorare il suo percorso professionale attraverso una conversazione — costruita attorno alla sua esperienza reale, ai progetti e alla sua transizione nel settore dell'hospitality tech.\n\nÈ un modo molto naturale per capire come comunica, come ragiona e come affronta i problemi — molto più vicino a una vera conversazione di quanto potrebbe mai essere un CV tradizionale.\n\nPuoi esplorarlo qui:\nhttps://interviewmind.one\n\nE se ti è utile, ecco gli insights della mia conversazione:\n${insightsUrl}\n\nA presto,\n\n`,
-    pt: `Olá,\n\nQueria partilhar contigo algo um pouco diferente.\n\nEm vez de um CV estático, o Pablo Agis criou um perfil interativo com IA que permite explorar o seu percurso profissional através de uma conversa — baseada na sua experiência real, projetos e transição para o hospitality tech.\n\nÉ uma forma muito natural de perceber como comunica, como pensa e como aborda os problemas — muito mais próxima de uma conversa real do que um CV tradicional alguma vez poderia ser.\n\nPodes explorá-lo aqui:\nhttps://interviewmind.one\n\nE se for útil, aqui estão os insights da minha própria conversa:\n${insightsUrl}\n\nCom os melhores cumprimentos,\n\n`,
+    en: `Hi,\n\nI wanted to share something a little different with you.\n\nInstead of relying on a static CV, ${name} built an interactive AI profile you can interview — it answers from their own verified experience, and it says so plainly when something falls outside what it knows.\n\nIt's a good way to get a sense of how they communicate, think and approach problems — much closer to a real conversation than a CV ever could be.\n\nYou can talk to it here:\n${profileUrl}\n\nBest,\n\n`,
+    es: `Hola,\n\nQuería compartir algo un poco diferente contigo.\n\nEn lugar de un CV estático, ${name} ha creado un perfil interactivo con IA al que puedes entrevistar — responde desde su experiencia verificada, y dice claramente cuándo algo se sale de lo que sabe.\n\nEs una forma muy natural de ver cómo comunica, cómo piensa y cómo afronta los problemas — mucho más cercana a una conversación real de lo que podría serlo un CV tradicional.\n\nPuedes hablar con él aquí:\n${profileUrl}\n\nUn saludo,\n\n`,
+    it: `Ciao,\n\nVolevo condividere con te qualcosa di un po' diverso.\n\nInvece di affidarsi a un CV statico, ${name} ha creato un profilo interattivo con AI che puoi intervistare — risponde partendo dalla propria esperienza verificata e dice chiaramente quando qualcosa esce da ciò che sa.\n\nÈ un modo molto naturale per capire come comunica, come ragiona e come affronta i problemi — molto più vicino a una vera conversazione di quanto potrebbe mai essere un CV tradizionale.\n\nPuoi parlarci qui:\n${profileUrl}\n\nA presto,\n\n`,
+    pt: `Olá,\n\nQueria partilhar contigo algo um pouco diferente.\n\nEm vez de um CV estático, ${name} criou um perfil interativo com IA que podes entrevistar — responde a partir da sua experiência verificada e diz claramente quando algo sai daquilo que sabe.\n\nÉ uma forma muito natural de perceber como comunica, como pensa e como aborda os problemas — muito mais próxima de uma conversa real do que um CV alguma vez poderia ser.\n\nPodes falar com ele aqui:\n${profileUrl}\n\nCom os melhores cumprimentos,\n\n`,
   };
   return bodies[lang];
 }
@@ -106,12 +114,14 @@ function generateEmailHTML(
   _jobTitle?: string | null,
   _companyName?: string | null,
   exitNotify?: boolean,
-  insightsUrl?: string,
+  candidateName?: string | null,
+  profileUrl?: string,
 ): string {
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
   const greetingName = recruiterName?.trim() || '';
   const greeting = greetingName ? `${GREETING[lang]} ${greetingName},` : `${GREETING[lang]},`;
-  const referHref = `mailto:?subject=${encodeURIComponent(REFER_SUBJECT[lang])}&body=${encodeURIComponent(getReferBody(lang, insightsUrl ?? BASE_URL))}`;
+  const who = candidateName?.trim() || 'this candidate';
+  const referHref = `mailto:?subject=${encodeURIComponent(getReferSubject(lang, who))}&body=${encodeURIComponent(getReferBody(lang, who, profileUrl ?? BASE_URL))}`;
 
   // ── Section 1: Executive Summary
   const chipsHTML = (report.executiveSummary.chips ?? []).map(chip =>
@@ -342,8 +352,10 @@ export interface SendFollowUpEmailParams {
   sessionId?: string | null;
   bcc?: string[];
   recruiterEmail?: string | null;
-  // Optional; when omitted the email is byte-identical to the original Pablo flow.
   candidateName?: string | null;
+  // Public slug of the candidate this report is about. Drives the only link in the
+  // email; without it the "refer a colleague" mailto falls back to the root domain.
+  candidateSlug?: string | null;
 }
 
 export async function sendFollowUpEmail({
@@ -353,9 +365,9 @@ export async function sendFollowUpEmail({
   jobTitle,
   companyName,
   exitNotify,
-  sessionId,
   bcc,
   candidateName,
+  candidateSlug,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
   const report = await generateReport({
     messages,
@@ -364,16 +376,21 @@ export async function sendFollowUpEmail({
     candidateName: candidateName ?? null,
   });
 
-  const previewUrl = sessionId ? `${BASE_URL}/email-preview?id=${sessionId}` : undefined;
-  const insightsUrl = sessionId ? `${BASE_URL}/interview/${sessionId}` : BASE_URL;
-  const html = generateEmailHTML(report, recruiterName ?? null, messages, previewUrl, jobTitle, companyName, exitNotify, insightsUrl);
+  // v2 pointed these at /email-preview and /interview/<id>. Both routes are gone in
+  // v3, and there is no per-session page to replace them with, so the only URL the
+  // email now offers is the candidate's public agent.
+  const profileUrl = candidateSlug ? `${BASE_URL}/${candidateSlug}` : BASE_URL;
+  const html = generateEmailHTML(report, recruiterName ?? null, messages, undefined, jobTitle, companyName, exitNotify, candidateName ?? null, profileUrl);
 
   const resend = getResendClient();
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
-  const who = candidateName ?? 'Pablo Agis Burgos';
-  const subject = [jobTitle, companyName].filter(Boolean).length > 0
-    ? `${who} · ${[jobTitle, companyName].filter(Boolean).join(' at ')}`
-    : `${who} — ${REPORT_BADGE[lang]}`;
+  // Falling back to Pablo's name here would put the wrong candidate in the subject of
+  // every other candidate's report. When the name is unknown, say nothing instead.
+  const who = candidateName?.trim() || null;
+  const context = [jobTitle, companyName].filter(Boolean).join(' at ');
+  const subject = who
+    ? (context ? `${who} · ${context}` : `${who} — ${REPORT_BADGE[lang]}`)
+    : (context ? `${REPORT_BADGE[lang]} · ${context}` : REPORT_BADGE[lang]);
 
   // Pablo BCC removed. A dev copy is gated behind DEV_BCC_EMAIL (unset in production).
   const devBcc = process.env.DEV_BCC_EMAIL;

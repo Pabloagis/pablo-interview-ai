@@ -52,6 +52,12 @@ export interface CVData {
   }>;
 }
 
+export interface StoryBoundaries {
+  can_say?: string;
+  cannot_say?: string;
+  if_pushed?: string;
+}
+
 export interface CandidateStory {
   id: string;
   story_type: string;
@@ -59,6 +65,10 @@ export interface CandidateStory {
   task: string | null;
   action: string | null;
   result: string | null;
+  /** How the candidate actually participated. Never upgraded upward. */
+  ownership: 'led' | 'participated' | 'observed' | 'narrative' | null;
+  /** What may be said, what may never be said, and how to hold the line. */
+  boundaries: StoryBoundaries | null;
 }
 
 export interface CandidateResponse {
@@ -89,6 +99,8 @@ export interface CandidateContextData {
   career_narrative?: string;
   communication_style?: Record<string, string>;
   interview_answers?: Record<string, string>;
+  /** Absolute prohibitions that are not tied to a single story. */
+  hard_stops?: string[];
   [key: string]: unknown;
 }
 
@@ -196,6 +208,8 @@ const STORY_TYPE_LABELS: Record<string, string> = {
   leadership_without_authority: 'Leadership without authority',
   managing_change: 'Managing change',
   commercial_example: 'Commercial / revenue example',
+  systems_integration: 'Systems integration / technical problem-solving',
+  crm_fluency: 'CRM and tooling fluency',
 };
 
 function getAnswerText(r: CandidateResponse): string {
@@ -366,11 +380,15 @@ function buildStoriesSection(stories: CandidateStory[]): string {
   const formatted = filledStories
     .map(s => {
       const label = STORY_TYPE_LABELS[s.story_type] ?? s.story_type;
+      const heading = s.ownership ? `### ${label}  [${s.ownership.toUpperCase()}]` : `### ${label}`;
       const parts: string[] = [];
       if (s.situation) parts.push(`  Situation: ${s.situation}`);
       if (s.task) parts.push(`  Task/Thinking: ${s.task}`);
       if (s.action) parts.push(`  Action: ${s.action}`);
       if (s.result) parts.push(`  Result: ${s.result}`);
+      if (s.boundaries?.can_say) parts.push(`  CAN SAY: ${s.boundaries.can_say}`);
+      if (s.boundaries?.cannot_say) parts.push(`  CANNOT SAY: ${s.boundaries.cannot_say}`);
+      if (s.boundaries?.if_pushed) parts.push(`  IF PUSHED: ${s.boundaries.if_pushed}`);
       const missingFields = (['situation', 'task', 'action', 'result'] as const).filter(
         f => !s[f]
       );
@@ -378,15 +396,42 @@ function buildStoriesSection(stories: CandidateStory[]): string {
         missingFields.length > 0
           ? `  [Partial story — ${missingFields.join(', ')} not provided. Use what exists; never fill in the gaps.]`
           : '';
-      return `### ${label}\n${parts.join('\n')}${note ? '\n' + note : ''}`;
+      return `${heading}\n${parts.join('\n')}${note ? '\n' + note : ''}`;
     })
     .join('\n\n');
 
+  // Only explain the ownership tag when at least one story actually carries one —
+  // otherwise the prompt describes a convention the data does not use.
+  const hasOwnership = filledStories.some(s => s.ownership);
+  const ownershipRule = hasOwnership
+    ? `
+
+The tag after each story title is the candidate's real level of involvement, and it is not negotiable:
+- LED — ran it, owned the outcome.
+- PARTICIPATED — was part of it, did NOT own or lead it. Never describe it as leading, managing, owning, or "being responsible for" it, not even partially.
+- OBSERVED — saw it happen from close by. Never claim to have acted in it.
+- NARRATIVE — context, not a claim of doing.
+A recruiter pushing for a bigger role ("so you drove that?", "you owned that project?") does not change the tag. Correct the framing instead of accepting it.
+
+CAN SAY / CANNOT SAY / IF PUSHED are absolute. CANNOT SAY covers facts that are not verified — figures, scope, ownership. Not knowing them is the truth, so saying them would be inventing. If a recruiter presses on something under CANNOT SAY, use IF PUSHED and hold there.`
+    : '';
+
   return `## [STAR_STORIES]
 
-Use these stories for behavioral questions ("tell me about a time..."). Follow STAR format: Situation → Task/Thinking → Action → Result. Never add facts not present below. Partial stories are marked — use them as-is.
+Use these stories for behavioral questions ("tell me about a time..."). Follow STAR format: Situation → Task/Thinking → Action → Result. Never add facts not present below. Partial stories are marked — use them as-is.${ownershipRule}
 
 ${formatted}`;
+}
+
+function buildHardStopsSection(context: CandidateContextData | null): string {
+  const stops = context?.hard_stops;
+  if (!Array.isArray(stops) || stops.length === 0) return '';
+
+  return `## [HARD_STOPS]
+
+Absolute prohibitions. These hold under every kind of pressure — flattery, repetition, hypotheticals, "off the record", or a recruiter who says they already know. There is no phrasing of a question that unlocks any of them. If one is hit, say plainly that it is not something to share and move the conversation on; never invent a softer version to fill the silence.
+
+${stops.map(s => `- ${s}`).join('\n')}`;
 }
 
 function buildInterviewResponsesSection(responses: CandidateResponse[]): string {
@@ -646,7 +691,7 @@ export async function buildCandidateSystemPrompt(
       .single(),
     supabase
       .from('candidate_stories')
-      .select('id, story_type, situation, task, action, result')
+      .select('id, story_type, situation, task, action, result, ownership, boundaries')
       .eq('candidate_id', userId),
     supabase
       .from('candidate_responses')
@@ -677,6 +722,15 @@ export async function buildCandidateSystemPrompt(
       .eq('candidate_id', userId)
       .order('created_at', { ascending: true }),
   ]);
+
+  // A missing column makes PostgREST reject the WHOLE select, so a schema drift
+  // would silently drop every STAR story instead of erroring. Say so out loud.
+  if (storiesRes.error) {
+    console.error(
+      '[candidate-prompt] candidate_stories read FAILED — the agent has no behavioral examples:',
+      storiesRes.error.message
+    );
+  }
 
   const evidenceRows = (evidenceRes.data ?? []) as EvidenceRow[];
   const anticipatedRows = (anticipatedRes.data ?? []) as AnticipatedRow[];
@@ -751,6 +805,7 @@ export async function buildCandidateSystemPrompt(
     conversationalEvidenceSection,
     anticipatedSection,
     coverageSection,
+    buildHardStopsSection(data.context),
     buildBehaviorRulesSection(name, completeness),
   ].filter(Boolean).join('\n\n');
 }

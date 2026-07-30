@@ -14,6 +14,23 @@
 .DS_Store
 *.pem
 
+# personal source material — never belongs in a public repo
+/raw data/
+*.mp4
+*.mov
+*.m4a
+*.docx
+*.zip
+
+# generated seeds contain real UUIDs, emails and client detail — never commit
+/supabase/seeds/
+
+# the v2 → v3 extraction: personal email and consulting-client detail in the clear
+/scripts/migrate/pablo-v3-data.ts
+
+# eval transcripts quote the agent verbatim, including client work
+/scripts/eval/results/
+
 # debug
 npm-debug.log*
 yarn-debug.log*

@@ -6,7 +6,6 @@ import type { ReportData } from '@/lib/report';
 // Reuses the same generateReport (ReportData) — only the wrapper/audience differ.
 
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
-const BASE_URL = 'https://interviewmind.one';
 
 export interface VisitorContext {
   name: string | null;
@@ -45,13 +44,13 @@ function list(items: string[]): string {
   return items.map(i => `<li style="margin:4px 0;color:#334155;">${esc(i)}</li>`).join('');
 }
 
-function buildCandidateHTML(report: ReportData, v: VisitorContext, sessionId: string | null): string {
+// v2 linked "Read the full conversation" to /interview/<sessionId>. That route is
+// gone and v3 has no candidate-facing transcript viewer, so the email stops at the
+// summary and insights. The session id stays in the public signature for when one exists.
+function buildCandidateHTML(report: ReportData, v: VisitorContext): string {
   const insights = report.conversationInsights.items
     .map(i => `<p style="margin:6px 0;"><strong style="color:#0f172a;">${esc(i.title)}:</strong> <span style="color:#334155;">${esc(i.body)}</span></p>`)
     .join('');
-  const transcriptLink = sessionId
-    ? `<p style="margin-top:20px;"><a href="${BASE_URL}/interview/${sessionId}" style="color:#4060d0;">Read the full conversation →</a></p>`
-    : '';
 
   return `<div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;color:#334155;font-size:15px;line-height:1.5;">
     <p style="font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.05em;">Your agent was interviewed</p>
@@ -65,7 +64,6 @@ function buildCandidateHTML(report: ReportData, v: VisitorContext, sessionId: st
 
     ${report.recruiterTakeaways.items.length ? `<h3 style="color:#0f172a;margin:20px 0 6px;">Takeaways they'd keep</h3><ul style="padding-left:18px;margin:6px 0;">${list(report.recruiterTakeaways.items)}</ul>` : ''}
 
-    ${transcriptLink}
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;" />
     <p style="font-size:12px;color:#94a3b8;">You're receiving this because your published agent had a conversation.
     Manage notifications in your training hub.</p>
@@ -78,7 +76,7 @@ export async function sendCandidateReportEmail(params: {
   visitor: VisitorContext;
   sessionId: string | null;
 }): Promise<{ emailId: string | null | undefined }> {
-  const { to, report, visitor, sessionId } = params;
+  const { to, report, visitor } = params;
   const resend = getResendClient();
 
   const devBcc = process.env.DEV_BCC_EMAIL;
@@ -87,7 +85,7 @@ export async function sendCandidateReportEmail(params: {
     to: [to],
     bcc: devBcc ? [devBcc] : [],
     subject: buildCandidateSubject(visitor),
-    html: buildCandidateHTML(report, visitor, sessionId),
+    html: buildCandidateHTML(report, visitor),
   });
 
   if (result.error) throw new Error(`Resend error: ${result.error.message}`);
