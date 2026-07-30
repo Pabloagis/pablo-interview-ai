@@ -4,9 +4,12 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createBrowserSupabaseClient } from '@/lib/supabase-auth-browser';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { usePlatformT } from '@/context/platform-i18n';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = usePlatformT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -31,7 +34,7 @@ export default function LoginPage() {
       }
 
       if (!data.user) {
-        setError('Sign in failed. Please try again.');
+        setError(t.login_failed);
         return;
       }
 
@@ -43,14 +46,14 @@ export default function LoginPage() {
         .single();
 
       if (profileError || !profile) {
-        // Profile missing — send to candidate dashboard as fallback
-        router.push('/dashboard/candidate');
+        // Profile missing — send to the candidate hub as fallback
+        router.push('/dashboard/candidate/trainer');
         return;
       }
 
-      router.push(profile.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidate');
+      router.push(profile.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidate/trainer');
     } catch {
-      setError('Something went wrong. Please try again.');
+      setError(t.auth_generic_error);
     } finally {
       setLoading(false);
     }
@@ -60,17 +63,20 @@ export default function LoginPage() {
     <main className="min-h-screen flex flex-col items-center justify-center bg-[#0d0f14] px-4">
       <div className="w-full max-w-sm">
         <div className="mb-6">
-          <Link href="/platform" className="text-sm text-[rgba(255,255,255,0.38)] hover:text-white transition-colors">
-            ← Back
-          </Link>
-          <h1 className="text-2xl font-bold text-white mt-4 mb-1">Sign in</h1>
-          <p className="text-sm text-[rgba(255,255,255,0.5)]">Welcome back to InterviewMind Platform.</p>
+          <div className="flex items-center justify-between">
+            <Link href="/platform" className="text-sm text-[rgba(255,255,255,0.38)] hover:text-white transition-colors">
+              {t.auth_back}
+            </Link>
+            <LanguageSwitcher />
+          </div>
+          <h1 className="text-2xl font-bold text-white mt-4 mb-1">{t.login_title}</h1>
+          <p className="text-sm text-[rgba(255,255,255,0.5)]">{t.login_subtitle}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <label htmlFor="email" className="text-sm font-medium text-[rgba(255,255,255,0.7)]">
-              Email
+              {t.auth_email}
             </label>
             <input
               id="email"
@@ -79,14 +85,14 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t.login_email_ph}
               className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
           <div className="flex flex-col gap-1.5">
             <label htmlFor="password" className="text-sm font-medium text-[rgba(255,255,255,0.7)]">
-              Password
+              {t.auth_password}
             </label>
             <input
               id="password"
@@ -95,7 +101,7 @@ export default function LoginPage() {
               autoComplete="current-password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Your password"
+              placeholder={t.login_password_ph}
               className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
@@ -111,14 +117,14 @@ export default function LoginPage() {
             disabled={loading}
             className="w-full py-2.5 px-6 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-colors duration-150 mt-1"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t.login_signing : t.login_signin}
           </button>
         </form>
 
         <p className="mt-5 text-sm text-center text-[rgba(255,255,255,0.38)]">
-          Don&apos;t have an account?{' '}
+          {t.login_no_account}{' '}
           <Link href="/platform" className="text-[#4060d0] hover:text-[#6080f0] transition-colors">
-            Get started
+            {t.login_get_started}
           </Link>
         </p>
       </div>

@@ -149,7 +149,10 @@ export async function POST(request: NextRequest) {
         // Load conversation history from session
         const { data: session, error: sessionError } = await supabase
           .from('sessions')
-          .select('messages, recruiter_name, company, role, email, candidate_id')
+          // `email` is deliberately absent: it is dropped in the v3 schema clean-up, and
+          // PostgREST fails the WHOLE select when one column is missing (42703), which
+          // would take the chat down rather than degrade it.
+          .select('messages, recruiter_name, candidate_id')
           .eq('id', sessionId)
           .single();
 
@@ -197,8 +200,10 @@ export async function POST(request: NextRequest) {
 
         // Two-block system: static core is cached by Anthropic (5-min TTL, 10% cost on cache hit),
         // dynamic block carries per-request context and is never cached.
-        // If the session is linked to a candidate, build a dynamic prompt from their training data.
-        // Otherwise fall back to the hardcoded Pablo prompt (v2 behaviour).
+        // A candidate-linked session must speak as that candidate or not at all. Falling
+        // back to the static prompt here would answer as Pablo in someone else's name —
+        // silently, and convincingly. Sessions with no candidate_id (v2 legacy) still use
+        // the static prompt, which for those is the correct speaker.
         let corePrompt = CORE_SYSTEM_PROMPT;
         let retrievedText = retrieved.formattedText;
 
@@ -208,7 +213,10 @@ export async function POST(request: NextRequest) {
             // Stories and background are embedded in the candidate core prompt — skip Pablo-specific retrieval.
             retrievedText = '';
           } catch (promptErr) {
-            console.error('[chat] buildCandidateSystemPrompt failed, falling back to Pablo prompt:', promptErr);
+            console.error('[chat] buildCandidateSystemPrompt FAILED — refusing to answer as anyone else:', promptErr);
+            send({ type: 'error', message: 'This agent is temporarily unavailable. Please try again shortly.' });
+            controller.close();
+            return;
           }
         }
 
@@ -284,22 +292,6 @@ export async function POST(request: NextRequest) {
               context.recruiterName, context.company, responseEmbedding
             );
           });
-
-          // Log assistant message to message_events (fire-and-forget)
-          supabase
-            .from('message_events')
-            .insert({
-              session_id: sessionId,
-              recruiter_name: session.recruiter_name,
-              email: session.email,
-              company: session.company,
-              role: session.role,
-              message_role: 'assistant',
-              content: fullResponse,
-            })
-            .then(({ error }) => {
-              if (error) console.error('message_events assistant insert failed (non-critical):', error);
-            });
         }
       } catch (error) {
         console.error('Chat stream error:', error);

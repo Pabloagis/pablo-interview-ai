@@ -1,7 +1,7 @@
 {
   "crons": [
     {
-      "path": "/api/cron/expire-sessions",
+      "path": "/api/cron/sweep-public-sessions",
       "schedule": "0 0 * * *"
     }
   ]

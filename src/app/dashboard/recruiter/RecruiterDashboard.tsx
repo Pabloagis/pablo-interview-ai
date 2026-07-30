@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
 import LogoutButton from '../LogoutButton';
 import type { CandidateDirectoryItem } from '@/app/api/recruiter/candidates/route';
 import type { SessionHistoryItem } from '@/app/api/recruiter/sessions/route';
@@ -26,6 +25,34 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
+type PublishLevel = 'basic' | 'solid' | 'sharp' | 'unpublished';
+
+const LEVEL_COLOR: Record<PublishLevel, string> = {
+  sharp:       '#60c080',
+  solid:       '#5080f0',
+  basic:       '#4060d0',
+  unpublished: '#6080a0',
+};
+
+const LEVEL_LABEL: Record<PublishLevel, string> = {
+  sharp:       'Sharp',
+  solid:       'Solid',
+  basic:       'Basic',
+  unpublished: 'Unpublished',
+};
+
+function PublishLevelBadge({ level }: { level: PublishLevel }) {
+  const color = LEVEL_COLOR[level];
+  return (
+    <span
+      className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
+      style={{ color, background: `${color}1a` }}
+    >
+      {LEVEL_LABEL[level]}
+    </span>
+  );
+}
+
 function SkillChip({ label }: { label: string }) {
   return (
     <span className="inline-flex px-2 py-0.5 rounded-md text-[10px] font-medium bg-[rgba(64,96,208,0.12)] border border-[rgba(64,96,208,0.2)] text-[rgba(160,180,255,0.8)]">
@@ -34,22 +61,17 @@ function SkillChip({ label }: { label: string }) {
   );
 }
 
-function CandidateCard({
-  candidate,
-  onInterview,
-  loading,
-}: {
-  candidate: CandidateDirectoryItem;
-  onInterview: (id: string) => void;
-  loading: boolean;
-}) {
+function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
   return (
     <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-5 flex flex-col gap-4 hover:border-[rgba(255,255,255,0.13)] transition-colors">
       {/* Header */}
       <div>
-        <p className="text-sm font-semibold text-white leading-snug">
-          {candidate.full_name}
-        </p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <p className="text-sm font-semibold text-white leading-snug">
+            {candidate.full_name}
+          </p>
+          <PublishLevelBadge level={(candidate.publish_level as PublishLevel) ?? 'basic'} />
+        </div>
         {candidate.current_role && (
           <p className="text-xs text-[rgba(255,255,255,0.45)] mt-0.5">
             {candidate.current_role}
@@ -86,17 +108,19 @@ function CandidateCard({
         </p>
       )}
 
-      {/* Action */}
-      <button
-        onClick={() => onInterview(candidate.id)}
-        disabled={loading}
-        className="mt-auto w-full py-2 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium transition-colors flex items-center justify-center gap-2"
-      >
-        {loading && (
-          <div className="w-3.5 h-3.5 rounded-full border-2 border-t-white/30 border-white animate-spin" />
-        )}
-        {loading ? 'Starting…' : 'Interview'}
-      </button>
+      {/* Action — the candidate's public agent is the only interview surface in v3 */}
+      {candidate.slug ? (
+        <a
+          href={`/${candidate.slug}`}
+          className="mt-auto w-full py-2 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white text-sm font-medium transition-colors flex items-center justify-center"
+        >
+          Interview
+        </a>
+      ) : (
+        <span className="mt-auto w-full py-2 rounded-xl bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.35)] text-sm font-medium flex items-center justify-center">
+          No public link
+        </span>
+      )}
     </div>
   );
 }
@@ -113,9 +137,9 @@ function EmptyState({ search }: { search: string }) {
         </>
       ) : (
         <>
-          <p className="text-sm font-medium text-white mb-1">No candidates ready yet</p>
+          <p className="text-sm font-medium text-white mb-1">No candidates published yet</p>
           <p className="text-xs text-[rgba(255,255,255,0.35)]">
-            Candidates appear here once they've uploaded their CV and set a career goal.
+            Candidates appear here once they've published their agent — Basic, Solid, or Sharp.
           </p>
         </>
       )}
@@ -130,11 +154,10 @@ function HistoryRow({ session }: { session: SessionHistoryItem }) {
     year: 'numeric',
   });
 
+  // Read-only summary. v2 linked each row to /interview/<id>; v3 has no per-session
+  // transcript page, so these rows record that a conversation happened and nothing more.
   return (
-    <a
-      href={`/interview/${session.id}`}
-      className="flex items-center justify-between px-4 py-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)] hover:border-[rgba(255,255,255,0.10)] hover:bg-[rgba(255,255,255,0.04)] transition-colors group"
-    >
+    <div className="flex items-center justify-between px-4 py-3 rounded-xl border border-[rgba(255,255,255,0.06)] bg-[rgba(255,255,255,0.02)]">
       <div className="min-w-0">
         <p className="text-sm font-medium text-white truncate">
           {session.candidate_name}
@@ -146,10 +169,7 @@ function HistoryRow({ session }: { session: SessionHistoryItem }) {
           )}
         </p>
       </div>
-      <span className="text-xs text-[#6080f0] group-hover:text-white transition-colors shrink-0 ml-4">
-        View →
-      </span>
-    </a>
+    </div>
   );
 }
 
@@ -162,15 +182,12 @@ interface Props {
 }
 
 export default function RecruiterDashboard({ recruiterName }: Props) {
-  const router = useRouter();
-
   const [tab, setTab] = useState<Tab>('candidates');
   const [search, setSearch] = useState('');
   const [candidates, setCandidates] = useState<CandidateDirectoryItem[]>([]);
   const [sessions, setSessions] = useState<SessionHistoryItem[]>([]);
   const [loadingCandidates, setLoadingCandidates] = useState(true);
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [startingSession, setStartingSession] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   // Load candidates on mount
@@ -202,42 +219,20 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
     if (tab === 'history' && sessions.length === 0) loadHistory();
   }, [tab]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Client-side search filter
+  // Client-side search filter (server already limits to published candidates)
   const filteredCandidates = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return candidates.filter(c => c.onboarding_complete);
-    return candidates.filter(c => {
-      if (!c.onboarding_complete) return false;
-      return (
-        c.full_name.toLowerCase().includes(q) ||
-        c.current_role.toLowerCase().includes(q) ||
-        c.career_goal.toLowerCase().includes(q) ||
-        c.skills.some(s => s.toLowerCase().includes(q))
-      );
-    });
+    if (!q) return candidates;
+    return candidates.filter(c =>
+      c.full_name.toLowerCase().includes(q) ||
+      c.current_role.toLowerCase().includes(q) ||
+      c.career_goal.toLowerCase().includes(q) ||
+      c.skills.some(s => s.toLowerCase().includes(q))
+    );
   }, [candidates, search]);
 
-  const handleInterview = async (candidateId: string) => {
-    setStartingSession(candidateId);
-    setError('');
-    try {
-      const res = await fetch('/api/recruiter/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ candidate_id: candidateId }),
-      });
-      const data = await res.json() as { sessionId?: string; error?: string };
-      if (!res.ok || !data.sessionId) {
-        setError(data.error ?? 'Failed to start session');
-        return;
-      }
-      router.push(`/interview/${data.sessionId}`);
-    } catch {
-      setError('Failed to start session. Please try again.');
-    } finally {
-      setStartingSession(null);
-    }
-  };
+  // Starting an interview no longer mints a session here — the card links straight to
+  // the candidate's public agent, which opens its own session via /api/public/session.
 
   // ── Render ────────────────────────────────────────────────────────────────
 
@@ -326,24 +321,13 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
                   <EmptyState search={search} />
                 ) : (
                   filteredCandidates.map(candidate => (
-                    <CandidateCard
-                      key={candidate.id}
-                      candidate={candidate}
-                      onInterview={handleInterview}
-                      loading={startingSession === candidate.id}
-                    />
+                    <CandidateCard key={candidate.id} candidate={candidate} />
                   ))
                 )}
               </div>
             )}
 
-            {/* Incomplete profiles note */}
-            {!loadingCandidates && candidates.some(c => !c.onboarding_complete) && (
-              <p className="mt-6 text-xs text-[rgba(255,255,255,0.22)] text-center">
-                {candidates.filter(c => !c.onboarding_complete).length} candidate
-                {candidates.filter(c => !c.onboarding_complete).length !== 1 ? 's' : ''} still completing their Digital Twin — not shown yet.
-              </p>
-            )}
+            {/* Note: candidates filter already limits to published_at IS NOT NULL — no note needed */}
           </>
         )}
 

@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useLanguage } from '@/context/LanguageContext';
+import { usePlatformT } from '@/context/platform-i18n';
 
 interface Props {
   onTranscript: (text: string) => void;
@@ -9,103 +11,128 @@ interface Props {
 
 type RecordState = 'idle' | 'recording' | 'transcribing' | 'done' | 'unsupported';
 
-// Augment window for SpeechRecognition cross-browser
-interface ISpeechRecognition extends EventTarget {
-  continuous: boolean;
-  interimResults: boolean;
-  lang: string;
-  start(): void;
-  stop(): void;
-  abort(): void;
-  onresult: ((event: ISpeechRecognitionEvent) => void) | null;
-  onend: (() => void) | null;
-  onerror: (() => void) | null;
-}
+// Whisper transcribes the recorded audio server-side (/api/transcribe). This is a
+// large accuracy upgrade over the browser Web Speech API this component used to use:
+// Web Speech is Chrome/Edge-only, streams loose guesses, and mangles proper nouns.
+// MediaRecorder + Whisper works in Safari/Firefox too and is far more faithful.
+//
+// We pass the user's selected app language to Whisper so it transcribes in the right
+// language instead of guessing — the language picker is the source of truth now.
 
-interface ISpeechRecognitionEvent {
-  resultIndex: number;
-  results: { [index: number]: { [index: number]: { transcript: string }; isFinal: boolean; length: number }; length: number };
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition?: new () => ISpeechRecognition;
-    webkitSpeechRecognition?: new () => ISpeechRecognition;
+// Pick a container the browser can actually produce; name the upload to match so
+// Whisper reads the right format. Safari yields mp4; Chrome/Firefox yield webm.
+function pickMimeType(): { mimeType?: string; ext: string } {
+  if (typeof MediaRecorder === 'undefined') return { ext: 'webm' };
+  const candidates = [
+    { mimeType: 'audio/webm;codecs=opus', ext: 'webm' },
+    { mimeType: 'audio/webm',             ext: 'webm' },
+    { mimeType: 'audio/mp4',              ext: 'mp4'  },
+    { mimeType: 'audio/mpeg',             ext: 'mp3'  },
+  ];
+  for (const c of candidates) {
+    if (MediaRecorder.isTypeSupported(c.mimeType)) return c;
   }
+  return { ext: 'webm' };   // let the browser default; still upload as .webm
 }
 
 export default function VoiceRecorder({ onTranscript, disabled }: Props) {
-  const [state, setState] = useState<RecordState>('idle');
-  const [interimText, setInterimText] = useState('');
-  const recognitionRef = useRef<ISpeechRecognition | null>(null);
-  const finalRef = useRef('');
+  const { lang } = useLanguage();
+  const t = usePlatformT();
+  const [state, setState]     = useState<RecordState>('idle');
+  const [error, setError]     = useState('');
+  const [seconds, setSeconds] = useState(0);
 
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef   = useRef<Blob[]>([]);
+  const streamRef   = useRef<MediaStream | null>(null);
+  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Feature-detect once.
   useEffect(() => {
-    const SpeechRecognitionAPI =
-      window.SpeechRecognition ?? window.webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) {
-      setState('unsupported');
-    }
-    return () => { recognitionRef.current?.abort(); };
+    const ok =
+      typeof navigator !== 'undefined' &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== 'undefined';
+    if (!ok) setState('unsupported');
+    return () => cleanup();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function startRecording() {
-    const SpeechRecognitionAPI =
-      window.SpeechRecognition ?? window.webkitSpeechRecognition;
-    if (!SpeechRecognitionAPI) return;
+  function cleanup() {
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    streamRef.current?.getTracks().forEach(t => t.stop());
+    streamRef.current = null;
+  }
 
-    finalRef.current = '';
-    setInterimText('');
+  async function startRecording() {
+    if (disabled) return;
+    setError('');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      chunksRef.current = [];
 
-    const recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
-    recognition.interimResults = true;
-    recognition.lang = 'en-US';
+      const { mimeType, ext } = pickMimeType();
+      const recorder = mimeType ? new MediaRecorder(stream, { mimeType }) : new MediaRecorder(stream);
+      recorderRef.current = recorder;
 
-    recognition.onresult = (event: ISpeechRecognitionEvent) => {
-      let interim = '';
-      let finalChunk = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript;
-        if (event.results[i].isFinal) {
-          finalChunk += transcript + ' ';
-        } else {
-          interim += transcript;
+      recorder.ondataavailable = e => { if (e.data.size > 0) chunksRef.current.push(e.data); };
+
+      recorder.onstop = async () => {
+        cleanup();
+        setState('transcribing');
+        const blob = new Blob(chunksRef.current, { type: mimeType ?? 'audio/webm' });
+
+        // Guard against an empty / far-too-short recording.
+        if (blob.size < 1200) {
+          setState('idle');
+          setError(t.voice_too_short);
+          return;
         }
-      }
-      if (finalChunk) finalRef.current += finalChunk;
-      setInterimText(interim);
-    };
 
-    recognition.onend = () => {
-      setState('done');
-      setInterimText('');
-      const full = finalRef.current.trim();
-      if (full) onTranscript(full);
-    };
+        try {
+          const formData = new FormData();
+          formData.append('audio', blob, `answer.${ext}`);
+          formData.append('language', lang);   // transcribe in the user's chosen language
+          const res = await fetch('/api/transcribe', { method: 'POST', body: formData });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok || !data.text?.trim()) {
+            setState('idle');
+            setError(t.voice_no_transcript);
+            return;
+          }
+          onTranscript(data.text.trim());
+          setState('done');
+        } catch {
+          setState('idle');
+          setError(t.voice_failed);
+        }
+      };
 
-    recognition.onerror = () => {
+      recorder.start();
+      setState('recording');
+      setSeconds(0);
+      timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
+    } catch {
       setState('idle');
-      setInterimText('');
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-    setState('recording');
+      setError(t.voice_mic_blocked);
+    }
   }
 
   function stopRecording() {
-    setState('transcribing');
-    recognitionRef.current?.stop();
+    if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
+    recorderRef.current?.stop();
   }
 
   if (state === 'unsupported') {
     return (
       <p className="text-[10px] text-[rgba(255,255,255,0.25)] italic">
-        Voice recording requires Chrome or Edge.
+        {t.voice_unsupported}
       </p>
     );
   }
+
+  const mmss = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -127,7 +154,7 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
               <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z"/>
               <path fill="none" stroke="currentColor" strokeWidth="2" d="M19 10a7 7 0 0 1-14 0M12 19v4M8 23h8"/>
             </svg>
-            {state === 'done' ? 'Record again' : 'Record your answer'}
+            {state === 'done' ? t.voice_record_again : t.voice_record}
           </button>
         ) : state === 'recording' ? (
           <button
@@ -143,16 +170,15 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
             }}
           >
             <span className="w-2 h-2 rounded-sm bg-[rgba(240,80,80,0.9)]" />
-            Stop recording
+            {t.voice_stop} · {mmss}
           </button>
         ) : (
-          <span className="text-xs text-[rgba(255,255,255,0.35)] italic">Transcribing…</span>
+          <span className="text-xs text-[rgba(255,255,255,0.35)] italic">{t.voice_transcribing}</span>
         )}
       </div>
 
-      {/* Interim transcript preview */}
-      {interimText && (
-        <p className="text-[11px] text-[rgba(255,255,255,0.35)] italic pl-1">{interimText}</p>
+      {error && (
+        <p className="text-[11px] text-[rgba(220,120,120,0.8)] pl-1">{error}</p>
       )}
     </div>
   );

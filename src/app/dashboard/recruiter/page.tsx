@@ -21,7 +21,7 @@ export default async function RecruiterDashboardPage() {
     .eq('id', user.id)
     .single();
 
-  if (profile?.role === 'candidate') redirect('/dashboard/candidate');
+  if (profile?.role === 'candidate') redirect('/dashboard/candidate/trainer');
 
   const name = profile?.full_name ?? user.email ?? 'there';
 
