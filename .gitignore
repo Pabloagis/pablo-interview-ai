@@ -25,8 +25,18 @@
 # generated seeds contain real UUIDs, emails and client detail — never commit
 /supabase/seeds/
 
-# the v2 → v3 extraction: personal email and consulting-client detail in the clear
+# the v2 → v3 extraction: personal email and consulting-client detail in the clear.
+# emit-seed.ts only renders that file into SQL, and tsconfig includes **/*.ts —
+# tracking it without its data module would break typecheck on a fresh clone.
 /scripts/migrate/pablo-v3-data.ts
+/scripts/migrate/emit-seed.ts
+
+# one-off migrations against Pablo's own profile: real UUID, and client detail in
+# remove-v3-trainer-residue. They are operations, not reusable schema — the only
+# schema change of the batch (story-ownership) IS tracked.
+/supabase/migrations/2026-07-30-clean-candidate-responses.sql
+/supabase/migrations/2026-07-30-purge-and-clean.sql
+/supabase/migrations/2026-07-30-remove-v3-trainer-residue.sql
 
 # eval transcripts quote the agent verbatim, including client work
 /scripts/eval/results/
