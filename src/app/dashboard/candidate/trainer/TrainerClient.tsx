@@ -18,6 +18,19 @@ import { usePlatformT, LANG_NAME } from '@/context/platform-i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
+// Which confirmed corrections leave a canonical record behind, and what to offer.
+// Only these three nodes have a counterpart the recruiter sees directly: work
+// history and the goal on the profile card. Every other node reaches recruiters
+// through the agent's own answers, which [RECENT_UPDATES] already corrects.
+const CANONICAL_FOLLOW_UP: Partial<Record<CoverageNodeKey, {
+  messageKey: 'g_after_role_change' | 'g_after_goal_change';
+  action: OnboardingAction;
+}>> = {
+  role_history:     { messageKey: 'g_after_role_change', action: 'role_update' },
+  career_narrative: { messageKey: 'g_after_goal_change', action: 'career_goal' },
+  company_fit:      { messageKey: 'g_after_goal_change', action: 'career_goal' },
+};
+
 export interface InitialTrainerData {
   candidateName: string;
   initialNodeStates: Record<CoverageNodeKey, NodeState>;
@@ -160,6 +173,15 @@ export default function TrainerClient({
           const first = stagePrompt(data.stage, candidateName);
           if (first) setMessages(m => (m.length === 0 ? [first] : m));
         }
+
+        // A trained candidate already HAS a goal, and the picker can now reopen
+        // mid-conversation to revise it. Without this it would open blank and they
+        // would have to re-pick everything from scratch to change one thing.
+        const goalRes = await fetch('/api/training/career-goal');
+        if (goalRes.ok) {
+          const { career_goal } = await goalRes.json() as { career_goal: string | null };
+          setCareerGoal(career_goal ?? null);
+        }
       } catch { /* non-fatal */ }
     })();
   }, [candidateName, stagePrompt]);
@@ -184,6 +206,20 @@ export default function TrainerClient({
         id: crypto.randomUUID(),
         role: 'assistant',
         content: message ?? t.g_doc_ack,
+      },
+    ]);
+    await syncOnboarding();
+  }, [syncOnboarding, t]);
+
+  // A role was added straight into cv_data, bypassing a CV re-upload. cv_data feeds
+  // the coverage model AND the recruiter directory, so re-derive from the server.
+  const handleRoleUpdated = useCallback(async (message?: string) => {
+    setMessages(prev => [
+      ...prev,
+      {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: message ?? t.role_saved_msg,
       },
     ]);
     await syncOnboarding();
@@ -284,7 +320,7 @@ export default function TrainerClient({
       });
       if (!extractRes.ok) return;
 
-      const { evidence, persisted, coverage } = await extractRes.json() as {
+      const { evidence, persisted, coverage, supersessions } = await extractRes.json() as {
         evidence?: Array<{
           id: string;
           nodeKey: CoverageNodeKey;
@@ -298,10 +334,19 @@ export default function TrainerClient({
           readiness: number;
           publishLevel: string;
         };
+        // Older facts each new item appears to contradict. A PROPOSAL — the agent
+        // keeps saying both versions until the candidate answers on the card.
+        supersessions?: Array<{
+          supersedingId: string;
+          supersedes: Array<{ id: string; content: string }>;
+        }>;
       };
 
       // Render new evidence cards with the REAL DB ids from the server.
       if (evidence?.length) {
+        const proposalsById = new Map(
+          (supersessions ?? []).map(s => [s.supersedingId, s.supersedes])
+        );
         const newCards: EvidenceItem[] = evidence.map(e => ({
           id:               e.id,
           nodeKey:          e.nodeKey,
@@ -309,6 +354,7 @@ export default function TrainerClient({
           quality:          e.quality,
           followUpQuestion: e.followUpQuestion ?? undefined,
           persisted:        persisted !== false, // false only when the insert failed
+          supersedes:       proposalsById.get(e.id),
         }));
         const newIds = new Set(newCards.map(c => c.id));
 
@@ -352,6 +398,74 @@ export default function TrainerClient({
       prev.map(c => c.id === item.id ? { ...c, followUpSent: true } : c)
     );
   }, []);
+
+  // ── Retire facts a new answer replaced ───────────────────────────────
+  // "Keep both" is a real answer, not a dismissal: two facts can legitimately
+  // coexist, so it resolves the card locally and touches nothing on the server.
+  const handleSupersede = useCallback(async (item: EvidenceItem, replace: boolean) => {
+    const ids = item.supersedes?.map(s => s.id) ?? [];
+
+    if (!replace || ids.length === 0) {
+      setEvidenceCards(prev =>
+        prev.map(c => c.id === item.id ? { ...c, supersedeChoice: 'kept' } : c)
+      );
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/trainer/supersede', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ supersedingId: item.id, supersededIds: ids }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const { coverage } = await res.json() as {
+        retired?: number;
+        coverage?: {
+          nodeStates: Record<CoverageNodeKey, NodeState>;
+          readiness: number;
+          publishLevel: string;
+        } | null;
+      };
+
+      // Retiring a fact can take a node back down — adopt the server's snapshot
+      // wholesale, exactly as the extraction path does.
+      if (coverage) {
+        setNodeStates(coverage.nodeStates);
+        setReadiness(coverage.readiness);
+        setPublishLevel(coverage.publishLevel as PublishLevel);
+      }
+
+      // Drop the retired cards from the log: they no longer describe the agent.
+      const retiredIds = new Set(ids);
+      setEvidenceCards(prev =>
+        prev
+          .filter(c => !retiredIds.has(c.id))
+          .map(c => c.id === item.id ? { ...c, supersedeChoice: 'replaced' } : c)
+      );
+
+      // The agent is now correct, but the CANONICAL record the recruiter directory
+      // reads is not: current_role and skills come from cv_data, the goal on the
+      // profile card from profiles.career_goal, and a chat correction writes neither.
+      // Offer the matching control so the two stop disagreeing.
+      const followUp = CANONICAL_FOLLOW_UP[item.nodeKey];
+      if (followUp) {
+        setMessages(prev => [
+          ...prev,
+          {
+            id:      crypto.randomUUID(),
+            role:    'assistant',
+            content: t[followUp.messageKey],
+            action:  followUp.action,
+          },
+        ]);
+      }
+    } catch (err) {
+      // Leave the card unresolved so the choice is still offered on the next try.
+      console.error('[TrainerClient] supersede failed:', err);
+    }
+  }, [t]);
 
   // ── Publish the agent ────────────────────────────────────────────────
   const handlePublish = useCallback(async () => {
@@ -407,6 +521,7 @@ export default function TrainerClient({
           onCvUploaded={handleCvUploaded}
           onCareerGoalSaved={handleCareerGoalSaved}
           onDocumentUploaded={handleDocumentUploaded}
+          onRoleUpdated={handleRoleUpdated}
         />
       }
       dashboardSlot={
@@ -424,6 +539,7 @@ export default function TrainerClient({
             handleSend(`I'd like to practice questions about: ${node.label}`);
           }}
           onFollowUp={handleFollowUp}
+          onSupersede={handleSupersede}
           publishedAt={publishedAt}
           isPublishing={isPublishing}
           onPublish={handlePublish}

@@ -12,11 +12,16 @@ import {
 } from './coverage-nodes';
 
 // Row shape from evidence_items (conversational trainer output).
+// superseded_at / superseded_by arrive only once the supersession migration has
+// run; both are optional so a pre-migration read still type-checks.
 interface EvidenceRow {
+  id?: string;
   node_key: string;
   content: string;
   quality: EvidenceQuality;
   created_at: string;
+  superseded_at?: string | null;
+  superseded_by?: string | null;
 }
 
 // Row shape from anticipated_questions (per-candidate, user-authored answers).
@@ -29,6 +34,10 @@ interface AnticipatedRow {
 
 // Max conversational-evidence items injected into the prompt (bounds prompt size).
 const MAX_EVIDENCE_ITEMS = 40;
+
+// Corrections carry more weight than ordinary evidence, so they get their own,
+// smaller budget and are never squeezed out by the 40-item evidence cap.
+const MAX_RECENT_UPDATES = 12;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -500,6 +509,46 @@ How this candidate thinks, works, and communicates. Use this to inform tone and 
 ${entries.join('\n\n')}`;
 }
 
+// Facts the candidate later CORRECTED. Each row here is a live item that retired
+// an earlier one, so it is the current version of something the prompt may still
+// state in an older form further up — a CV work history, an identity line, a story.
+// Rendered late and given explicit precedence: re-parsing the CV is not something
+// a chat correction can do, so the override has to be stated rather than merged.
+//
+// Only the NEW fact is shown. The retired text is deliberately withheld — the agent
+// has no reason to know what it used to say, and every reason not to repeat it.
+function buildRecentUpdatesSection(liveRows: EvidenceRow[], allRows: EvidenceRow[]): string {
+  const retiredBy = new Set(
+    allRows.map(r => r.superseded_by).filter((v): v is string => !!v)
+  );
+  if (retiredBy.size === 0) return '';
+
+  // Unlike [CONVERSATIONAL_EVIDENCE], thin corrections are NOT filtered out. A
+  // correction is the candidate telling you something about themselves has changed;
+  // "I've left that job" is true and worth saying even with no date attached, and
+  // suppressing it would leave the agent asserting the stale version instead. The
+  // hedge is carried in the instruction below, not by dropping the fact.
+  const updates = liveRows
+    .filter(r => r.id && retiredBy.has(r.id))
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, MAX_RECENT_UPDATES);
+
+  if (updates.length === 0) return '';
+
+  const thin = new Set<EvidenceQuality>(['vague', 'missing_detail']);
+  const lines = updates
+    .map(r => `- ${r.content}${thin.has(r.quality) ? '  (no further detail available)' : ''}`)
+    .join('\n');
+
+  return `## [RECENT_UPDATES]
+
+These are corrections you made to your own profile, and they are the CURRENT truth about you. Where anything stated earlier in this prompt — your work history, your career goal, a story, another fact — disagrees with something here, what is here wins and the earlier version is out of date. Never present the old version, and never narrate that something was updated: this is simply what is true now. Do not embellish these, and do not infer knock-on facts they do not state.
+
+Some are marked "no further detail available". Say those plainly anyway — they are true. But say only what the line says: add no dates, numbers, names or reasons it does not contain, and if a recruiter presses for specifics, tell them straight that you don't have those to hand rather than reaching for something plausible.
+
+${lines}`;
+}
+
 function buildConversationalEvidenceSection(evidenceRows: EvidenceRow[]): string {
   // Only verified + solid reach the agent's mouth. vague / missing_detail are
   // EXCLUDED entirely — the candidate could not substantiate them, so the agent
@@ -712,7 +761,7 @@ export async function buildCandidateSystemPrompt(
       .eq('candidate_id', userId),
     supabase
       .from('evidence_items')
-      .select('node_key, content, quality, created_at')
+      .select('id, node_key, content, quality, created_at, superseded_at, superseded_by')
       .eq('candidate_id', userId),
     // Non-blocking: a PostgREST error (e.g. table not yet migrated) resolves as
     // { data: null, error } — it does NOT throw — so we simply get no rows.
@@ -732,7 +781,26 @@ export async function buildCandidateSystemPrompt(
     );
   }
 
-  const evidenceRows = (evidenceRes.data ?? []) as EvidenceRow[];
+  // A missing column makes PostgREST reject the WHOLE select (same trap as
+  // candidate_stories below), which would strip every conversational fact from the
+  // agent. Until the supersession migration is run, fall back to the old shape:
+  // the agent keeps all its facts and simply cannot be corrected yet.
+  let evidenceRows = (evidenceRes.data ?? []) as EvidenceRow[];
+  if (evidenceRes.error) {
+    console.warn(
+      '[candidate-prompt] evidence read with supersession columns failed — run migrations/2026-07-31-evidence-supersession.sql:',
+      evidenceRes.error.message
+    );
+    const legacy = await supabase
+      .from('evidence_items')
+      .select('node_key, content, quality, created_at')
+      .eq('candidate_id', userId);
+    evidenceRows = (legacy.data ?? []) as EvidenceRow[];
+  }
+
+  // Retired facts are excluded from everything the agent can say. They stay in the
+  // table as the audit trail of how the profile changed.
+  const liveEvidenceRows = evidenceRows.filter(r => !r.superseded_at);
   const anticipatedRows = (anticipatedRes.data ?? []) as AnticipatedRow[];
   if (anticipatedRes.error) {
     console.error('[candidate-prompt] anticipated_questions read failed (non-fatal):', anticipatedRes.error.message);
@@ -755,7 +823,10 @@ export async function buildCandidateSystemPrompt(
     data.profile.full_name || data.cvData?.full_name || 'the candidate';
 
   // Conversational evidence — verified/solid facts confirmed in training chats.
-  const conversationalEvidenceSection = buildConversationalEvidenceSection(evidenceRows);
+  const conversationalEvidenceSection = buildConversationalEvidenceSection(liveEvidenceRows);
+
+  // Corrections the candidate confirmed — these override anything stated earlier.
+  const recentUpdatesSection = buildRecentUpdatesSection(liveEvidenceRows, evidenceRows);
 
   // Anticipated questions — per-candidate, user-authored answers from the table.
   const anticipatedSection = buildAnticipatedSection(anticipatedRows);
@@ -771,7 +842,7 @@ export async function buildCandidateSystemPrompt(
       responses: data.responses,
       context: data.context,
       rawDataSourceTypes: (rawDataRes.data ?? []).map(r => r.source_type as string),
-      evidenceItems: evidenceRows.map(r => ({ node_key: r.node_key, quality: r.quality })),
+      evidenceItems: liveEvidenceRows.map(r => ({ node_key: r.node_key, quality: r.quality })),
     };
     const states = deriveNodeStates(coverageInput);
     const readiness = computeReadiness(states);
@@ -790,9 +861,12 @@ export async function buildCandidateSystemPrompt(
   );
 
   // Order: identity → training data → [CONVERSATIONAL_EVIDENCE] → [ANTICIPATED_QUESTIONS]
-  //        → [COVERAGE_MAP] → rules.
+  //        → [RECENT_UPDATES] → [COVERAGE_MAP] → rules.
   // Evidence and anticipated answers sit with the factual data; the coverage-map refusals
   // come AFTER all known facts so they act as the final gate on what the agent cannot claim.
+  // [RECENT_UPDATES] sits last among the facts on purpose: it overrides every section
+  // above it, and a section that claims precedence has to be read after the thing it
+  // overrides. It stays BEFORE the coverage map, which remains the final gate.
   return [
     buildIdentitySection(data),
     buildWorkHistorySection(data.cvData),
@@ -804,6 +878,7 @@ export async function buildCandidateSystemPrompt(
     buildCommunicationStyleSection(data.context, data.responses),
     conversationalEvidenceSection,
     anticipatedSection,
+    recentUpdatesSection,
     coverageSection,
     buildHardStopsSection(data.context),
     buildBehaviorRulesSection(name, completeness),

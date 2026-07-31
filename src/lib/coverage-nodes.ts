@@ -481,6 +481,10 @@ export interface EvidenceItem {
   followUpQuestion?: string;    // populated for vague / missing_detail
   followUpSent?: boolean;       // true once injected into conversation
   persisted?: boolean;          // false → extracted but DB insert failed (show "not saved")
+  // Older facts this one appears to contradict. PROPOSED by the server; nothing is
+  // retired until the candidate answers the prompt on the card.
+  supersedes?: Array<{ id: string; content: string }>;
+  supersedeChoice?: 'replaced' | 'kept';
 }
 
 // Quality → node state upgrade mapping.

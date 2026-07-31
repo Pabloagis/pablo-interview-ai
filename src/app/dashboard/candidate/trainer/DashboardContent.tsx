@@ -27,6 +27,7 @@ interface Props {
   newCardIds?: Set<string>;        // IDs getting the entrance animation
   onTrainNode?: (key: CoverageNodeKey) => void;
   onFollowUp?: (item: EvidenceItem) => void;
+  onSupersede?: (item: EvidenceItem, replace: boolean) => void;
   // Publishing
   publishedAt?: string | null;
   isPublishing?: boolean;
@@ -41,6 +42,7 @@ export default function DashboardContent({
   newCardIds = new Set(),
   onTrainNode,
   onFollowUp,
+  onSupersede,
   publishedAt = null,
   isPublishing = false,
   onPublish,
@@ -92,6 +94,7 @@ export default function DashboardContent({
               item={item}
               isNew={newCardIds.has(item.id)}
               onFollowUp={onFollowUp ?? (() => {})}
+              onSupersede={onSupersede}
             />
           ))}
         </div>

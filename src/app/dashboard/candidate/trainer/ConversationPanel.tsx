@@ -5,6 +5,7 @@ import VoiceRecorder from '../components/VoiceRecorder';
 import CvUpload from '../modules/CvUpload';
 import CareerGoalPicker from '../modules/CareerGoalPicker';
 import DocumentUpload from '../modules/DocumentUpload';
+import RoleUpdate from '../modules/RoleUpdate';
 import { usePlatformT } from '@/context/platform-i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -18,7 +19,16 @@ import { usePlatformT } from '@/context/platform-i18n';
 // 'document_upload' is not a blocking onboarding gate like cv_upload / career_goal —
 // it's an invitation the agent can attach when a document would strengthen a node.
 // The same control is always reachable from the composer paperclip regardless.
-export type OnboardingAction = 'cv_upload' | 'career_goal' | 'document_upload';
+//
+// 'role_update' is likewise not onboarding: it appears LONG after setup, when a
+// confirmed correction has moved the agent ahead of the CV the recruiter directory
+// reads. Despite the type name, these actions are simply controls a message can
+// carry — the profile keeps changing after onboarding ends.
+export type OnboardingAction =
+  | 'cv_upload'
+  | 'career_goal'
+  | 'document_upload'
+  | 'role_update';
 
 export interface TrainerMessage {
   id: string;
@@ -37,10 +47,12 @@ interface Props {
   cvLoaded?: boolean;
   careerGoal?: string | null;
   onCvUploaded?: () => void;
-  onCareerGoalSaved?: () => void;
+  onCareerGoalSaved?: (goal?: string) => void;
   // Supporting-document upload — reachable any time from the composer, and also
   // rendered inline when an assistant message carries the 'document_upload' action.
   onDocumentUploaded?: (message?: string) => void;
+  // Work history added without a CV re-upload — see the 'role_update' action.
+  onRoleUpdated?: (message?: string) => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -56,6 +68,7 @@ export default function ConversationPanel({
   onCvUploaded,
   onCareerGoalSaved,
   onDocumentUploaded,
+  onRoleUpdated,
 }: Props) {
   const t = usePlatformT();
   const [draft, setDraft] = useState('');
@@ -120,8 +133,16 @@ export default function ConversationPanel({
                 <CareerGoalPicker
                   currentGoal={careerGoal}
                   moduleOptions={null}
-                  onSaved={() => onCareerGoalSaved?.()}
+                  // Forward the saved value: the picker can reopen later to revise
+                  // the goal, and it must reopen showing what was actually saved.
+                  onSaved={goal => onCareerGoalSaved?.(goal)}
                 />
+              </div>
+            )}
+
+            {msg.action === 'role_update' && (
+              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+                <RoleUpdate onSaved={msg => onRoleUpdated?.(msg)} />
               </div>
             )}
 

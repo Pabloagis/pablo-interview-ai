@@ -8,9 +8,15 @@
 --   coverage node. Forcing it into those tables would be lossy and would corrupt
 --   the existing 10-step journey data.
 --
--- Rows are APPEND-ONLY and never mutated. Multiple rows per node are expected and
--- correct — they are the audit trail of how the candidate's answers improved over
--- successive turns.
+-- Rows are APPEND-ONLY: content is never rewritten. Multiple rows per node are
+-- expected and correct — they are the audit trail of how the candidate's answers
+-- improved over successive turns.
+--
+-- UPDATE 2026-07-31 (migrations/2026-07-31-evidence-supersession.sql): a row can
+-- now be RETIRED by superseded_at / superseded_by when the candidate confirms that
+-- a newer fact replaces it. Content is still immutable and nothing is deleted; the
+-- prompt builder and coverage derivation simply stop reading retired rows. Without
+-- this an agent could never be corrected, only added to.
 -- ─────────────────────────────────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS evidence_items (

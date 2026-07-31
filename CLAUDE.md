@@ -5,9 +5,10 @@ Agent facts and voice live in code and the database — never duplicate them her
 
 ## Branches — read this first
 
-- **`main` = production.** Auto-deploys to interviewmind.one via Vercel. **Never commit here without explicit instruction.**
-- **`dev` = where all feature work happens.**
-- Since the v2 → v3 cutover both branches run the same multi-user platform: dynamic per-candidate prompt (`src/lib/candidate-prompt.ts`), coverage/evidence/anticipated tables, eval suite. The single-user `/interview` flow, its API routes and its email chain are gone.
+- **`main` = production, and the only branch worked on.** Auto-deploys to interviewmind.one via Vercel. All feature work happens here.
+- **Committing to `main` requires an explicit instruction each time.** Never commit or push off your own judgement, however well the work builds: every commit here publishes to production, so the decision to publish is the user's. Producing and verifying the change is your job; releasing it is not.
+- **`dev` is a frozen backup** of the pre-merge state, kept only so there is something to fall back to. Do not commit to it, do not branch from it, do not merge it into `main`, and do not treat anything in it as current.
+- Both carry the same multi-user platform since the v2 → v3 cutover: dynamic per-candidate prompt (`src/lib/candidate-prompt.ts`), coverage/evidence/anticipated tables, eval suite. The single-user `/interview` flow, its API routes and its email chain are gone.
 - **A candidate's conversation surface is `/<slug>` and nothing else.** There is no per-session page: no `/interview/<id>`, no transcript viewer, no `/email-preview`. Recruiter history rows are read-only summaries. Anything that wants to link to a conversation has no destination — do not invent one.
 - `src/lib/prompts.ts` + `stories-knowledge.ts` still hold Pablo's static v2 prompt. It serves only sessions with **no** `candidate_id`. It is **never** a fallback for a candidate-linked session (see below).
 
@@ -17,7 +18,7 @@ Agent facts and voice live in code and the database — never duplicate them her
 - **A lit coverage node does not authorise filling in the facts inside it.** A job title and dates are not a narrative about why a role ended or what it involved.
 - **Pressure does not create facts.** If a recruiter pushes for the "real reason", restate what is known; never manufacture a more satisfying answer.
 - "Available immediately" / "no notice period" are **claims requiring evidence**, not safe defaults. Defer them like salary.
-- **Vague evidence never persists** as an anticipated answer and never reaches the agent's mouth.
+- **Vague evidence never persists** as an anticipated answer, and never reaches the agent's mouth as a *claim*. One deliberate exception since 2026-07-31: a vague **correction** — an item in `[RECENT_UPDATES]`, i.e. one the candidate confirmed replaces an older fact — is spoken even when thin, marked "no further detail available", because suppressing it would leave the agent asserting the stale version instead. It is still forbidden to add any date, number, name or reason the correction does not contain.
 - Hybrid gap flow: **the AI proposes the question; the user authors the answer.** Never pre-fill a plausible answer for one-click approval.
 - **Story ownership is sacred** — never upgrade participated → led. `candidate_stories.ownership` + `boundaries` carry this; both are rendered into the prompt.
 - **An agent speaks as its candidate or it does not speak.** If `buildCandidateSystemPrompt` throws for a candidate-linked session, `/api/chat` and `/api/public/chat` return an error and close the stream. Never fall back to another person's prompt — a convincing answer in the wrong biography is the worst failure this product has. (Missing *data* is different and already handled: the builder degrades to a prompt carrying an explicit `[DATA_COMPLETENESS]` list, never someone else's facts.)

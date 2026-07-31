@@ -82,6 +82,24 @@ export interface PlatformStrings {
   g_ack_cv: string;
   g_ack_goal: string;
   g_ack_story: string;
+  // Follow-ups the trainer attaches after a confirmed correction, so the canonical
+  // record catches up with what the agent now says.
+  g_after_goal_change: string;
+  g_after_role_change: string;
+  // Inline "add a role" form (RoleUpdate)
+  role_intro: string;
+  role_company: string;
+  role_title: string;
+  role_start: string;
+  role_end: string;
+  role_current: string;
+  role_prev_end: (company: string) => string;
+  role_optional: string;
+  role_save: string;
+  role_saving: string;
+  role_saved_msg: string;
+  role_or_cv: string;
+  role_failed: string;
   g_doc_invite: string;
   g_doc_ack: string;
 
@@ -111,6 +129,12 @@ export interface PlatformStrings {
   ev_probe: string;
   ev_followup_sent: string;
   ev_not_saved: string;
+  // Supersession — the candidate confirms whether a new fact replaces an older one.
+  ev_replaces_question: string;
+  ev_replaces_confirm: string;
+  ev_replaces_keep: string;
+  ev_replaced_done: string;
+  ev_replaced_kept: string;
   dash_evidence_log: string;
 
   // ── Publish panel ──────────────────────────────────────────────
@@ -345,6 +369,21 @@ const EN: PlatformStrings = {
   g_ack_cv: "CV read — I've got your roles and dates.",
   g_ack_goal: 'Locked in.',
   g_ack_story: "That's the kind of detail that holds up. Your agent can use that.",
+  g_after_goal_change: 'Your agent speaks to that now. One thing it does not change: the goal recruiters see on your profile card. Set that below so the two match.',
+  g_after_role_change: "Your agent speaks to that now. Recruiters browsing profiles still see your old role, though — that comes from your CV. Add the role below, or re-upload your CV if it's already up to date.",
+  role_intro: 'Add the role and your profile card updates for recruiters.',
+  role_company: 'Company',
+  role_title: 'Role',
+  role_start: 'Start date',
+  role_end: 'End date',
+  role_current: "I'm still in this role",
+  role_prev_end: (company: string) => `When did you leave ${company}?`,
+  role_optional: 'optional',
+  role_save: 'Save role',
+  role_saving: 'Saving…',
+  role_saved_msg: 'Role added. Recruiters now see it on your profile.',
+  role_or_cv: 'Or upload an updated CV',
+  role_failed: "Couldn't save that. Try again.",
   g_doc_invite: "Foundations are in. If you've got anything that backs up your work — a reference, a performance review, a project write-up — add it here and your agent can cite it. Or skip it and we'll keep talking.",
   g_doc_ack: "Got it — that's on file as evidence your agent can use.",
 
@@ -372,6 +411,11 @@ const EN: PlatformStrings = {
   ev_probe: 'Probe this',
   ev_followup_sent: 'Follow-up sent',
   ev_not_saved: 'Not saved — reload may lose this',
+  ev_replaces_question: 'Does this replace what you said before?',
+  ev_replaces_confirm: 'Yes, replace',
+  ev_replaces_keep: 'Keep both',
+  ev_replaced_done: 'Replaced — your agent no longer says the old version',
+  ev_replaced_kept: 'Both kept',
   dash_evidence_log: 'Evidence log',
 
   pub_publish_agent: 'Publish agent',
@@ -592,6 +636,21 @@ const ES: PlatformStrings = {
   g_ack_cv: 'CV leído — tengo tus puestos y fechas.',
   g_ack_goal: 'Fijado.',
   g_ack_story: 'Ese es el tipo de detalle que se sostiene. Tu agente puede usarlo.',
+  g_after_goal_change: 'Tu agente ya lo cuenta así. Una cosa que eso no cambia: el objetivo que los reclutadores ven en tu ficha. Ajústalo abajo para que coincidan.',
+  g_after_role_change: 'Tu agente ya lo cuenta así. Pero los reclutadores que miran perfiles siguen viendo tu puesto anterior — eso sale de tu CV. Añade el puesto abajo, o vuelve a subir el CV si ya está actualizado.',
+  role_intro: 'Añade el puesto y tu ficha se actualiza para los reclutadores.',
+  role_company: 'Empresa',
+  role_title: 'Puesto',
+  role_start: 'Fecha de inicio',
+  role_end: 'Fecha de fin',
+  role_current: 'Sigo en este puesto',
+  role_prev_end: (company: string) => `¿Cuándo saliste de ${company}?`,
+  role_optional: 'opcional',
+  role_save: 'Guardar puesto',
+  role_saving: 'Guardando…',
+  role_saved_msg: 'Puesto añadido. Los reclutadores ya lo ven en tu perfil.',
+  role_or_cv: 'O sube un CV actualizado',
+  role_failed: 'No se pudo guardar. Inténtalo de nuevo.',
   g_doc_invite: 'Ya están los cimientos. Si tienes algo que respalde tu trabajo — una referencia, una evaluación de desempeño, la descripción de un proyecto — añádelo aquí y tu agente podrá citarlo. O sáltatelo y seguimos hablando.',
   g_doc_ack: 'Entendido — queda registrado como evidencia que tu agente puede usar.',
 
@@ -619,6 +678,11 @@ const ES: PlatformStrings = {
   ev_probe: 'Profundizar',
   ev_followup_sent: 'Seguimiento enviado',
   ev_not_saved: 'No guardado — al recargar podrías perderlo',
+  ev_replaces_question: '¿Esto reemplaza lo que dijiste antes?',
+  ev_replaces_confirm: 'Sí, reemplazar',
+  ev_replaces_keep: 'Mantener ambas',
+  ev_replaced_done: 'Reemplazado — tu agente ya no dice la versión anterior',
+  ev_replaced_kept: 'Se mantienen ambas',
   dash_evidence_log: 'Registro de evidencia',
 
   pub_publish_agent: 'Publicar agente',
@@ -839,6 +903,21 @@ const IT: PlatformStrings = {
   g_ack_cv: 'CV letto — ho i tuoi ruoli e le date.',
   g_ack_goal: 'Fissato.',
   g_ack_story: 'Questo è il tipo di dettaglio che regge. Il tuo agente può usarlo.',
+  g_after_goal_change: 'Il tuo agente ora lo racconta così. Una cosa che questo non cambia: l’obiettivo che i recruiter vedono sulla tua scheda. Sistemalo qui sotto perché coincidano.',
+  g_after_role_change: 'Il tuo agente ora lo racconta così. Ma i recruiter che sfogliano i profili vedono ancora il tuo ruolo precedente — quello viene dal CV. Aggiungi il ruolo qui sotto, oppure ricarica il CV se è già aggiornato.',
+  role_intro: 'Aggiungi il ruolo e la tua scheda si aggiorna per i recruiter.',
+  role_company: 'Azienda',
+  role_title: 'Ruolo',
+  role_start: 'Data di inizio',
+  role_end: 'Data di fine',
+  role_current: 'Sono ancora in questo ruolo',
+  role_prev_end: (company: string) => `Quando hai lasciato ${company}?`,
+  role_optional: 'facoltativo',
+  role_save: 'Salva ruolo',
+  role_saving: 'Salvataggio…',
+  role_saved_msg: 'Ruolo aggiunto. I recruiter ora lo vedono sul tuo profilo.',
+  role_or_cv: 'Oppure carica un CV aggiornato',
+  role_failed: 'Non è stato possibile salvare. Riprova.',
   g_doc_invite: 'Le fondamenta ci sono. Se hai qualcosa che conferma il tuo lavoro — una referenza, una valutazione, la descrizione di un progetto — aggiungilo qui e il tuo agente potrà citarlo. Oppure saltalo e continuiamo a parlare.',
   g_doc_ack: 'Ricevuto — è agli atti come prova che il tuo agente può usare.',
 
@@ -866,6 +945,11 @@ const IT: PlatformStrings = {
   ev_probe: 'Approfondisci',
   ev_followup_sent: 'Domanda inviata',
   ev_not_saved: 'Non salvato — ricaricando potresti perderlo',
+  ev_replaces_question: 'Questo sostituisce quello che avevi detto prima?',
+  ev_replaces_confirm: 'Sì, sostituisci',
+  ev_replaces_keep: 'Tieni entrambe',
+  ev_replaced_done: 'Sostituito — il tuo agente non dice più la versione precedente',
+  ev_replaced_kept: 'Mantenute entrambe',
   dash_evidence_log: 'Registro delle prove',
 
   pub_publish_agent: 'Pubblica agente',
@@ -1086,6 +1170,21 @@ const PT: PlatformStrings = {
   g_ack_cv: 'CV lido — tenho as tuas funções e datas.',
   g_ack_goal: 'Fixado.',
   g_ack_story: 'É este o tipo de detalhe que se aguenta. O teu agente pode usá-lo.',
+  g_after_goal_change: 'O teu agente já o conta assim. Uma coisa que isso não muda: o objetivo que os recrutadores veem na tua ficha. Ajusta-o abaixo para que coincidam.',
+  g_after_role_change: 'O teu agente já o conta assim. Mas os recrutadores que veem perfis continuam a ver o teu cargo anterior — isso vem do teu CV. Adiciona o cargo abaixo, ou carrega de novo o CV se já estiver atualizado.',
+  role_intro: 'Adiciona o cargo e a tua ficha atualiza-se para os recrutadores.',
+  role_company: 'Empresa',
+  role_title: 'Cargo',
+  role_start: 'Data de início',
+  role_end: 'Data de fim',
+  role_current: 'Continuo neste cargo',
+  role_prev_end: (company: string) => `Quando saíste de ${company}?`,
+  role_optional: 'opcional',
+  role_save: 'Guardar cargo',
+  role_saving: 'A guardar…',
+  role_saved_msg: 'Cargo adicionado. Os recrutadores já o veem no teu perfil.',
+  role_or_cv: 'Ou carrega um CV atualizado',
+  role_failed: 'Não foi possível guardar. Tenta de novo.',
   g_doc_invite: 'As fundações estão feitas. Se tens algo que sustente o teu trabalho — uma referência, uma avaliação de desempenho, a descrição de um projeto — adiciona-o aqui e o teu agente poderá citá-lo. Ou salta e continuamos a conversar.',
   g_doc_ack: 'Recebido — fica registado como evidência que o teu agente pode usar.',
 
@@ -1113,6 +1212,11 @@ const PT: PlatformStrings = {
   ev_probe: 'Aprofundar',
   ev_followup_sent: 'Seguimento enviado',
   ev_not_saved: 'Não guardado — ao recarregar podes perdê-lo',
+  ev_replaces_question: 'Isto substitui o que disseste antes?',
+  ev_replaces_confirm: 'Sim, substituir',
+  ev_replaces_keep: 'Manter ambas',
+  ev_replaced_done: 'Substituído — o teu agente já não diz a versão anterior',
+  ev_replaced_kept: 'Ambas mantidas',
   dash_evidence_log: 'Registo de evidência',
 
   pub_publish_agent: 'Publicar agente',
