@@ -10,9 +10,16 @@ import {
   type OnboardingStage,
 } from '@/lib/coverage-nodes';
 import TrainerShell from './TrainerShell';
-import ConversationPanel, { type TrainerMessage, type OnboardingAction } from './ConversationPanel';
+import ConversationPanel, {
+  type TrainerMessage,
+  type OnboardingAction,
+  type AnticipatedOffer,
+} from './ConversationPanel';
 import DashboardContent from './DashboardContent';
 import AgentTestOverlay from './AgentTestOverlay';
+import { type StoredAnticipated } from './AnticipatedQuestions';
+import { gapQuestion } from './anticipated-copy';
+import type { ProposedGap } from '@/lib/anticipated';
 import { useLanguage } from '@/context/LanguageContext';
 import { usePlatformT, LANG_NAME } from '@/context/platform-i18n';
 
@@ -30,6 +37,12 @@ const CANONICAL_FOLLOW_UP: Partial<Record<CoverageNodeKey, {
   career_narrative: { messageKey: 'g_after_goal_change', action: 'career_goal' },
   company_fit:      { messageKey: 'g_after_goal_change', action: 'career_goal' },
 };
+
+// Reminders: the trainer may re-raise a still-unanswered PRIORITY question, but it
+// is a nudge, not nagging — it waits for a few exchanges, only ever raises priority-1
+// questions, stops after two per session, and never repeats one the candidate declined.
+const REMINDER_AFTER_TURNS = 4;
+const MAX_REMINDERS_PER_SESSION = 2;
 
 export interface InitialTrainerData {
   candidateName: string;
@@ -56,6 +69,7 @@ export default function TrainerClient({
   const [streamingText, setStreamingText] = useState('');
   const [isStreaming,   setIsStreaming]   = useState(false);
   const [isExtracting,  setIsExtracting]  = useState(false);
+  const [isAssessing,   setIsAssessing]   = useState(false);
 
   // ── Evidence + coverage state ────────────────────────────────────────
   const [evidenceCards,  setEvidenceCards]  = useState<EvidenceItem[]>([]);
@@ -79,6 +93,22 @@ export default function TrainerClient({
   const [cvLoaded,   setCvLoaded]   = useState(false);
   const [careerGoal, setCareerGoal] = useState<string | null>(null);
   const seededRef = useRef(false);   // StrictMode double-invokes effects — seed once
+  // Stage messaging is decided BEFORE the state update (a setState updater runs on
+  // the next render, far too late to sequence follow-up fetches off).
+  const stageRef  = useRef<OnboardingStage | null>(null);
+
+  // ── Anticipated questions ────────────────────────────────────────────
+  // The list lives here, not in the panel: the panel shows it, the conversation
+  // answers it, and the trainer raises it unprompted. One owner, three consumers.
+  const [antLoading,  setAntLoading]  = useState(true);
+  const [antProposed, setAntProposed] = useState<ProposedGap[]>([]);
+  const [antStored,   setAntStored]   = useState<StoredAnticipated[]>([]);
+  const [answering,   setAnswering]   = useState<AnticipatedOffer | null>(null);
+  const answeringRef  = useRef<AnticipatedOffer | null>(null);   // read inside handleSend
+  const declinedRef   = useRef<Set<string>>(new Set());          // "not now", this session
+  const remindersRef  = useRef(0);
+  const turnsRef      = useRef(0);
+  const invitedRef    = useRef(false);   // the post-onboarding invitation fires once
 
   // What the trainer says at each onboarding stage, and which inline control it carries.
   const stagePrompt = useCallback((s: OnboardingStage, name: string): TrainerMessage | null => {
@@ -94,6 +124,146 @@ export default function TrainerClient({
         return null;   // 'trained' — no onboarding messaging at all
     }
   }, [t]);
+
+  // ── Anticipated questions: load, ask, answer ─────────────────────────
+  // Keep refs in step with state — handleSend and the reminder check run inside
+  // callbacks that would otherwise close over a stale value.
+  useEffect(() => { answeringRef.current = answering; }, [answering]);
+  const antProposedRef = useRef<ProposedGap[]>([]);
+  useEffect(() => { antProposedRef.current = antProposed; }, [antProposed]);
+
+  // Re-runs on language change: the pivot pass writes its questions in the UI
+  // language, so switching languages must re-detect rather than show stale English.
+  const loadAnticipated = useCallback(async (): Promise<ProposedGap[]> => {
+    try {
+      const [storedRes, detectRes] = await Promise.all([
+        fetch('/api/training/anticipated'),
+        fetch(`/api/training/anticipated/detect?language=${encodeURIComponent(LANG_NAME[lang])}`),
+      ]);
+      const s = storedRes.ok ? await storedRes.json() : { items: [] };
+      const d = detectRes.ok ? await detectRes.json() : { gaps: [] };
+      const proposed = (d.gaps ?? []) as ProposedGap[];
+      setAntStored((s.items ?? []) as StoredAnticipated[]);
+      setAntProposed(proposed);
+      antProposedRef.current = proposed;
+      return proposed;
+    } catch {
+      return [];   // non-fatal — the trainer works without the list
+    } finally {
+      setAntLoading(false);
+    }
+  }, [lang]);
+
+  useEffect(() => { void loadAnticipated(); }, [loadAnticipated]);
+
+  const offerFromGap = useCallback((gap: ProposedGap): AnticipatedOffer => ({
+    topic:        gap.topic,          // canonical English — this is what gets persisted
+    trigger_hint: gap.trigger_hint,
+    question:     gapQuestion(gap, t),
+  }), [t]);
+
+  // Point the composer at one question. `speak` is false when the question is
+  // already on screen (the candidate accepted an offer the trainer had made).
+  const startAnswering = useCallback((offer: AnticipatedOffer, speak = true) => {
+    answeringRef.current = offer;
+    setAnswering(offer);
+    if (speak) {
+      setMessages(prev => [
+        ...prev,
+        { id: crypto.randomUUID(), role: 'assistant', content: t.ant_chat_ask(offer.question) },
+      ]);
+    }
+  }, [t]);
+
+  // Trainer-initiated: the invitation once onboarding completes, and later reminders.
+  // Only priority-1 questions, never one already declined this session.
+  const offerAnticipated = useCallback((gaps: ProposedGap[], kind: 'invite' | 'reminder'): boolean => {
+    const gap = gaps.find(g => g.priority === 1 && !declinedRef.current.has(g.topic));
+    if (!gap) return false;
+    const offer = offerFromGap(gap);
+    setMessages(prev => [
+      ...prev,
+      {
+        id:      crypto.randomUUID(),
+        role:    'assistant',
+        content: kind === 'invite' ? t.ant_chat_invite(offer.question) : t.ant_chat_reminder(offer.question),
+        anticipated: offer,
+      },
+    ]);
+    return true;
+  }, [offerFromGap, t]);
+
+  // Panel row → ask it in the conversation immediately (the click IS the consent).
+  const handleAnswerAnticipated = useCallback((gap: ProposedGap) => {
+    startAnswering(offerFromGap(gap));
+  }, [offerFromGap, startAnswering]);
+
+  const handleAcceptAnticipated = useCallback((messageId: string, offer: AnticipatedOffer) => {
+    setMessages(prev => prev.map(m => (m.id === messageId ? { ...m, anticipatedResolved: true } : m)));
+    startAnswering(offer, false);
+  }, [startAnswering]);
+
+  // "Not now" — drops it for this session only. It stays in the panel, still pending.
+  const handleDeclineAnticipated = useCallback((messageId: string) => {
+    setMessages(prev => prev.map(m => {
+      if (m.id !== messageId) return m;
+      if (m.anticipated) declinedRef.current.add(m.anticipated.topic);
+      return { ...m, anticipatedResolved: true };
+    }));
+  }, []);
+
+  const handleCancelAnswering = useCallback(() => {
+    if (answeringRef.current) declinedRef.current.add(answeringRef.current.topic);
+    answeringRef.current = null;
+    setAnswering(null);
+  }, []);
+
+  const handleRemoveAnticipated = useCallback(async (item: StoredAnticipated) => {
+    await fetch(`/api/training/anticipated?id=${item.id}`, { method: 'DELETE' });
+    await loadAnticipated();
+  }, [loadAnticipated]);
+
+  // The candidate's message was an ANSWER to a specific question, so it goes to the
+  // assessor instead of the trainer chat: solid/verified persists verbatim, vague
+  // comes back as a probe and the composer stays pointed at the same question.
+  const submitAnticipatedAnswer = useCallback(async (offer: AnticipatedOffer, answer: string) => {
+    setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'user', content: answer }]);
+    setIsAssessing(true);
+    try {
+      const res = await fetch('/api/training/anticipated/answer', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ topic: offer.topic, trigger_hint: offer.trigger_hint, answer }),
+      });
+      const data = await res.json() as { stored?: boolean; followUpQuestion?: string };
+
+      if (data.stored) {
+        answeringRef.current = null;
+        setAnswering(null);
+        setMessages(prev => [
+          ...prev,
+          { id: crypto.randomUUID(), role: 'assistant', content: t.ant_chat_stored },
+        ]);
+        await loadAnticipated();
+      } else {
+        setMessages(prev => [
+          ...prev,
+          {
+            id:      crypto.randomUUID(),
+            role:    'assistant',
+            content: t.ant_needs_more(data.followUpQuestion ?? t.ant_default_probe),
+          },
+        ]);
+      }
+    } catch {
+      setMessages(prev => [
+        ...prev,
+        { id: crypto.randomUUID(), role: 'assistant', content: t.ant_error },
+      ]);
+    } finally {
+      setIsAssessing(false);
+    }
+  }, [loadAnticipated, t]);
 
   // Single source of truth for onboarding + coverage. Called on mount and after every
   // inline write. Appends the next stage's prompt when the stage actually advances.
@@ -115,37 +285,47 @@ export default function TrainerClient({
       setPublishLevel(data.publishLevel);
       setCvLoaded(data.hasCv);
 
-      setStage(prev => {
-        if (prev === data.stage) return prev;          // no advance → no new messaging
-        const next = stagePrompt(data.stage, candidateName);
+      const prev = stageRef.current;
+      if (prev === data.stage) return;                 // no advance → no new messaging
 
-        // Crossing into 'trained' for the first time this session: foundations are
-        // done, so invite (don't require) a supporting document. Only on the
-        // transition — a candidate who loads in already trained never sees this.
-        const crossedIntoTrained = prev != null && prev !== 'trained' && data.stage === 'trained';
-        const docInvite = crossedIntoTrained
-          ? [{
-              id: crypto.randomUUID(),
-              role: 'assistant' as const,
-              content: t.g_doc_invite,
-              action: 'document_upload' as OnboardingAction,
-            }]
-          : [];
+      const next = stagePrompt(data.stage, candidateName);
 
-        setMessages(m => [
-          ...m,
-          ...(opts?.acknowledge
-            ? [{ id: crypto.randomUUID(), role: 'assistant' as const, content: opts.acknowledge }]
-            : []),
-          ...(next ? [next] : []),
-          ...docInvite,
-        ]);
-        return data.stage;
-      });
+      // Crossing into 'trained' for the first time this session: foundations are
+      // done, so invite (don't require) a supporting document. Only on the
+      // transition — a candidate who loads in already trained never sees this.
+      const crossedIntoTrained = prev != null && prev !== 'trained' && data.stage === 'trained';
+      const docInvite = crossedIntoTrained
+        ? [{
+            id: crypto.randomUUID(),
+            role: 'assistant' as const,
+            content: t.g_doc_invite,
+            action: 'document_upload' as OnboardingAction,
+          }]
+        : [];
+
+      stageRef.current = data.stage;
+      setStage(data.stage);
+      setMessages(m => [
+        ...m,
+        ...(opts?.acknowledge
+          ? [{ id: crypto.randomUUID(), role: 'assistant' as const, content: opts.acknowledge }]
+          : []),
+        ...(next ? [next] : []),
+        ...docInvite,
+      ]);
+
+      // …and then the first anticipated question. Not a gate — the candidate can say
+      // "not now" — but this is where it belongs: the CV is in, so the gaps in it are
+      // known, and an unanswered "why did you leave?" is the next thing that breaks
+      // the agent in front of a recruiter.
+      if (crossedIntoTrained && !invitedRef.current) {
+        const gaps = await loadAnticipated();
+        invitedRef.current = offerAnticipated(gaps, 'invite');
+      }
     } catch {
       /* non-fatal — the trainer still works, it just won't guide */
     }
-  }, [candidateName, stagePrompt, t]);
+  }, [candidateName, stagePrompt, t, loadAnticipated, offerAnticipated]);
 
   // Mount: seed the guide only for a candidate who still needs foundations.
   // A trained candidate (e.g. Pablo) gets exactly the experience they had before.
@@ -163,6 +343,7 @@ export default function TrainerClient({
           publishLevel: PublishLevel;
           hasCv: boolean;
         };
+        stageRef.current = data.stage;
         setStage(data.stage);
         setCvLoaded(data.hasCv);
         setNodeStates(data.nodeStates);
@@ -228,6 +409,14 @@ export default function TrainerClient({
   // ── Send a candidate message ─────────────────────────────────────────
   const handleSend = useCallback(async (userText: string) => {
     if (isStreaming) return;
+
+    // Answering a specific anticipated question? That message is not conversation —
+    // it is the answer of record, and goes straight to the assessor.
+    const target = answeringRef.current;
+    if (target) {
+      await submitAnticipatedAnswer(target, userText);
+      return;
+    }
 
     const userMsg: TrainerMessage = {
       id:      crypto.randomUUID(),
@@ -380,7 +569,23 @@ export default function TrainerClient({
     } finally {
       setIsExtracting(false);
     }
-  }, [isStreaming, messages, nodeStates, stage, syncOnboarding, t, lang]);
+
+    // ── Reminder ────────────────────────────────────────────────────
+    // A priority question left unanswered is the gap most likely to embarrass the
+    // agent, so the trainer re-raises it — but only between topics (never mid-answer),
+    // only after a few exchanges, and at most twice a session.
+    turnsRef.current += 1;
+    if (
+      !answeringRef.current &&
+      stageRef.current === 'trained' &&
+      turnsRef.current >= REMINDER_AFTER_TURNS &&
+      remindersRef.current < MAX_REMINDERS_PER_SESSION &&
+      offerAnticipated(antProposedRef.current, 'reminder')
+    ) {
+      remindersRef.current += 1;
+      turnsRef.current = 0;
+    }
+  }, [isStreaming, messages, nodeStates, stage, syncOnboarding, t, lang, submitAnticipatedAnswer, offerAnticipated]);
 
   // ── Follow-up: inject the probe question as a trainer message ────────
   // No API call — the question is added as an assistant turn and the
@@ -515,6 +720,7 @@ export default function TrainerClient({
           streamingText={streamingText}
           isStreaming={isStreaming}
           isExtracting={isExtracting}
+          isAssessing={isAssessing}
           onSend={handleSend}
           cvLoaded={cvLoaded}
           careerGoal={careerGoal}
@@ -522,6 +728,10 @@ export default function TrainerClient({
           onCareerGoalSaved={handleCareerGoalSaved}
           onDocumentUploaded={handleDocumentUploaded}
           onRoleUpdated={handleRoleUpdated}
+          answeringQuestion={answering?.question ?? null}
+          onCancelAnswering={handleCancelAnswering}
+          onAcceptAnticipated={handleAcceptAnticipated}
+          onDeclineAnticipated={handleDeclineAnticipated}
         />
       }
       dashboardSlot={
@@ -543,6 +753,12 @@ export default function TrainerClient({
           publishedAt={publishedAt}
           isPublishing={isPublishing}
           onPublish={handlePublish}
+          anticipatedLoading={antLoading}
+          anticipatedProposed={antProposed}
+          anticipatedStored={antStored}
+          answeringTopic={answering?.topic ?? null}
+          onAnswerAnticipated={handleAnswerAnticipated}
+          onRemoveAnticipated={handleRemoveAnticipated}
         />
       }
     />

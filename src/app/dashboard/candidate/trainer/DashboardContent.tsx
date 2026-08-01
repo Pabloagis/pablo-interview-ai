@@ -4,8 +4,9 @@ import AgentCore from './AgentCore';
 import CoverageMap from './CoverageMap';
 import EvidenceCard, { EvidenceCardStyles } from './EvidenceCard';
 import PublishPanel from './PublishPanel';
-import AnticipatedQuestions from './AnticipatedQuestions';
+import AnticipatedQuestions, { type StoredAnticipated } from './AnticipatedQuestions';
 import { usePlatformT } from '@/context/platform-i18n';
+import type { ProposedGap } from '@/lib/anticipated';
 import {
   COVERAGE_NODES,
   type CoverageNodeKey,
@@ -32,6 +33,14 @@ interface Props {
   publishedAt?: string | null;
   isPublishing?: boolean;
   onPublish?: () => void;
+  // Anticipated questions — state lives in TrainerClient, because answering them
+  // happens in the conversation and the trainer also raises them unprompted.
+  anticipatedLoading?: boolean;
+  anticipatedProposed?: ProposedGap[];
+  anticipatedStored?: StoredAnticipated[];
+  answeringTopic?: string | null;
+  onAnswerAnticipated?: (gap: ProposedGap) => void;
+  onRemoveAnticipated?: (item: StoredAnticipated) => void;
 }
 
 export default function DashboardContent({
@@ -46,6 +55,12 @@ export default function DashboardContent({
   publishedAt = null,
   isPublishing = false,
   onPublish,
+  anticipatedLoading = false,
+  anticipatedProposed = [],
+  anticipatedStored = [],
+  answeringTopic = null,
+  onAnswerAnticipated,
+  onRemoveAnticipated,
 }: Props) {
   const t = usePlatformT();
   const nodeStates = Object.fromEntries(
@@ -79,8 +94,16 @@ export default function DashboardContent({
         <CoverageMap nodes={nodes} onTrainNode={onTrainNode} />
       </div>
 
-      {/* Anticipated questions — AI proposes the gap, the user authors the answer */}
-      <AnticipatedQuestions />
+      {/* Anticipated questions — AI proposes the gap, the user authors the answer
+          (in the chat; this list is the way in and the record of what's done) */}
+      <AnticipatedQuestions
+        loading={anticipatedLoading}
+        proposed={anticipatedProposed}
+        stored={anticipatedStored}
+        answeringTopic={answeringTopic}
+        onAnswer={onAnswerAnticipated ?? (() => {})}
+        onRemove={onRemoveAnticipated ?? (() => {})}
+      />
 
       {/* Evidence log — appears as extraction runs */}
       {evidenceCards.length > 0 && (

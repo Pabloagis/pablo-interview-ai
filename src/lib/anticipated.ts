@@ -15,11 +15,31 @@ export interface WorkHistoryEntry {
   description?: string;
 }
 
+export type GapKind = 'short_tenure' | 'employment_gap' | 'departure_reason' | 'pivot';
+
+// Priority drives two things: the order of the list, and which gaps are urgent
+// enough for the trainer to raise unprompted in chat. 1 = the ones a recruiter
+// reaches first (the most recent departure, a long unexplained gap).
+export type GapPriority = 1 | 2 | 3;
+
+// Structured facts behind a structural gap, so the CLIENT can render the copy in
+// the user's language. `rationale`/`topic` stay English: `topic` is persisted and
+// read back into the agent's system prompt, which is English-canonical like
+// coverage-nodes.ts. Absent for pivot gaps — those come from Haiku as prose.
+export interface GapParams {
+  company?:  string;
+  company2?: string;
+  role?:     string;
+  months?:   number;
+}
+
 export interface ProposedGap {
   topic: string;         // short label, e.g. "Axel Hotel Barcelona — short tenure"
   rationale: string;     // why a recruiter will ask — NEVER an answer
   trigger_hint: string;  // when it applies
-  kind: 'short_tenure' | 'employment_gap' | 'departure_reason' | 'pivot';
+  kind: GapKind;
+  priority: GapPriority;
+  params?: GapParams;
 }
 
 // ── Lenient CV date parsing → absolute month index (year*12 + month) ───────────
@@ -52,6 +72,7 @@ export function parseCvDate(raw: string | null | undefined): number | null {
 
 const SHORT_TENURE_MONTHS = 6;
 const GAP_MONTHS = 3;
+const LONG_GAP_MONTHS = 6;   // a gap this size is the first thing a recruiter opens with
 
 // Deterministic structural gaps from CV dates. Fully mechanical — no invention.
 export function computeStructuralGaps(workHistory: WorkHistoryEntry[]): ProposedGap[] {
@@ -62,24 +83,40 @@ export function computeStructuralGaps(workHistory: WorkHistoryEntry[]): Proposed
     .map(j => ({ j, start: parseCvDate(j.start_date), end: parseCvDate(j.end_date) }))
     .sort((a, b) => (a.start ?? Infinity) - (b.start ?? Infinity));
 
+  // The most recently ENDED role: "why did you leave your last job?" is the
+  // question that actually gets asked first, so it is the only critical departure.
+  const endedStarts = jobs.filter(x => x.end !== null).map(x => x.start ?? -Infinity);
+  const latestEndedStart = endedStarts.length ? Math.max(...endedStarts) : null;
+
   for (const { j, start, end } of jobs) {
+    const isLatestDeparture = end !== null && latestEndedStart !== null
+      && (start ?? -Infinity) === latestEndedStart;
+
     // Short tenure — needs both dates and a real (non-ongoing) end.
-    if (start !== null && end !== null && end - start < SHORT_TENURE_MONTHS && end - start >= 0) {
-      const months = end - start;
+    const isShort = start !== null && end !== null
+      && end - start < SHORT_TENURE_MONTHS && end - start >= 0;
+
+    if (isShort) {
+      const months = end! - start!;
+      // One question, not two: "why was it short?" and "why did you leave?" are the
+      // same conversation. Asking both was the duplication the panel was showing.
       gaps.push({
         kind: 'short_tenure',
+        priority: isLatestDeparture ? 1 : 2,
         topic: `${j.company} — short tenure`,
-        rationale: `Your ${j.role} role at ${j.company} lasted about ${months} month${months === 1 ? '' : 's'}. A recruiter will ask why it was short — a gap like this reads as a red flag unless you own the reason.`,
-        trigger_hint: `asked why the ${j.company} role was short`,
+        rationale: `Your ${j.role} role at ${j.company} lasted about ${months} month${months === 1 ? '' : 's'}. A recruiter will ask why it was short and why it ended — a gap like this reads as a red flag unless you own the reason.`,
+        trigger_hint: `asked why the ${j.company} role was short or why it ended`,
+        params: { company: j.company, role: j.role, months },
       });
-    }
-    // Departure reason — every past (non-ongoing) role invites "why did you leave?"
-    if (end !== null) {
+    } else if (end !== null) {
+      // Departure reason — every past (non-ongoing) role invites "why did you leave?"
       gaps.push({
         kind: 'departure_reason',
+        priority: isLatestDeparture ? 1 : 3,
         topic: `${j.company} — reason for leaving`,
         rationale: `Recruiters routinely ask why you left ${j.company}. If you don't have a grounded answer, the agent will either decline or (worse) improvise one.`,
         trigger_hint: `asked why you left ${j.company}`,
+        params: { company: j.company, role: j.role },
       });
     }
   }
@@ -92,9 +129,11 @@ export function computeStructuralGaps(workHistory: WorkHistoryEntry[]): Proposed
       const months = nextStart - prevEnd;
       gaps.push({
         kind: 'employment_gap',
+        priority: months >= LONG_GAP_MONTHS ? 1 : 2,
         topic: `Gap between ${jobs[i].j.company} and ${jobs[i + 1].j.company}`,
         rationale: `There's roughly a ${months}-month gap between leaving ${jobs[i].j.company} and starting ${jobs[i + 1].j.company}. Recruiters probe gaps; a clear account of what you were doing defuses it.`,
         trigger_hint: `asked about the gap between ${jobs[i].j.company} and ${jobs[i + 1].j.company}`,
+        params: { company: jobs[i].j.company, company2: jobs[i + 1].j.company, months },
       });
     }
   }
@@ -116,6 +155,17 @@ You do not know why they made any move. Never write the candidate's answer. If y
 Given the work history, identify at most 3 genuine pivots. Return ONLY valid JSON, no markdown:
 {"gaps":[{"topic":"<short label>","rationale":"<why a recruiter asks — no answer>","trigger_hint":"<when it applies>"}]}
 Return {"gaps":[]} if there are no clear pivots.`;
+
+// Structural gaps are rendered client-side from `params`, so they follow the UI
+// language for free. Pivot gaps are model prose — the language has to be asked for.
+// `trigger_hint` stays English: it is persisted and read back into the agent's
+// English-canonical system prompt.
+export function pivotPrompt(language?: string): string {
+  if (!language) return PIVOT_PROMPT;
+  return `${PIVOT_PROMPT}
+
+Write "topic" and "rationale" in ${language}. Keep "trigger_hint" in English.`;
+}
 
 // Answer quality assessor: judges the user's answer, never rewrites or invents it.
 export const ASSESS_PROMPT = `You assess whether a candidate's answer to an anticipated interview question is SUBSTANTIATED enough to put in front of a recruiter. You judge the answer as written — you do NOT rewrite, improve, or add to it.
@@ -171,4 +221,24 @@ export function dropAlreadyAnswered(proposed: ProposedGap[], existingTopics: str
     const pk = topicKey(p.topic);
     return !existing.some(e => sameTopic(e, pk));
   });
+}
+
+// Same (company, intent) collision, but WITHIN one detection run — the structural
+// pass and the Haiku pivot pass can land on the same question in different words.
+// Keeps the more urgent of the two.
+export function dedupeGaps(proposed: ProposedGap[]): ProposedGap[] {
+  const kept: ProposedGap[] = [];
+  for (const gap of proposed) {
+    const gk = topicKey(gap.topic);
+    const clashIndex = kept.findIndex(k => sameTopic(topicKey(k.topic), gk));
+    if (clashIndex === -1) { kept.push(gap); continue; }
+    if (gap.priority < kept[clashIndex].priority) kept[clashIndex] = gap;
+  }
+  return kept;
+}
+
+// Most urgent first; stable within a priority so the list doesn't reshuffle
+// between polls of /detect.
+export function sortGaps(proposed: ProposedGap[]): ProposedGap[] {
+  return [...proposed].sort((a, b) => a.priority - b.priority);
 }

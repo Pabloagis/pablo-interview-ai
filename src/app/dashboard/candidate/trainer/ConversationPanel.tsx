@@ -30,11 +30,23 @@ export type OnboardingAction =
   | 'document_upload'
   | 'role_update';
 
+// An anticipated question the trainer raised on its own initiative (the invitation
+// when onboarding completes, or a later reminder about a still-unanswered priority
+// question). It is an OFFER: the candidate accepts before the composer is pointed
+// at it, so a reminder can never swallow a message meant for the conversation.
+export interface AnticipatedOffer {
+  topic:        string;   // canonical English topic — what gets persisted
+  trigger_hint: string;
+  question:     string;   // translated question, already spoken in the message
+}
+
 export interface TrainerMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   action?: OnboardingAction;
+  anticipated?: AnticipatedOffer;
+  anticipatedResolved?: boolean;   // accepted or declined — hides the buttons
 }
 
 interface Props {
@@ -42,6 +54,7 @@ interface Props {
   streamingText: string;   // partial assistant text while streaming
   isStreaming: boolean;
   isExtracting: boolean;
+  isAssessing?: boolean;   // checking an anticipated answer, not extracting evidence
   onSend: (text: string) => void;
   // Inline onboarding controls (omitted once the candidate is past onboarding)
   cvLoaded?: boolean;
@@ -53,6 +66,12 @@ interface Props {
   onDocumentUploaded?: (message?: string) => void;
   // Work history added without a CV re-upload — see the 'role_update' action.
   onRoleUpdated?: (message?: string) => void;
+  // Anticipated questions. `answeringQuestion` is set while the next message the
+  // candidate sends is an answer to that question rather than ordinary conversation.
+  answeringQuestion?: string | null;
+  onCancelAnswering?: () => void;
+  onAcceptAnticipated?: (messageId: string, offer: AnticipatedOffer) => void;
+  onDeclineAnticipated?: (messageId: string) => void;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -62,6 +81,7 @@ export default function ConversationPanel({
   streamingText,
   isStreaming,
   isExtracting,
+  isAssessing = false,
   onSend,
   cvLoaded = false,
   careerGoal = null,
@@ -69,6 +89,10 @@ export default function ConversationPanel({
   onCareerGoalSaved,
   onDocumentUploaded,
   onRoleUpdated,
+  answeringQuestion = null,
+  onCancelAnswering,
+  onAcceptAnticipated,
+  onDeclineAnticipated,
 }: Props) {
   const t = usePlatformT();
   const [draft, setDraft] = useState('');
@@ -146,6 +170,25 @@ export default function ConversationPanel({
               </div>
             )}
 
+            {/* Trainer-initiated anticipated question — accept before answering */}
+            {msg.anticipated && !msg.anticipatedResolved && (
+              <div className="self-start flex items-center gap-2">
+                <button
+                  onClick={() => onAcceptAnticipated?.(msg.id, msg.anticipated!)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+                  style={{ background: '#c0884022', color: '#e0a860', border: '1px solid #c0884055' }}
+                >
+                  {t.ant_answer_now}
+                </button>
+                <button
+                  onClick={() => onDeclineAnticipated?.(msg.id)}
+                  className="px-2 py-1.5 rounded-lg text-xs text-white/35 hover:text-white/70 transition-colors"
+                >
+                  {t.ant_answering_cancel}
+                </button>
+              </div>
+            )}
+
             {msg.action === 'document_upload' && (
               <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
                 <DocumentUpload compact onSaved={msg => onDocumentUploaded?.(msg)} />
@@ -171,11 +214,11 @@ export default function ConversationPanel({
           </div>
         )}
 
-        {/* Extraction indicator */}
-        {isExtracting && (
+        {/* Extraction / assessment indicator */}
+        {(isExtracting || isAssessing) && (
           <div className="self-center text-[10px] text-[rgba(255,255,255,0.25)] flex items-center gap-1.5 mt-1">
             <div className="w-2 h-2 rounded-full border border-t-[rgba(255,255,255,0.3)] border-[rgba(255,255,255,0.08)] animate-spin" />
-            {t.conv_extracting}
+            {isAssessing ? t.ant_checking : t.conv_extracting}
           </div>
         )}
 
@@ -207,6 +250,27 @@ export default function ConversationPanel({
               onSaved={msg => { setDocPanelOpen(false); onDocumentUploaded?.(msg); }}
             />
           </div>
+        </div>
+      )}
+
+      {/* ── Answering an anticipated question ───────────────────────────── */}
+      {/* Visible for exactly as long as the composer is pointed at that question,
+          and always escapable — otherwise a stray message would be filed as an
+          answer to something the candidate had stopped thinking about. */}
+      {answeringQuestion && (
+        <div
+          className="shrink-0 mx-4 mb-0 mt-3 rounded-xl border px-3 py-2 flex items-center gap-2"
+          style={{ borderColor: '#c0884055', background: '#c0884012' }}
+        >
+          <span className="text-[11px] leading-snug flex-1 min-w-0" style={{ color: '#e0a860' }}>
+            {t.ant_answering(answeringQuestion)}
+          </span>
+          <button
+            onClick={() => onCancelAnswering?.()}
+            className="shrink-0 text-[10px] text-white/35 hover:text-white/80 transition-colors"
+          >
+            {t.ant_answering_cancel}
+          </button>
         </div>
       )}
 

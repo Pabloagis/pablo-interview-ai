@@ -154,18 +154,38 @@ export interface PlatformStrings {
   pub_train: string;
 
   // ── Anticipated questions ──────────────────────────────────────
+  // The panel is a LIST — one row per question, answered and pending together.
+  // Answering happens in the trainer chat, so the copy below is split between
+  // row labels and the lines the trainer speaks.
   ant_section: string;
   ant_scanning: string;
   ant_intro: string;
+  ant_progress: (answered: number, total: number) => string;
   ant_needs_answer: string;
-  ant_placeholder: string;
+  ant_priority: string;
+  ant_answer_cta: string;
+  ant_answer_now: string;
+  ant_checking: string;
+  ant_all_answered: string;
+  ant_remove: string;
+  // Question text, rendered from structured gap params so it follows the UI language.
+  ant_q_short_tenure: (company: string) => string;
+  ant_q_departure: (company: string) => string;
+  ant_q_gap: (from: string, to: string) => string;
+  // Why a recruiter asks it — shown under a pending row.
+  ant_why_short_tenure: (company: string, role: string, months: number) => string;
+  ant_why_departure: (company: string) => string;
+  ant_why_gap: (from: string, to: string, months: number) => string;
+  // Lines the trainer speaks in the conversation.
+  ant_chat_ask: (question: string) => string;
+  ant_chat_invite: (question: string) => string;
+  ant_chat_reminder: (question: string) => string;
+  ant_chat_stored: string;
+  ant_answering: (question: string) => string;
+  ant_answering_cancel: string;
   ant_needs_more: (probe: string) => string;
   ant_default_probe: string;
   ant_error: string;
-  ant_checking: string;
-  ant_write_answer: string;
-  ant_your_answers: string;
-  ant_remove: string;
 
   // ── Agent test overlay ─────────────────────────────────────────
   test_results_title: string;
@@ -435,16 +455,33 @@ const EN: PlatformStrings = {
 
   ant_section: 'Anticipated questions',
   ant_scanning: 'Scanning your background for questions recruiters will ask…',
-  ant_intro: 'A recruiter will ask these. Answer each one in your own words — your agent speaks only what you write here, never a version it made up.',
-  ant_needs_answer: 'Needs your answer',
-  ant_placeholder: 'Write your answer — the real reason, in your own words.',
+  ant_intro: 'Recruiters will ask these. Pick one and answer it in the chat — your agent speaks only what you say there, never a version it made up.',
+  ant_progress: (answered, total) => `${answered} of ${total} answered`,
+  ant_needs_answer: 'Pending',
+  ant_priority: 'Priority',
+  ant_answer_cta: 'Answer in the chat',
+  ant_answer_now: 'Answer now',
+  ant_checking: 'Checking your answer…',
+  ant_all_answered: 'Every question we found has a grounded answer.',
+  ant_remove: 'Remove',
+  ant_q_short_tenure: (company) => `Why was your time at ${company} so short, and why did it end?`,
+  ant_q_departure: (company) => `Why did you leave ${company}?`,
+  ant_q_gap: (from, to) => `What were you doing between ${from} and ${to}?`,
+  ant_why_short_tenure: (company, role, months) =>
+    `Your ${role} role at ${company} lasted about ${months} month${months === 1 ? '' : 's'}. Unanswered, a short stay reads as a red flag.`,
+  ant_why_departure: (company) =>
+    `Without a grounded reason for leaving ${company}, your agent has to decline the question.`,
+  ant_why_gap: (from, to, months) =>
+    `About ${months} months between ${from} and ${to}. Recruiters probe gaps; a clear account defuses it.`,
+  ant_chat_ask: (question) => `A recruiter will ask this: ${question} Answer in your own words — I'll store exactly what you say, nothing more.`,
+  ant_chat_invite: (question) => `Your foundations are in place. The next thing that will trip your agent up is a question you haven't answered: ${question}`,
+  ant_chat_reminder: (question) => `Still pending, and it's the one recruiters open with: ${question}`,
+  ant_chat_stored: 'Stored. Your agent will answer that question with your words and nothing else.',
+  ant_answering: (question) => `Answering: ${question}`,
+  ant_answering_cancel: 'Not now',
   ant_needs_more: (probe) => `Needs more to be usable: ${probe}`,
   ant_default_probe: 'Add a specific detail — a date, a name, or a concrete outcome you can defend.',
   ant_error: 'Something went wrong — try again.',
-  ant_checking: 'Checking…',
-  ant_write_answer: 'Write your answer',
-  ant_your_answers: 'Your answers',
-  ant_remove: 'Remove',
 
   test_results_title: 'What a recruiter just experienced',
   test_testing_title: 'Testing your agent',
@@ -702,16 +739,33 @@ const ES: PlatformStrings = {
 
   ant_section: 'Preguntas previstas',
   ant_scanning: 'Analizando tu perfil en busca de preguntas que harán los reclutadores…',
-  ant_intro: 'Un reclutador preguntará esto. Responde cada una con tus propias palabras — tu agente solo dice lo que escribas aquí, nunca una versión inventada.',
-  ant_needs_answer: 'Necesita tu respuesta',
-  ant_placeholder: 'Escribe tu respuesta — la razón real, con tus propias palabras.',
+  ant_intro: 'Los reclutadores preguntarán esto. Elige una y respóndela en el chat — tu agente solo dice lo que cuentes ahí, nunca una versión inventada.',
+  ant_progress: (answered, total) => `${answered} de ${total} respondidas`,
+  ant_needs_answer: 'Pendiente',
+  ant_priority: 'Prioritaria',
+  ant_answer_cta: 'Responder en el chat',
+  ant_answer_now: 'Responder ahora',
+  ant_checking: 'Comprobando tu respuesta…',
+  ant_all_answered: 'Todas las preguntas que hemos detectado tienen una respuesta sólida.',
+  ant_remove: 'Eliminar',
+  ant_q_short_tenure: (company) => `¿Por qué duró tan poco tu etapa en ${company} y por qué terminó?`,
+  ant_q_departure: (company) => `¿Por qué dejaste ${company}?`,
+  ant_q_gap: (from, to) => `¿Qué hiciste entre ${from} y ${to}?`,
+  ant_why_short_tenure: (company, role, months) =>
+    `Tu puesto de ${role} en ${company} duró unos ${months} mes${months === 1 ? '' : 'es'}. Sin respuesta, una etapa corta se lee como señal de alarma.`,
+  ant_why_departure: (company) =>
+    `Sin un motivo fundamentado para dejar ${company}, tu agente tiene que declinar la pregunta.`,
+  ant_why_gap: (from, to, months) =>
+    `Unos ${months} meses entre ${from} y ${to}. Los reclutadores hurgan en los huecos; una explicación clara lo desactiva.`,
+  ant_chat_ask: (question) => `Un reclutador te preguntará esto: ${question} Respóndeme con tus palabras — guardaré exactamente lo que digas, nada más.`,
+  ant_chat_invite: (question) => `Ya tienes la base montada. Lo siguiente que dejará a tu agente en evidencia es una pregunta sin responder: ${question}`,
+  ant_chat_reminder: (question) => `Sigue pendiente, y es de las primeras que hacen los reclutadores: ${question}`,
+  ant_chat_stored: 'Guardado. Tu agente responderá a esa pregunta con tus palabras y nada más.',
+  ant_answering: (question) => `Respondiendo: ${question}`,
+  ant_answering_cancel: 'Ahora no',
   ant_needs_more: (probe) => `Necesita más para ser útil: ${probe}`,
   ant_default_probe: 'Añade un detalle concreto — una fecha, un nombre o un resultado que puedas defender.',
   ant_error: 'Algo salió mal — inténtalo de nuevo.',
-  ant_checking: 'Comprobando…',
-  ant_write_answer: 'Escribe tu respuesta',
-  ant_your_answers: 'Tus respuestas',
-  ant_remove: 'Eliminar',
 
   test_results_title: 'Lo que acaba de vivir un reclutador',
   test_testing_title: 'Probando tu agente',
@@ -969,16 +1023,33 @@ const IT: PlatformStrings = {
 
   ant_section: 'Domande previste',
   ant_scanning: 'Analizzo il tuo profilo per le domande che faranno i recruiter…',
-  ant_intro: 'Un recruiter chiederà questo. Rispondi a ciascuna con parole tue — il tuo agente dice solo ciò che scrivi qui, mai una versione inventata.',
-  ant_needs_answer: 'Serve la tua risposta',
-  ant_placeholder: 'Scrivi la tua risposta — la ragione vera, con parole tue.',
+  ant_intro: 'I recruiter chiederanno questo. Scegline una e rispondi nella chat — il tuo agente dice solo ciò che racconti lì, mai una versione inventata.',
+  ant_progress: (answered, total) => `${answered} di ${total} risposte`,
+  ant_needs_answer: 'In sospeso',
+  ant_priority: 'Prioritaria',
+  ant_answer_cta: 'Rispondi nella chat',
+  ant_answer_now: 'Rispondi ora',
+  ant_checking: 'Verifico la tua risposta…',
+  ant_all_answered: 'Ogni domanda che abbiamo trovato ha una risposta solida.',
+  ant_remove: 'Rimuovi',
+  ant_q_short_tenure: (company) => `Perché la tua esperienza in ${company} è durata così poco e perché è finita?`,
+  ant_q_departure: (company) => `Perché hai lasciato ${company}?`,
+  ant_q_gap: (from, to) => `Cosa hai fatto tra ${from} e ${to}?`,
+  ant_why_short_tenure: (company, role, months) =>
+    `Il tuo ruolo di ${role} in ${company} è durato circa ${months} mes${months === 1 ? 'e' : 'i'}. Senza risposta, un passaggio breve sembra un campanello d'allarme.`,
+  ant_why_departure: (company) =>
+    `Senza un motivo fondato per aver lasciato ${company}, il tuo agente deve rifiutare la domanda.`,
+  ant_why_gap: (from, to, months) =>
+    `Circa ${months} mesi tra ${from} e ${to}. I recruiter indagano sui buchi; un racconto chiaro li disinnesca.`,
+  ant_chat_ask: (question) => `Un recruiter ti chiederà questo: ${question} Rispondi con parole tue — salverò esattamente ciò che dici, nulla di più.`,
+  ant_chat_invite: (question) => `Le fondamenta ci sono. La prossima cosa che metterà in difficoltà il tuo agente è una domanda senza risposta: ${question}`,
+  ant_chat_reminder: (question) => `È ancora in sospeso, ed è tra le prime che fanno i recruiter: ${question}`,
+  ant_chat_stored: 'Salvato. Il tuo agente risponderà a quella domanda con le tue parole e nient\'altro.',
+  ant_answering: (question) => `Stai rispondendo a: ${question}`,
+  ant_answering_cancel: 'Non ora',
   ant_needs_more: (probe) => `Serve di più per essere utile: ${probe}`,
   ant_default_probe: 'Aggiungi un dettaglio preciso — una data, un nome o un risultato concreto che puoi difendere.',
   ant_error: 'Qualcosa è andato storto — riprova.',
-  ant_checking: 'Verifica…',
-  ant_write_answer: 'Scrivi la tua risposta',
-  ant_your_answers: 'Le tue risposte',
-  ant_remove: 'Rimuovi',
 
   test_results_title: 'Cosa ha appena vissuto un recruiter',
   test_testing_title: 'Prova del tuo agente',
@@ -1236,16 +1307,33 @@ const PT: PlatformStrings = {
 
   ant_section: 'Perguntas previstas',
   ant_scanning: 'A analisar o teu perfil à procura de perguntas que os recrutadores farão…',
-  ant_intro: 'Um recrutador vai perguntar isto. Responde a cada uma por palavras tuas — o teu agente só diz o que escreveres aqui, nunca uma versão inventada.',
-  ant_needs_answer: 'Precisa da tua resposta',
-  ant_placeholder: 'Escreve a tua resposta — a razão real, por palavras tuas.',
+  ant_intro: 'Os recrutadores vão perguntar isto. Escolhe uma e responde no chat — o teu agente só diz o que contares aí, nunca uma versão inventada.',
+  ant_progress: (answered, total) => `${answered} de ${total} respondidas`,
+  ant_needs_answer: 'Pendente',
+  ant_priority: 'Prioritária',
+  ant_answer_cta: 'Responder no chat',
+  ant_answer_now: 'Responder agora',
+  ant_checking: 'A verificar a tua resposta…',
+  ant_all_answered: 'Todas as perguntas que encontrámos têm uma resposta sólida.',
+  ant_remove: 'Remover',
+  ant_q_short_tenure: (company) => `Porque é que a tua passagem pela ${company} foi tão curta e porque terminou?`,
+  ant_q_departure: (company) => `Porque saíste da ${company}?`,
+  ant_q_gap: (from, to) => `O que fizeste entre ${from} e ${to}?`,
+  ant_why_short_tenure: (company, role, months) =>
+    `O teu cargo de ${role} na ${company} durou cerca de ${months} mes${months === 1 ? '' : 'es'}. Sem resposta, uma passagem curta lê-se como sinal de alerta.`,
+  ant_why_departure: (company) =>
+    `Sem um motivo fundamentado para teres saído da ${company}, o teu agente tem de recusar a pergunta.`,
+  ant_why_gap: (from, to, months) =>
+    `Cerca de ${months} meses entre ${from} e ${to}. Os recrutadores insistem nos intervalos; um relato claro desarma-o.`,
+  ant_chat_ask: (question) => `Um recrutador vai perguntar isto: ${question} Responde por palavras tuas — vou guardar exactamente o que disseres, nada mais.`,
+  ant_chat_invite: (question) => `Já tens a base montada. O que a seguir vai deixar o teu agente em apuros é uma pergunta por responder: ${question}`,
+  ant_chat_reminder: (question) => `Continua pendente, e é das primeiras que os recrutadores fazem: ${question}`,
+  ant_chat_stored: 'Guardado. O teu agente responde a essa pergunta com as tuas palavras e nada mais.',
+  ant_answering: (question) => `A responder: ${question}`,
+  ant_answering_cancel: 'Agora não',
   ant_needs_more: (probe) => `Precisa de mais para ser útil: ${probe}`,
   ant_default_probe: 'Adiciona um detalhe concreto — uma data, um nome ou um resultado que consigas defender.',
   ant_error: 'Algo correu mal — tenta de novo.',
-  ant_checking: 'A verificar…',
-  ant_write_answer: 'Escreve a tua resposta',
-  ant_your_answers: 'As tuas respostas',
-  ant_remove: 'Remover',
 
   test_results_title: 'O que um recrutador acabou de viver',
   test_testing_title: 'A testar o teu agente',
