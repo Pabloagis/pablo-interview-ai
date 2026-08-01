@@ -153,6 +153,17 @@ export interface PlatformStrings {
   pub_what_recruiters_hear: string;
   pub_train: string;
 
+  // ── Public link (its own card, below the publish panel) ────────
+  slug_title: string;
+  slug_intro: string;
+  slug_locked_note: string;
+  slug_edit: string;
+  slug_available: string;
+  slug_cancel: string;
+  slug_save: string;
+  slug_saving: string;
+  slug_save_failed: string;
+
   // ── Anticipated questions ──────────────────────────────────────
   // The panel is a LIST — one row per question, answered and pending together.
   // Answering happens in the trainer chat, so the copy below is split between
@@ -453,6 +464,16 @@ const EN: PlatformStrings = {
   pub_what_recruiters_hear: 'What recruiters hear on dark topics',
   pub_train: 'Train ↗',
 
+  slug_title: 'Your public link',
+  slug_intro: 'This is the address recruiters open to talk to your agent.',
+  slug_locked_note: 'Changing a shared link would break it. Editing comes later.',
+  slug_edit: 'Edit link',
+  slug_available: 'Available',
+  slug_cancel: 'Cancel',
+  slug_save: 'Save link',
+  slug_saving: 'Saving…',
+  slug_save_failed: 'Could not save.',
+
   ant_section: 'Anticipated questions',
   ant_scanning: 'Scanning your background for questions recruiters will ask…',
   ant_intro: 'Recruiters will ask these. Pick one and answer it in the chat — your agent speaks only what you say there, never a version it made up.',
@@ -736,6 +757,16 @@ const ES: PlatformStrings = {
   pub_no_refusals: 'Tu agente responde a cualquier tema. Sin rechazos.',
   pub_what_recruiters_hear: 'Qué oyen los reclutadores en los temas sin datos',
   pub_train: 'Entrenar ↗',
+
+  slug_title: 'Tu enlace público',
+  slug_intro: 'Es la dirección que abren los reclutadores para hablar con tu agente.',
+  slug_locked_note: 'Cambiar un enlace ya compartido lo rompería. La edición llegará más adelante.',
+  slug_edit: 'Editar enlace',
+  slug_available: 'Disponible',
+  slug_cancel: 'Cancelar',
+  slug_save: 'Guardar enlace',
+  slug_saving: 'Guardando…',
+  slug_save_failed: 'No se pudo guardar.',
 
   ant_section: 'Preguntas previstas',
   ant_scanning: 'Analizando tu perfil en busca de preguntas que harán los reclutadores…',
@@ -1021,6 +1052,16 @@ const IT: PlatformStrings = {
   pub_what_recruiters_hear: 'Cosa sentono i recruiter sui temi senza dati',
   pub_train: 'Allena ↗',
 
+  slug_title: 'Il tuo link pubblico',
+  slug_intro: 'È l’indirizzo che i recruiter aprono per parlare con il tuo agente.',
+  slug_locked_note: 'Cambiare un link già condiviso lo romperebbe. La modifica arriverà più avanti.',
+  slug_edit: 'Modifica link',
+  slug_available: 'Disponibile',
+  slug_cancel: 'Annulla',
+  slug_save: 'Salva link',
+  slug_saving: 'Salvataggio…',
+  slug_save_failed: 'Impossibile salvare.',
+
   ant_section: 'Domande previste',
   ant_scanning: 'Analizzo il tuo profilo per le domande che faranno i recruiter…',
   ant_intro: 'I recruiter chiederanno questo. Scegline una e rispondi nella chat — il tuo agente dice solo ciò che racconti lì, mai una versione inventata.',
@@ -1304,6 +1345,16 @@ const PT: PlatformStrings = {
   pub_no_refusals: 'O teu agente responde a qualquer tema. Sem recusas.',
   pub_what_recruiters_hear: 'O que os recrutadores ouvem nos temas sem dados',
   pub_train: 'Treinar ↗',
+
+  slug_title: 'O teu link público',
+  slug_intro: 'É o endereço que os recrutadores abrem para falar com o teu agente.',
+  slug_locked_note: 'Mudar um link já partilhado iria quebrá-lo. A edição chega mais tarde.',
+  slug_edit: 'Editar link',
+  slug_available: 'Disponível',
+  slug_cancel: 'Cancelar',
+  slug_save: 'Guardar link',
+  slug_saving: 'A guardar…',
+  slug_save_failed: 'Não foi possível guardar.',
 
   ant_section: 'Perguntas previstas',
   ant_scanning: 'A analisar o teu perfil à procura de perguntas que os recrutadores farão…',

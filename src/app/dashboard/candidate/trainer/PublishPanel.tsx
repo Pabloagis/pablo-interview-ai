@@ -2,6 +2,10 @@
 
 // Publish panel: the bridge between "how ready am I?" and "what gaps remain?"
 //
+// The public link lives in its own card (SlugManager, rendered by
+// DashboardContent) — this panel is only about readiness and what recruiters
+// hear, which is a different subject from the address you hand them.
+//
 // Three states:
 //   locked     — readiness < 30 (below Basic threshold)
 //   ready      — readiness >= 30, agent not yet published
@@ -15,7 +19,6 @@ import {
   type PublishLevel,
 } from '@/lib/coverage-nodes';
 import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
-import SlugManager from './SlugManager';
 
 const LEVEL_LABEL_KEY: Record<Exclude<PublishLevel, 'unpublished'>, keyof PlatformStrings> = {
   sharp: 'level_sharp',
@@ -111,7 +114,6 @@ export default function PublishPanel({
         >
           {isPublishing ? t.pub_publishing : t.pub_publish_agent}
         </button>
-        <SlugManager locked={false} />
       </div>
     );
   }
@@ -160,7 +162,6 @@ export default function PublishPanel({
           </div>
         </div>
       )}
-      <SlugManager locked={true} />
     </div>
   );
 }

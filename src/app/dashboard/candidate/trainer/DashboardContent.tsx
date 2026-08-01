@@ -4,11 +4,13 @@ import AgentCore from './AgentCore';
 import CoverageMap from './CoverageMap';
 import EvidenceCard, { EvidenceCardStyles } from './EvidenceCard';
 import PublishPanel from './PublishPanel';
+import SlugManager from './SlugManager';
 import AnticipatedQuestions, { type StoredAnticipated } from './AnticipatedQuestions';
 import { usePlatformT } from '@/context/platform-i18n';
 import type { ProposedGap } from '@/lib/anticipated';
 import {
   COVERAGE_NODES,
+  PUBLISH_THRESHOLDS,
   type CoverageNodeKey,
   type NodeState,
   type PublishLevel,
@@ -86,6 +88,14 @@ export default function DashboardContent({
             onPublish={onPublish}
             onTrainNode={onTrainNode ?? (() => {})}
           />
+        </div>
+      )}
+
+      {/* Public link — its own card. Shown from the Basic threshold up, the
+          point at which publishing (and so the link) becomes real. */}
+      {onPublish && readiness >= PUBLISH_THRESHOLDS.basic && (
+        <div className="w-full">
+          <SlugManager locked={publishedAt !== null} />
         </div>
       )}
 
