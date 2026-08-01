@@ -7,6 +7,11 @@ import { usePlatformT } from '@/context/platform-i18n';
 interface Props {
   onTranscript: (text: string) => void;
   disabled?: boolean;
+  // Composer variant: a single round mic button with no inline label or error
+  // line, so it fits in a chat input row. Errors go to `onError` instead — the
+  // caller surfaces them wherever it already shows failures.
+  compact?: boolean;
+  onError?: (message: string) => void;
 }
 
 type RecordState = 'idle' | 'recording' | 'transcribing' | 'done' | 'unsupported';
@@ -35,12 +40,14 @@ function pickMimeType(): { mimeType?: string; ext: string } {
   return { ext: 'webm' };   // let the browser default; still upload as .webm
 }
 
-export default function VoiceRecorder({ onTranscript, disabled }: Props) {
+export default function VoiceRecorder({ onTranscript, disabled, compact, onError }: Props) {
   const { lang } = useLanguage();
   const t = usePlatformT();
   const [state, setState]     = useState<RecordState>('idle');
   const [error, setError]     = useState('');
   const [seconds, setSeconds] = useState(0);
+
+  const fail = (message: string) => { if (compact) onError?.(message); else setError(message); };
 
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef   = useRef<Blob[]>([]);
@@ -86,7 +93,7 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
         // Guard against an empty / far-too-short recording.
         if (blob.size < 1200) {
           setState('idle');
-          setError(t.voice_too_short);
+          fail(t.voice_too_short);
           return;
         }
 
@@ -98,14 +105,14 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
           const data = await res.json().catch(() => ({}));
           if (!res.ok || !data.text?.trim()) {
             setState('idle');
-            setError(t.voice_no_transcript);
+            fail(t.voice_no_transcript);
             return;
           }
           onTranscript(data.text.trim());
           setState('done');
         } catch {
           setState('idle');
-          setError(t.voice_failed);
+          fail(t.voice_failed);
         }
       };
 
@@ -115,7 +122,7 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
       timerRef.current = setInterval(() => setSeconds(s => s + 1), 1000);
     } catch {
       setState('idle');
-      setError(t.voice_mic_blocked);
+      fail(t.voice_mic_blocked);
     }
   }
 
@@ -125,6 +132,9 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
   }
 
   if (state === 'unsupported') {
+    // In a composer row there is no space for an explanation, and a browser that
+    // cannot record simply has no mic button.
+    if (compact) return null;
     return (
       <p className="text-[10px] text-[rgba(255,255,255,0.25)] italic">
         {t.voice_unsupported}
@@ -133,6 +143,37 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
   }
 
   const mmss = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+
+  if (compact) {
+    const recording = state === 'recording';
+    const busy = state === 'transcribing';
+    return (
+      <button
+        type="button"
+        onClick={recording ? stopRecording : startRecording}
+        disabled={disabled || busy}
+        aria-label={recording ? `${t.voice_stop} · ${mmss}` : t.voice_record}
+        title={recording ? `${t.voice_stop} · ${mmss}` : t.voice_record}
+        className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl border transition-colors disabled:opacity-40"
+        style={{
+          background: recording ? 'rgba(200,60,60,0.15)' : 'rgba(255,255,255,0.04)',
+          borderColor: recording ? 'rgba(200,60,60,0.4)' : 'rgba(255,255,255,0.12)',
+          color: recording ? 'rgba(240,120,120,0.95)' : 'rgba(255,255,255,0.55)',
+        }}
+      >
+        {busy ? (
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-white/25 border-t-white/70 animate-spin" />
+        ) : recording ? (
+          <span className="w-3 h-3 rounded-sm bg-[rgba(240,80,80,0.95)]" />
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 1a4 4 0 0 1 4 4v6a4 4 0 0 1-8 0V5a4 4 0 0 1 4-4z" />
+            <path fill="none" stroke="currentColor" strokeWidth="2" d="M19 10a7 7 0 0 1-14 0M12 19v4M8 23h8" />
+          </svg>
+        )}
+      </button>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-1.5">

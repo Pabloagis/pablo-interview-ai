@@ -263,6 +263,39 @@ export interface PlatformStrings {
   reg_have_account: string;
   reg_signin: string;
 
+  // ── Public agent chat (/[slug]) ────────────────────────────────
+  // The recruiter-facing surface. `{name}` is replaced with the candidate's
+  // first name at render time.
+  pub_recorded: string;
+  pub_ask_about: string;
+  pub_other_topics: string;
+  pub_empty_title: string;
+  pub_empty_body: string;
+  pub_try_asking: string;
+  pub_placeholder: string;
+  pub_starting: string;
+  pub_send: string;
+  pub_end: string;
+  pub_ended: string;
+  pub_unavailable: string;
+  pub_start_failed: string;
+  pub_too_many: string;
+  pub_slow_down: string;
+  pub_failed: string;
+  pub_no_answer: string;
+  pub_thinking: string[];
+  pub_your_question: string;
+  pub_resumed: string;
+  pub_speak_on: string;
+  pub_speak_off: string;
+  pub_modal_title: string;
+  pub_modal_body: string;
+  pub_modal_name: string;
+  pub_modal_email: string;
+  pub_skip: string;
+  pub_end_confirm: string;
+  pub_ending: string;
+
   // ── Coverage nodes (UI copy) ───────────────────────────────────
   nodes: Record<CoverageNodeKey, PlatformNode>;
 }
@@ -567,6 +600,36 @@ const EN: PlatformStrings = {
   reg_have_account: 'Already have an account?',
   reg_signin: 'Sign in',
 
+  pub_recorded: 'This conversation is recorded and shared with the candidate.',
+  pub_ask_about: 'Ask about',
+  pub_other_topics: 'Show other topics',
+  pub_empty_title: 'Interview {name}’s agent',
+  pub_empty_body: 'It answers from what {name} has verified about their own career, and says so when something has not been covered.',
+  pub_try_asking: 'Try asking',
+  pub_placeholder: 'Type your question…',
+  pub_starting: 'Starting…',
+  pub_send: 'Send',
+  pub_end: 'End',
+  pub_ended: 'Thanks — this conversation has ended.',
+  pub_unavailable: 'This agent is temporarily unavailable. Please check back shortly.',
+  pub_start_failed: 'Could not start the conversation.',
+  pub_too_many: 'Too many conversations right now — try again shortly.',
+  pub_slow_down: 'You are sending messages quickly — give it a moment.',
+  pub_failed: 'That did not go through. Please try again.',
+  pub_no_answer: 'No answer came back. Please try again.',
+  pub_thinking: ['Thinking…', 'Checking what is on record…', 'Pulling the details together…'],
+  pub_your_question: 'Your question',
+  pub_resumed: 'Picked up where you left off.',
+  pub_speak_on: 'Read answers aloud',
+  pub_speak_off: 'Stop reading aloud',
+  pub_modal_title: 'Want a copy of the summary?',
+  pub_modal_body: 'Optional. The candidate receives their report either way.',
+  pub_modal_name: 'Your name',
+  pub_modal_email: 'you@company.com',
+  pub_skip: 'Skip',
+  pub_end_confirm: 'End conversation',
+  pub_ending: 'Ending…',
+
   nodes: EN_NODES,
 };
 
@@ -860,6 +923,36 @@ const ES: PlatformStrings = {
   reg_create: 'Crear cuenta',
   reg_have_account: '¿Ya tienes cuenta?',
   reg_signin: 'Iniciar sesión',
+
+  pub_recorded: 'Esta conversación se graba y se comparte con el candidato.',
+  pub_ask_about: 'Pregunta sobre',
+  pub_other_topics: 'Ver otros temas',
+  pub_empty_title: 'Entrevista al agente de {name}',
+  pub_empty_body: 'Responde solo con lo que {name} ha verificado sobre su propia carrera, y lo dice cuando algo no está cubierto.',
+  pub_try_asking: 'Prueba a preguntar',
+  pub_placeholder: 'Escribe tu pregunta…',
+  pub_starting: 'Iniciando…',
+  pub_send: 'Enviar',
+  pub_end: 'Terminar',
+  pub_ended: 'Gracias — esta conversación ha terminado.',
+  pub_unavailable: 'Este agente no está disponible temporalmente. Vuelve a intentarlo en un rato.',
+  pub_start_failed: 'No se pudo iniciar la conversación.',
+  pub_too_many: 'Hay demasiadas conversaciones ahora mismo — inténtalo en unos minutos.',
+  pub_slow_down: 'Estás enviando mensajes muy rápido — espera un momento.',
+  pub_failed: 'No se pudo enviar. Inténtalo de nuevo.',
+  pub_no_answer: 'No llegó ninguna respuesta. Inténtalo de nuevo.',
+  pub_thinking: ['Pensando…', 'Comprobando lo que está verificado…', 'Reuniendo los detalles…'],
+  pub_your_question: 'Tu pregunta',
+  pub_resumed: 'Retomamos donde lo dejaste.',
+  pub_speak_on: 'Leer las respuestas en voz alta',
+  pub_speak_off: 'Dejar de leer en voz alta',
+  pub_modal_title: '¿Quieres una copia del resumen?',
+  pub_modal_body: 'Opcional. El candidato recibe su informe igualmente.',
+  pub_modal_name: 'Tu nombre',
+  pub_modal_email: 'tu@empresa.com',
+  pub_skip: 'Omitir',
+  pub_end_confirm: 'Terminar conversación',
+  pub_ending: 'Terminando…',
 
   nodes: ES_NODES,
 };
@@ -1155,6 +1248,36 @@ const IT: PlatformStrings = {
   reg_have_account: 'Hai già un account?',
   reg_signin: 'Accedi',
 
+  pub_recorded: 'Questa conversazione viene registrata e condivisa con il candidato.',
+  pub_ask_about: 'Chiedi di',
+  pub_other_topics: 'Mostra altri temi',
+  pub_empty_title: 'Intervista l’agente di {name}',
+  pub_empty_body: 'Risponde solo con ciò che {name} ha verificato sulla propria carriera, e lo dice quando qualcosa non è coperto.',
+  pub_try_asking: 'Prova a chiedere',
+  pub_placeholder: 'Scrivi la tua domanda…',
+  pub_starting: 'Avvio…',
+  pub_send: 'Invia',
+  pub_end: 'Termina',
+  pub_ended: 'Grazie — questa conversazione è terminata.',
+  pub_unavailable: 'Questo agente non è disponibile al momento. Riprova tra poco.',
+  pub_start_failed: 'Non è stato possibile avviare la conversazione.',
+  pub_too_many: 'Ci sono troppe conversazioni in corso — riprova tra poco.',
+  pub_slow_down: 'Stai inviando messaggi troppo in fretta — aspetta un momento.',
+  pub_failed: 'Non è stato inviato. Riprova.',
+  pub_no_answer: 'Non è arrivata nessuna risposta. Riprova.',
+  pub_thinking: ['Sto pensando…', 'Controllo cosa è verificato…', 'Metto insieme i dettagli…'],
+  pub_your_question: 'La tua domanda',
+  pub_resumed: 'Ripreso da dove avevi lasciato.',
+  pub_speak_on: 'Leggi le risposte ad alta voce',
+  pub_speak_off: 'Smetti di leggere ad alta voce',
+  pub_modal_title: 'Vuoi una copia del riepilogo?',
+  pub_modal_body: 'Facoltativo. Il candidato riceve comunque il suo report.',
+  pub_modal_name: 'Il tuo nome',
+  pub_modal_email: 'tu@azienda.com',
+  pub_skip: 'Salta',
+  pub_end_confirm: 'Termina conversazione',
+  pub_ending: 'Chiusura…',
+
   nodes: IT_NODES,
 };
 
@@ -1448,6 +1571,36 @@ const PT: PlatformStrings = {
   reg_create: 'Criar conta',
   reg_have_account: 'Já tens conta?',
   reg_signin: 'Entrar',
+
+  pub_recorded: 'Esta conversa é gravada e partilhada com o candidato.',
+  pub_ask_about: 'Pergunta sobre',
+  pub_other_topics: 'Ver outros temas',
+  pub_empty_title: 'Entrevista o agente de {name}',
+  pub_empty_body: 'Responde apenas com o que {name} verificou sobre a sua própria carreira, e di-lo quando algo não está coberto.',
+  pub_try_asking: 'Experimenta perguntar',
+  pub_placeholder: 'Escreve a tua pergunta…',
+  pub_starting: 'A iniciar…',
+  pub_send: 'Enviar',
+  pub_end: 'Terminar',
+  pub_ended: 'Obrigado — esta conversa terminou.',
+  pub_unavailable: 'Este agente está temporariamente indisponível. Volta a tentar daqui a pouco.',
+  pub_start_failed: 'Não foi possível iniciar a conversa.',
+  pub_too_many: 'Há demasiadas conversas neste momento — tenta daqui a pouco.',
+  pub_slow_down: 'Estás a enviar mensagens muito depressa — espera um momento.',
+  pub_failed: 'Não foi enviado. Tenta de novo.',
+  pub_no_answer: 'Não chegou nenhuma resposta. Tenta de novo.',
+  pub_thinking: ['A pensar…', 'A verificar o que está confirmado…', 'A reunir os detalhes…'],
+  pub_your_question: 'A tua pergunta',
+  pub_resumed: 'Retomámos onde ficaste.',
+  pub_speak_on: 'Ler as respostas em voz alta',
+  pub_speak_off: 'Parar de ler em voz alta',
+  pub_modal_title: 'Queres uma cópia do resumo?',
+  pub_modal_body: 'Opcional. O candidato recebe o relatório de qualquer forma.',
+  pub_modal_name: 'O teu nome',
+  pub_modal_email: 'tu@empresa.com',
+  pub_skip: 'Ignorar',
+  pub_end_confirm: 'Terminar conversa',
+  pub_ending: 'A terminar…',
 
   nodes: PT_NODES,
 };

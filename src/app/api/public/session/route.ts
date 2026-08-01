@@ -36,8 +36,9 @@ export async function POST(request: NextRequest) {
   }
 
   let slug: string;
+  let resume: string | undefined;
   try {
-    ({ slug } = (await request.json()) as { slug: string });
+    ({ slug, resume } = (await request.json()) as { slug: string; resume?: string });
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
@@ -47,11 +48,6 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerSupabaseClient();
   const ipHash = hashIp(ipFromRequest(request));
-
-  const limit = await checkSessionCreate(supabase, ipHash);
-  if (!limit.allowed) {
-    return NextResponse.json({ error: 'Too many sessions. Please try again later.' }, { status: 429 });
-  }
 
   // Identity resolution — service client only, never trusts the client for candidate_id.
   const { data: profile } = await supabase
@@ -63,6 +59,49 @@ export async function POST(request: NextRequest) {
   // 404 whether missing or unpublished — never confirm which slugs exist.
   if (!profile || !profile.published_at) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  }
+
+  // ── Resume ────────────────────────────────────────────────────────────────
+  // The visitor's browser remembers only the session id; the transcript comes
+  // back from the database, so what they see always matches what the agent will
+  // actually be given as history. A stored transcript could drift from it.
+  //
+  // "Same visitor" is enforced with the ip_hash already on the row: a session id
+  // that leaks (shared link, copied localStorage) does not open someone else's
+  // conversation. It is a coarse check — the same office NAT shares a hash — but
+  // it is the only identity a public page has without asking for a login, and it
+  // fails closed: anything unexpected just starts a fresh session.
+  if (typeof resume === 'string' && resume.length > 0) {
+    const { data: prior } = await supabase
+      .from('sessions')
+      .select('id, candidate_id, source, messages, ended_at, ip_hash, last_activity_at')
+      .eq('id', resume)
+      .maybeSingle();
+
+    const fresh = prior?.last_activity_at
+      ? Date.now() - new Date(prior.last_activity_at).getTime() < STALE_MS
+      : false;
+
+    if (
+      prior &&
+      prior.source === 'public' &&
+      prior.candidate_id === profile.id &&
+      !prior.ended_at &&
+      prior.ip_hash === ipHash &&
+      fresh
+    ) {
+      // Not a new session, so it does not spend the session-create budget.
+      return NextResponse.json({
+        sessionId: prior.id,
+        messages: (prior.messages ?? []) as Array<{ role: string; content: string }>,
+        resumed: true,
+      });
+    }
+  }
+
+  const limit = await checkSessionCreate(supabase, ipHash);
+  if (!limit.allowed) {
+    return NextResponse.json({ error: 'Too many sessions. Please try again later.' }, { status: 429 });
   }
 
   await lazySweep(supabase);
@@ -85,5 +124,5 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Could not start session' }, { status: 500 });
   }
 
-  return NextResponse.json({ sessionId: session.id });
+  return NextResponse.json({ sessionId: session.id, messages: [], resumed: false });
 }

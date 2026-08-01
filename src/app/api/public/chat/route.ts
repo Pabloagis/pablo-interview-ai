@@ -72,6 +72,52 @@ function storeMemory(
 
 const sse = (enc: TextEncoder, data: object) => enc.encode(`data: ${JSON.stringify(data)}\n\n`);
 
+// ── Proactive turns ───────────────────────────────────────────────────────────
+// The agent speaks first (`intro`) when the visitor has been sitting on the page
+// without typing, and once more (`checkin`) when they go quiet mid-conversation.
+//
+// Both are real model calls, so both are gated on the SERVER, not by the client
+// that asks for them: `intro` only when the transcript is empty, `checkin` only
+// when the last turn is an assistant answer to a user message. Those two rules
+// are stateless — they need no new column — and together they cap proactive
+// turns at one opening plus at most one per exchange, no matter how often or
+// how many tabs ask. They also count towards turn_count and the per-IP message
+// limit, so an idle visitor cannot cost more than an active one.
+type ProactiveMode = 'intro' | 'checkin';
+
+const PROACTIVE_LANG: Record<string, string> = {
+  en: 'English', es: 'Spanish', it: 'Italian', pt: 'Portuguese',
+};
+
+function introDirective(langName: string): string {
+  return `PROACTIVE OPENING — the visitor has had this page open for a while without typing.
+Open the conversation yourself: one brief line introducing who you are, then ask who you are speaking with — their name, role and company — as a single natural question, the way an interview opens.
+Use ONLY facts already given above. State no metric, employer, date, title or achievement that is not verified there; if something is missing, leave it out rather than approximating it.
+Two sentences at most. Write in ${langName}.`;
+}
+
+const CHECKIN_DIRECTIVE = `PROACTIVE CHECK-IN — the visitor has read your last answer and gone quiet.
+Say one short sentence offering to go deeper on what you just covered, or to move on to something else.
+Introduce NO new information of any kind: no metric, employer, date, title or claim. This turn adds nothing to the record.
+Do not repeat your previous answer, do not apologise, and do not remark on how long they have taken.
+Write in the language the conversation has been using.`;
+
+// Claude requires a transcript that starts with a user turn and alternates.
+// A proactive turn is stored with no matching user message, so a raw slice of
+// history can legitimately begin with — or contain two consecutive — assistant
+// turns. Dropping the leading one and merging neighbours keeps the request valid
+// without losing anything the model needs.
+function normalizeTranscript(msgs: Msg[]): Msg[] {
+  const out: Msg[] = [];
+  for (const m of msgs) {
+    if (out.length === 0 && m.role === 'assistant') continue;
+    const last = out[out.length - 1];
+    if (last && last.role === m.role) last.content = `${last.content}\n\n${m.content}`;
+    else out.push({ ...m });
+  }
+  return out;
+}
+
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
 
@@ -81,12 +127,15 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  let body: { sessionId?: string; message?: string };
+  let body: { sessionId?: string; message?: string; mode?: ProactiveMode; lang?: string };
   try { body = await request.json(); }
   catch { return new Response(JSON.stringify({ error: 'Invalid JSON' }), { status: 400, headers: { 'Content-Type': 'application/json' } }); }
 
-  const { sessionId, message } = body;
-  if (!sessionId || !message?.trim()) {
+  const { sessionId, message, lang } = body;
+  const mode: ProactiveMode | null =
+    body.mode === 'intro' || body.mode === 'checkin' ? body.mode : null;
+
+  if (!sessionId || (!mode && !message?.trim())) {
     return new Response(JSON.stringify({ error: 'sessionId and message are required' }), {
       status: 400, headers: { 'Content-Type': 'application/json' },
     });
@@ -120,6 +169,20 @@ export async function POST(request: NextRequest) {
   const rawHistory = (session.messages ?? []) as Msg[];
   const turnCount = session.turn_count ?? 0;
 
+  // ── Proactive gating (server-side; the client's request is only a suggestion) ──
+  if (mode === 'intro' && rawHistory.length > 0) {
+    return new Response(JSON.stringify({ error: 'Already opened.' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+  }
+  if (mode === 'checkin') {
+    const last = rawHistory[rawHistory.length - 1];
+    const prev = rawHistory[rawHistory.length - 2];
+    // Exactly one check-in per real exchange: after one has been stored the last
+    // two turns are both assistant, and this fails.
+    if (!last || last.role !== 'assistant' || !prev || prev.role !== 'user') {
+      return new Response(JSON.stringify({ error: 'Nothing to check in on.' }), { status: 409, headers: { 'Content-Type': 'application/json' } });
+    }
+  }
+
   // ── Turn cap: close the session, fire the report, return a polite message ────
   if (turnCount >= MAX_TURNS) {
     await supabase.from('sessions').update({ ended_at: new Date().toISOString() }).eq('id', sessionId);
@@ -152,12 +215,21 @@ export async function POST(request: NextRequest) {
           return;
         }
 
-        const userMsg: Msg = { role: 'user', content: message.trim() };
+        const userMsg: Msg = { role: 'user', content: (message ?? '').trim() };
         // Last 12 exchanges (24 messages) to the model — never the unbounded transcript.
         const windowed = rawHistory.slice(-(HISTORY_MAX_EXCHANGES * 2));
-        const messagesForClaude: Msg[] = [...windowed, userMsg];
 
-        const embedding = await embed(message);
+        // A proactive turn has no visitor message. The model still needs a final
+        // user turn to answer, so it gets a stage direction that is never stored
+        // and never shown — the instruction itself lives in the system blocks.
+        const closingTurn: Msg = mode
+          ? { role: 'user', content: '(The visitor has not typed anything. Follow the proactive instruction above.)' }
+          : userMsg;
+        const messagesForClaude: Msg[] = normalizeTranscript([...windowed, closingTurn]);
+
+        // No visitor message means nothing to embed and nothing to recall against,
+        // so a proactive turn spends no embedding call either.
+        const embedding = mode ? null : await embed(userMsg.content);
         let memories: Array<{ content: string }> = [];
         if (embedding && rawHistory.length >= MEMORY_MIN_HISTORY) {
           memories = await searchMemory(supabase, sessionId, embedding);
@@ -188,8 +260,16 @@ export async function POST(request: NextRequest) {
           systemBlocks.push({ type: 'text', text: buildVisitorContextBlock(visitor) });
         }
         systemBlocks.push({ type: 'text', text: dynamic });
-        if (rawHistory.length === 0) {
+        if (rawHistory.length === 0 && mode !== 'intro') {
           systemBlocks.push({ type: 'text', text: OPENING_ASK });
+        }
+        if (mode === 'intro') {
+          // The intro carries the opening ask itself, so OPENING_ASK is skipped
+          // above rather than stacked on top of a contradictory framing ("the
+          // visitor has just sent their first message" — they have not).
+          systemBlocks.push({ type: 'text', text: introDirective(PROACTIVE_LANG[lang ?? 'en'] ?? 'English') });
+        } else if (mode === 'checkin') {
+          systemBlocks.push({ type: 'text', text: CHECKIN_DIRECTIVE });
         }
 
         const anthropic = getAnthropicClient();
@@ -233,7 +313,12 @@ export async function POST(request: NextRequest) {
         }
 
         if (!abort.signal.aborted && full) {
-          const updated: Msg[] = [...rawHistory, userMsg, { role: 'assistant', content: full }];
+          // A proactive turn stores only the assistant side — the stage direction
+          // was never the visitor speaking and must not enter the transcript the
+          // candidate later reads.
+          const updated: Msg[] = mode
+            ? [...rawHistory, { role: 'assistant', content: full }]
+            : [...rawHistory, userMsg, { role: 'assistant', content: full }];
           const now = new Date().toISOString();
           await supabase.from('sessions')
             .update({ messages: updated, updated_at: now, last_activity_at: now, turn_count: turnCount + 1 })
@@ -241,13 +326,15 @@ export async function POST(request: NextRequest) {
 
           send({ type: 'done' });
 
-          storeMemory(supabase, sid, message, 'user_message', embedding);
+          if (!mode) storeMemory(supabase, sid, userMsg.content, 'user_message', embedding);
           embed(full).then(e => storeMemory(supabase, sid, full, 'assistant_response', e));
 
           // ── Visitor-context capture — first 3 visitor messages, AFTER the stream so it
           //    never delays the first token. Stored as session metadata, never as memory. ──
+          //    Skipped on proactive turns: the visitor said nothing new, so there is
+          //    nothing to extract and re-running it would just repeat the Haiku call.
           const visitorMsgs = updated.filter(m => m.role === 'user').map(m => m.content);
-          if (visitorMsgs.length <= 3 && !session.context_captured_at) {
+          if (!mode && visitorMsgs.length <= 3 && !session.context_captured_at) {
             try {
               const { fields, usage } = await extractVisitorContext(visitorMsgs);
               logUsage(supabase, {
