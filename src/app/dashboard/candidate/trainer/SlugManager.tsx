@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePlatformT } from '@/context/platform-i18n';
+import { BASE_HOST } from '@/lib/base-url';
 
 // The candidate's public link — its own card, sibling to the publish panel.
 // It lived inside PublishPanel before, which put an address the candidate shares
@@ -81,7 +82,7 @@ export default function SlugManager({ locked }: { locked: boolean }) {
       {editing ? (
         <>
           <div className="flex items-center gap-1 text-sm mt-1">
-            <span className="text-white/40">interviewmind.one/</span>
+            <span className="text-white/40">{BASE_HOST}/</span>
             <input
               value={draft}
               onChange={e => onDraft(e.target.value)}
@@ -114,7 +115,7 @@ export default function SlugManager({ locked }: { locked: boolean }) {
       ) : (
         <>
           <p className="text-sm text-white/80 break-all mt-1">
-            interviewmind.one/<span className="text-white">{slug}</span>
+            {BASE_HOST}/<span className="text-white">{slug}</span>
           </p>
           {readOnly ? (
             <p className="text-[11px] text-white/35">{t.slug_locked_note}</p>

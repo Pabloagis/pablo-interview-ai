@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { isPublicChatEnabled } from '@/lib/rate-limit';
+import { BASE_URL } from '@/lib/base-url';
 import PublicAgentChat from './PublicAgentChat';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +43,7 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      url: `https://interviewmind.one/${profile.slug}`,
+      url: `${BASE_URL}/${profile.slug}`,
       type: 'profile',
     },
   };

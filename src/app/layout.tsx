@@ -3,10 +3,12 @@ import { Inter } from 'next/font/google';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import '../styles/globals.css';
+import { BASE_URL } from '@/lib/base-url';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(BASE_URL),
   title: 'InterviewMind — Talk to Pablo',
   description: 'An AI interview simulator trained on Pablo Agis Burgos real hospitality and SaaS background.',
   openGraph: {
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
     type: 'website',
     images: [
       {
-        url: 'https://interviewmind.one/og-image.png',
+        url: `${BASE_URL}/og-image.png`,
         width: 1200,
         height: 630,
         alt: 'InterviewMind — AI-Powered Interview Demo',

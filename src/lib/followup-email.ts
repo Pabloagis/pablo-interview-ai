@@ -1,9 +1,9 @@
 import { Resend } from 'resend';
 import { generateReport } from '@/lib/report';
 import type { ReportData } from '@/lib/report';
+import { BASE_URL, BASE_HOST } from '@/lib/base-url';
 
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
-const BASE_URL = 'https://interviewmind.one';
 
 type Lang = 'en' | 'es' | 'it' | 'pt';
 const VALID_LANGS: Lang[] = ['en', 'es', 'it', 'pt'];
@@ -328,7 +328,7 @@ function generateEmailHTML(
         <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
         <tr><td style="padding-top:8px; text-align:center;">
           <p style="margin:0 0 6px; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif;">${FOOTER_TEXT[lang]}</p>
-          <a href="${BASE_URL}" style="font-size:12px; color:#4060d0; font-family:Arial,sans-serif; text-decoration:none;">interviewmind.one</a>
+          <a href="${BASE_URL}" style="font-size:12px; color:#4060d0; font-family:Arial,sans-serif; text-decoration:none;">${BASE_HOST}</a>
         </td></tr>
 
       </table>

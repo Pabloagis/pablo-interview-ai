@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseAuthClient } from '@/lib/supabase-auth-server';
 import { Resend } from 'resend';
+import { BASE_URL } from '@/lib/base-url';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,7 +59,7 @@ function buildWelcomeHtml(name: string, score: number, topMissing: string[]): st
   <p>Your AI profile has been created. Now it needs evidence — not forms, but real answers, real stories, and real interview data.</p>
   <h3 style="margin-bottom:8px">Highest-value modules to complete first:</h3>
   <ul style="padding-left:20px">${moduleItems}</ul>
-  <p><a href="https://interviewmind.one/dashboard/candidate" style="background:#4060d0;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px">Continue training →</a></p>
+  <p><a href="${BASE_URL}/dashboard/candidate" style="background:#4060d0;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px">Continue training →</a></p>
   <p style="color:#999;font-size:12px;margin-top:24px">InterviewMind · You're receiving this because you registered as a candidate.</p>
 </div>`;
 }
@@ -74,7 +75,7 @@ function buildReminderHtml(name: string, score: number, topMissingKey: string): 
   <p style="color:#555">Evidence Quality Score: <strong>${score}%</strong></p>
   <p>The highest-value thing you're missing: <strong>${label}</strong>.</p>
   <p style="background:#f5f5f5;padding:16px;border-radius:8px;border-left:3px solid #4060d0">${tip}</p>
-  <p><a href="https://interviewmind.one/dashboard/candidate" style="background:#4060d0;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px">Complete it now →</a></p>
+  <p><a href="${BASE_URL}/dashboard/candidate" style="background:#4060d0;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;display:inline-block;margin-top:8px">Complete it now →</a></p>
   <p style="color:#999;font-size:12px;margin-top:24px">InterviewMind · This is your one follow-up reminder.</p>
 </div>`;
 }
