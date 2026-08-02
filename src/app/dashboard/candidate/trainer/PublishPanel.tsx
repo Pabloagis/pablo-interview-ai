@@ -32,6 +32,7 @@ interface Props {
   nodeStates:   Record<CoverageNodeKey, NodeState>;
   publishedAt:  string | null;  // ISO string if published, null if not
   isPublishing: boolean;
+  publishFailed?: boolean;      // last publish attempt returned an error
   onPublish:    () => void;
   onTrainNode:  (key: CoverageNodeKey) => void;
 }
@@ -50,6 +51,7 @@ export default function PublishPanel({
   nodeStates,
   publishedAt,
   isPublishing,
+  publishFailed = false,
   onPublish,
   onTrainNode,
 }: Props) {
@@ -114,6 +116,9 @@ export default function PublishPanel({
         >
           {isPublishing ? t.pub_publishing : t.pub_publish_agent}
         </button>
+        {/* Inside the card, not a corner toast: on mobile this panel is a
+            full-screen sheet, so the message has to sit where the click was. */}
+        {publishFailed && !isPublishing && <PublishError />}
       </div>
     );
   }
@@ -138,6 +143,8 @@ export default function PublishPanel({
           {isPublishing ? t.pub_updating : t.pub_update}
         </button>
       </div>
+
+      {publishFailed && !isPublishing && <PublishError />}
 
       {/* Dark node refusal list — the argument to keep training */}
       {darkNodes.length === 0 ? (
@@ -167,6 +174,15 @@ export default function PublishPanel({
 }
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
+
+function PublishError() {
+  const t = usePlatformT();
+  return (
+    <p role="alert" className="text-[11px] text-[rgba(220,120,120,0.9)] leading-relaxed">
+      {t.pub_publish_failed}
+    </p>
+  );
+}
 
 function LevelBadge({ publishLevel }: { publishLevel: PublishLevel }) {
   const t = usePlatformT();

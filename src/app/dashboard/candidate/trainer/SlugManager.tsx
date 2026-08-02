@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePlatformT } from '@/context/platform-i18n';
-import { BASE_HOST } from '@/lib/base-url';
+import { BASE_URL, BASE_HOST } from '@/lib/base-url';
 
 // The candidate's public link — its own card, sibling to the publish panel.
 // It lived inside PublishPanel before, which put an address the candidate shares
@@ -15,6 +15,10 @@ import { BASE_HOST } from '@/lib/base-url';
 export default function SlugManager({ locked }: { locked: boolean }) {
   const t = usePlatformT();
   const [slug, setSlug] = useState<string | null>(null);
+  // Whether the address shown is actually saved on the profile, or merely the
+  // suggestion the API derives from the candidate's name. They render the same,
+  // so without this the card advertises a link nobody owns.
+  const [claimed, setClaimed] = useState(false);
   const [editable, setEditable] = useState(false);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState('');
@@ -31,6 +35,7 @@ export default function SlugManager({ locked }: { locked: boolean }) {
           const d = (await res.json()) as { slug: string | null; suggested: string; editable: boolean };
           setSlug(d.slug ?? d.suggested);
           setDraft(d.slug ?? d.suggested);
+          setClaimed(d.slug != null);
           setEditable(d.editable && !locked);
         }
       } catch { /* non-fatal */ }
@@ -60,7 +65,7 @@ export default function SlugManager({ locked }: { locked: boolean }) {
         body: JSON.stringify({ slug: draft }),
       });
       const d = (await res.json()) as { slug?: string; error?: string };
-      if (res.ok && d.slug) { setSlug(d.slug); setEditing(false); setCheck(null); }
+      if (res.ok && d.slug) { setSlug(d.slug); setClaimed(true); setEditing(false); setCheck(null); }
       else setCheck({ available: false, reason: d.error ?? t.slug_save_failed });
     } catch { setCheck({ available: false, reason: t.slug_save_failed }); }
     finally { setSaving(false); }
@@ -114,9 +119,49 @@ export default function SlugManager({ locked }: { locked: boolean }) {
         </>
       ) : (
         <>
-          <p className="text-sm text-white/80 break-all mt-1">
-            {BASE_HOST}/<span className="text-white">{slug}</span>
-          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <p className={`flex-1 min-w-0 text-sm break-all ${locked ? 'text-white/80' : 'text-white/45'}`}>
+              {BASE_HOST}/<span className={locked ? 'text-white' : 'text-white/70'}>{slug}</span>
+            </p>
+
+            {/* Opens the real recruiter-facing page, not the sandbox — this is
+                the candidate checking what they are about to share. Before
+                publishing that page 404s, so the button is inert rather than
+                absent: a control that vanishes reads as a bug, one that is
+                disabled with a reason explains the state. */}
+            {locked ? (
+              <a
+                href={`${BASE_URL}/${slug}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-medium border border-white/[0.14] text-white/70 hover:text-white hover:border-white/30 transition-colors"
+              >
+                {t.slug_open}
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+                  <path d="M4.5 1.5h6v6M10.5 1.5L5 7M9 7.5v3h-7.5V3h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </a>
+            ) : (
+              <span
+                title={t.slug_open_blocked}
+                className="shrink-0 px-2.5 py-1 rounded-md text-[11px] font-medium border border-white/[0.08] text-white/25 cursor-not-allowed"
+              >
+                {t.slug_open}
+              </span>
+            )}
+          </div>
+
+          {/* `locked` is set by the parent from `published_at`, so it is the publish
+              state: until the agent is published this address 404s for everyone.
+              Saying so here is the whole point of the card — a link the candidate
+              believes is live is worse than no link. */}
+          {!locked && (
+            <p className="text-[11px] text-[rgba(220,170,90,0.85)] leading-relaxed">
+              {t.slug_not_live}
+              {!claimed && <> {t.slug_not_reserved}</>}
+            </p>
+          )}
+
           {readOnly ? (
             <p className="text-[11px] text-white/35">{t.slug_locked_note}</p>
           ) : (

@@ -7,6 +7,13 @@ import { CORE_SYSTEM_PROMPT, buildDynamicPrompt } from '@/lib/prompts';
 import { buildCandidateSystemPrompt } from '@/lib/candidate-prompt';
 import { maybeSendReports } from '@/lib/public-report';
 import {
+  introDirective,
+  langName,
+  CHECKIN_DIRECTIVE,
+  normalizeTranscript,
+  type ProactiveMode,
+} from '@/lib/proactive';
+import {
   CLAUDE_MODEL,
   CLAUDE_FALLBACK_MODEL,
   API_TIMEOUT_MS,
@@ -83,40 +90,9 @@ const sse = (enc: TextEncoder, data: object) => enc.encode(`data: ${JSON.stringi
 // turns at one opening plus at most one per exchange, no matter how often or
 // how many tabs ask. They also count towards turn_count and the per-IP message
 // limit, so an idle visitor cannot cost more than an active one.
-type ProactiveMode = 'intro' | 'checkin';
-
-const PROACTIVE_LANG: Record<string, string> = {
-  en: 'English', es: 'Spanish', it: 'Italian', pt: 'Portuguese',
-};
-
-function introDirective(langName: string): string {
-  return `PROACTIVE OPENING — the visitor has had this page open for a while without typing.
-Open the conversation yourself: one brief line introducing who you are, then ask who you are speaking with — their name, role and company — as a single natural question, the way an interview opens.
-Use ONLY facts already given above. State no metric, employer, date, title or achievement that is not verified there; if something is missing, leave it out rather than approximating it.
-Two sentences at most. Write in ${langName}.`;
-}
-
-const CHECKIN_DIRECTIVE = `PROACTIVE CHECK-IN — the visitor has read your last answer and gone quiet.
-Say one short sentence offering to go deeper on what you just covered, or to move on to something else.
-Introduce NO new information of any kind: no metric, employer, date, title or claim. This turn adds nothing to the record.
-Do not repeat your previous answer, do not apologise, and do not remark on how long they have taken.
-Write in the language the conversation has been using.`;
-
-// Claude requires a transcript that starts with a user turn and alternates.
-// A proactive turn is stored with no matching user message, so a raw slice of
-// history can legitimately begin with — or contain two consecutive — assistant
-// turns. Dropping the leading one and merging neighbours keeps the request valid
-// without losing anything the model needs.
-function normalizeTranscript(msgs: Msg[]): Msg[] {
-  const out: Msg[] = [];
-  for (const m of msgs) {
-    if (out.length === 0 && m.role === 'assistant') continue;
-    const last = out[out.length - 1];
-    if (last && last.role === m.role) last.content = `${last.content}\n\n${m.content}`;
-    else out.push({ ...m });
-  }
-  return out;
-}
+// The directives and the transcript repair they force now live in
+// @/lib/proactive, because the trainer's agent-test sandbox reproduces the same
+// opening and a second copy would drift from this one.
 
 export async function POST(request: NextRequest) {
   const encoder = new TextEncoder();
@@ -267,7 +243,7 @@ export async function POST(request: NextRequest) {
           // The intro carries the opening ask itself, so OPENING_ASK is skipped
           // above rather than stacked on top of a contradictory framing ("the
           // visitor has just sent their first message" — they have not).
-          systemBlocks.push({ type: 'text', text: introDirective(PROACTIVE_LANG[lang ?? 'en'] ?? 'English') });
+          systemBlocks.push({ type: 'text', text: introDirective(langName(lang)) });
         } else if (mode === 'checkin') {
           systemBlocks.push({ type: 'text', text: CHECKIN_DIRECTIVE });
         }

@@ -146,6 +146,7 @@ export interface PlatformStrings {
   pub_dark_refusals: (n: number) => string;
   pub_answer_every: string;
   pub_publishing: string;
+  pub_publish_failed: string;
   pub_live: string;
   pub_updating: string;
   pub_update: string;
@@ -157,6 +158,10 @@ export interface PlatformStrings {
   slug_title: string;
   slug_intro: string;
   slug_locked_note: string;
+  slug_open: string;
+  slug_open_blocked: string;
+  slug_not_live: string;
+  slug_not_reserved: string;
   slug_edit: string;
   slug_available: string;
   slug_cancel: string;
@@ -490,6 +495,7 @@ const EN: PlatformStrings = {
   pub_dark_refusals: (n) => ` ${n} dark node${n !== 1 ? 's' : ''} will cause refusals — visible to any recruiter who asks.`,
   pub_answer_every: ' Your agent can answer every topic.',
   pub_publishing: 'Publishing…',
+  pub_publish_failed: 'Could not publish. Your agent is still private — try again in a moment.',
   pub_live: 'Live',
   pub_updating: 'Updating…',
   pub_update: 'Update ↑',
@@ -500,6 +506,10 @@ const EN: PlatformStrings = {
   slug_title: 'Your public link',
   slug_intro: 'This is the address recruiters open to talk to your agent.',
   slug_locked_note: 'Changing a shared link would break it. Editing comes later.',
+  slug_open: 'Open',
+  slug_open_blocked: 'Publish your agent to open this link.',
+  slug_not_live: 'Not live yet — anyone who opens this link gets a 404 until you publish your agent below.',
+  slug_not_reserved: 'Suggested address. It is not reserved for you until you save it.',
   slug_edit: 'Edit link',
   slug_available: 'Available',
   slug_cancel: 'Cancel',
@@ -814,6 +824,7 @@ const ES: PlatformStrings = {
   pub_dark_refusals: (n) => ` ${n} nodo${n !== 1 ? 's' : ''} sin datos provocará${n !== 1 ? 'n' : ''} rechazos — visibles para cualquier reclutador que pregunte.`,
   pub_answer_every: ' Tu agente puede responder a cualquier tema.',
   pub_publishing: 'Publicando…',
+  pub_publish_failed: 'No se ha podido publicar. Tu agente sigue siendo privado: inténtalo de nuevo en un momento.',
   pub_live: 'En vivo',
   pub_updating: 'Actualizando…',
   pub_update: 'Actualizar ↑',
@@ -824,6 +835,10 @@ const ES: PlatformStrings = {
   slug_title: 'Tu enlace público',
   slug_intro: 'Es la dirección que abren los reclutadores para hablar con tu agente.',
   slug_locked_note: 'Cambiar un enlace ya compartido lo rompería. La edición llegará más adelante.',
+  slug_open: 'Abrir',
+  slug_open_blocked: 'Publica tu agente para poder abrir este enlace.',
+  slug_not_live: 'Todavía no está activo: quien abra este enlace verá un error 404 hasta que publiques tu agente abajo.',
+  slug_not_reserved: 'Dirección sugerida. No queda reservada para ti hasta que la guardes.',
   slug_edit: 'Editar enlace',
   slug_available: 'Disponible',
   slug_cancel: 'Cancelar',
@@ -1138,6 +1153,7 @@ const IT: PlatformStrings = {
   pub_dark_refusals: (n) => ` ${n} nodo${n !== 1 ? 'i' : ''} senza dati causer${n !== 1 ? 'anno' : 'à'} dei rifiuti — visibili a qualsiasi recruiter che chiede.`,
   pub_answer_every: ' Il tuo agente può rispondere su ogni tema.',
   pub_publishing: 'Pubblicazione…',
+  pub_publish_failed: 'Non è stato possibile pubblicare. Il tuo agente resta privato: riprova tra un momento.',
   pub_live: 'Attivo',
   pub_updating: 'Aggiornamento…',
   pub_update: 'Aggiorna ↑',
@@ -1148,6 +1164,10 @@ const IT: PlatformStrings = {
   slug_title: 'Il tuo link pubblico',
   slug_intro: 'È l’indirizzo che i recruiter aprono per parlare con il tuo agente.',
   slug_locked_note: 'Cambiare un link già condiviso lo romperebbe. La modifica arriverà più avanti.',
+  slug_open: 'Apri',
+  slug_open_blocked: 'Pubblica il tuo agente per poter aprire questo link.',
+  slug_not_live: 'Non è ancora attivo: chi apre questo link vedrà un errore 404 finché non pubblichi il tuo agente qui sotto.',
+  slug_not_reserved: 'Indirizzo suggerito. Non è riservato a te finché non lo salvi.',
   slug_edit: 'Modifica link',
   slug_available: 'Disponibile',
   slug_cancel: 'Annulla',
@@ -1462,6 +1482,7 @@ const PT: PlatformStrings = {
   pub_dark_refusals: (n) => ` ${n} nó${n !== 1 ? 's' : ''} sem dados vai${n !== 1 ? 'o' : ''} causar recusas — visíveis a qualquer recrutador que pergunte.`,
   pub_answer_every: ' O teu agente consegue responder a qualquer tema.',
   pub_publishing: 'A publicar…',
+  pub_publish_failed: 'Não foi possível publicar. O teu agente continua privado: tenta de novo dentro de momentos.',
   pub_live: 'Ativo',
   pub_updating: 'A atualizar…',
   pub_update: 'Atualizar ↑',
@@ -1472,6 +1493,10 @@ const PT: PlatformStrings = {
   slug_title: 'O teu link público',
   slug_intro: 'É o endereço que os recrutadores abrem para falar com o teu agente.',
   slug_locked_note: 'Mudar um link já partilhado iria quebrá-lo. A edição chega mais tarde.',
+  slug_open: 'Abrir',
+  slug_open_blocked: 'Publica o teu agente para poderes abrir este link.',
+  slug_not_live: 'Ainda não está ativo: quem abrir este link verá um erro 404 até publicares o teu agente abaixo.',
+  slug_not_reserved: 'Endereço sugerido. Só fica reservado para ti depois de o guardares.',
   slug_edit: 'Editar link',
   slug_available: 'Disponível',
   slug_cancel: 'Cancelar',

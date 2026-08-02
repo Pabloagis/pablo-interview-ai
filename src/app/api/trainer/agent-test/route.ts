@@ -9,6 +9,7 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import { getAnthropicClient } from '@/lib/anthropic';
 import { buildCandidateSystemPrompt } from '@/lib/candidate-prompt';
 import { CLAUDE_MODEL, CLAUDE_FALLBACK_MODEL, MAX_TOKENS, API_TIMEOUT_MS } from '@/lib/constants';
+import { introDirective, langName, normalizeTranscript } from '@/lib/proactive';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,9 +30,13 @@ export async function POST(request: NextRequest) {
   }
 
   let messages: AgentMessage[];
+  let isIntro = false;
+  let lang: string | undefined;
   try {
-    const body = await request.json() as { messages: AgentMessage[] };
+    const body = await request.json() as { messages: AgentMessage[]; mode?: string; lang?: string };
     messages = body.messages ?? [];
+    isIntro  = body.mode === 'intro';
+    lang     = body.lang;
   } catch {
     return new Response(JSON.stringify({ error: 'Invalid JSON' }), {
       status: 400,
@@ -39,9 +44,20 @@ export async function POST(request: NextRequest) {
     });
   }
 
-  if (!Array.isArray(messages) || messages.length === 0) {
+  if (!Array.isArray(messages) || (messages.length === 0 && !isIntro)) {
     return new Response(JSON.stringify({ error: 'messages array required' }), {
       status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  }
+
+  // The opening is the first thing a recruiter sees, so the sandbox reproduces
+  // it — same directive as /api/public/chat, from the same module. Gated on an
+  // empty transcript exactly as it is there: an agent does not introduce itself
+  // twice, however many times a stale timer asks.
+  if (isIntro && messages.length > 0) {
+    return new Response(JSON.stringify({ error: 'Already opened.' }), {
+      status: 409,
       headers: { 'Content-Type': 'application/json' },
     });
   }
@@ -59,6 +75,20 @@ export async function POST(request: NextRequest) {
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  // A proactive turn has no user message. The model still needs a final user
+  // turn to answer, so it gets the same stage direction the public chat uses —
+  // never shown, never kept in the transcript the client holds.
+  const messagesForClaude = normalizeTranscript(
+    isIntro
+      ? [{ role: 'user', content: '(The visitor has not typed anything. Follow the proactive instruction above.)' }]
+      : messages
+  );
+
+  const systemBlocks: Anthropic.Messages.TextBlockParam[] = [
+    { type: 'text', text: systemPrompt },
+  ];
+  if (isIntro) systemBlocks.push({ type: 'text', text: introDirective(langName(lang)) });
 
   const encoder = new TextEncoder();
 
@@ -80,8 +110,8 @@ export async function POST(request: NextRequest) {
             {
               model,
               max_tokens: MAX_TOKENS,
-              system: systemPrompt,
-              messages: messages as Anthropic.Messages.MessageParam[],
+              system: systemBlocks,
+              messages: messagesForClaude as Anthropic.Messages.MessageParam[],
             },
             { signal: abort.signal }
           );

@@ -1,65 +1,29 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback, type KeyboardEvent } from 'react';
-import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { generateId } from '@/lib/utils';
 import Toast from '@/components/Toast';
 import type { ToastMessage } from '@/lib/types';
 import { useLanguage, LANG_FLAGS, type Lang } from '@/context/LanguageContext';
 import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
-import type { CoverageNodeKey } from '@/lib/coverage-nodes';
-import VoiceRecorder from '@/app/dashboard/candidate/components/VoiceRecorder';
+import AgentChatSurface, { type ChatMessage, type ChatTopic } from '@/components/chat/AgentChatSurface';
+import { useSuggestedTopics } from '@/components/chat/useSuggestedTopics';
+import SpeakToggle, { useSpeech } from '@/components/chat/SpeakToggle';
+import { INTRO_DELAY_MS } from '@/lib/proactive';
 
 // The recruiter-facing chat. This is the product: everything the candidate
 // builds in the trainer is judged here, by someone who arrived from a link and
 // will give it about a minute before deciding whether it is worth their time.
 //
-// The interaction rules below were paid for once already in the v2 interview
-// chat and are carried over deliberately — each one existed because the naive
-// version of it failed on a real device or with a real user:
+// The conversation surface — chips, transcript, composer — lives in
+// AgentChatSurface, shared with the trainer's agent-test sandbox so the two can
+// never drift. Its comment header carries the mobile and streaming rules. What
+// stays here is everything specific to a real visitor: the session, the
+// proactive turns, and the end-of-conversation capture.
 //
-//   - the shell is `fixed inset-0` at 100dvh, never 100vh: mobile browser
-//     chrome resizes the viewport and 100vh puts the composer under it
-//   - every shrinkable child carries min-w-0, or a long unbroken string
-//     (a URL, a German compound) widens the flex row and the page scrolls
-//     sideways
-//   - message text is whitespace-pre-wrap break-words: the agent writes in
-//     paragraphs, and without it they collapse into a wall
-//   - the composer's font-size is 16px, because iOS Safari zooms the whole
-//     page on focus for anything smaller
-//   - while streaming, the scroll pins the TOP of the answer, not the bottom:
-//     chasing the last token drags the text out from under the reader
-//   - platform errors are toasts, never assistant bubbles. A bubble is the
-//     candidate's voice; a rate-limit notice rendered there attributes words
-//     to them that they never said
-
-// ── Suggested topics ─────────────────────────────────────────────────────────
-// Built from the same twelve coverage nodes the candidate trains against, using
-// the translations already in platform-i18n. That means the strip is an honest
-// map of what the agent was built to cover, and it needs no separate string
-// table to keep in sync with the trainer.
-interface Topic { label: string; question: string }
-
-const TOPIC_KEYS: CoverageNodeKey[] = [
-  'career_narrative', 'metrics_impact', 'failure_modes',
-  'role_history', 'limits_gaps', 'conflict_disagreement',
-  'decision_style', 'tools_systems', 'company_fit',
-  'constraints', 'compensation', 'signature_stories',
-];
-
-function buildTopics(t: PlatformStrings): Topic[] {
-  const out: Topic[] = [];
-  for (const key of TOPIC_KEYS) {
-    const node = t.nodes[key];
-    // The node question lists mix complete questions with templates a recruiter
-    // is expected to fill in ("Are you familiar with [tool]?") and openers that
-    // trail off ("Tell me about a time you…"). Only a complete one can be sent
-    // by a single click, so anything else is skipped.
-    const q = node.questions.find(s => !s.includes('[') && !s.includes('…') && !s.includes('...'));
-    if (q) out.push({ label: node.label, question: q });
-  }
-  return out;
-}
+// One rule worth repeating because it is easy to undo: platform errors are
+// toasts, never assistant bubbles. A bubble is the candidate's voice, and a
+// rate-limit notice rendered there attributes words to them they never said.
 
 const MAX_RETRIES = 2;
 const RETRY_DELAY_MS = 2500;
@@ -68,18 +32,10 @@ const RETRY_DELAY_MS = 2500;
 // server — see the comment in /api/public/chat. Here they are also gated on the
 // tab being visible, so a page left open in a background tab never spends a
 // single token.
-const INTRO_DELAY_MS  = 30_000;
 const CHECKIN_IDLE_MS = 90_000;
 const IDLE_TICK_MS    = 10_000;
 
-const SPEECH_LOCALE: Record<Lang, string> = {
-  en: 'en-GB', es: 'es-ES', it: 'it-IT', pt: 'pt-PT',
-};
 const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
-
-function pickRandom<T>(pool: T[], n: number): T[] {
-  return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
-}
 
 interface Candidate {
   slug: string;
@@ -91,65 +47,43 @@ interface Props {
   candidate: Candidate;
   enabled: boolean;
 }
-interface ChatMsg { id: string; role: 'user' | 'assistant'; content: string }
-
 export default function PublicAgentChat({ candidate, enabled }: Props) {
   const { lang, setLang } = useLanguage();
   const t = usePlatformT();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [startError, setStartError] = useState<string | null>(null);
-  const [messages, setMessages] = useState<ChatMsg[]>([]);
-  const [input, setInput] = useState('');
-  const [inputFocused, setInputFocused] = useState(false);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [streamingText, setStreamingText] = useState('');
-  const [thinkingIndex, setThinkingIndex] = useState(0);
-  const [suggestions, setSuggestions] = useState<Topic[]>([]);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [ended, setEnded] = useState(false);
   const [showEnd, setShowEnd] = useState(false);
   const [recruiterName, setRecruiterName] = useState('');
   const [recruiterEmail, setRecruiterEmail] = useState('');
   const [endingSubmitting, setEndingSubmitting] = useState(false);
-  const [speakAloud, setSpeakAloud] = useState(false);
-  const [ttsAvailable, setTtsAvailable] = useState(false);
+
+  const { available: ttsAvailable, enabled: speakAloud, toggle: toggleSpeak, speak, cancel: cancelSpeech } = useSpeech(lang);
+  const { suggestions, consume, refresh, openers } = useSuggestedTopics(t);
 
   const sessionRef       = useRef<string | null>(null);
   const endedRef         = useRef(false);
   const streamingRef     = useRef(false);
-  const messagesRef      = useRef<ChatMsg[]>([]);
+  const messagesRef      = useRef<ChatMessage[]>([]);
   const inputRef         = useRef('');
   const langRef          = useRef<Lang>(lang);
-  const speakRef         = useRef(false);
   const lastActivityRef  = useRef(Date.now());
   const checkinAtRef     = useRef(-1);       // messages.length the last check-in was fired for
   const introFiredRef    = useRef(false);    // StrictMode double-invokes effects
-  const bottomRef        = useRef<HTMLDivElement>(null);
-  const streamingTopRef  = useRef<HTMLDivElement>(null);
-  const textareaRef      = useRef<HTMLTextAreaElement>(null);
   const startedRef       = useRef(false);
-  const usedTopicsRef    = useRef<Set<string>>(new Set());
 
   const storageKey = `im_pub_${candidate.slug}`;
 
   useEffect(() => { sessionRef.current   = sessionId;         }, [sessionId]);
   useEffect(() => { endedRef.current     = ended;             }, [ended]);
   useEffect(() => { streamingRef.current = isStreaming;       }, [isStreaming]);
-  useEffect(() => { inputRef.current     = input;             }, [input]);
   useEffect(() => { langRef.current      = lang;              }, [lang]);
-  useEffect(() => { speakRef.current     = speakAloud;        }, [speakAloud]);
   useEffect(() => { messagesRef.current  = messages; lastActivityRef.current = Date.now(); }, [messages]);
-
-  // ── Scroll ─────────────────────────────────────────────────────────────────
-  // Note the dependency list: messages.length and isStreaming, never
-  // streamingText. Reacting to every token scrolls the answer out from under
-  // the reader as it arrives. While streaming we pin the top of the incoming
-  // message so it fills downward from where their eyes already are.
-  useEffect(() => {
-    if (isStreaming) streamingTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    else bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages.length, isStreaming]);
 
   const addToast = useCallback((message: string, type: ToastMessage['type'] = 'error') => {
     setToasts(prev => [...prev, { id: generateId(), message, type }]);
@@ -158,49 +92,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   const dismissToast = useCallback((id: string) => {
     setToasts(prev => prev.filter(x => x.id !== id));
   }, []);
-
-  // ── Read aloud ─────────────────────────────────────────────────────────────
-  // The browser's own speech synthesis, not a TTS API: it is free, needs no
-  // server round-trip, and the voice follows whatever the visitor has installed.
-  // Feature detection runs in an effect so the server and client first render
-  // agree.
-  useEffect(() => {
-    setTtsAvailable(typeof window !== 'undefined' && 'speechSynthesis' in window);
-    return () => { if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel(); };
-  }, []);
-
-  const speak = useCallback((text: string) => {
-    if (!speakRef.current || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = SPEECH_LOCALE[langRef.current];
-    window.speechSynthesis.speak(utterance);
-  }, []);
-
-  function toggleSpeak() {
-    setSpeakAloud(prev => {
-      if (prev && typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
-      return !prev;
-    });
-  }
-
-  // ── Suggestions ────────────────────────────────────────────────────────────
-  // Rebuilt when the language changes so the chips are never left in the
-  // previous language.
-  useEffect(() => {
-    const pool = buildTopics(t);
-    usedTopicsRef.current = new Set();
-    const initial = pickRandom(pool, 3);
-    initial.forEach(tp => usedTopicsRef.current.add(tp.label));
-    setSuggestions(initial);
-  }, [t]);
-
-  useEffect(() => {
-    if (!isStreaming) return;
-    setThinkingIndex(0);
-    const id = setInterval(() => setThinkingIndex(i => i + 1), 1800);
-    return () => clearInterval(id);
-  }, [isStreaming]);
 
   // ── Session: resume the visitor's own conversation, or start a new one ─────
   // The browser stores only the session id. The transcript comes back from the
@@ -273,8 +164,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     streamingRef.current = true;
 
     if (!mode && text) {
-      setInput('');
-      if (textareaRef.current) textareaRef.current.style.height = 'auto';
       setMessages(prev => [...prev, { id: generateId(), role: 'user', content: text }]);
     }
     setIsStreaming(true);
@@ -359,6 +248,9 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     } else if (!assistant) {
       addToast(t.pub_no_answer);
     }
+    // `speak` is the hook's stable callback, not the hook object: depending on
+    // the object would give runTurn a new identity every render, and the intro
+    // effect below would clear and restart its 30s timer forever.
   }, [t, addToast, speak, storageKey]);
 
   // ── Proactive opening ──────────────────────────────────────────────────────
@@ -395,42 +287,16 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     return () => clearInterval(id);
   }, [sessionId, ended, runTurn]);
 
-  function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void runTurn(input.trim() || null); }
-  }
-
-  // Auto-grow to a ceiling, the way every messaging app behaves. Without the
-  // reset to 'auto' first, the box only ever grows and never shrinks back.
-  function onInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value.slice(0, MAX_MESSAGE_LENGTH));
+  // The draft is mirrored out of the surface for one reason: the opening must
+  // not fire while the visitor is mid-sentence.
+  function onDraftChange(value: string) {
+    inputRef.current = value;
     lastActivityRef.current = Date.now();
-    const el = e.target;
-    el.style.height = 'auto';
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
   }
 
-  function onTranscript(text: string) {
-    setInput(prev => (prev ? `${prev} ${text}` : text).slice(0, MAX_MESSAGE_LENGTH));
-    lastActivityRef.current = Date.now();
-    textareaRef.current?.focus();
-  }
-
-  function useTopic(topic: Topic) {
-    const pool = buildTopics(t);
-    usedTopicsRef.current.add(topic.label);
-    const unused = pool.filter(tp => !usedTopicsRef.current.has(tp.label));
-    const replacement = unused.length > 0 ? pickRandom(unused, 1) : [];
-    replacement.forEach(tp => usedTopicsRef.current.add(tp.label));
-    setSuggestions(prev => [...prev.filter(s => s.label !== topic.label), ...replacement]);
+  function handleTopic(topic: ChatTopic) {
+    consume(topic);
     void runTurn(topic.question);
-  }
-
-  function refreshSuggestions() {
-    const pool = buildTopics(t);
-    usedTopicsRef.current = new Set();
-    const next = pickRandom(pool, 3);
-    next.forEach(tp => usedTopicsRef.current.add(tp.label));
-    setSuggestions(next);
   }
 
   // `share` false = Skip. The two buttons used to run identical code, so a
@@ -449,15 +315,14 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
       });
     } catch { /* non-fatal */ }
     try { localStorage.removeItem(storageKey); } catch { /* private mode */ }
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    cancelSpeech();
     setEndingSubmitting(false);
     setShowEnd(false);
     setEnded(true);
-  }, [sessionId, recruiterName, recruiterEmail, storageKey]);
+  }, [sessionId, recruiterName, recruiterEmail, storageKey, cancelSpeech]);
 
   const initials  = candidate.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const firstName = candidate.name.split(' ')[0];
-  const openers   = buildTopics(t).slice(0, 3);
 
   const langBar = (
     <div className="flex items-center gap-0.5 shrink-0">
@@ -489,8 +354,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     );
   }
 
-  const showChips = suggestions.length > 0 && !ended;
-
   return (
     <>
       <div
@@ -503,73 +366,38 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
             <div className="flex-1 min-w-0"><Header candidate={candidate} initials={initials} /></div>
             {langBar}
             {ttsAvailable && (
-              <button
-                onClick={toggleSpeak}
-                aria-label={speakAloud ? t.pub_speak_off : t.pub_speak_on}
-                aria-pressed={speakAloud}
-                title={speakAloud ? t.pub_speak_off : t.pub_speak_on}
-                className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg border transition-colors"
-                style={{
-                  borderColor: speakAloud ? 'rgba(96,128,240,0.5)' : 'rgba(255,255,255,0.12)',
-                  color: speakAloud ? 'rgba(140,165,250,0.95)' : 'rgba(255,255,255,0.45)',
-                  background: speakAloud ? 'rgba(64,96,208,0.14)' : 'transparent',
-                }}
-              >
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M11 5 6 9H2v6h4l5 4V5z" />
-                  {speakAloud
-                    ? <><path d="M15.5 8.5a5 5 0 0 1 0 7" /><path d="M18.5 5.5a9 9 0 0 1 0 13" /></>
-                    : <><path d="m17 9 4 6" /><path d="m21 9-4 6" /></>}
-                </svg>
-              </button>
+              <SpeakToggle
+                enabled={speakAloud}
+                onToggle={toggleSpeak}
+                labelOn={t.pub_speak_on}
+                labelOff={t.pub_speak_off}
+              />
             )}
           </div>
           <p className="mt-2 text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
         </div>
 
-        {/* ── Suggested topics ───────────────────────────────────────── */}
-        {showChips && (
-          <div className="shrink-0 px-3 py-2 border-b border-white/[0.05] bg-white/[0.015]">
-            <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-              <span className="shrink-0 pr-1 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.28)] select-none">
-                {t.pub_ask_about}
-              </span>
-              {suggestions.map(topic => (
-                <button
-                  key={topic.label}
-                  onClick={() => useTopic(topic)}
-                  disabled={isStreaming || !sessionId}
-                  className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium border border-white/[0.1] bg-white/[0.04] text-[rgba(255,255,255,0.7)] transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
-                >
-                  {topic.label}
-                </button>
-              ))}
-              <button
-                onClick={refreshSuggestions}
-                disabled={isStreaming}
-                aria-label={t.pub_other_topics}
-                title={t.pub_other_topics}
-                className="shrink-0 ml-0.5 w-7 h-7 flex items-center justify-center rounded-full border border-white/[0.1] text-[rgba(255,255,255,0.45)] transition-colors hover:text-white disabled:opacity-40"
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
-                  <path d="M21 3v5h-5" />
-                  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
-                  <path d="M8 16H3v5" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* ── Messages ───────────────────────────────────────────────── */}
-        <div
-          className="flex-1 min-w-0 overflow-y-auto overflow-x-hidden px-5 py-5 flex flex-col gap-3"
-          role="log"
-          aria-live="polite"
-          aria-atomic="false"
-        >
-          {messages.length === 0 && !isStreaming && !startError && (
+        <AgentChatSurface
+          messages={messages}
+          isStreaming={isStreaming}
+          streamingText={streamingText}
+          thinkingLabels={t.pub_thinking}
+          ready={!!sessionId && !ended}
+          onSend={text => void runTurn(text)}
+          onDraftChange={onDraftChange}
+          placeholder={t.pub_placeholder}
+          startingPlaceholder={t.pub_starting}
+          sendLabel={t.pub_send}
+          inputAriaLabel={t.pub_your_question}
+          topics={ended ? [] : suggestions}
+          topicsLabel={t.pub_ask_about}
+          onTopic={handleTopic}
+          onRefreshTopics={refresh}
+          refreshLabel={t.pub_other_topics}
+          errorText={startError && startError !== 'unavailable' ? startError : null}
+          voice
+          onVoiceError={message => addToast(message)}
+          emptyState={
             <div className="flex flex-col items-center w-full px-2 py-8">
               <h2 className="text-lg font-semibold text-white text-center">
                 {t.pub_empty_title.replace('{name}', firstName)}
@@ -597,107 +425,22 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
                 ))}
               </div>
             </div>
-          )}
-
-          {startError && startError !== 'unavailable' && (
-            <p className="text-sm text-[rgba(220,120,120,0.8)] text-center mt-10">{startError}</p>
-          )}
-
-          {messages.map(m => <Bubble key={m.id} msg={m} />)}
-
-          {isStreaming && (
-            <>
-              <div ref={streamingTopRef} />
-              <div className="flex justify-start min-w-0">
-                <div className="max-w-[82%] min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]">
-                  {streamingText ? (
-                    <>
-                      {streamingText}
-                      <span className="inline-block w-0.5 h-3.5 align-middle ml-0.5 bg-[rgba(255,255,255,0.5)] animate-pulse" />
-                    </>
-                  ) : (
-                    <span className="italic text-[rgba(255,255,255,0.4)]">
-                      {t.pub_thinking[thinkingIndex % t.pub_thinking.length]}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </>
-          )}
-
-          <div ref={bottomRef} />
-        </div>
-
-        {/* ── Composer / ended state ─────────────────────────────────── */}
-        {ended ? (
-          <div className="shrink-0 border-t border-white/[0.07] px-5 py-5 text-center">
-            <p className="text-sm text-[rgba(255,255,255,0.6)]">{t.pub_ended}</p>
-          </div>
-        ) : (
-          <div className="shrink-0 border-t border-white/[0.07] px-4 py-3">
-            <div className="flex items-end gap-2 min-w-0">
-              <button
-                onClick={() => setShowEnd(true)}
-                disabled={messages.length === 0}
-                className="shrink-0 h-11 px-3 rounded-xl border border-white/[0.12] text-[rgba(255,255,255,0.5)] hover:text-white text-xs transition-colors disabled:opacity-30"
-              >
-                {t.pub_end}
-              </button>
-
-              <VoiceRecorder
-                compact
-                onTranscript={onTranscript}
-                onError={message => addToast(message)}
-                disabled={!sessionId || isStreaming}
-              />
-
-              {/* The focus state lives on this wrapper, so the ring surrounds
-                  the whole pill rather than the bare textarea. */}
-              <div
-                className="flex-1 min-w-0 flex items-end rounded-xl px-4 py-2.5 bg-white/[0.05] transition-[border-color,box-shadow] duration-200"
-                style={{
-                  border: `1px solid ${inputFocused ? 'rgba(96,128,240,0.55)' : 'rgba(255,255,255,0.09)'}`,
-                  boxShadow: inputFocused ? '0 0 0 3px rgba(64,96,208,0.18)' : 'none',
-                }}
-              >
-                <textarea
-                  ref={textareaRef}
-                  value={input}
-                  onChange={onInputChange}
-                  onKeyDown={onKeyDown}
-                  onFocus={() => setInputFocused(true)}
-                  onBlur={() => setInputFocused(false)}
-                  rows={1}
-                  placeholder={sessionId ? t.pub_placeholder : t.pub_starting}
-                  disabled={!sessionId || isStreaming}
-                  aria-label={t.pub_your_question}
-                  className="flex-1 min-w-0 resize-none bg-transparent text-white leading-relaxed focus:outline-none placeholder-[rgba(255,255,255,0.25)] disabled:opacity-50"
-                  /* 16px exactly: anything smaller and iOS Safari zooms the
-                     page in when the field takes focus, and never zooms back. */
-                  style={{ fontSize: 16, maxHeight: 120 }}
-                />
-              </div>
-
-              <button
-                onClick={() => void runTurn(input.trim() || null)}
-                disabled={!input.trim() || !sessionId || isStreaming}
-                aria-label={t.pub_send}
-                className="shrink-0 h-11 px-5 rounded-xl text-sm font-medium text-white transition-opacity disabled:opacity-30"
-                style={{ background: '#4060d0' }}
-              >
-                {t.pub_send}
-              </button>
+          }
+          leading={
+            <button
+              onClick={() => setShowEnd(true)}
+              disabled={messages.length === 0}
+              className="shrink-0 h-11 px-3 rounded-xl border border-white/[0.12] text-[rgba(255,255,255,0.5)] hover:text-white text-xs transition-colors disabled:opacity-30"
+            >
+              {t.pub_end}
+            </button>
+          }
+          footer={ended ? (
+            <div className="shrink-0 border-t border-white/[0.07] px-5 py-5 text-center">
+              <p className="text-sm text-[rgba(255,255,255,0.6)]">{t.pub_ended}</p>
             </div>
-
-            <div className="h-4 mt-1 px-1 text-right">
-              {input.length > 0 && (
-                <span className="text-[11px] text-[rgba(255,255,255,0.3)] tabular-nums">
-                  {input.length} / {MAX_MESSAGE_LENGTH}
-                </span>
-              )}
-            </div>
-          </div>
-        )}
+          ) : undefined}
+        />
 
         <Toast toasts={toasts} onDismiss={dismissToast} />
       </div>
@@ -830,21 +573,6 @@ function Header({ candidate, initials }: { candidate: Candidate; initials: strin
         <h1 className="text-white font-semibold text-base leading-tight truncate">{candidate.name}</h1>
         {candidate.headline && <p className="text-xs text-[rgba(255,255,255,0.5)] truncate">{candidate.headline}</p>}
       </div>
-    </div>
-  );
-}
-
-function Bubble({ msg }: { msg: ChatMsg }) {
-  const isUser = msg.role === 'user';
-  return (
-    <div className={`flex min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={[
-        // whitespace-pre-wrap keeps the agent's paragraph breaks; break-words
-        // stops a pasted URL from widening the row and scrolling the page.
-        'max-w-[82%] min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words',
-        isUser ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
-               : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]',
-      ].join(' ')}>{msg.content}</div>
     </div>
   );
 }

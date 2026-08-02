@@ -34,6 +34,7 @@ interface Props {
   // Publishing
   publishedAt?: string | null;
   isPublishing?: boolean;
+  publishFailed?: boolean;
   onPublish?: () => void;
   // Anticipated questions — state lives in TrainerClient, because answering them
   // happens in the conversation and the trainer also raises them unprompted.
@@ -56,6 +57,7 @@ export default function DashboardContent({
   onSupersede,
   publishedAt = null,
   isPublishing = false,
+  publishFailed = false,
   onPublish,
   anticipatedLoading = false,
   anticipatedProposed = [],
@@ -85,6 +87,7 @@ export default function DashboardContent({
             nodeStates={nodeStates}
             publishedAt={publishedAt}
             isPublishing={isPublishing}
+            publishFailed={publishFailed}
             onPublish={onPublish}
             onTrainNode={onTrainNode ?? (() => {})}
           />

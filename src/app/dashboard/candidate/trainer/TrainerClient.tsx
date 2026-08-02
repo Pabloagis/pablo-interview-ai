@@ -84,6 +84,10 @@ export default function TrainerClient({
   // ── Publish state ────────────────────────────────────────────────────
   const [publishedAt,    setPublishedAt]    = useState<string | null>(initialPublishedAt);
   const [isPublishing,   setIsPublishing]   = useState(false);
+  // A failed publish used to be console-only: the button simply stopped spinning,
+  // which looks identical to never having clicked it — and the candidate walks away
+  // believing a link that still 404s is live.
+  const [publishFailed,  setPublishFailed]  = useState(false);
 
   // ── Onboarding state ─────────────────────────────────────────────────
   // Derived on the SERVER (/api/training/onboarding) and never patched optimistically:
@@ -676,17 +680,20 @@ export default function TrainerClient({
   const handlePublish = useCallback(async () => {
     if (isPublishing) return;
     setIsPublishing(true);
+    setPublishFailed(false);
     try {
       const res = await fetch('/api/candidate/publish', { method: 'POST' });
       if (!res.ok) {
         const data = await res.json() as { error?: string };
         console.error('[TrainerClient] publish failed:', data.error);
+        setPublishFailed(true);
         return;
       }
       const data = await res.json() as { publishedAt: string };
       setPublishedAt(data.publishedAt);
     } catch (err) {
       console.error('[TrainerClient] publish error:', err);
+      setPublishFailed(true);
     } finally {
       setIsPublishing(false);
     }
@@ -752,6 +759,7 @@ export default function TrainerClient({
           onSupersede={handleSupersede}
           publishedAt={publishedAt}
           isPublishing={isPublishing}
+          publishFailed={publishFailed}
           onPublish={handlePublish}
           anticipatedLoading={antLoading}
           anticipatedProposed={antProposed}
