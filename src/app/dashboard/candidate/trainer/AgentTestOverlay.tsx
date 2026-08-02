@@ -23,7 +23,8 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { COVERAGE_NODES, type CoverageNodeKey } from '@/lib/coverage-nodes';
 import type { Gap } from '@/app/api/trainer/analyze-gaps/route';
 import { usePlatformT } from '@/context/platform-i18n';
-import { useLanguage, LANG_FLAGS, type Lang } from '@/context/LanguageContext';
+import { useLanguage, type Lang } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AgentChatSurface, { type ChatMessage, type ChatTopic } from '@/components/chat/AgentChatSurface';
 import { useSuggestedTopics } from '@/components/chat/useSuggestedTopics';
 import SpeakToggle, { useSpeech } from '@/components/chat/SpeakToggle';
@@ -41,11 +42,9 @@ const GAP_TYPE_STYLE: Record<'refusal' | 'weak', { color: string; bg: string }> 
   weak:    { color: '#b07030', bg: 'rgba(176,112,48,0.12)' },
 };
 
-const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
-
 export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
   const t = usePlatformT();
-  const { lang, setLang } = useLanguage();
+  const { lang } = useLanguage();
   const [phase,       setPhase]       = useState<Phase>('interviewing');
   const [messages,    setMessages]    = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -224,6 +223,19 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="shrink-0 min-h-14 flex items-center px-5 py-2 gap-3 border-b border-white/[0.08]">
+        {/* Always available. The End button is disabled until the agent has spoken,
+            so without this the candidate has no way out of the test but Escape. */}
+        <button
+          onClick={() => { cancelSpeech(); onClose(); }}
+          aria-label={t.test_return}
+          className="shrink-0 flex items-center gap-1.5 -ml-2 px-2 py-1.5 rounded-lg
+                     text-white/45 hover:text-white hover:bg-white/[0.06] transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+            <path d="M11 4L6 9l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          <span className="hidden sm:inline text-xs font-medium leading-none">{t.shell_back}</span>
+        </button>
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-semibold text-white/90 leading-tight">
             {phase === 'results' ? t.test_results_title : t.test_testing_title}
@@ -238,23 +250,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
         {phase === 'interviewing' && (
           <>
-            {/* The same language bar the recruiter sees. The overlay covers the
-                trainer's own switcher, so without it the candidate cannot reach
-                one at all. */}
-            <div className="flex items-center gap-0.5 shrink-0">
-              {LANG_ORDER.map(code => (
-                <button
-                  key={code}
-                  onClick={() => setLang(code)}
-                  aria-label={code}
-                  aria-pressed={lang === code}
-                  className="w-7 h-7 rounded-lg text-sm leading-none transition-opacity"
-                  style={{ opacity: lang === code ? 1 : 0.35, background: lang === code ? 'rgba(255,255,255,0.07)' : 'transparent' }}
-                >
-                  {LANG_FLAGS[code]}
-                </button>
-              ))}
-            </div>
+            {/* The overlay covers the trainer's own switcher, so it carries one too */}
+            <LanguageSwitcher />
             {ttsAvailable && (
               <SpeakToggle
                 enabled={speakAloud}
@@ -273,17 +270,6 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
               {t.test_end}
             </button>
           </>
-        )}
-        {phase === 'results' && (
-          <button
-            onClick={onClose}
-            className="shrink-0 text-white/40 hover:text-white transition-colors"
-            aria-label={t.test_close}
-          >
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M4 4L14 14M14 4L4 14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-            </svg>
-          </button>
         )}
         {phase === 'analyzing' && (
           <div className="shrink-0 w-4 h-4 rounded-full border-2 border-t-white/50 border-white/10 animate-spin" />
