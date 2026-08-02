@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { generateReport } from '@/lib/report';
+import type { ReportData } from '@/lib/report';
 import { sendCandidateReportEmail, type VisitorContext } from '@/lib/candidate-email';
 import { sendFollowUpEmail } from '@/lib/followup-email';
 
@@ -10,8 +11,8 @@ import { sendFollowUpEmail } from '@/lib/followup-email';
 // candidate email  → gated by report_sent_at          (set at claim time)
 // recruiter email  → gated by recruiter_email_sent_at  (set at claim time)
 //
-// The two gates are independent: a beacon firing without recruiter_email does not
-// block the recruiter email from being sent when the user later submits the modal.
+// The report is generated ONCE and shared between both emails to avoid a second
+// Haiku call and keep both emails consistent.
 
 const MIN_RECRUITER_MESSAGES = 4;
 const MAX_REPORTS_PER_PROFILE_24H = 10;
@@ -70,6 +71,11 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
     company: session.recruiter_company ?? null,
   };
 
+  // Report is generated once and shared between both emails.
+  // If only the recruiter email needs sending (candidate already got theirs),
+  // we still generate fresh here — same cost, ensures consistency.
+  let report: ReportData | null = null;
+
   // ── Candidate report (primary) ─────────────────────────────────────────────
   if (needsCandidateEmail) {
     // Atomic claim — only one concurrent caller proceeds.
@@ -81,7 +87,6 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
       .select('id');
 
     if (claimed && claimed.length > 0) {
-      let report;
       try {
         report = await generateReport({
           messages,
@@ -132,6 +137,21 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
   // Independent gate: a beacon that fired without recruiter_email does not block
   // this path. Failure here is non-fatal — the candidate report already went out.
   if (needsRecruiterEmail && session.recruiter_email) {
+    // Generate report if not already done for the candidate email.
+    if (!report) {
+      try {
+        report = await generateReport({
+          messages,
+          recruiterName: visitor.name,
+          company: visitor.company,
+          candidateName: profile.full_name,
+        });
+      } catch (err) {
+        console.error('[public-report] generateReport for recruiter failed:', err);
+        return;
+      }
+    }
+
     // Atomic claim — prevents double-send if the modal submit races with a beacon.
     const { data: recruiterClaimed } = await supabase
       .from('sessions')
@@ -152,10 +172,10 @@ export async function maybeSendReports(sessionId: string): Promise<void> {
           candidateName: profile.full_name,
           candidateSlug: profile.slug,
           sessionId,
+          report,
         });
       } catch (err) {
         console.error('[public-report] recruiter email failed:', err);
-        // Reset the claim so the next trigger can retry.
         await supabase
           .from('sessions')
           .update({ recruiter_email_sent_at: null })

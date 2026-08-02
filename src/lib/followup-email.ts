@@ -106,20 +106,30 @@ function divider(): string {
 
 // ── Email HTML (mirrors InteractiveReport layout) ─────────────────────────────
 
+function buildVisitorLine(name: string | null, jobTitle: string | null, company: string | null): string {
+  const parts: string[] = [];
+  if (name) parts.push(esc(name));
+  if (jobTitle) parts.push(esc(jobTitle));
+  if (company) parts.push(`at ${esc(company)}`);
+  return parts.length ? parts.join(' &middot; ') : 'An anonymous visitor';
+}
+
 export function generateEmailHTML(
   report: ReportData,
   recruiterName: string | null,
   messages: RawMessage[],
   previewUrl?: string,
-  _jobTitle?: string | null,
-  _companyName?: string | null,
+  jobTitle?: string | null,
+  companyName?: string | null,
   exitNotify?: boolean,
   candidateName?: string | null,
   profileUrl?: string,
+  options?: { hideActions?: boolean; recipientName?: string | null },
 ): string {
+  const isCandidate = options?.hideActions === true;
   const lang: Lang = VALID_LANGS.includes(report.language as Lang) ? report.language as Lang : 'en';
-  const greetingName = recruiterName?.trim() || '';
-  const greeting = greetingName ? `${GREETING[lang]} ${greetingName},` : `${GREETING[lang]},`;
+  const greetingTarget = isCandidate ? (options?.recipientName?.trim() || '') : (recruiterName?.trim() || '');
+  const greeting = greetingTarget ? `${GREETING[lang]} ${greetingTarget},` : `${GREETING[lang]},`;
   const who = candidateName?.trim() || 'this candidate';
   const referHref = `mailto:?subject=${encodeURIComponent(getReferSubject(lang, who))}&body=${encodeURIComponent(getReferBody(lang, who, profileUrl ?? BASE_URL))}`;
 
@@ -210,6 +220,14 @@ export function generateEmailHTML(
               <!-- Report badge -->
               <div style="display:inline-block; background:rgba(64,96,208,0.10); border:0.5px solid rgba(64,96,208,0.28); border-radius:999px; padding:4px 14px; font-size:9px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:#4060d0; margin-bottom:18px; font-family:Arial,sans-serif;">&#10022; ${REPORT_BADGE[lang]}</div>
 
+              ${isCandidate ? `
+              <!-- Who interviewed (candidate notification mode) -->
+              <p style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; margin:0 0 8px; font-family:Arial,sans-serif; text-align:center;">Interviewed by</p>
+              <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:20px; font-family:Arial,sans-serif;">${buildVisitorLine(recruiterName, jobTitle ?? null, companyName ?? null)}</div>
+              <div style="height:0.5px; background:#e2e8f0; margin-bottom:18px;"></div>
+              <p style="margin:0 0 12px; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; text-align:left;">${greeting}</p>
+              <p style="margin:0 0 8px; font-size:13.5px; color:#475569; line-height:1.75; text-align:left; font-family:Arial,sans-serif;">Here&rsquo;s the full report from this session with your AI agent.</p>
+              ` : `
               <!-- Avatar -->
               <table cellpadding="0" cellspacing="0" style="margin:0 auto 14px;">
                 <tr><td width="62" height="62" bgcolor="#e2e8f0" style="border-radius:50%; font-size:0; line-height:0; overflow:hidden; border:2px solid rgba(64,96,208,0.4);">
@@ -219,7 +237,7 @@ export function generateEmailHTML(
 
               <!-- Name -->
               <div style="font-size:17px; font-weight:700; letter-spacing:-0.01em; color:#4060d0; margin-bottom:4px; font-family:Arial,sans-serif;">Pablo Agis Burgos</div>
-              <div style="font-size:11px; color:#94a3b8; margin-bottom:20px; font-family:Arial,sans-serif;">SaaS · Hospitality Tech</div>
+              <div style="font-size:11px; color:#94a3b8; margin-bottom:20px; font-family:Arial,sans-serif;">SaaS &middot; Hospitality Tech</div>
 
               <!-- Divider -->
               <div style="height:0.5px; background:#e2e8f0; margin-bottom:18px;"></div>
@@ -228,12 +246,13 @@ export function generateEmailHTML(
               <p style="margin:0 0 12px; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; text-align:left;">${greeting}</p>
               <p style="margin:0 0 8px; font-size:13.5px; color:#475569; line-height:1.75; text-align:left; font-family:Arial,sans-serif;">${esc(report.intro)}</p>
               <p style="margin:0; font-size:12px; color:#94a3b8; font-style:italic; text-align:left; font-family:Arial,sans-serif;">&#8212; Pablo</p>
+              `}
 
             </td></tr>
           </table>
         </td></tr>
 
-        <!-- ── ACTION GRID (2×2) ───────────────────────────────────────────── -->
+        ${isCandidate ? '' : `<!-- ── ACTION GRID (2×2) ───────────────────────────────────────────── -->
         <tr><td style="padding-bottom:18px;">
           <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
@@ -265,7 +284,7 @@ export function generateEmailHTML(
               </td>
             </tr>
           </table>
-        </td></tr>
+        </td></tr>`}
 
         <!-- ── SECTION 1: Executive Summary ──────────────────────────────── -->
         <tr><td style="padding-bottom:8px;">
@@ -356,6 +375,8 @@ export interface SendFollowUpEmailParams {
   // Public slug of the candidate this report is about. Drives the only link in the
   // email; without it the "refer a colleague" mailto falls back to the root domain.
   candidateSlug?: string | null;
+  // Pre-generated report — skips the Haiku call when the caller already has one.
+  report?: ReportData;
 }
 
 export async function sendFollowUpEmail({
@@ -368,8 +389,9 @@ export async function sendFollowUpEmail({
   bcc,
   candidateName,
   candidateSlug,
+  report: preGeneratedReport,
 }: SendFollowUpEmailParams): Promise<{ emailId: string | null | undefined; html: string }> {
-  const report = await generateReport({
+  const report = preGeneratedReport ?? await generateReport({
     messages,
     recruiterName: recruiterName ?? null,
     company: companyName ?? null,

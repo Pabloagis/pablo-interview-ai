@@ -3,6 +3,7 @@ import { createServerSupabaseClient } from '@/lib/supabase';
 import { maybeSendReports } from '@/lib/public-report';
 
 export const dynamic = 'force-dynamic';
+export const maxDuration = 60;
 
 // Called by the End-conversation button AND navigator.sendBeacon (pagehide).
 // Beacon sends a Blob with type application/json, so request.json() works for both.

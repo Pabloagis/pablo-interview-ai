@@ -41,7 +41,12 @@ export async function sendCandidateReportEmail(params: {
   const resend = getResendClient();
 
   const profileUrl = candidateSlug ? `${BASE_URL}/${candidateSlug}` : BASE_URL;
-  const html = generateEmailHTML(report, visitor.name, messages, undefined, visitor.role, visitor.company, false, candidateName, profileUrl);
+  const recipientFirstName = candidateName?.split(' ')[0] ?? null;
+  const html = generateEmailHTML(
+    report, visitor.name, messages,
+    undefined, visitor.role, visitor.company, false, candidateName, profileUrl,
+    { hideActions: true, recipientName: recipientFirstName },
+  );
 
   const devBcc = process.env.DEV_BCC_EMAIL;
   const result = await resend.emails.send({
