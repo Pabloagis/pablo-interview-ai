@@ -27,7 +27,7 @@ import { useLanguage, type Lang } from '@/context/LanguageContext';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import AgentChatSurface, { type ChatMessage, type ChatTopic } from '@/components/chat/AgentChatSurface';
 import { useSuggestedTopics } from '@/components/chat/useSuggestedTopics';
-import SpeakToggle, { useSpeech } from '@/components/chat/SpeakToggle';
+import { useSpeech } from '@/components/chat/speech';
 import { INTRO_DELAY_MS } from '@/lib/proactive';
 
 interface Props {
@@ -52,7 +52,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
   const [gaps,        setGaps]        = useState<Gap[]>([]);
   const [error,       setError]       = useState<string | null>(null);
 
-  const { available: ttsAvailable, enabled: speakAloud, toggle: toggleSpeak, speak, cancel: cancelSpeech } = useSpeech(lang);
+  const { available: ttsAvailable, speakingId, speak, cancel: cancelSpeech } = useSpeech(lang);
   const { suggestions, consume, refresh, openers } = useSuggestedTopics(t);
 
   const messagesRef   = useRef<ChatMessage[]>([]);
@@ -158,9 +158,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
     if (assistantText) {
       setMessages(prev => [...prev, { id: crypto.randomUUID(), role: 'assistant', content: assistantText }]);
-      speak(assistantText);
     }
-  }, [speak, t]);
+  }, [t]);
 
   // ── Proactive opening ──────────────────────────────────────────────────────
   // Same delay as the public chat: the candidate should see the line a recruiter
@@ -252,14 +251,6 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           <>
             {/* The overlay covers the trainer's own switcher, so it carries one too */}
             <LanguageSwitcher />
-            {ttsAvailable && (
-              <SpeakToggle
-                enabled={speakAloud}
-                onToggle={toggleSpeak}
-                labelOn={t.pub_speak_on}
-                labelOff={t.pub_speak_off}
-              />
-            )}
             <button
               onClick={endInterview}
               disabled={messages.filter(m => m.role === 'assistant').length === 0}
@@ -298,6 +289,10 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           errorText={error}
           voice
           onVoiceError={message => setError(message)}
+          onSpeak={ttsAvailable ? speak : undefined}
+          speakingId={speakingId}
+          speakLabel={t.pub_speak_on}
+          stopSpeakLabel={t.pub_speak_off}
           emptyState={
             <div className="flex flex-col items-center w-full px-2 py-8">
               <p className="max-w-xs text-center text-sm leading-relaxed text-white/40">

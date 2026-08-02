@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, type ReactNode, type KeyboardEvent, type ChangeEvent } from 'react';
 import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
 import VoiceRecorder from '@/app/dashboard/candidate/components/VoiceRecorder';
+import SpeakButton from '@/components/chat/speech';
 
 // The conversation surface itself — chips, transcript, composer — shared by the
 // recruiter-facing chat at /<slug> and the candidate's agent-test sandbox.
@@ -72,8 +73,13 @@ interface Props {
   voice?:       boolean;
   onVoiceError?: (message: string) => void;
 
-  /** Sits to the left of the composer (the public chat puts "End" there). */
-  leading?: ReactNode;
+  /** Read-aloud. Omitted when the browser has no speech synthesis, which hides
+   *  the per-message buttons entirely. */
+  onSpeak?:      (id: string, text: string) => void;
+  speakingId?:   string | null;
+  speakLabel?:   string;
+  stopSpeakLabel?: string;
+
   /** Replaces the composer entirely once the conversation is over. */
   footer?:  ReactNode;
 }
@@ -99,7 +105,10 @@ export default function AgentChatSurface({
   errorText = null,
   voice = false,
   onVoiceError,
-  leading,
+  onSpeak,
+  speakingId = null,
+  speakLabel,
+  stopSpeakLabel,
   footer,
 }: Props) {
   const [input, setInput] = useState('');
@@ -213,7 +222,16 @@ export default function AgentChatSurface({
           <p className="text-sm text-[rgba(220,120,120,0.8)] text-center mt-10">{errorText}</p>
         )}
 
-        {messages.map(m => <Bubble key={m.id} msg={m} />)}
+        {messages.map(m => (
+          <Bubble
+            key={m.id}
+            msg={m}
+            onSpeak={onSpeak}
+            speaking={speakingId === m.id}
+            speakLabel={speakLabel}
+            stopSpeakLabel={stopSpeakLabel}
+          />
+        ))}
 
         {isStreaming && (
           <>
@@ -242,8 +260,6 @@ export default function AgentChatSurface({
       {footer ?? (
         <div className="shrink-0 border-t border-white/[0.07] px-4 py-3">
           <div className="flex items-end gap-2 min-w-0">
-            {leading}
-
             {voice && (
               <VoiceRecorder
                 compact
@@ -302,15 +318,38 @@ export default function AgentChatSurface({
   );
 }
 
-function Bubble({ msg }: { msg: ChatMessage }) {
+function Bubble({
+  msg, onSpeak, speaking, speakLabel, stopSpeakLabel,
+}: {
+  msg:             ChatMessage;
+  onSpeak?:        (id: string, text: string) => void;
+  speaking:        boolean;
+  speakLabel?:     string;
+  stopSpeakLabel?: string;
+}) {
   const isUser = msg.role === 'user';
+  // The read-aloud button belongs to the answer it reads, so it sits under the
+  // bubble rather than in the header. Only the agent's messages get one.
+  const canSpeak = !isUser && !!onSpeak;
   return (
     <div className={`flex min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className={[
-        'max-w-[82%] min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words',
-        isUser ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
-               : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]',
-      ].join(' ')}>{msg.content}</div>
+      <div className="max-w-[82%] min-w-0 flex flex-col items-start">
+        <div className={[
+          'min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words',
+          isUser ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
+                 : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]',
+        ].join(' ')}>{msg.content}</div>
+        {canSpeak && (
+          <div className="mt-1">
+            <SpeakButton
+              speaking={speaking}
+              onClick={() => onSpeak(msg.id, msg.content)}
+              labelSpeak={speakLabel ?? 'Read aloud'}
+              labelStop={stopSpeakLabel ?? 'Stop'}
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 }

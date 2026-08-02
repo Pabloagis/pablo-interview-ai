@@ -350,7 +350,6 @@ export interface PlatformStrings {
   nav_account: string;
   nav_my_agent: string;
   nav_my_agent_locked: string;
-  nav_build_your_own: string;
 
   // ── Coverage nodes (UI copy) ───────────────────────────────────
   nodes: Record<CoverageNodeKey, PlatformNode>;
@@ -690,8 +689,8 @@ const EN: PlatformStrings = {
   pub_thinking: ['Thinking…', 'Checking what is on record…', 'Pulling the details together…'],
   pub_your_question: 'Your question',
   pub_resumed: 'Picked up where you left off.',
-  pub_speak_on: 'Read answers aloud',
-  pub_speak_off: 'Stop reading aloud',
+  pub_speak_on: 'Read this answer aloud',
+  pub_speak_off: 'Stop reading',
   pub_modal_title: 'Want a copy of the summary?',
   pub_modal_body: 'Optional. The candidate receives their report either way.',
   pub_modal_name: 'Your name',
@@ -743,7 +742,6 @@ const EN: PlatformStrings = {
   nav_account: 'Account',
   nav_my_agent: 'View my public agent',
   nav_my_agent_locked: 'Publish your agent to open your public link',
-  nav_build_your_own: 'Build your own agent',
 
   nodes: EN_NODES,
 };
@@ -1064,7 +1062,7 @@ const ES: PlatformStrings = {
   pub_thinking: ['Pensando…', 'Comprobando lo que está verificado…', 'Reuniendo los detalles…'],
   pub_your_question: 'Tu pregunta',
   pub_resumed: 'Retomamos donde lo dejaste.',
-  pub_speak_on: 'Leer las respuestas en voz alta',
+  pub_speak_on: 'Leer esta respuesta en voz alta',
   pub_speak_off: 'Dejar de leer en voz alta',
   pub_modal_title: '¿Quieres una copia del resumen?',
   pub_modal_body: 'Opcional. El candidato recibe su informe igualmente.',
@@ -1117,7 +1115,6 @@ const ES: PlatformStrings = {
   nav_account: 'Cuenta',
   nav_my_agent: 'Ver mi agente público',
   nav_my_agent_locked: 'Publica tu agente para abrir tu enlace público',
-  nav_build_your_own: 'Crea tu propio agente',
 
   nodes: ES_NODES,
 };
@@ -1438,7 +1435,7 @@ const IT: PlatformStrings = {
   pub_thinking: ['Sto pensando…', 'Controllo cosa è verificato…', 'Metto insieme i dettagli…'],
   pub_your_question: 'La tua domanda',
   pub_resumed: 'Ripreso da dove avevi lasciato.',
-  pub_speak_on: 'Leggi le risposte ad alta voce',
+  pub_speak_on: 'Leggi questa risposta ad alta voce',
   pub_speak_off: 'Smetti di leggere ad alta voce',
   pub_modal_title: 'Vuoi una copia del riepilogo?',
   pub_modal_body: 'Facoltativo. Il candidato riceve comunque il suo report.',
@@ -1491,7 +1488,6 @@ const IT: PlatformStrings = {
   nav_account: 'Account',
   nav_my_agent: 'Vedi il mio agente pubblico',
   nav_my_agent_locked: 'Pubblica il tuo agente per aprire il link pubblico',
-  nav_build_your_own: 'Crea il tuo agente',
 
   nodes: IT_NODES,
 };
@@ -1812,7 +1808,7 @@ const PT: PlatformStrings = {
   pub_thinking: ['A pensar…', 'A verificar o que está confirmado…', 'A reunir os detalhes…'],
   pub_your_question: 'A tua pergunta',
   pub_resumed: 'Retomámos onde ficaste.',
-  pub_speak_on: 'Ler as respostas em voz alta',
+  pub_speak_on: 'Ler esta resposta em voz alta',
   pub_speak_off: 'Parar de ler em voz alta',
   pub_modal_title: 'Queres uma cópia do resumo?',
   pub_modal_body: 'Opcional. O candidato recebe o relatório de qualquer forma.',
@@ -1865,7 +1861,6 @@ const PT: PlatformStrings = {
   nav_account: 'Conta',
   nav_my_agent: 'Ver o meu agente público',
   nav_my_agent_locked: 'Publica o teu agente para abrir o teu link público',
-  nav_build_your_own: 'Cria o teu próprio agente',
 
   nodes: PT_NODES,
 };

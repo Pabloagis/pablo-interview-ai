@@ -9,7 +9,7 @@ import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 import AgentChatSurface, { type ChatMessage, type ChatTopic } from '@/components/chat/AgentChatSurface';
 import { useSuggestedTopics } from '@/components/chat/useSuggestedTopics';
-import SpeakToggle, { useSpeech } from '@/components/chat/SpeakToggle';
+import { useSpeech } from '@/components/chat/speech';
 import { INTRO_DELAY_MS } from '@/lib/proactive';
 
 // The recruiter-facing chat. This is the product: everything the candidate
@@ -63,7 +63,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   const [recruiterEmail, setRecruiterEmail] = useState('');
   const [endingSubmitting, setEndingSubmitting] = useState(false);
 
-  const { available: ttsAvailable, enabled: speakAloud, toggle: toggleSpeak, speak, cancel: cancelSpeech } = useSpeech(lang);
+  const { available: ttsAvailable, speakingId, speak, cancel: cancelSpeech } = useSpeech(lang);
   const { suggestions, consume, refresh, openers } = useSuggestedTopics(t);
 
   const sessionRef       = useRef<string | null>(null);
@@ -234,7 +234,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     setStreamingText('');
     if (assistant) {
       setMessages(prev => [...prev, { id: generateId(), role: 'assistant', content: assistant }]);
-      speak(assistant);
     }
     if (conversationEnded) {
       setEnded(true);
@@ -248,10 +247,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     } else if (!assistant) {
       addToast(t.pub_no_answer);
     }
-    // `speak` is the hook's stable callback, not the hook object: depending on
-    // the object would give runTurn a new identity every render, and the intro
-    // effect below would clear and restart its 30s timer forever.
-  }, [t, addToast, speak, storageKey]);
+  }, [t, addToast, storageKey]);
 
   // ── Proactive opening ──────────────────────────────────────────────────────
   useEffect(() => {
@@ -350,25 +346,19 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
           <div className="flex items-start gap-3 min-w-0">
             <div className="flex-1 min-w-0"><Header candidate={candidate} initials={initials} /></div>
             {langBar}
-            {ttsAvailable && (
-              <SpeakToggle
-                enabled={speakAloud}
-                onToggle={toggleSpeak}
-                labelOn={t.pub_speak_on}
-                labelOff={t.pub_speak_off}
-              />
+            {/* Ending the conversation belongs beside the person you are talking
+                to, not under the keyboard next to Send. */}
+            {!ended && (
+              <button
+                onClick={() => setShowEnd(true)}
+                disabled={messages.length === 0}
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-white/[0.12] text-[rgba(255,255,255,0.5)] hover:text-white hover:border-white/[0.25] text-xs transition-colors disabled:opacity-30"
+              >
+                {t.pub_end}
+              </button>
             )}
           </div>
-          <div className="mt-2 flex items-center justify-between gap-3">
-            <p className="text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
-            {/* The only exit from this page into the platform itself */}
-            <a
-              href="/platform"
-              className="shrink-0 text-[11px] text-[rgba(255,255,255,0.32)] hover:text-white transition-colors whitespace-nowrap"
-            >
-              {t.nav_build_your_own} ↗
-            </a>
-          </div>
+          <p className="mt-2 text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
         </div>
 
         <AgentChatSurface
@@ -420,15 +410,10 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
               </div>
             </div>
           }
-          leading={
-            <button
-              onClick={() => setShowEnd(true)}
-              disabled={messages.length === 0}
-              className="shrink-0 h-11 px-3 rounded-xl border border-white/[0.12] text-[rgba(255,255,255,0.5)] hover:text-white text-xs transition-colors disabled:opacity-30"
-            >
-              {t.pub_end}
-            </button>
-          }
+          onSpeak={ttsAvailable ? speak : undefined}
+          speakingId={speakingId}
+          speakLabel={t.pub_speak_on}
+          stopSpeakLabel={t.pub_speak_off}
           footer={ended ? (
             <div className="shrink-0 border-t border-white/[0.07] px-5 py-5 text-center">
               <p className="text-sm text-[rgba(255,255,255,0.6)]">{t.pub_ended}</p>
