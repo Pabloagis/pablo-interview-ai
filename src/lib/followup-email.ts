@@ -106,7 +106,7 @@ function divider(): string {
 
 // ── Email HTML (mirrors InteractiveReport layout) ─────────────────────────────
 
-function generateEmailHTML(
+export function generateEmailHTML(
   report: ReportData,
   recruiterName: string | null,
   messages: RawMessage[],
