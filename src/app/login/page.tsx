@@ -127,6 +127,23 @@ export default function LoginPage() {
             {t.login_get_started}
           </Link>
         </p>
+
+        {/* Both sign-up paths, one click away — "Get started" alone sent you back to
+            the landing page to make the same choice again. */}
+        <div className="mt-3 flex items-center justify-center gap-2">
+          <Link
+            href="/register/candidate"
+            className="flex-1 text-center py-2 px-3 rounded-xl border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.09)] text-[rgba(255,255,255,0.75)] hover:text-white text-xs font-medium transition-colors"
+          >
+            {t.land_candidate}
+          </Link>
+          <Link
+            href="/register/recruiter"
+            className="flex-1 text-center py-2 px-3 rounded-xl border border-[rgba(255,255,255,0.10)] bg-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.09)] text-[rgba(255,255,255,0.75)] hover:text-white text-xs font-medium transition-colors"
+          >
+            {t.land_recruiter}
+          </Link>
+        </div>
       </div>
     </main>
   );

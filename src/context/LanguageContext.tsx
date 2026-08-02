@@ -11,6 +11,18 @@ export const LANG_FLAGS: Record<Lang, string> = {
   pt: '🇵🇹',
 };
 
+// Each language names itself — a Spanish speaker looking for "Español" should not
+// have to recognise it under an English label (or guess from a flag alone).
+export const LANG_LABELS: Record<Lang, string> = {
+  en: 'English',
+  es: 'Español',
+  it: 'Italiano',
+  pt: 'Português',
+};
+
+// One order for every surface that lists the languages.
+export const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
+
 function detectLanguage(): Lang {
   if (typeof navigator === 'undefined') return 'en';
   const code = navigator.language.split('-')[0].toLowerCase();

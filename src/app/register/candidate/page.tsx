@@ -163,6 +163,14 @@ export default function RegisterCandidatePage() {
             {t.reg_signin}
           </Link>
         </p>
+
+        {/* Crossing between the two sign-up paths used to mean editing the URL */}
+        <p className="mt-2 text-sm text-center text-[rgba(255,255,255,0.38)]">
+          {t.reg_wrong_path_recruiter}{' '}
+          <Link href="/register/recruiter" className="text-[#4060d0] hover:text-[#6080f0] transition-colors">
+            {t.reg_go_recruiter}
+          </Link>
+        </p>
       </div>
     </main>
   );

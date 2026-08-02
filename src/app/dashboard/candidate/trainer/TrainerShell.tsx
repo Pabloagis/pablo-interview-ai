@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, type ReactNode } from 'react';
 import type { PublishLevel } from '@/lib/coverage-nodes';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import LogoutButton from '../../LogoutButton';
 import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // publishLevel → translation key for its label.
@@ -19,6 +20,10 @@ interface Props {
   readiness: number;
   publishLevel: PublishLevel;
   candidateName: string;
+  /** The candidate's public address, once claimed. */
+  publicSlug: string | null;
+  /** Whether that address is live — an unpublished slug 404s, so the link waits. */
+  published: boolean;
   conversationSlot: ReactNode;
   dashboardSlot: ReactNode;
   onTestAgent?: () => void;
@@ -115,12 +120,99 @@ function ReadinessWidget({
   );
 }
 
+// ── Account menu ──────────────────────────────────────────────────────────────
+// The trainer had no exit: no way to open your own live agent, and no way to sign
+// out. Both live here, behind the candidate's initial.
+
+function AccountMenu({
+  candidateName,
+  publicSlug,
+  published,
+}: {
+  candidateName: string;
+  publicSlug: string | null;
+  published: boolean;
+}) {
+  const t = usePlatformT();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const initial = candidateName.trim().charAt(0).toUpperCase() || '?';
+  const agentLive = published && !!publicSlug;
+
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onClick);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onClick);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative shrink-0">
+      <button
+        onClick={() => setOpen(v => !v)}
+        aria-label={t.nav_account}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={[
+          'w-7 h-7 rounded-full border text-[11px] font-semibold transition-colors',
+          open
+            ? 'bg-white/[0.12] border-white/[0.25] text-white'
+            : 'bg-white/[0.05] border-white/[0.12] text-[rgba(255,255,255,0.6)] hover:text-white hover:border-white/[0.25]',
+        ].join(' ')}
+      >
+        {initial}
+      </button>
+
+      {open && (
+        <div
+          role="menu"
+          className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-xl py-1 border border-white/[0.12] bg-[#1c2135] shadow-[0_8px_32px_rgba(0,0,0,0.48)]"
+        >
+          <p className="px-3 py-2 text-[11px] text-[rgba(255,255,255,0.35)] truncate border-b border-white/[0.07] mb-1">
+            {candidateName}
+          </p>
+
+          {agentLive ? (
+            <a
+              href={`/${publicSlug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              role="menuitem"
+              className="flex items-center justify-between gap-2 w-full px-3 py-2 text-[13px] text-[rgba(255,255,255,0.75)] hover:bg-white/[0.07] hover:text-white transition-colors"
+            >
+              {t.nav_my_agent}
+              <span className="text-[rgba(255,255,255,0.3)]">↗</span>
+            </a>
+          ) : (
+            <p className="px-3 py-2 text-[12px] leading-snug text-[rgba(255,255,255,0.32)]">
+              {t.nav_my_agent_locked}
+            </p>
+          )}
+
+          <LogoutButton className="block w-full px-3 py-2 text-left text-[13px] text-[rgba(255,255,255,0.75)] hover:bg-white/[0.07] hover:text-white transition-colors cursor-pointer" />
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main shell ────────────────────────────────────────────────────────────────
 
 export default function TrainerShell({
   readiness,
   publishLevel,
   candidateName,
+  publicSlug,
+  published,
   conversationSlot,
   dashboardSlot,
   onTestAgent,
@@ -198,9 +290,7 @@ export default function TrainerShell({
             <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={32} />
             <div className="flex-1 min-w-0" />
             <LanguageSwitcher />
-            <span className="text-[11px] text-[rgba(255,255,255,0.28)] truncate">
-              {candidateName}
-            </span>
+            <AccountMenu candidateName={candidateName} publicSlug={publicSlug} published={published} />
             {onTestAgent && (
               <button
                 onClick={onTestAgent}
@@ -237,6 +327,8 @@ export default function TrainerShell({
         <div className="shrink-0 h-12 flex items-center px-4 gap-3 border-b border-white/[0.08]">
           <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={28} />
           <div className="flex-1 min-w-0" />
+          {/* Account lives in the sheet on mobile — the top bar is already full */}
+          <AccountMenu candidateName={candidateName} publicSlug={publicSlug} published={published} />
           <button
             onClick={() => setSheetOpen(false)}
             className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"

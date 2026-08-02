@@ -50,6 +50,7 @@ export interface InitialTrainerData {
   initialReadiness: number;
   initialPublishLevel: PublishLevel;
   initialPublishedAt: string | null;
+  publicSlug: string | null;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -60,6 +61,7 @@ export default function TrainerClient({
   initialReadiness,
   initialPublishLevel,
   initialPublishedAt,
+  publicSlug,
 }: InitialTrainerData) {
   const { lang } = useLanguage();
   const t = usePlatformT();
@@ -720,6 +722,8 @@ export default function TrainerClient({
       readiness={readiness}
       publishLevel={publishLevel}
       candidateName={candidateName}
+      publicSlug={publicSlug}
+      published={publishedAt != null}
       onTestAgent={() => setAgentTestOpen(true)}
       conversationSlot={
         <ConversationPanel

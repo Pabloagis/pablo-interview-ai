@@ -4,7 +4,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { generateId } from '@/lib/utils';
 import Toast from '@/components/Toast';
 import type { ToastMessage } from '@/lib/types';
-import { useLanguage, LANG_FLAGS, type Lang } from '@/context/LanguageContext';
+import { useLanguage, type Lang } from '@/context/LanguageContext';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 import AgentChatSurface, { type ChatMessage, type ChatTopic } from '@/components/chat/AgentChatSurface';
 import { useSuggestedTopics } from '@/components/chat/useSuggestedTopics';
@@ -35,7 +36,6 @@ const RETRY_DELAY_MS = 2500;
 const CHECKIN_IDLE_MS = 90_000;
 const IDLE_TICK_MS    = 10_000;
 
-const LANG_ORDER: Lang[] = ['en', 'es', 'it', 'pt'];
 
 interface Candidate {
   slug: string;
@@ -48,7 +48,7 @@ interface Props {
   enabled: boolean;
 }
 export default function PublicAgentChat({ candidate, enabled }: Props) {
-  const { lang, setLang } = useLanguage();
+  const { lang } = useLanguage();
   const t = usePlatformT();
 
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -324,22 +324,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   const initials  = candidate.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
   const firstName = candidate.name.split(' ')[0];
 
-  const langBar = (
-    <div className="flex items-center gap-0.5 shrink-0">
-      {LANG_ORDER.map(code => (
-        <button
-          key={code}
-          onClick={() => setLang(code)}
-          aria-label={code}
-          aria-pressed={lang === code}
-          className="w-7 h-7 rounded-lg text-sm leading-none transition-opacity"
-          style={{ opacity: lang === code ? 1 : 0.35, background: lang === code ? 'rgba(255,255,255,0.07)' : 'transparent' }}
-        >
-          {LANG_FLAGS[code]}
-        </button>
-      ))}
-    </div>
-  );
+  const langBar = <LanguageSwitcher />;
 
   // ── Unavailable (kill switch) ──────────────────────────────────────────────
   if (!enabled || startError === 'unavailable') {
@@ -374,7 +359,16 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
               />
             )}
           </div>
-          <p className="mt-2 text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
+            {/* The only exit from this page into the platform itself */}
+            <a
+              href="/platform"
+              className="shrink-0 text-[11px] text-[rgba(255,255,255,0.32)] hover:text-white transition-colors whitespace-nowrap"
+            >
+              {t.nav_build_your_own} ↗
+            </a>
+          </div>
         </div>
 
         <AgentChatSurface

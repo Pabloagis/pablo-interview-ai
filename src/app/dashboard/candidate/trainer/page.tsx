@@ -22,7 +22,7 @@ export default async function TrainerPage() {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name, role, published_at')
+    .select('full_name, role, published_at, slug')
     .eq('id', user.id)
     .single();
 
@@ -30,6 +30,9 @@ export default async function TrainerPage() {
 
   const name        = profile?.full_name ?? 'Candidate';
   const publishedAt = (profile?.published_at as string | null | undefined) ?? null;
+  // The shell links straight to the live agent — until now the only way from the
+  // trainer to your own public page was copying the address out of the link card.
+  const slug        = (profile?.slug as string | null | undefined) ?? null;
 
   // Load pre-computed coverage nodes — fall back to all-dark if table is empty
   const { data: coverageRows } = await supabase
@@ -59,6 +62,7 @@ export default async function TrainerPage() {
       initialReadiness={initialReadiness}
       initialPublishLevel={initialPublishLevel}
       initialPublishedAt={publishedAt}
+      publicSlug={slug}
     />
   );
 }

@@ -1,7 +1,11 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import Link from 'next/link';
 import LogoutButton from '../LogoutButton';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { usePlatformT, LANG_LOCALE, type PlatformStrings } from '@/context/platform-i18n';
+import { useLanguage } from '@/context/LanguageContext';
 import type { CandidateDirectoryItem } from '@/app/api/recruiter/candidates/route';
 import type { SessionHistoryItem } from '@/app/api/recruiter/sessions/route';
 
@@ -34,21 +38,24 @@ const LEVEL_COLOR: Record<PublishLevel, string> = {
   unpublished: '#6080a0',
 };
 
-const LEVEL_LABEL: Record<PublishLevel, string> = {
-  sharp:       'Sharp',
-  solid:       'Solid',
-  basic:       'Basic',
-  unpublished: 'Unpublished',
+// The level labels are already translated for the candidate's own shell — the
+// recruiter side reads the same keys instead of keeping an English copy.
+const LEVEL_LABEL_KEY: Record<PublishLevel, keyof PlatformStrings> = {
+  sharp:       'level_sharp',
+  solid:       'level_solid',
+  basic:       'level_basic',
+  unpublished: 'level_unpublished',
 };
 
 function PublishLevelBadge({ level }: { level: PublishLevel }) {
+  const t = usePlatformT();
   const color = LEVEL_COLOR[level];
   return (
     <span
       className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-widest"
       style={{ color, background: `${color}1a` }}
     >
-      {LEVEL_LABEL[level]}
+      {t[LEVEL_LABEL_KEY[level]] as string}
     </span>
   );
 }
@@ -62,6 +69,7 @@ function SkillChip({ label }: { label: string }) {
 }
 
 function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
+  const t = usePlatformT();
   return (
     <div className="rounded-2xl border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.03)] p-5 flex flex-col gap-4 hover:border-[rgba(255,255,255,0.13)] transition-colors">
       {/* Header */}
@@ -77,7 +85,7 @@ function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
             {candidate.current_role}
             {candidate.years_experience > 0 && (
               <span className="text-[rgba(255,255,255,0.28)]">
-                {' '}· {candidate.years_experience}y exp
+                {' '}· {t.rec_years_exp(candidate.years_experience)}
               </span>
             )}
           </p>
@@ -87,7 +95,7 @@ function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
       {/* Score */}
       <div>
         <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-widest mb-1.5">
-          Twin Confidence
+          {t.rec_twin_confidence}
         </p>
         <ScoreBar score={candidate.confidence_score} />
       </div>
@@ -114,11 +122,11 @@ function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
           href={`/${candidate.slug}`}
           className="mt-auto w-full py-2 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white text-sm font-medium transition-colors flex items-center justify-center"
         >
-          Interview
+          {t.rec_interview}
         </a>
       ) : (
         <span className="mt-auto w-full py-2 rounded-xl bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.35)] text-sm font-medium flex items-center justify-center">
-          No public link
+          {t.rec_no_link}
         </span>
       )}
     </div>
@@ -126,20 +134,21 @@ function CandidateCard({ candidate }: { candidate: CandidateDirectoryItem }) {
 }
 
 function EmptyState({ search }: { search: string }) {
+  const t = usePlatformT();
   return (
     <div className="col-span-2 py-16 text-center">
       {search ? (
         <>
-          <p className="text-sm font-medium text-white mb-1">No results for "{search}"</p>
+          <p className="text-sm font-medium text-white mb-1">{t.rec_no_results(search)}</p>
           <p className="text-xs text-[rgba(255,255,255,0.35)]">
-            Try a different name, role, or skill.
+            {t.rec_no_results_hint}
           </p>
         </>
       ) : (
         <>
-          <p className="text-sm font-medium text-white mb-1">No candidates published yet</p>
+          <p className="text-sm font-medium text-white mb-1">{t.rec_none_published}</p>
           <p className="text-xs text-[rgba(255,255,255,0.35)]">
-            Candidates appear here once they've published their agent — Basic, Solid, or Sharp.
+            {t.rec_none_published_hint}
           </p>
         </>
       )}
@@ -148,7 +157,8 @@ function EmptyState({ search }: { search: string }) {
 }
 
 function HistoryRow({ session }: { session: SessionHistoryItem }) {
-  const date = new Date(session.created_at).toLocaleDateString('en-GB', {
+  const { lang } = useLanguage();
+  const date = new Date(session.created_at).toLocaleDateString(LANG_LOCALE[lang], {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -182,6 +192,7 @@ interface Props {
 }
 
 export default function RecruiterDashboard({ recruiterName }: Props) {
+  const t = usePlatformT();
   const [tab, setTab] = useState<Tab>('candidates');
   const [search, setSearch] = useState('');
   const [candidates, setCandidates] = useState<CandidateDirectoryItem[]>([]);
@@ -196,11 +207,11 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
       .then(r => r.json())
       .then((data: { candidates?: CandidateDirectoryItem[]; error?: string }) => {
         if (data.candidates) setCandidates(data.candidates);
-        else setError(data.error ?? 'Failed to load candidates');
+        else setError(data.error ?? t.rec_load_failed);
       })
-      .catch(() => setError('Failed to load candidates'))
+      .catch(() => setError(t.rec_load_failed))
       .finally(() => setLoadingCandidates(false));
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Load history when tab switches to history
   const loadHistory = useCallback(() => {
@@ -239,21 +250,25 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
   return (
     <div className="min-h-screen bg-[#0d0f14]">
 
-      {/* Top bar */}
-      <header className="border-b border-[rgba(255,255,255,0.06)] px-6 py-4 flex items-center justify-between">
-        <div>
-          <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-widest">
+      {/* Top bar — brand goes home, language is selectable here as on every other page */}
+      <header className="border-b border-[rgba(255,255,255,0.06)] px-6 py-4 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <Link
+            href="/platform"
+            className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] hover:text-[rgba(255,255,255,0.6)] uppercase tracking-widest transition-colors"
+          >
             InterviewMind
-          </p>
-          <h1 className="text-base font-bold text-white mt-0.5">
-            Find your next hire
+          </Link>
+          <h1 className="text-base font-bold text-white mt-0.5 truncate">
+            {t.rec_title}
           </h1>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.25)]">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <span className="hidden sm:block text-xs text-[rgba(255,255,255,0.25)] truncate max-w-[160px]">
             {recruiterName}
           </span>
-          <LogoutButton />
+          <LanguageSwitcher />
+          <LogoutButton className="px-3 py-1.5 text-xs text-[rgba(255,255,255,0.6)] border border-[rgba(255,255,255,0.12)] rounded-lg hover:text-white hover:border-[rgba(255,255,255,0.3)] transition-colors cursor-pointer" />
         </div>
       </header>
 
@@ -261,18 +276,18 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 border-b border-[rgba(255,255,255,0.06)] pb-0">
-          {(['candidates', 'history'] as Tab[]).map(t => (
+          {(['candidates', 'history'] as Tab[]).map(name => (
             <button
-              key={t}
-              onClick={() => setTab(t)}
+              key={name}
+              onClick={() => setTab(name)}
               className={[
                 'px-4 py-2.5 text-sm font-medium rounded-t-lg transition-colors border-b-2 -mb-px',
-                tab === t
+                tab === name
                   ? 'text-white border-[#4060d0]'
                   : 'text-[rgba(255,255,255,0.38)] border-transparent hover:text-[rgba(255,255,255,0.65)]',
               ].join(' ')}
             >
-              {t === 'candidates' ? 'Candidate Directory' : 'Interview History'}
+              {name === 'candidates' ? t.rec_tab_candidates : t.rec_tab_history}
             </button>
           ))}
         </div>
@@ -301,7 +316,7 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
                 </svg>
                 <input
                   type="text"
-                  placeholder="Search by name, role, or skill…"
+                  placeholder={t.rec_search_ph}
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-white placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors"
@@ -313,7 +328,7 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
             {loadingCandidates ? (
               <div className="py-16 text-center text-sm text-[rgba(255,255,255,0.35)]">
                 <div className="inline-block w-5 h-5 rounded-full border-2 border-t-[#4060d0] border-[rgba(255,255,255,0.1)] animate-spin mb-3" />
-                <p>Loading candidates…</p>
+                <p>{t.rec_loading_candidates}</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -337,19 +352,19 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
             {loadingHistory ? (
               <div className="py-16 text-center text-sm text-[rgba(255,255,255,0.35)]">
                 <div className="inline-block w-5 h-5 rounded-full border-2 border-t-[#4060d0] border-[rgba(255,255,255,0.1)] animate-spin mb-3" />
-                <p>Loading history…</p>
+                <p>{t.rec_loading_history}</p>
               </div>
             ) : sessions.length === 0 ? (
               <div className="py-16 text-center">
-                <p className="text-sm font-medium text-white mb-1">No interviews yet</p>
+                <p className="text-sm font-medium text-white mb-1">{t.rec_no_interviews}</p>
                 <p className="text-xs text-[rgba(255,255,255,0.35)]">
-                  Start an interview from the Candidate Directory — it will appear here.
+                  {t.rec_no_interviews_hint}
                 </p>
               </div>
             ) : (
               <div className="flex flex-col gap-2">
                 <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-widest mb-2">
-                  {sessions.length} interview{sessions.length !== 1 ? 's' : ''}
+                  {t.rec_interview_count(sessions.length)}
                 </p>
                 {sessions.map(session => (
                   <HistoryRow key={session.id} session={session} />
