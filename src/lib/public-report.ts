@@ -14,7 +14,7 @@ import { sendFollowUpEmail } from '@/lib/followup-email';
 // The report is generated ONCE and shared between both emails to avoid a second
 // Haiku call and keep both emails consistent.
 
-const MIN_RECRUITER_MESSAGES = 4;
+const MIN_RECRUITER_MESSAGES = 2;
 const MAX_REPORTS_PER_PROFILE_24H = 10;
 const MAX_ATTEMPTS = 3;
 
