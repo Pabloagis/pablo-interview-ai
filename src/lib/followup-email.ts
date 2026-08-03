@@ -51,6 +51,38 @@ const FOOTER_TEXT: Record<Lang, string> = {
   pt: 'Obrigado pelo seu tempo e consideração!',
 };
 
+const CANDIDATE_FOOTER_TEXT: Record<Lang, string> = {
+  en: "You're receiving this because someone interviewed your AI agent.",
+  es: 'Recibes esto porque alguien entrevistó a tu agente IA.',
+  it: 'Ricevi questa email perché qualcuno ha intervistato il tuo agente AI.',
+  pt: 'Recebes este email porque alguém entrevistou o teu agente IA.',
+};
+
+const INTERVIEWED_BY: Record<Lang, string> = {
+  en: 'Interviewed by',
+  es: 'Entrevistado por',
+  it: 'Intervistato da',
+  pt: 'Entrevistado por',
+};
+
+const CANDIDATE_INTRO: Record<Lang, string> = {
+  en: 'Here’s the full report from this session with your AI agent.',
+  es: 'Aquí tienes el informe completo de esta sesión con tu agente IA.',
+  it: 'Ecco il report completo di questa sessione con il tuo agente AI.',
+  pt: 'Aqui está o relatório completo desta sessão com o teu agente IA.',
+};
+
+const VISITOR_AT: Record<Lang, string> = {
+  en: 'at', es: 'en', it: 'presso', pt: 'em',
+};
+
+const ANONYMOUS_VISITOR: Record<Lang, string> = {
+  en: 'An anonymous visitor',
+  es: 'Un visitante anónimo',
+  it: 'Un visitatore anonimo',
+  pt: 'Um visitante anónimo',
+};
+
 // v2 hardcoded Pablo's name and biography here in four languages. In a multi-user
 // product that meant every candidate's referral email described Pablo. Both the
 // subject and the body are now built from the candidate this session was about, and
@@ -106,12 +138,12 @@ function divider(): string {
 
 // ── Email HTML (mirrors InteractiveReport layout) ─────────────────────────────
 
-function buildVisitorLine(name: string | null, jobTitle: string | null, company: string | null): string {
+function buildVisitorLine(name: string | null, jobTitle: string | null, company: string | null, lang: Lang = 'en'): string {
   const parts: string[] = [];
   if (name) parts.push(esc(name));
   if (jobTitle) parts.push(esc(jobTitle));
-  if (company) parts.push(`at ${esc(company)}`);
-  return parts.length ? parts.join(' &middot; ') : 'An anonymous visitor';
+  if (company) parts.push(`${VISITOR_AT[lang]} ${esc(company)}`);
+  return parts.length ? parts.join(' &middot; ') : ANONYMOUS_VISITOR[lang];
 }
 
 export function generateEmailHTML(
@@ -222,11 +254,11 @@ export function generateEmailHTML(
 
               ${isCandidate ? `
               <!-- Who interviewed (candidate notification mode) -->
-              <p style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; margin:0 0 8px; font-family:Arial,sans-serif; text-align:center;">Interviewed by</p>
-              <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:20px; font-family:Arial,sans-serif;">${buildVisitorLine(recruiterName, jobTitle ?? null, companyName ?? null)}</div>
+              <p style="font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#94a3b8; margin:0 0 8px; font-family:Arial,sans-serif; text-align:center;">${INTERVIEWED_BY[lang]}</p>
+              <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:20px; font-family:Arial,sans-serif;">${buildVisitorLine(recruiterName, jobTitle ?? null, companyName ?? null, lang)}</div>
               <div style="height:0.5px; background:#e2e8f0; margin-bottom:18px;"></div>
               <p style="margin:0 0 12px; font-size:15px; font-weight:600; color:#0f172a; font-family:Arial,sans-serif; text-align:left;">${greeting}</p>
-              <p style="margin:0 0 8px; font-size:13.5px; color:#475569; line-height:1.75; text-align:left; font-family:Arial,sans-serif;">Here&rsquo;s the full report from this session with your AI agent.</p>
+              <p style="margin:0 0 8px; font-size:13.5px; color:#475569; line-height:1.75; text-align:left; font-family:Arial,sans-serif;">${esc(CANDIDATE_INTRO[lang])}</p>
               ` : `
               <!-- Avatar -->
               <table cellpadding="0" cellspacing="0" style="margin:0 auto 14px;">
@@ -346,7 +378,7 @@ export function generateEmailHTML(
 
         <!-- ── FOOTER ─────────────────────────────────────────────────────── -->
         <tr><td style="padding-top:8px; text-align:center;">
-          <p style="margin:0 0 6px; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif;">${FOOTER_TEXT[lang]}</p>
+          <p style="margin:0 0 6px; font-size:13px; color:#94a3b8; font-family:Arial,sans-serif;">${isCandidate ? CANDIDATE_FOOTER_TEXT[lang] : FOOTER_TEXT[lang]}</p>
           <a href="${BASE_URL}" style="font-size:12px; color:#4060d0; font-family:Arial,sans-serif; text-decoration:none;">${BASE_HOST}</a>
         </td></tr>
 

@@ -9,6 +9,12 @@ import { BASE_URL } from '@/lib/base-url';
 
 const FROM_ADDRESS = 'InterviewMind <noreply@interviewmind.one>';
 
+type Lang = 'en' | 'es' | 'it' | 'pt';
+const VALID_LANGS: Lang[] = ['en', 'es', 'it', 'pt'];
+function safeLang(lang: string | undefined): Lang {
+  return VALID_LANGS.includes(lang as Lang) ? lang as Lang : 'en';
+}
+
 export interface VisitorContext {
   name: string | null;
   role: string | null;
@@ -21,11 +27,27 @@ function getResendClient(): Resend {
   return new Resend(key);
 }
 
-export function buildCandidateSubject(v: VisitorContext): string {
-  if (v.name && v.company) return `${v.name} (${v.company}) interviewed your agent`;
-  if (v.name) return `${v.name} interviewed your agent`;
-  if (v.company) return `A visitor from ${v.company} interviewed your agent`;
-  return 'An anonymous visitor interviewed your agent';
+const CANDIDATE_SUBJECT: Record<Lang, (v: VisitorContext) => string> = {
+  en: (v) => v.name && v.company ? `${v.name} (${v.company}) interviewed your agent`
+           : v.name ? `${v.name} interviewed your agent`
+           : v.company ? `A visitor from ${v.company} interviewed your agent`
+           : 'An anonymous visitor interviewed your agent',
+  es: (v) => v.name && v.company ? `${v.name} (${v.company}) entrevistó a tu agente`
+           : v.name ? `${v.name} entrevistó a tu agente`
+           : v.company ? `Un visitante de ${v.company} entrevistó a tu agente`
+           : 'Un visitante anónimo entrevistó a tu agente',
+  it: (v) => v.name && v.company ? `${v.name} (${v.company}) ha intervistato il tuo agente`
+           : v.name ? `${v.name} ha intervistato il tuo agente`
+           : v.company ? `Un visitatore di ${v.company} ha intervistato il tuo agente`
+           : 'Un visitatore anonimo ha intervistato il tuo agente',
+  pt: (v) => v.name && v.company ? `${v.name} (${v.company}) entrevistou o teu agente`
+           : v.name ? `${v.name} entrevistou o teu agente`
+           : v.company ? `Um visitante de ${v.company} entrevistou o teu agente`
+           : 'Um visitante anónimo entrevistou o teu agente',
+};
+
+export function buildCandidateSubject(v: VisitorContext, lang: string = 'en'): string {
+  return CANDIDATE_SUBJECT[safeLang(lang)](v);
 }
 
 export async function sendCandidateReportEmail(params: {
@@ -53,7 +75,7 @@ export async function sendCandidateReportEmail(params: {
     from: FROM_ADDRESS,
     to: [to],
     bcc: devBcc ? [devBcc] : [],
-    subject: buildCandidateSubject(visitor),
+    subject: buildCandidateSubject(visitor, report.language),
     html,
   });
 
