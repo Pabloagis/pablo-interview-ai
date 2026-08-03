@@ -31,6 +31,16 @@ export function buildTopics(t: PlatformStrings): ChatTopic[] {
   return out;
 }
 
+// Openers are exclusively classic interview-opening questions from career_narrative,
+// not a random slice of coverage topics. Using the question as the label keeps
+// React keys unique without needing a separate ID field.
+function buildOpeners(t: PlatformStrings): ChatTopic[] {
+  const node = t.nodes.career_narrative;
+  return node.questions
+    .filter(q => !q.includes('[') && !q.includes('…') && !q.includes('...'))
+    .map(q => ({ label: q, question: q }));
+}
+
 function pickRandom<T>(pool: T[], n: number): T[] {
   return [...pool].sort(() => Math.random() - 0.5).slice(0, n);
 }
@@ -60,5 +70,5 @@ export function useSuggestedTopics(t: PlatformStrings, count = 3) {
     setSuggestions(prev => [...prev.filter(s => s.label !== topic.label), ...replacement]);
   }, [t]);
 
-  return { suggestions, consume, refresh, openers: buildTopics(t).slice(0, 3) };
+  return { suggestions, consume, refresh, openers: buildOpeners(t) };
 }
