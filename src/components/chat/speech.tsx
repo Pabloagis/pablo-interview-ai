@@ -1,69 +1,77 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import type { Lang } from '@/context/LanguageContext';
 
-// Read-aloud, using the browser's own speech synthesis rather than a TTS API:
-// it is free, needs no server round-trip, and the voice follows whatever the
-// listener has installed. Shared by the public chat and the agent-test sandbox
-// so the candidate hears their agent exactly as a recruiter would.
-//
-// Reading is per message and on demand: every answer carries its own button, and
-// nothing is spoken unless someone asks for it. The earlier design was a single
-// header switch that read every answer from then on — it sat far from the text it
-// applied to, and the only way to silence one long answer was to turn the whole
-// feature off.
+// Read-aloud via OpenAI TTS (onyx voice), server-side — same quality in every
+// browser, no dependency on the browser's speech synthesis engine.
 
-const SPEECH_LOCALE: Record<Lang, string> = {
-  en: 'en-GB', es: 'es-ES', it: 'it-IT', pt: 'pt-PT',
-};
-
-function synthesis(): SpeechSynthesis | null {
-  if (typeof window === 'undefined' || !('speechSynthesis' in window)) return null;
-  return window.speechSynthesis;
-}
-
-export function useSpeech(lang: Lang) {
+export function useSpeech(_lang?: unknown) {
   const [available, setAvailable]   = useState(false);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
-  const speakingRef = useRef<string | null>(null);
-  const langRef     = useRef<Lang>(lang);
+
+  const audioRef     = useRef<HTMLAudioElement | null>(null);
+  const speakingRef  = useRef<string | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => { speakingRef.current = speakingId; }, [speakingId]);
-  useEffect(() => { langRef.current = lang; }, [lang]);
 
-  // Feature detection runs in an effect so the server and client first render
-  // agree; anything speaking is cancelled when the chat goes away.
-  useEffect(() => {
-    setAvailable(synthesis() !== null);
-    return () => { synthesis()?.cancel(); };
+  const stopAudio = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.onended = null;
+      audioRef.current.onerror = null;
+      audioRef.current = null;
+    }
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
   }, []);
 
   const cancel = useCallback(() => {
-    synthesis()?.cancel();
+    stopAudio();
     setSpeakingId(null);
-  }, []);
+  }, [stopAudio]);
 
-  /** Speak one message; calling it again for the message already playing stops it. */
-  const speak = useCallback((id: string, text: string) => {
-    const s = synthesis();
-    if (!s) return;
+  useEffect(() => {
+    setAvailable(true);
+    return () => { stopAudio(); };
+  }, [stopAudio]);
 
-    const wasSpeaking = speakingRef.current === id;
-    s.cancel();                     // one voice at a time, whatever was playing
-    setSpeakingId(null);
-    if (wasSpeaking) return;
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = SPEECH_LOCALE[langRef.current];
-    // Each handler closes over its own id, so a cancelled utterance's late
-    // `onend` cannot clear the state of the one that replaced it.
-    const clear = () => setSpeakingId(current => (current === id ? null : current));
-    utterance.onend   = clear;
-    utterance.onerror = clear;
+  const speak = useCallback(async (id: string, text: string) => {
+    if (speakingRef.current === id) { cancel(); return; }
+    stopAudio();
     setSpeakingId(id);
-    s.speak(utterance);
-  }, []);
+
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+      });
+      if (!res.ok) { setSpeakingId(curr => curr === id ? null : curr); return; }
+
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      objectUrlRef.current = url;
+
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      const cleanup = () => {
+        URL.revokeObjectURL(url);
+        if (objectUrlRef.current === url) objectUrlRef.current = null;
+        if (audioRef.current === audio)   audioRef.current = null;
+        setSpeakingId(curr => curr === id ? null : curr);
+      };
+      audio.onended = cleanup;
+      audio.onerror = cleanup;
+
+      await audio.play();
+    } catch {
+      setSpeakingId(curr => curr === id ? null : curr);
+    }
+  }, [cancel, stopAudio]);
 
   return { available, speakingId, speak, cancel };
 }
