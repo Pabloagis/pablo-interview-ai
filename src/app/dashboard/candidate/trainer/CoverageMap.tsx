@@ -73,35 +73,35 @@ const NODE_VISUAL: Record<NodeState, {
   stateLabel: string;
 }> = {
   dark: {
-    fill:        '#111420',
-    stroke:      'rgba(255,255,255,0.13)',
+    fill:        '#111111', // --surface
+    stroke:      '#333333', // --border-visible
     strokeWidth: 1,
     filterId:    null,
-    stateColor:  'rgba(255,255,255,0.30)',
+    stateColor:  '#767676', // --text-disabled
     stateLabel:  'No data',
   },
   weak: {
-    fill:        'rgba(180,120,40,0.20)',
-    stroke:      'rgba(210,155,60,0.65)',
+    fill:        'rgba(212,168,67,0.15)',
+    stroke:      'rgba(212,168,67,0.70)',
     strokeWidth: 1.5,
     filterId:    'cov-glow-weak',
-    stateColor:  '#c08840',
+    stateColor:  '#D4A843', // --warning
     stateLabel:  'Partial',
   },
   solid: {
-    fill:        'rgba(60,100,210,0.28)',
-    stroke:      'rgba(85,130,242,0.90)',
+    fill:        'rgba(91,155,246,0.20)',
+    stroke:      'rgba(91,155,246,0.85)',
     strokeWidth: 1.5,
     filterId:    'cov-glow-solid',
-    stateColor:  '#5580f0',
+    stateColor:  '#5B9BF6', // --interactive
     stateLabel:  'Solid',
   },
   verified: {
-    fill:        'rgba(45,165,95,0.28)',
-    stroke:      'rgba(62,195,112,0.92)',
+    fill:        'rgba(74,158,92,0.22)',
+    stroke:      'rgba(74,158,92,0.90)',
     strokeWidth: 2,
     filterId:    'cov-glow-verified',
-    stateColor:  '#3ec870',
+    stateColor:  '#4A9E5C', // --success
     stateLabel:  'Verified',
   },
 };
@@ -169,8 +169,8 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
         </defs>
 
         {/* ── Quadrant dividers — barely visible ──────────────────────── */}
-        <line x1={181} y1={4}   x2={181} y2={234} stroke="rgba(255,255,255,0.05)" strokeWidth={0.5} />
-        <line x1={4}   y1={130} x2={356} y2={130} stroke="rgba(255,255,255,0.05)" strokeWidth={0.5} />
+        <line x1={181} y1={4}   x2={181} y2={234} stroke="#222222" strokeWidth={0.5} />
+        <line x1={4}   y1={130} x2={356} y2={130} stroke="#222222" strokeWidth={0.5} />
 
         {/* ── Cluster labels ───────────────────────────────────────────── */}
         {[
@@ -184,7 +184,7 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
             x={x} y={y}
             textAnchor={anchor as 'start' | 'end'}
             dominantBaseline="hanging"
-            fill="rgba(255,255,255,0.20)"
+            fill="#767676"
             fontSize={8}
             fontFamily="system-ui, sans-serif"
             letterSpacing="0.08em"
@@ -203,7 +203,7 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
               key={`${a}-${b}`}
               x1={pa.x} y1={pa.y}
               x2={pb.x} y2={pb.y}
-              stroke="rgba(255,255,255,0.07)"
+              stroke="#222222"
               strokeWidth={0.75}
             />
           );
@@ -253,7 +253,7 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
                 x={x} y={y + NODE_R + 10}
                 textAnchor="middle"
                 dominantBaseline="hanging"
-                fill={data.state === 'dark' ? 'rgba(255,255,255,0.22)' : vis.stateColor}
+                fill={data.state === 'dark' ? '#767676' : vis.stateColor}
                 fontSize={7.5}
                 fontFamily="system-ui, sans-serif"
                 style={{ userSelect: 'none', pointerEvents: 'none' }}
@@ -302,16 +302,16 @@ function NodePanel({
     : (t[AGENT_TEXT_KEY[data.state as Exclude<NodeState, 'dark'>]] as string);
 
   return (
-    <div className="border-t border-white/[0.07] mt-1 pt-5 flex flex-col gap-5">
+    <div className="border-t border-[var(--border)] mt-1 pt-5 flex flex-col gap-5">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="text-sm font-semibold text-white leading-none">
+          <span className="text-sm font-medium text-[var(--text-display)] leading-none">
             {node.label}
           </span>
           <span
-            className="self-start text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+            className="self-start font-mono text-[9px] uppercase tracking-[0.08em] px-2 py-0.5 rounded-sm"
             style={{
               color: vis.stateColor,
               background: `${vis.stateColor}18`,
@@ -323,7 +323,7 @@ function NodePanel({
         </div>
         <button
           onClick={onClose}
-          className="shrink-0 text-[rgba(255,255,255,0.30)] hover:text-white transition-colors text-lg leading-none mt-0.5"
+          className="shrink-0 font-mono text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors text-lg leading-none mt-0.5"
           aria-label={t.conv_close}
         >
           ×
@@ -332,24 +332,24 @@ function NodePanel({
 
       {/* ── What this node covers ───────────────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] text-[var(--text-disabled)] uppercase tracking-wider mb-1.5">
           {t.cov_what_covers}
         </p>
-        <p className="text-xs text-[rgba(255,255,255,0.50)] leading-relaxed">
+        <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
           {node.description}
         </p>
       </div>
 
       {/* ── Recruiter questions ─────────────────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] text-[var(--text-disabled)] uppercase tracking-wider mb-1.5">
           {t.cov_unlocks}
         </p>
         <ul className="flex flex-col gap-1">
           {questions.map(q => (
             <li key={q} className="flex items-start gap-2">
-              <span className="shrink-0 text-[rgba(255,255,255,0.18)] mt-px select-none">·</span>
-              <span className="text-xs text-[rgba(255,255,255,0.45)] leading-snug">{q}</span>
+              <span className="shrink-0 text-[var(--text-disabled)] mt-px select-none">–</span>
+              <span className="text-xs text-[var(--text-secondary)] leading-snug">{q}</span>
             </li>
           ))}
         </ul>
@@ -357,24 +357,24 @@ function NodePanel({
 
       {/* ── What the agent says right now ──────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] text-[var(--text-disabled)] uppercase tracking-wider mb-1.5">
           {t.cov_agent_says_now}
         </p>
 
         {isDark ? (
           <div className="flex flex-col gap-2">
             {/* Verbatim refusal — quoted */}
-            <blockquote className="border-l-2 border-[rgba(255,255,255,0.12)] pl-3">
-              <p className="text-xs text-[rgba(255,255,255,0.38)] leading-relaxed italic">
-                "{agentText}"
+            <blockquote className="border-l-2 border-[var(--border-visible)] pl-3">
+              <p className="text-xs text-[var(--text-secondary)] leading-relaxed italic">
+                &ldquo;{agentText}&rdquo;
               </p>
             </blockquote>
-            <p className="text-[11px] text-[rgba(255,255,255,0.28)]">
+            <p className="text-[11px] text-[var(--text-disabled)]">
               {t.cov_no_data_recruiters}
             </p>
           </div>
         ) : (
-          <p className="text-xs text-[rgba(255,255,255,0.50)] leading-relaxed">
+          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
             {agentText}
           </p>
         )}
@@ -383,7 +383,7 @@ function NodePanel({
       {/* ── Train this button ───────────────────────────────────────────── */}
       <button
         onClick={onTrain}
-        className="self-start flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+        className="self-start flex items-center gap-2 px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.06em] transition-colors"
         style={{
           color: vis.stateColor,
           background: `${vis.stateColor}14`,

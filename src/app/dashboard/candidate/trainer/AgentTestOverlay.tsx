@@ -22,8 +22,8 @@ interface Props {
 type Phase = 'interviewing' | 'analyzing' | 'results';
 
 const GAP_TYPE_STYLE: Record<'refusal' | 'weak', { color: string; bg: string }> = {
-  refusal: { color: '#c04040', bg: 'rgba(192,64,64,0.12)'  },
-  weak:    { color: '#b07030', bg: 'rgba(176,112,48,0.12)' },
+  refusal: { color: '#D71921', bg: 'rgba(215,25,33,0.12)'  }, // --accent
+  weak:    { color: '#D4A843', bg: 'rgba(212,168,67,0.12)' }, // --warning
 };
 
 export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
@@ -174,16 +174,16 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
   return (
     // z-[100] — sits above the mobile sheet (z-50)
-    <div className="fixed inset-0 z-[100] flex flex-col bg-[#0a0c10]">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-[var(--black)]">
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="shrink-0 h-14 flex items-center px-5 gap-3 border-b border-white/[0.08]">
+      <div className="shrink-0 h-14 flex items-center px-5 gap-3 border-b border-[var(--border-visible)]">
         <div className="flex flex-col">
-          <span className="text-xs font-semibold text-white/90 leading-tight">
+          <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-display)] leading-tight">
             {phase === 'results' ? t.test_results_title : t.test_testing_title}
           </span>
           {phase === 'interviewing' && (
-            <span className="text-[10px] text-white/35 leading-tight mt-0.5">
+            <span className="font-mono text-[10px] text-[var(--text-disabled)] leading-tight mt-0.5">
               {t.test_subtitle}
             </span>
           )}
@@ -193,8 +193,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           <button
             onClick={endInterview}
             disabled={messages.filter(m => m.role === 'assistant').length === 0}
-            className="shrink-0 px-4 py-1.5 rounded-lg text-xs font-medium border transition-colors
-                       border-white/20 text-white/60 hover:text-white hover:border-white/40
+            className="shrink-0 px-4 py-1.5 rounded-full font-mono text-[11px] uppercase tracking-[0.06em] border transition-colors
+                       border-[var(--border-visible)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]
                        disabled:opacity-30 disabled:cursor-not-allowed"
           >
             {t.test_end}
@@ -203,7 +203,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
         {phase === 'results' && (
           <button
             onClick={onClose}
-            className="shrink-0 text-white/40 hover:text-white transition-colors"
+            className="shrink-0 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label={t.test_close}
           >
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
@@ -212,7 +212,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           </button>
         )}
         {phase === 'analyzing' && (
-          <div className="shrink-0 w-4 h-4 rounded-full border-2 border-t-white/50 border-white/10 animate-spin" />
+          <div className="shrink-0 w-4 h-4 rounded-full border-2 border-t-[var(--text-secondary)] border-[var(--border)] animate-spin" />
         )}
       </div>
 
@@ -225,7 +225,7 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
             {messages.length === 0 && !isStreaming && (
               <div className="flex-1 flex flex-col items-center justify-center py-16">
-                <p className="text-sm text-white/25 text-center max-w-xs leading-relaxed">
+                <p className="text-sm text-[var(--text-disabled)] text-center max-w-xs leading-relaxed">
                   {t.test_empty}
                 </p>
               </div>
@@ -243,10 +243,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
             )}
 
             {isStreaming && !streamText && (
-              <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] self-start max-w-[80px]">
-                <TypingDot delay={0}   />
-                <TypingDot delay={160} />
-                <TypingDot delay={320} />
+              <div className="self-start px-3 py-2 font-mono text-[11px] text-[var(--text-disabled)]">
+                [...]
               </div>
             )}
 
@@ -254,8 +252,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
           </div>
 
           {/* Input */}
-          <div className="shrink-0 border-t border-white/[0.06] px-4 py-3 flex items-end gap-3">
-            <div className="flex-1 min-w-0 rounded-xl bg-white/[0.05] border border-white/[0.09] px-4 py-3">
+          <div className="shrink-0 border-t border-[var(--border-visible)] px-4 py-3 flex items-end gap-3">
+            <div className="flex-1 min-w-0 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border-visible)] px-4 py-3">
               <textarea
                 ref={textareaRef}
                 value={draft}
@@ -264,19 +262,19 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                 rows={2}
                 placeholder={t.test_placeholder}
                 disabled={isStreaming}
-                className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-white/20 leading-relaxed disabled:opacity-50"
+                className="w-full bg-transparent text-sm text-[var(--text-primary)] resize-none focus:outline-none placeholder:text-[var(--text-disabled)] leading-relaxed disabled:opacity-50"
               />
               <div className="flex justify-end mt-1">
-                <span className="text-[10px] text-white/18 select-none">{t.conv_enter_to_send}</span>
+                <span className="font-mono text-[10px] text-[var(--text-disabled)] select-none">{t.conv_enter_to_send}</span>
               </div>
             </div>
             <button
               onClick={handleSend}
               disabled={!canSend}
-              className="shrink-0 self-end px-5 py-3 rounded-xl text-sm font-medium transition-colors disabled:opacity-30"
+              className="shrink-0 self-end px-5 py-2.5 rounded-full font-mono text-[12px] uppercase tracking-[0.06em] transition-colors disabled:opacity-30"
               style={{
-                background: canSend ? '#4060d0' : 'rgba(64,96,208,0.35)',
-                color: 'white',
+                background: 'var(--text-display)',
+                color: 'var(--black)',
               }}
             >
               {t.test_ask}
@@ -287,8 +285,8 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
       {phase === 'analyzing' && (
         <div className="flex-1 min-w-0 flex flex-col items-center justify-center gap-4">
-          <div className="w-7 h-7 rounded-full border-2 border-t-white/60 border-white/10 animate-spin" />
-          <p className="text-sm text-white/40">{t.test_analyzing}</p>
+          <div className="w-7 h-7 rounded-full border-2 border-t-[var(--text-secondary)] border-[var(--border)] animate-spin" />
+          <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">{t.test_analyzing}</p>
         </div>
       )}
 
@@ -297,19 +295,19 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
 
           {gaps.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 gap-3">
-              <p className="text-sm text-white/60 text-center">
+              <p className="text-sm text-[var(--text-secondary)] text-center">
                 {t.test_no_gaps}
               </p>
               <button
                 onClick={onClose}
-                className="mt-2 text-xs text-white/35 hover:text-white/70 transition-colors underline underline-offset-2"
+                className="mt-2 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors underline underline-offset-2"
               >
                 {t.test_return}
               </button>
             </div>
           ) : (
             <>
-              <p className="text-xs text-white/35 max-w-sm leading-relaxed">
+              <p className="text-xs text-[var(--text-secondary)] max-w-sm leading-relaxed">
                 {t.test_gaps(gaps.length)}
               </p>
 
@@ -320,34 +318,33 @@ export default function AgentTestOverlay({ onClose, onTrainNode }: Props) {
                   return (
                     <div
                       key={gap.nodeKey}
-                      className="rounded-xl border border-white/[0.09] bg-white/[0.03] overflow-hidden"
+                      className="rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] overflow-hidden"
                     >
                       {/* Gap header */}
                       <div className="flex items-center gap-2 px-4 pt-4 pb-2">
                         <span
-                          className="text-[9px] font-bold tracking-widest px-1.5 py-0.5 rounded"
+                          className="font-mono text-[9px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded"
                           style={{ color: style.color, background: style.bg }}
                         >
                           {gap.type === 'refusal' ? t.test_gap_refusal : t.test_gap_weak}
                         </span>
-                        <span className="text-sm text-white/80 font-medium">
+                        <span className="text-sm text-[var(--text-primary)] font-medium">
                           {node ? t.nodes[gap.nodeKey].label : gap.nodeKey}
                         </span>
                       </div>
 
                       {/* Excerpt — verbatim agent text */}
-                      <blockquote className="mx-4 mb-3 pl-3 border-l-2 text-xs text-white/45 leading-relaxed italic"
+                      <blockquote className="mx-4 mb-3 pl-3 border-l-2 text-xs text-[var(--text-secondary)] leading-relaxed italic"
                         style={{ borderColor: style.color + '60' }}
                       >
-                        "{gap.excerpt}"
+                        &ldquo;{gap.excerpt}&rdquo;
                       </blockquote>
 
                       {/* Train link */}
                       <div className="px-4 pb-4">
                         <button
                           onClick={() => handleTrainNode(gap.nodeKey)}
-                          className="text-xs font-medium transition-colors hover:opacity-80"
-                          style={{ color: '#5080f0' }}
+                          className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--interactive)] hover:opacity-80 transition-opacity"
                         >
                           {t.test_train_this}
                         </button>
@@ -379,21 +376,21 @@ function TestBubble({
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} flex-col gap-0.5`}>
       {/* Role label */}
-      <span className={`text-[9px] font-semibold uppercase tracking-wider ${isUser ? 'text-right' : 'text-left'} text-white/20`}>
+      <span className={`font-mono text-[9px] uppercase tracking-[0.06em] ${isUser ? 'text-right' : 'text-left'} text-[var(--text-disabled)]`}>
         {isUser ? t.test_you_recruiter : t.test_your_agent}
       </span>
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
         <div
           className={[
-            'max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
+            'max-w-[82%] px-4 py-3 text-sm leading-relaxed',
             isUser
-              ? 'bg-white/[0.07] border border-white/[0.12] text-white'
-              : 'bg-[#1a1d24] border border-white/[0.07] text-white/75',
+              ? 'bg-[var(--surface-raised)] border border-[var(--border-visible)] text-[var(--text-primary)] rounded-[var(--radius-md)]'
+              : 'text-[var(--text-primary)]',
           ].join(' ')}
         >
           {message.content}
           {isStreaming && (
-            <span className="inline-block w-0.5 h-3.5 bg-white/40 ml-0.5 animate-pulse" />
+            <span className="inline-block w-0.5 h-3.5 bg-[var(--text-secondary)] ml-0.5 animate-pulse" />
           )}
         </div>
       </div>
@@ -401,11 +398,3 @@ function TestBubble({
   );
 }
 
-function TypingDot({ delay }: { delay: number }) {
-  return (
-    <div
-      className="w-1.5 h-1.5 rounded-full bg-white/40"
-      style={{ animation: `pulse 1s ${delay}ms ease-in-out infinite` }}
-    />
-  );
-}

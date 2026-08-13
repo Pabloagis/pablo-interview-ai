@@ -6,10 +6,10 @@ import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 // ── Quality visual config ─────────────────────────────────────────────────────
 
 const QUALITY_COLOR: Record<EvidenceQuality, string> = {
-  verified:       '#3ec870',
-  solid:          '#5580f0',
-  vague:          '#c08840',
-  missing_detail: 'rgba(255,255,255,0.38)',
+  verified:       '#4A9E5C', // --success
+  solid:          '#5B9BF6', // --interactive
+  vague:          '#D4A843', // --warning
+  missing_detail: '#767676', // --text-disabled
 };
 const QUALITY_LABEL_KEY: Record<EvidenceQuality, keyof PlatformStrings> = {
   verified:       'ev_quality_verified',
@@ -37,7 +37,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
 
   return (
     <div
-      className="rounded-xl border bg-[rgba(255,255,255,0.03)] px-3.5 py-3 flex flex-col gap-2"
+      className="rounded-[var(--radius-md)] border bg-[var(--surface)] px-3.5 py-3 flex flex-col gap-2"
       style={{
         borderColor: `${qualityColor}22`,
         // Entrance: slide from left (conversation side) + scale, mimicking "evidence flying in"
@@ -47,7 +47,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
       {/* ── Header row ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between gap-2">
         {/* Node label */}
-        <span className="text-[10px] text-[rgba(255,255,255,0.35)] font-medium uppercase tracking-wider truncate">
+        <span className="text-[10px] font-mono text-[var(--text-secondary)] uppercase tracking-wider truncate">
           {nodeLabel}
         </span>
 
@@ -65,7 +65,7 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
       </div>
 
       {/* ── Extracted content ────────────────────────────────────────────── */}
-      <p className="text-xs text-[rgba(255,255,255,0.65)] leading-snug">
+      <p className="text-xs text-[var(--text-primary)] leading-snug">
         {item.content}
       </p>
 
@@ -85,14 +85,14 @@ export default function EvidenceCard({ item, isNew = false, onFollowUp }: Props)
 
       {/* Sent indicator */}
       {item.followUpSent && (
-        <span className="text-[10px] text-[rgba(255,255,255,0.22)]">
+        <span className="text-[10px] font-mono text-[var(--text-disabled)]">
           {t.ev_followup_sent}
         </span>
       )}
 
       {/* Not-saved indicator — extraction succeeded but DB insert failed */}
       {item.persisted === false && (
-        <span className="flex items-center gap-1 text-[10px] text-[#c08840]">
+        <span className="flex items-center gap-1 text-[10px] text-[var(--warning)]">
           <svg width="9" height="9" viewBox="0 0 9 9" fill="none" aria-hidden>
             <path d="M4.5 0.8L8.5 7.8H0.5L4.5 0.8Z" stroke="currentColor" strokeWidth="0.9" strokeLinejoin="round"/>
             <path d="M4.5 3.6V5.2" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round"/>

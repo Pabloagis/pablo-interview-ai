@@ -62,32 +62,36 @@ export default function SlugManager({ locked }: { locked: boolean }) {
   const readOnly = locked || !editable;
 
   return (
-    <div className="w-full rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 flex flex-col gap-2">
-      <p className="text-[10px] font-semibold text-white/40 uppercase tracking-wider">Your public link</p>
+    <div className="w-full rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3 flex flex-col gap-2">
+      <p className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">Your public link</p>
 
       {editing ? (
         <>
           <div className="flex items-center gap-1 text-sm">
-            <span className="text-white/40">interviewmind.one/</span>
+            <span className="text-[var(--text-secondary)] font-mono text-[12px]">interviewmind.one/</span>
             <input
               value={draft}
               onChange={e => onDraft(e.target.value)}
               autoFocus
-              className="flex-1 min-w-0 rounded-md bg-white/[0.05] border border-white/[0.12] px-2 py-1 text-white text-sm focus:outline-none"
+              className="flex-1 min-w-0 rounded-[var(--radius-sm)] bg-[var(--surface-raised)] border border-[var(--border-visible)] px-2 py-1 text-[var(--text-primary)] text-sm focus:outline-none focus:border-[var(--text-primary)]"
             />
           </div>
           {check && (
-            <p className={`text-[11px] ${check.available ? 'text-[rgba(96,192,128,0.85)]' : 'text-[rgba(220,120,120,0.85)]'}`}>
+            <p className={`font-mono text-[11px] ${check.available ? 'text-[var(--success)]' : 'text-[var(--accent)]'}`}>
               {check.available ? 'Available' : check.reason}
             </p>
           )}
           <div className="flex gap-2 justify-end">
-            <button onClick={() => { setEditing(false); setDraft(slug); setCheck(null); }} className="text-[11px] text-white/40 hover:text-white/70">Cancel</button>
+            <button
+              onClick={() => { setEditing(false); setDraft(slug); setCheck(null); }}
+              className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+            >
+              Cancel
+            </button>
             <button
               onClick={save}
               disabled={saving || (check !== null && !check.available)}
-              className="text-[11px] font-medium px-3 py-1 rounded-md text-white disabled:opacity-40"
-              style={{ background: '#4060d0' }}
+              className="font-mono text-[11px] uppercase tracking-[0.06em] px-3 py-1 rounded-full text-[var(--black)] bg-[var(--text-display)] disabled:opacity-40"
             >
               {saving ? 'Saving…' : 'Save link'}
             </button>
@@ -95,13 +99,16 @@ export default function SlugManager({ locked }: { locked: boolean }) {
         </>
       ) : (
         <>
-          <p className="text-sm text-white/80 break-all">
-            interviewmind.one/<span className="text-white">{slug}</span>
+          <p className="text-sm text-[var(--text-secondary)] break-all">
+            interviewmind.one/<span className="text-[var(--text-primary)]">{slug}</span>
           </p>
           {readOnly ? (
-            <p className="text-[11px] text-white/35">Changing a shared link would break it. Editing comes later.</p>
+            <p className="font-mono text-[11px] text-[var(--text-disabled)]">Changing a shared link would break it. Editing comes later.</p>
           ) : (
-            <button onClick={() => setEditing(true)} className="self-start text-[11px] text-[#6080f0] hover:text-white transition-colors">
+            <button
+              onClick={() => setEditing(true)}
+              className="self-start font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors"
+            >
               Edit link
             </button>
           )}

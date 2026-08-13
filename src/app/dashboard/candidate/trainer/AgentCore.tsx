@@ -6,10 +6,10 @@ import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // Level colours — single source of truth (matches TrainerShell)
 const LEVEL_COLOR: Record<PublishLevel, string> = {
-  sharp:       '#60c080',
-  solid:       '#5080f0',
-  basic:       '#4060d0',
-  unpublished: '#6080a0',
+  sharp:       '#4A9E5C', // --success
+  solid:       '#5B9BF6', // --interactive
+  basic:       '#999999', // --text-secondary
+  unpublished: '#767676', // --text-disabled
 };
 
 // unpublished shows NO badge, so it maps to no key (empty label handled below)
@@ -131,7 +131,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
         <circle
           cx={cx} cy={cx} r={ringR}
           fill="none"
-          stroke="rgba(255,255,255,0.07)"
+          stroke="var(--border)"
           strokeWidth={ringW}
         />
 
@@ -172,7 +172,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
         <circle
           cx={cx} cy={cx} r={innerR}
           fill="none"
-          stroke="rgba(255,255,255,0.055)"
+          stroke="var(--border)"
           strokeWidth={0.5}
         />
 
@@ -224,7 +224,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
           y={cx - coreR - 10}
           textAnchor="middle"
           dominantBaseline="auto"
-          fill="rgba(255,255,255,0.18)"
+          fill="var(--text-disabled)"
           fontSize={Math.round(size * 0.062)}
           fontFamily="'SF Mono', 'Fira Mono', 'Consolas', monospace"
           letterSpacing="0.05em"
@@ -236,7 +236,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
       {/* ── Level badge — below the ring ──────────────────────────────── */}
       {label ? (
         <div
-          className="px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-widest transition-colors duration-400"
+          className="px-3 py-1 rounded-full font-mono text-[11px] uppercase tracking-[0.08em] transition-colors duration-[400ms]"
           style={{
             color,
             background: `${color}18`,
