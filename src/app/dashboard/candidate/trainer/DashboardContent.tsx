@@ -1,6 +1,5 @@
 'use client';
 
-import AgentCore from './AgentCore';
 import CoverageMap from './CoverageMap';
 import EvidenceCard, { EvidenceCardStyles } from './EvidenceCard';
 import PublishPanel from './PublishPanel';
@@ -72,11 +71,8 @@ export default function DashboardContent({
   ) as Record<CoverageNodeKey, NodeState>;
 
   return (
-    <div className="flex flex-col items-center gap-8 pb-8">
+    <div className="flex flex-col items-center gap-6 pb-6">
       <EvidenceCardStyles />
-
-      {/* Agent Core — centrepiece, springs on readiness increase */}
-      <AgentCore readiness={readiness} publishLevel={publishLevel} size={200} />
 
       {/* Publish panel — between AgentCore and Coverage Map */}
       {onPublish && (

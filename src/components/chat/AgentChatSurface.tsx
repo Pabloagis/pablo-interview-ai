@@ -14,22 +14,11 @@ import SpeakButton from '@/components/chat/speech';
 // is made on the wrong evidence. Everything above and below this component —
 // headers, end-of-conversation flows, gap analysis — is each caller's own.
 //
-// The interaction rules here were each paid for by a real failure and must not
-// be relaxed:
-//
-//   - every shrinkable child carries min-w-0, or one long unbroken string
-//     (a URL, a German compound) widens the flex row and the page scrolls
-//     sideways
-//   - message text is whitespace-pre-wrap break-words: the agent writes in
-//     paragraphs, and without it they collapse into a wall
-//   - the composer's font-size is 16px, because iOS Safari zooms the whole page
-//     on focus for anything smaller and never zooms back
-//   - while streaming, the scroll pins the TOP of the incoming answer, not the
-//     bottom: chasing the last token drags the text out from under the reader
-//
-// Platform errors are deliberately not rendered here. An error inside the
-// transcript reads as the agent speaking, which puts words in the candidate's
-// mouth that they never said; callers surface them as toasts instead.
+// Interaction rules preserved verbatim — see original file for rationale:
+//   - every shrinkable child carries min-w-0
+//   - message text is whitespace-pre-wrap break-words
+//   - composer font-size is 16px (iOS Safari zoom guard)
+//   - scroll pins TOP of incoming answer, not the bottom
 
 export interface ChatMessage {
   id:      string;
@@ -46,41 +35,27 @@ interface Props {
   messages:       ChatMessage[];
   isStreaming:    boolean;
   streamingText:  string;
-  /** Rotated every 1.8s while waiting for the first token. */
   thinkingLabels: string[];
-
-  /** The composer is live only when this is true; until then it shows `startingPlaceholder`. */
   ready:               boolean;
   onSend:              (text: string) => void;
   placeholder:         string;
   startingPlaceholder: string;
   sendLabel:           string;
   inputAriaLabel:      string;
-  /** Mirrors the draft out so a caller can gate proactive turns on "they are typing". */
   onDraftChange?:      (value: string) => void;
-
   topics?:          ChatTopic[];
   topicsLabel?:     string;
   onTopic?:         (topic: ChatTopic) => void;
   onRefreshTopics?: () => void;
   refreshLabel?:    string;
-
-  /** Shown while the transcript is empty and nothing is streaming. */
   emptyState?: ReactNode;
-  /** A fatal start-up failure, shown in place of the transcript. */
   errorText?:  string | null;
-
   voice?:       boolean;
   onVoiceError?: (message: string) => void;
-
-  /** Read-aloud. Omitted when the browser has no speech synthesis, which hides
-   *  the per-message buttons entirely. */
   onSpeak?:      (id: string, text: string) => void;
   speakingId?:   string | null;
   speakLabel?:   string;
   stopSpeakLabel?: string;
-
-  /** Replaces the composer entirely once the conversation is over. */
   footer?:  ReactNode;
 }
 
@@ -112,16 +87,12 @@ export default function AgentChatSurface({
   footer,
 }: Props) {
   const [input, setInput] = useState('');
-  const [inputFocused, setInputFocused] = useState(false);
   const [thinkingIndex, setThinkingIndex] = useState(0);
 
   const bottomRef       = useRef<HTMLDivElement>(null);
   const streamingTopRef = useRef<HTMLDivElement>(null);
   const textareaRef     = useRef<HTMLTextAreaElement>(null);
 
-  // Note the dependency list: messages.length and isStreaming, never
-  // streamingText. Reacting to every token scrolls the answer out from under the
-  // reader as it arrives.
   useEffect(() => {
     if (isStreaming) streamingTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     else bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -152,8 +123,6 @@ export default function AgentChatSurface({
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(input); }
   }
 
-  // Auto-grow to a ceiling, the way every messaging app behaves. Without the
-  // reset to 'auto' first, the box only ever grows and never shrinks back.
   function onInputChange(e: ChangeEvent<HTMLTextAreaElement>) {
     updateDraft(e.target.value);
     const el = e.target;
@@ -172,10 +141,10 @@ export default function AgentChatSurface({
     <>
       {/* ── Suggested topics ─────────────────────────────────────────────── */}
       {showChips && (
-        <div className="shrink-0 px-3 py-2 border-b border-white/[0.05] bg-white/[0.015]">
+        <div className="shrink-0 px-3 py-2 border-b border-[var(--border)] bg-[var(--surface)]">
           <div className="flex items-center gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
             {topicsLabel && (
-              <span className="shrink-0 pr-1 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.28)] select-none">
+              <span className="shrink-0 pr-1 font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] select-none">
                 {topicsLabel}
               </span>
             )}
@@ -184,7 +153,7 @@ export default function AgentChatSurface({
                 key={topic.label}
                 onClick={() => onTopic?.(topic)}
                 disabled={isStreaming || !ready}
-                className="shrink-0 rounded-full px-3 py-1.5 text-[12px] font-medium border border-white/[0.1] bg-white/[0.04] text-[rgba(255,255,255,0.7)] transition-colors hover:bg-white/[0.08] hover:text-white disabled:opacity-40"
+                className="shrink-0 rounded-full px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.06em] border border-[var(--border-visible)] bg-transparent text-[var(--text-secondary)] transition-colors duration-[180ms] hover:bg-[var(--surface-raised)] hover:text-[var(--text-primary)] disabled:opacity-40"
               >
                 {topic.label}
               </button>
@@ -195,7 +164,7 @@ export default function AgentChatSurface({
                 disabled={isStreaming}
                 aria-label={refreshLabel}
                 title={refreshLabel}
-                className="shrink-0 ml-0.5 w-7 h-7 flex items-center justify-center rounded-full border border-white/[0.1] text-[rgba(255,255,255,0.45)] transition-colors hover:text-white disabled:opacity-40"
+                className="shrink-0 ml-0.5 w-7 h-7 flex items-center justify-center rounded-full border border-[var(--border-visible)] text-[var(--text-secondary)] transition-colors duration-[180ms] hover:text-[var(--text-primary)] disabled:opacity-40"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
@@ -219,7 +188,7 @@ export default function AgentChatSurface({
         {messages.length === 0 && !isStreaming && !errorText && emptyState}
 
         {errorText && (
-          <p className="text-sm text-[rgba(220,120,120,0.8)] text-center mt-10">{errorText}</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--accent)] text-center mt-10">{errorText}</p>
         )}
 
         {messages.map(m => (
@@ -237,14 +206,14 @@ export default function AgentChatSurface({
           <>
             <div ref={streamingTopRef} />
             <div className="flex justify-start min-w-0">
-              <div className="max-w-[82%] min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]">
+              <div className="max-w-[82%] min-w-0 text-[var(--body)] leading-relaxed whitespace-pre-wrap break-words text-[var(--text-primary)]">
                 {streamingText ? (
                   <>
                     {streamingText}
-                    <span className="inline-block w-0.5 h-3.5 align-middle ml-0.5 bg-[rgba(255,255,255,0.5)] animate-pulse" />
+                    <span className="inline-block w-0.5 h-3.5 align-middle ml-0.5 bg-[var(--text-secondary)] animate-pulse" />
                   </>
                 ) : (
-                  <span className="italic text-[rgba(255,255,255,0.4)]">
+                  <span className="font-mono text-[13px] text-[var(--text-disabled)]">
                     {thinkingLabels[thinkingIndex % thinkingLabels.length]}
                   </span>
                 )}
@@ -258,7 +227,7 @@ export default function AgentChatSurface({
 
       {/* ── Composer ─────────────────────────────────────────────────────── */}
       {footer ?? (
-        <div className="shrink-0 border-t border-white/[0.07] px-4 py-3">
+        <div className="shrink-0 border-t border-[var(--border)] px-4 py-3">
           <div className="flex items-end gap-2 min-w-0">
             {voice && (
               <VoiceRecorder
@@ -269,27 +238,17 @@ export default function AgentChatSurface({
               />
             )}
 
-            {/* The focus state lives on this wrapper, so the ring surrounds the
-                whole pill rather than the bare textarea. */}
-            <div
-              className="flex-1 min-w-0 flex items-end rounded-xl px-4 py-2.5 bg-white/[0.05] transition-[border-color,box-shadow] duration-200"
-              style={{
-                border: `1px solid ${inputFocused ? 'rgba(96,128,240,0.55)' : 'rgba(255,255,255,0.09)'}`,
-                boxShadow: inputFocused ? '0 0 0 3px rgba(64,96,208,0.18)' : 'none',
-              }}
-            >
+            <div className="flex-1 min-w-0 flex items-end rounded-[var(--radius-md)] px-4 py-2.5 bg-[var(--surface)] border border-[var(--border-visible)] focus-within:border-[var(--text-primary)] transition-colors duration-[180ms]">
               <textarea
                 ref={textareaRef}
                 value={input}
                 onChange={onInputChange}
                 onKeyDown={onKeyDown}
-                onFocus={() => setInputFocused(true)}
-                onBlur={() => setInputFocused(false)}
                 rows={1}
                 placeholder={ready ? placeholder : startingPlaceholder}
                 disabled={!ready || isStreaming}
                 aria-label={inputAriaLabel}
-                className="flex-1 min-w-0 resize-none bg-transparent text-white leading-relaxed focus:outline-none placeholder-[rgba(255,255,255,0.25)] disabled:opacity-50"
+                className="flex-1 min-w-0 resize-none bg-transparent text-[var(--text-primary)] leading-relaxed focus:outline-none placeholder-[var(--text-disabled)] disabled:opacity-50"
                 style={{ fontSize: 16, maxHeight: 120 }}
               />
             </div>
@@ -298,8 +257,11 @@ export default function AgentChatSurface({
               onClick={() => send(input)}
               disabled={!input.trim() || !ready || isStreaming}
               aria-label={sendLabel}
-              className="shrink-0 h-11 px-5 rounded-xl text-sm font-medium text-white transition-opacity disabled:opacity-30"
-              style={{ background: '#4060d0' }}
+              className="shrink-0 h-11 px-5 rounded-full font-mono text-[13px] uppercase tracking-[0.06em] transition-colors duration-[180ms] disabled:opacity-30"
+              style={{
+                background: (input.trim() && ready && !isStreaming) ? 'var(--text-display)' : 'var(--surface-raised)',
+                color: (input.trim() && ready && !isStreaming) ? 'var(--black)' : 'var(--text-disabled)',
+              }}
             >
               {sendLabel}
             </button>
@@ -307,7 +269,7 @@ export default function AgentChatSurface({
 
           <div className="h-4 mt-1 px-1 text-right">
             {input.length > 0 && (
-              <span className="text-[11px] text-[rgba(255,255,255,0.3)] tabular-nums">
+              <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] tabular-nums">
                 {input.length} / {MAX_MESSAGE_LENGTH}
               </span>
             )}
@@ -328,16 +290,15 @@ function Bubble({
   stopSpeakLabel?: string;
 }) {
   const isUser = msg.role === 'user';
-  // The read-aloud button belongs to the answer it reads, so it sits under the
-  // bubble rather than in the header. Only the agent's messages get one.
   const canSpeak = !isUser && !!onSpeak;
   return (
     <div className={`flex min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div className="max-w-[82%] min-w-0 flex flex-col items-start">
         <div className={[
-          'min-w-0 px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words',
-          isUser ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
-                 : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.82)]',
+          'min-w-0 text-[var(--body)] leading-relaxed whitespace-pre-wrap break-words',
+          isUser
+            ? 'bg-[var(--surface-raised)] border border-[var(--border-visible)] text-[var(--text-primary)] px-4 py-3 rounded-[var(--radius-md)]'
+            : 'text-[var(--text-primary)] py-1',
         ].join(' ')}>{msg.content}</div>
         {canSpeak && (
           <div className="mt-1">

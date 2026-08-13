@@ -38,14 +38,6 @@ export default function LandingScreen() {
                 </span>
               </Button>
             </Link>
-            <Link href="/register/recruiter" className="block">
-              <Button variant="secondary" className="w-full">
-                <span className="block">{t.land_recruiter}</span>
-                <span className="block font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] mt-0.5 normal-case">
-                  {t.land_recruiter_sub}
-                </span>
-              </Button>
-            </Link>
           </div>
 
           <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">
