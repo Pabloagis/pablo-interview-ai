@@ -143,6 +143,9 @@ p {
   outline-offset: 2px;
 }
 
+/* ── Chat page: lock html scroll (safe on iOS — never set on body) ── */
+html.chat-page { overflow: hidden; height: 100%; }
+
 /* ── Chat background — aurora (light) ──────────────────────── */
 .chat-bg {
   background: #f7f8ff;
@@ -152,7 +155,7 @@ p {
 .chat-bg::after {
   content: '';
   position: absolute;
-  inset: -15%;
+  inset: 0;
   z-index: -1;
   pointer-events: none;
 }

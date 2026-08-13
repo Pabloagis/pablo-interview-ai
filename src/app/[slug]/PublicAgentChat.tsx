@@ -135,11 +135,12 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, candidate.slug]);
 
-  // ── Lock body scroll for the duration of the chat ─────────────────────────
+  // ── Lock page scroll while chat is mounted ────────────────────────────────
+  // overflow:hidden on body breaks position:fixed on iOS Safari; apply it to
+  // the html element instead, scoped via a class so other pages are unaffected.
   useEffect(() => {
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    document.documentElement.classList.add('chat-page');
+    return () => document.documentElement.classList.remove('chat-page');
   }, []);
 
   // ── Best-effort end on tab close ───────────────────────────────────────────
@@ -335,7 +336,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
       <div
         className="fixed inset-0 flex flex-col items-center justify-center px-4 text-center chat-bg"
         data-theme="day"
-        style={{ height: '100dvh' }}
       >
         <Header candidate={candidate} initials={initials} />
         <p className="mt-6 text-sm text-[rgba(0,0,0,0.55)] max-w-sm">{t.pub_unavailable}</p>
@@ -348,7 +348,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
       <div
         className="fixed inset-0 flex flex-col overflow-hidden chat-bg"
         data-theme="day"
-        style={{ height: '100dvh', contain: 'layout' }}
       >
         {/* ── Header ─────────────────────────────────────────────────── */}
         <div className="shrink-0 px-5 pt-6 pb-4 border-b border-black/[0.07]">
