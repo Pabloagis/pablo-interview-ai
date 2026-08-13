@@ -508,45 +508,51 @@ function EndModal({
           transition: 'opacity 280ms cubic-bezier(0.16,1,0.3,1), transform 280ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        <div className="rounded-2xl bg-white border border-black/[0.08] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.15)]">
-          <h2 className="text-[#0d0f14] font-semibold text-base mb-1">{t.pub_modal_title}</h2>
-          <p className="text-xs text-[rgba(0,0,0,0.55)] mb-4">{t.pub_modal_body}</p>
-          <input
-            value={name}
-            onChange={e => onName(e.target.value)}
-            placeholder={t.pub_modal_name}
-            aria-label={t.pub_modal_name}
-            disabled={submitting}
-            className="w-full mb-2 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
-            style={{ fontSize: 16 }}
-          />
-          <input
-            value={email}
-            onChange={e => onEmail(e.target.value)}
-            type="email"
-            autoComplete="email"
-            placeholder={t.pub_modal_email}
-            aria-label={t.pub_modal_email}
-            disabled={submitting}
-            className="w-full mb-4 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
-            style={{ fontSize: 16 }}
-          />
-          <div className="flex gap-2 justify-end">
-            <button
-              onClick={onSkip}
+        <div className="rounded-2xl overflow-hidden bg-white shadow-[0_32px_80px_rgba(0,0,0,0.30)]" style={{ border: '1px solid rgba(64,96,208,0.18)' }}>
+          {/* Coloured header */}
+          <div style={{ background: '#4060d0', padding: '18px 20px 16px' }}>
+            <h2 style={{ color: '#fff', fontWeight: 700, fontSize: 15, margin: '0 0 4px', lineHeight: 1.3 }}>{t.pub_modal_title}</h2>
+            <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 12, margin: 0, lineHeight: 1.5 }}>{t.pub_modal_body}</p>
+          </div>
+          {/* Inputs + actions */}
+          <div className="p-5">
+            <input
+              value={name}
+              onChange={e => onName(e.target.value)}
+              placeholder={t.pub_modal_name}
+              aria-label={t.pub_modal_name}
               disabled={submitting}
-              className="px-4 py-2 rounded-lg text-sm text-[rgba(0,0,0,0.50)] hover:text-black disabled:opacity-40"
-            >
-              {t.pub_skip}
-            </button>
-            <button
-              onClick={onConfirm}
+              className="w-full mb-2 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
+              style={{ fontSize: 16 }}
+            />
+            <input
+              value={email}
+              onChange={e => onEmail(e.target.value)}
+              type="email"
+              autoComplete="email"
+              placeholder={t.pub_modal_email}
+              aria-label={t.pub_modal_email}
               disabled={submitting}
-              className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60"
-              style={{ background: '#4060d0' }}
-            >
-              {submitting ? t.pub_ending : t.pub_end_confirm}
-            </button>
+              className="w-full mb-4 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
+              style={{ fontSize: 16 }}
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={onSkip}
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm text-[rgba(0,0,0,0.50)] hover:text-black disabled:opacity-40"
+              >
+                {t.pub_skip}
+              </button>
+              <button
+                onClick={onConfirm}
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60"
+                style={{ background: '#4060d0' }}
+              >
+                {submitting ? t.pub_ending : t.pub_end_confirm}
+              </button>
+            </div>
           </div>
         </div>
       </div>
