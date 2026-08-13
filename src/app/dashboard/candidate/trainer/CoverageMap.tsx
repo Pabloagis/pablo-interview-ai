@@ -732,7 +732,7 @@ function NodePanel({
 
   return (
     <div
-      className="rounded-[var(--radius-md)] border bg-[var(--surface)] overflow-hidden"
+      className="rounded-[var(--radius-md)] border bg-[var(--surface-raised)] overflow-hidden"
       style={{ borderColor: `${vis.stateColor}30` }}
     >
       {/* Colour bleed from the node state — mirrors the orb glow */}

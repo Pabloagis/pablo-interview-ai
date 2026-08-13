@@ -327,10 +327,11 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     return (
       <div
         className="fixed inset-0 flex flex-col items-center justify-center px-4 text-center chat-bg"
+        data-theme="day"
         style={{ height: '100dvh' }}
       >
         <Header candidate={candidate} initials={initials} />
-        <p className="mt-6 text-sm text-[rgba(255,255,255,0.5)] max-w-sm">{t.pub_unavailable}</p>
+        <p className="mt-6 text-sm text-[rgba(0,0,0,0.55)] max-w-sm">{t.pub_unavailable}</p>
       </div>
     );
   }
@@ -339,10 +340,11 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     <>
       <div
         className="fixed inset-0 flex flex-col overflow-hidden chat-bg"
+        data-theme="day"
         style={{ height: '100dvh', contain: 'layout' }}
       >
         {/* ── Header ─────────────────────────────────────────────────── */}
-        <div className="shrink-0 px-5 pt-6 pb-4 border-b border-white/[0.07]">
+        <div className="shrink-0 px-5 pt-6 pb-4 border-b border-black/[0.07]">
           <div className="flex items-start gap-3 min-w-0">
             <div className="flex-1 min-w-0"><Header candidate={candidate} initials={initials} /></div>
             {langBar}
@@ -352,13 +354,13 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
               <button
                 onClick={() => setShowEnd(true)}
                 disabled={messages.length === 0}
-                className="shrink-0 px-3 py-1.5 rounded-lg border border-white/[0.12] text-[rgba(255,255,255,0.5)] hover:text-white hover:border-white/[0.25] text-xs transition-colors disabled:opacity-30"
+                className="shrink-0 px-3 py-1.5 rounded-lg border border-black/[0.14] text-[rgba(0,0,0,0.50)] hover:text-black hover:border-black/[0.28] text-xs transition-colors disabled:opacity-30"
               >
                 {t.pub_end}
               </button>
             )}
           </div>
-          <p className="mt-2 text-[11px] text-[rgba(255,255,255,0.32)]">{t.pub_recorded}</p>
+          <p className="mt-2 text-[11px] text-[rgba(0,0,0,0.40)]">{t.pub_recorded}</p>
         </div>
 
         <AgentChatSurface
@@ -383,14 +385,14 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
           onVoiceError={message => addToast(message)}
           emptyState={
             <div className="flex flex-col items-center w-full px-2 py-8">
-              <h2 className="text-lg font-semibold text-white text-center">
+              <h2 className="text-lg font-semibold text-[#0d0f14] text-center">
                 {t.pub_empty_title.replace('{name}', firstName)}
               </h2>
-              <p className="mt-2 max-w-xs text-center text-xs leading-relaxed text-[rgba(255,255,255,0.4)]">
+              <p className="mt-2 max-w-xs text-center text-xs leading-relaxed text-[rgba(0,0,0,0.50)]">
                 {t.pub_empty_body.replace(/\{name\}/g, firstName)}
               </p>
-              <div className="w-10 h-px my-6 bg-white/[0.1]" />
-              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[rgba(255,255,255,0.3)]">
+              <div className="w-10 h-px my-6 bg-black/[0.12]" />
+              <p className="mb-3 text-[10px] font-semibold uppercase tracking-widest text-[rgba(0,0,0,0.38)]">
                 {t.pub_try_asking}
               </p>
               <div className="w-full max-w-sm flex flex-col gap-2">
@@ -399,12 +401,12 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
                     key={topic.label}
                     onClick={() => void runTurn(topic.question)}
                     disabled={isStreaming || !sessionId}
-                    className="w-full min-w-0 flex items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-left transition-colors hover:bg-white/[0.05] hover:border-white/[0.14] disabled:opacity-40"
+                    className="w-full min-w-0 flex items-center justify-between gap-3 rounded-xl border border-black/[0.10] bg-black/[0.03] px-4 py-3 text-left transition-colors hover:bg-black/[0.05] hover:border-black/[0.18] disabled:opacity-40"
                   >
-                    <span className="min-w-0 text-[13px] leading-snug text-[rgba(255,255,255,0.75)]">
+                    <span className="min-w-0 text-[13px] leading-snug text-[rgba(0,0,0,0.72)]">
                       {topic.question}
                     </span>
-                    <span className="shrink-0 text-[rgba(255,255,255,0.3)]">↗</span>
+                    <span className="shrink-0 text-[rgba(0,0,0,0.35)]">↗</span>
                   </button>
                 ))}
               </div>
@@ -415,8 +417,8 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
           speakLabel={t.pub_speak_on}
           stopSpeakLabel={t.pub_speak_off}
           footer={ended ? (
-            <div className="shrink-0 border-t border-white/[0.07] px-5 py-5 text-center">
-              <p className="text-sm text-[rgba(255,255,255,0.6)]">{t.pub_ended}</p>
+            <div className="shrink-0 border-t border-black/[0.07] px-5 py-5 text-center">
+              <p className="text-sm text-[rgba(0,0,0,0.55)]">{t.pub_ended}</p>
             </div>
           ) : undefined}
         />
@@ -495,16 +497,16 @@ function EndModal({
           transition: 'opacity 280ms cubic-bezier(0.16,1,0.3,1), transform 280ms cubic-bezier(0.16,1,0.3,1)',
         }}
       >
-        <div className="rounded-2xl bg-[#12151d] border border-white/[0.1] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.5)]">
-          <h2 className="text-white font-semibold text-base mb-1">{t.pub_modal_title}</h2>
-          <p className="text-xs text-[rgba(255,255,255,0.5)] mb-4">{t.pub_modal_body}</p>
+        <div className="rounded-2xl bg-white border border-black/[0.08] p-5 shadow-[0_24px_64px_rgba(0,0,0,0.15)]">
+          <h2 className="text-[#0d0f14] font-semibold text-base mb-1">{t.pub_modal_title}</h2>
+          <p className="text-xs text-[rgba(0,0,0,0.55)] mb-4">{t.pub_modal_body}</p>
           <input
             value={name}
             onChange={e => onName(e.target.value)}
             placeholder={t.pub_modal_name}
             aria-label={t.pub_modal_name}
             disabled={submitting}
-            className="w-full mb-2 rounded-lg bg-white/[0.05] border border-white/[0.1] px-3 py-2 text-white placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(96,128,240,0.5)] disabled:opacity-50"
+            className="w-full mb-2 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
             style={{ fontSize: 16 }}
           />
           <input
@@ -515,14 +517,14 @@ function EndModal({
             placeholder={t.pub_modal_email}
             aria-label={t.pub_modal_email}
             disabled={submitting}
-            className="w-full mb-4 rounded-lg bg-white/[0.05] border border-white/[0.1] px-3 py-2 text-white placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(96,128,240,0.5)] disabled:opacity-50"
+            className="w-full mb-4 rounded-lg bg-black/[0.04] border border-black/[0.12] px-3 py-2 text-[#0d0f14] placeholder-[rgba(0,0,0,0.30)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] disabled:opacity-50"
             style={{ fontSize: 16 }}
           />
           <div className="flex gap-2 justify-end">
             <button
               onClick={onSkip}
               disabled={submitting}
-              className="px-4 py-2 rounded-lg text-sm text-[rgba(255,255,255,0.55)] hover:text-white disabled:opacity-40"
+              className="px-4 py-2 rounded-lg text-sm text-[rgba(0,0,0,0.50)] hover:text-black disabled:opacity-40"
             >
               {t.pub_skip}
             </button>
@@ -547,10 +549,10 @@ function Header({ candidate, initials }: { candidate: Candidate; initials: strin
       {candidate.avatarUrl
         ? /* eslint-disable-next-line @next/next/no-img-element */
           <img src={candidate.avatarUrl} alt={candidate.name} className="w-11 h-11 shrink-0 rounded-full object-cover" />
-        : <div className="w-11 h-11 shrink-0 rounded-full bg-[#4060d0]/30 border border-[#4060d0]/40 flex items-center justify-center text-sm font-semibold text-white">{initials}</div>}
+        : <div className="w-11 h-11 shrink-0 rounded-full bg-[#4060d0]/15 border border-[#4060d0]/35 flex items-center justify-center text-sm font-semibold text-[#3050b0]">{initials}</div>}
       <div className="min-w-0">
-        <h1 className="text-white font-semibold text-base leading-tight truncate">{candidate.name}</h1>
-        {candidate.headline && <p className="text-xs text-[rgba(255,255,255,0.5)] truncate">{candidate.headline}</p>}
+        <h1 className="text-[#0d0f14] font-semibold text-base leading-tight truncate">{candidate.name}</h1>
+        {candidate.headline && <p className="text-xs text-[rgba(0,0,0,0.50)] truncate">{candidate.headline}</p>}
       </div>
     </div>
   );

@@ -143,28 +143,46 @@ p {
   outline-offset: 2px;
 }
 
-/* ── Chat background — animated gradient orbs ───────────────── */
+/* ── Chat background — aurora (light) ──────────────────────── */
 .chat-bg {
-  background: #07090e;
+  background: #f7f8ff;
   isolation: isolate;
 }
-.chat-bg::before {
+.chat-bg::before,
+.chat-bg::after {
   content: '';
   position: absolute;
-  inset: 0;
+  inset: -15%;
   z-index: -1;
-  background:
-    radial-gradient(ellipse 65% 50% at 20% 10%,  rgba(64, 96, 208, 0.11) 0%, transparent 100%),
-    radial-gradient(ellipse 55% 65% at 85% 85%,  rgba(64, 96, 208, 0.08) 0%, transparent 100%),
-    radial-gradient(ellipse 40% 35% at 60% 45%,  rgba(80, 40, 140, 0.05) 0%, transparent 100%);
-  animation: chat-orbs-drift 22s ease-in-out infinite alternate;
   pointer-events: none;
 }
-@keyframes chat-orbs-drift {
-  0%   { transform: translate(0,    0)    scale(1);    }
-  33%  { transform: translate(2%,  -3%)   scale(1.04); }
-  66%  { transform: translate(-2%,  2%)   scale(0.97); }
-  100% { transform: translate(3%,   4%)   scale(1.05); }
+.chat-bg::before {
+  background:
+    radial-gradient(ellipse 55% 45% at 20% 15%,  rgba(55,  88, 230, 0.18) 0%, transparent 100%),
+    radial-gradient(ellipse 50% 60% at 82% 80%,  rgba(105, 38, 215, 0.14) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 35% at 58% 35%,  rgba(20, 120, 210, 0.12) 0%, transparent 100%);
+  filter: blur(55px);
+  animation: aurora-a 22s ease-in-out infinite;
+}
+.chat-bg::after {
+  background:
+    radial-gradient(ellipse 48% 42% at 75% 12%,  rgba(90,  28, 195, 0.12) 0%, transparent 100%),
+    radial-gradient(ellipse 52% 48% at 18% 82%,  rgba(20, 155, 145, 0.10) 0%, transparent 100%);
+  filter: blur(70px);
+  animation: aurora-b 30s ease-in-out infinite reverse;
+}
+@keyframes aurora-a {
+  0%   { transform: translate(  0%,   0%) scale(1.00); }
+  25%  { transform: translate(  6%,  -9%) scale(1.08); }
+  50%  { transform: translate( -5%,   7%) scale(0.94); }
+  75%  { transform: translate(  8%,   5%) scale(1.06); }
+  100% { transform: translate(  0%,   0%) scale(1.00); }
+}
+@keyframes aurora-b {
+  0%   { transform: translate(  0%,   0%) scale(1.00); }
+  33%  { transform: translate( -7%,   6%) scale(1.10); }
+  66%  { transform: translate(  5%,  -8%) scale(0.92); }
+  100% { transform: translate(  0%,   0%) scale(1.00); }
 }
 
 /* ── Keyframes ──────────────────────────────────────────────── */
