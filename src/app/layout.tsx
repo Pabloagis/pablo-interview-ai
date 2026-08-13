@@ -1,28 +1,15 @@
 import type { Metadata, Viewport } from 'next';
-import { Doto, Space_Grotesk, Space_Mono } from 'next/font/google';
+import { Montserrat } from 'next/font/google';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import '../styles/globals.css';
 import { BASE_URL } from '@/lib/base-url';
 
-const doto = Doto({
+const montserrat = Montserrat({
   subsets: ['latin'],
   display: 'swap',
-  variable: '--font-doto',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-space-grotesk',
-  weight: ['300', '400', '500', '700'],
-});
-
-const spaceMono = Space_Mono({
-  subsets: ['latin'],
-  display: 'swap',
-  variable: '--font-space-mono',
-  weight: ['400', '700'],
+  variable: '--font-montserrat',
+  weight: ['300', '400', '500', '600', '700', '800'],
 });
 
 export const metadata: Metadata = {
@@ -55,7 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${doto.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}
+      className={montserrat.variable}
       suppressHydrationWarning
     >
       <head>
@@ -83,7 +70,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-      <body className={spaceGrotesk.className}>
+      <body className={montserrat.className}>
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-WW8R3LJ8"

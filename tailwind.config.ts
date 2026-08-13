@@ -9,9 +9,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        display: ['var(--font-doto)', '"Space Mono"', 'monospace'],
-        sans: ['var(--font-space-grotesk)', '"DM Sans"', 'system-ui', 'sans-serif'],
-        mono: ['var(--font-space-mono)', '"JetBrains Mono"', '"SF Mono"', 'monospace'],
+        display: ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
+        sans:    ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
+        mono:    ['var(--font-montserrat)', 'system-ui', 'sans-serif'],
       },
       colors: {
         primary: '#3B82F6',

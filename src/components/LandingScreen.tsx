@@ -30,20 +30,17 @@ export default function LandingScreen() {
           </div>
 
           <div className="flex flex-col gap-3">
-            <Link href="/register/candidate" className="block">
+            <Link href="/login" className="block">
               <Button variant="primary" className="w-full">
-                <span className="block">{t.land_candidate}</span>
-                <span className="block font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-secondary)] mt-0.5 normal-case">
-                  {t.land_candidate_sub}
-                </span>
+                {t.login_signin}
               </Button>
             </Link>
           </div>
 
           <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">
-            {t.land_have_account}{' '}
-            <Link href="/login" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
-              {t.land_signin}
+            {t.login_no_account}{' '}
+            <Link href="/register/candidate" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
+              {t.land_candidate}
             </Link>
           </p>
         </div>
