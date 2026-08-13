@@ -156,13 +156,13 @@ export default function VoiceRecorder({ onTranscript, disabled, compact, onError
         title={recording ? `${t.voice_stop} · ${mmss}` : t.voice_record}
         className="shrink-0 h-11 w-11 flex items-center justify-center rounded-xl border transition-colors disabled:opacity-40"
         style={{
-          background: recording ? 'rgba(200,60,60,0.15)' : 'rgba(255,255,255,0.04)',
-          borderColor: recording ? 'rgba(200,60,60,0.4)' : 'rgba(255,255,255,0.12)',
-          color: recording ? 'rgba(240,120,120,0.95)' : 'rgba(255,255,255,0.55)',
+          background: recording ? 'rgba(200,60,60,0.10)' : 'rgba(0,0,0,0.04)',
+          borderColor: recording ? 'rgba(200,60,60,0.35)' : 'rgba(0,0,0,0.14)',
+          color: recording ? 'rgba(220,80,80,0.9)' : 'rgba(0,0,0,0.45)',
         }}
       >
         {busy ? (
-          <span className="w-3.5 h-3.5 rounded-full border-2 border-white/25 border-t-white/70 animate-spin" />
+          <span className="w-3.5 h-3.5 rounded-full border-2 border-black/20 border-t-black/55 animate-spin" />
         ) : recording ? (
           <span className="w-3 h-3 rounded-sm bg-[rgba(240,80,80,0.95)]" />
         ) : (

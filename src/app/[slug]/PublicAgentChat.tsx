@@ -420,6 +420,8 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
           speakingId={speakingId}
           speakLabel={t.pub_speak_on}
           stopSpeakLabel={t.pub_speak_off}
+          agentAvatarUrl={candidate.avatarUrl}
+          agentInitials={initials}
           footer={ended ? (
             <div className="shrink-0 border-t border-black/[0.07] px-5 py-5 text-center">
               <p className="text-sm text-[rgba(0,0,0,0.55)]">{t.pub_ended}</p>

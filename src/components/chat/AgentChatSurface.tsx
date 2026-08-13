@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect, useRef, type ReactNode, type KeyboardEvent, type ChangeEvent } from 'react';
-import { MAX_MESSAGE_LENGTH } from '@/lib/constants';
 import VoiceRecorder from '@/app/dashboard/candidate/components/VoiceRecorder';
 import SpeakButton from '@/components/chat/speech';
 
@@ -57,6 +56,8 @@ interface Props {
   speakLabel?:   string;
   stopSpeakLabel?: string;
   footer?:  ReactNode;
+  agentAvatarUrl?: string | null;
+  agentInitials?:  string;
 }
 
 export default function AgentChatSurface({
@@ -85,6 +86,8 @@ export default function AgentChatSurface({
   speakLabel,
   stopSpeakLabel,
   footer,
+  agentAvatarUrl,
+  agentInitials,
 }: Props) {
   const [input, setInput] = useState('');
   const [thinkingIndex, setThinkingIndex] = useState(0);
@@ -106,9 +109,8 @@ export default function AgentChatSurface({
   }, [isStreaming]);
 
   function updateDraft(value: string) {
-    const next = value.slice(0, MAX_MESSAGE_LENGTH);
-    setInput(next);
-    onDraftChange?.(next);
+    setInput(value);
+    onDraftChange?.(value);
   }
 
   function send(text: string) {
@@ -195,6 +197,8 @@ export default function AgentChatSurface({
           <Bubble
             key={m.id}
             msg={m}
+            agentAvatarUrl={agentAvatarUrl}
+            agentInitials={agentInitials}
             onSpeak={onSpeak}
             speaking={speakingId === m.id}
             speakLabel={speakLabel}
@@ -205,15 +209,24 @@ export default function AgentChatSurface({
         {isStreaming && (
           <>
             <div ref={streamingTopRef} />
-            <div className="flex justify-start min-w-0">
-              <div className="max-w-[82%] min-w-0 text-[var(--body)] leading-relaxed whitespace-pre-wrap break-words text-[var(--text-primary)]">
+            <div className="flex items-start gap-2.5 min-w-0">
+              {(agentAvatarUrl || agentInitials) && (
+                <div className="shrink-0 mt-1">
+                  {agentAvatarUrl
+                    ? /* eslint-disable-next-line @next/next/no-img-element */
+                      <img src={agentAvatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                    : <div className="w-7 h-7 rounded-full bg-[#4060d0]/15 border border-[#4060d0]/25 flex items-center justify-center text-[10px] font-semibold text-[#3050b0]">{agentInitials}</div>
+                  }
+                </div>
+              )}
+              <div className="max-w-[80%] min-w-0 bg-white border border-black/[0.07] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words text-[#0d0f14]">
                 {streamingText ? (
                   <>
                     {streamingText}
-                    <span className="inline-block w-0.5 h-3.5 align-middle ml-0.5 bg-[var(--text-secondary)] animate-pulse" />
+                    <span className="inline-block w-0.5 h-3.5 align-middle ml-0.5 bg-black/30 animate-pulse" />
                   </>
                 ) : (
-                  <span className="font-mono text-[13px] text-[var(--text-disabled)]">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[rgba(0,0,0,0.38)]">
                     {thinkingLabels[thinkingIndex % thinkingLabels.length]}
                   </span>
                 )}
@@ -267,41 +280,52 @@ export default function AgentChatSurface({
             </button>
           </div>
 
-          <div className="h-4 mt-1 px-1 text-right">
-            {input.length > 0 && (
-              <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] tabular-nums">
-                {input.length} / {MAX_MESSAGE_LENGTH}
-              </span>
-            )}
-          </div>
         </div>
       )}
     </>
   );
 }
 
+function AgentAvatar({ avatarUrl, initials }: { avatarUrl?: string | null; initials?: string }) {
+  if (!avatarUrl && !initials) return null;
+  if (avatarUrl) {
+    /* eslint-disable-next-line @next/next/no-img-element */
+    return <img src={avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover shrink-0 mt-1" />;
+  }
+  return (
+    <div className="w-7 h-7 rounded-full bg-[#4060d0]/15 border border-[#4060d0]/25 flex items-center justify-center text-[10px] font-semibold text-[#3050b0] shrink-0 mt-1">
+      {initials}
+    </div>
+  );
+}
+
 function Bubble({
-  msg, onSpeak, speaking, speakLabel, stopSpeakLabel,
+  msg, agentAvatarUrl, agentInitials, onSpeak, speaking, speakLabel, stopSpeakLabel,
 }: {
-  msg:             ChatMessage;
-  onSpeak?:        (id: string, text: string) => void;
-  speaking:        boolean;
-  speakLabel?:     string;
-  stopSpeakLabel?: string;
+  msg:              ChatMessage;
+  agentAvatarUrl?:  string | null;
+  agentInitials?:   string;
+  onSpeak?:         (id: string, text: string) => void;
+  speaking:         boolean;
+  speakLabel?:      string;
+  stopSpeakLabel?:  string;
 }) {
   const isUser = msg.role === 'user';
   const canSpeak = !isUser && !!onSpeak;
+  const hasAvatar = !isUser && (agentAvatarUrl || agentInitials);
+
   return (
-    <div className={`flex min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
-      <div className="max-w-[82%] min-w-0 flex flex-col items-start">
+    <div className={`flex items-start gap-2.5 min-w-0 ${isUser ? 'justify-end' : 'justify-start'}`}>
+      {hasAvatar && <AgentAvatar avatarUrl={agentAvatarUrl} initials={agentInitials} />}
+      <div className="max-w-[80%] min-w-0 flex flex-col items-start">
         <div className={[
-          'min-w-0 text-[var(--body)] leading-relaxed whitespace-pre-wrap break-words',
+          'min-w-0 text-sm leading-relaxed whitespace-pre-wrap break-words px-4 py-3 rounded-2xl',
           isUser
-            ? 'bg-[var(--surface-raised)] border border-[var(--border-visible)] text-[var(--text-primary)] px-4 py-3 rounded-[var(--radius-md)]'
-            : 'text-[var(--text-primary)] py-1',
+            ? 'bg-[#edf0ff] border border-[#4060d0]/25 text-[#0d0f14]'
+            : 'bg-white border border-black/[0.07] text-[#0d0f14]',
         ].join(' ')}>{msg.content}</div>
         {canSpeak && (
-          <div className="mt-1">
+          <div className="mt-1 ml-0.5">
             <SpeakButton
               speaking={speaking}
               onClick={() => onSpeak(msg.id, msg.content)}

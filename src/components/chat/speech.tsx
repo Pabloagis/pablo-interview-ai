@@ -87,10 +87,10 @@ export default function SpeakButton({
       aria-label={label}
       aria-pressed={speaking}
       title={label}
-      className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-white/[0.06]"
+      className="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-colors hover:bg-black/[0.06]"
       style={{
-        color:      speaking ? 'rgba(140,165,250,0.95)' : 'rgba(255,255,255,0.35)',
-        background: speaking ? 'rgba(64,96,208,0.14)'   : 'transparent',
+        color:      speaking ? 'rgba(40,80,200,0.85)'  : 'rgba(0,0,0,0.35)',
+        background: speaking ? 'rgba(64,96,208,0.12)'  : 'transparent',
       }}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

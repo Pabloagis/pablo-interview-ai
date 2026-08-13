@@ -96,21 +96,21 @@ const NODE_VISUAL: Record<NodeState, {
   weak: {
     core:       '#D4A843',               // --warning
     rim:        '#7A5A20',
-    glow:       'rgba(212,168,67,0.50)',
+    glow:       'rgba(212,168,67,0.28)',
     label:      '#D4A843',
     stateColor: '#D4A843',
   },
   solid: {
     core:       '#5B9BF6',               // --interactive
     rim:        '#1A3A80',
-    glow:       'rgba(91,155,246,0.50)',
+    glow:       'rgba(91,155,246,0.28)',
     label:      '#5B9BF6',
     stateColor: '#5B9BF6',
   },
   verified: {
     core:       '#4A9E5C',               // --success
     rim:        '#1A5A30',
-    glow:       'rgba(74,158,92,0.50)',
+    glow:       'rgba(74,158,92,0.28)',
     label:      '#4A9E5C',
     stateColor: '#4A9E5C',
   },
@@ -200,9 +200,9 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
     const r = stage.getBoundingClientRect();
     const nx = (e.clientX - r.left) / r.width  - 0.5;
     const ny = (e.clientY - r.top)  / r.height - 0.5;
-    scene.style.setProperty('--cov-ry', `${(nx *  7).toFixed(2)}deg`);
-    scene.style.setProperty('--cov-rx', `${(ny * -5).toFixed(2)}deg`);
-    scene.style.setProperty('--cov-shift', `${(nx * -10).toFixed(2)}px`);
+    scene.style.setProperty('--cov-ry', `${(nx *  4).toFixed(2)}deg`);
+    scene.style.setProperty('--cov-rx', `${(ny * -3).toFixed(2)}deg`);
+    scene.style.setProperty('--cov-shift', `${(nx * -6).toFixed(2)}px`);
   }
 
   function resetParallax() {
@@ -247,11 +247,6 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
       >
         <div ref={sceneRef} className="cov-scene">
 
-          {/* Depth cues: ambient core light + receding grid floor */}
-          <div className="cov-ambient" aria-hidden />
-          <div className="cov-floor" aria-hidden />
-          <div className="cov-horizon" aria-hidden />
-          <div className="cov-haze" aria-hidden />
 
           {/* ── Constellation wiring — drawn from measured orb centres ── */}
           {wires.w > 0 && (
@@ -387,14 +382,12 @@ function CoverageMapStyles() {
       .cov-stage {
         position: relative;
         width: 100%;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        background:
-          radial-gradient(120% 80% at 50% 0%, rgba(40,60,110,0.28) 0%, rgba(10,12,18,0) 62%),
-          linear-gradient(180deg, #0b0e15 0%, #090b11 100%);
+        border-radius: var(--radius-md);
+        border: 1px solid var(--border-visible);
+        background: var(--surface);
         overflow: hidden;
-        perspective: 1100px;
-        perspective-origin: 50% 42%;
+        perspective: 900px;
+        perspective-origin: 50% 46%;
         touch-action: pan-y;
       }
       .cov-scene {
@@ -403,71 +396,14 @@ function CoverageMapStyles() {
         --cov-shift: 0px;
         position: relative;
         transform-style: preserve-3d;
-        /* Constant 5° lean so the field reads as a plane in space even at rest;
-           the pointer only ever adds a few degrees on top of it. */
         transform:
-          rotateX(calc(5deg + var(--cov-rx)))
+          rotateX(calc(2deg + var(--cov-rx)))
           rotateY(var(--cov-ry))
           translateX(var(--cov-shift));
         transition: transform 320ms cubic-bezier(0.22, 0.61, 0.36, 1);
       }
 
-      /* Ambient light behind the field — gives the orbs something to sit in */
-      .cov-ambient {
-        position: absolute;
-        left: 50%; top: 44%;
-        width: 78%; aspect-ratio: 1;
-        transform: translate(-50%, -50%) translateZ(-140px);
-        background: radial-gradient(circle, rgba(70,110,200,0.16) 0%, rgba(70,110,200,0) 68%);
-        pointer-events: none;
-      }
-
-      /* Receding grid floor — the main depth cue. Anchored to the stage bottom
-         and drifting towards the viewer, so the field always sits ON something. */
-      .cov-floor {
-        position: absolute;
-        left: -55%; right: -55%; top: 79%; bottom: -85%;
-        transform-origin: 50% 0%;
-        transform: rotateX(74deg) translateZ(-40px);
-        background-image:
-          linear-gradient(to right,  rgba(126,178,255,0.30) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(126,178,255,0.30) 1px, transparent 1px);
-        background-size: 54px 54px;
-        -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 4%, rgba(0,0,0,0) 62%);
-        mask-image: linear-gradient(to bottom, rgba(0,0,0,0.95) 4%, rgba(0,0,0,0) 62%);
-        animation: cov-floor-drift 7s linear infinite;
-        pointer-events: none;
-      }
-      @keyframes cov-floor-drift {
-        from { background-position: 0 0,     0 0;     }
-        to   { background-position: 0 54px,  0 54px;  }
-      }
-      /* Glowing horizon where the floor meets the void */
-      .cov-horizon {
-        position: absolute;
-        left: 0; right: 0; top: 79%;
-        height: 54px;
-        transform: translateZ(-40px);
-        background:
-          linear-gradient(90deg,
-            rgba(126,178,255,0) 0%,
-            rgba(126,178,255,0.28) 50%,
-            rgba(126,178,255,0) 100%) top / 100% 1px no-repeat,
-          radial-gradient(55% 100% at 50% 0%,
-            rgba(90,140,240,0.16) 0%, rgba(90,140,240,0) 72%);
-        pointer-events: none;
-      }
-      /* Depth haze — dims the far half so the near half reads as closer */
-      .cov-haze {
-        position: absolute;
-        inset: 0;
-        transform: translateZ(-20px);
-        background: linear-gradient(180deg,
-          rgba(9,11,17,0.55) 0%, rgba(9,11,17,0) 46%);
-        pointer-events: none;
-      }
-
-      /* Wiring sits behind the orbs but in front of the floor */
+      /* Wiring sits behind the orbs */
       .cov-wires {
         position: absolute;
         inset: 0;
@@ -477,15 +413,15 @@ function CoverageMapStyles() {
       }
       .cov-wire {
         fill: none;
-        stroke: rgba(51,51,51,0.9);   /* --border-visible at near-full opacity */
+        stroke: var(--border-visible);
         stroke-width: 1;
       }
       .cov-wire-flow {
         fill: none;
-        stroke-width: 1.6;
+        stroke-width: 1.4;
         stroke-linecap: round;
-        opacity: 0.85;
-        stroke-dasharray: 9 231;   /* pathLength is normalised to 240 */
+        opacity: 0.70;
+        stroke-dasharray: 8 232;
         animation: cov-flow 3.4s linear infinite;
       }
       @keyframes cov-flow {
@@ -493,14 +429,14 @@ function CoverageMapStyles() {
         to   { stroke-dashoffset: 0;   }
       }
 
-      /* ── Layout grid — this is what makes overlap impossible ── */
+      /* ── Layout grid ── */
       .cov-grid {
         position: relative;
         transform-style: preserve-3d;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 4px 0;
-        padding: 14px 6px 34px;
+        padding: 14px 6px 28px;
       }
       .cov-panel {
         position: relative;
@@ -510,11 +446,9 @@ function CoverageMapStyles() {
         padding: 8px 4px 12px;
         transform-style: preserve-3d;
       }
-      /* The two far quadrants sit deeper in Z than the two near ones — real
-         perspective foreshortening, not a painted-on gradient. */
-      .cov-panel:nth-child(-n+2) { transform: translateZ(-34px); }
-      .cov-panel:nth-child(n+3)  { transform: translateZ(10px);  }
-      /* Quadrant dividers as fading light rules, not hard borders */
+      .cov-panel:nth-child(-n+2) { transform: translateZ(-20px); }
+      .cov-panel:nth-child(n+3)  { transform: translateZ(6px);   }
+      /* Quadrant dividers — subtle rules using the border token */
       .cov-panel:nth-child(odd)::after,
       .cov-panel:nth-child(-n+2)::before {
         content: '';
@@ -524,23 +458,24 @@ function CoverageMapStyles() {
       .cov-panel:nth-child(odd)::after {
         top: 8%; bottom: 8%; right: 0; width: 1px;
         background: linear-gradient(180deg,
-          rgba(140,180,255,0) 0%, rgba(140,180,255,0.16) 50%, rgba(140,180,255,0) 100%);
+          transparent 0%, var(--border-visible) 50%, transparent 100%);
+        opacity: 0.5;
       }
       .cov-panel:nth-child(-n+2)::before {
         left: 6%; right: 6%; bottom: 0; height: 1px;
         background: linear-gradient(90deg,
-          rgba(140,180,255,0) 0%, rgba(140,180,255,0.16) 50%, rgba(140,180,255,0) 100%);
+          transparent 0%, var(--border-visible) 50%, transparent 100%);
+        opacity: 0.5;
       }
       .cov-panel-title {
         font-family: var(--font-space-mono, monospace);
         font-size: 9px;
         font-weight: 400;
         letter-spacing: 0.12em;
-        color: rgba(91,155,246,0.40);   /* --interactive at 40% */
+        color: var(--text-disabled);
         text-align: center;
         user-select: none;
         transform: translateZ(4px);
-        text-shadow: 0 0 10px rgba(90,140,240,0.35);
       }
       .cov-panel-nodes {
         display: grid;
@@ -566,14 +501,14 @@ function CoverageMapStyles() {
       }
       .cov-node:hover,
       .cov-node:focus-visible {
-        transform: translateY(calc(var(--cov-lift) - 3px)) translateZ(26px);
+        transform: translateY(calc(var(--cov-lift) - 3px)) translateZ(18px);
         outline: none;
       }
 
       .cov-orb-wrap {
         position: relative;
-        width: 30px;
-        height: 30px;
+        width: 28px;
+        height: 28px;
         transform-style: preserve-3d;
         display: block;
       }
@@ -581,27 +516,24 @@ function CoverageMapStyles() {
         position: absolute;
         inset: 0;
         border-radius: 50%;
-        transform: translateZ(20px);
-        /* Sphere shading: key light top-left, bounce light from the floor below,
-           terminator falling to the rim colour. */
+        transform: translateZ(16px);
         background:
           radial-gradient(circle at 50% 116%,
-            rgba(255,255,255,0.22) 0%, rgba(255,255,255,0) 42%),
+            rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 42%),
           radial-gradient(circle at 34% 27%,
             var(--cov-core) 0%,
             var(--cov-core) 18%,
             var(--cov-rim) 82%);
         box-shadow:
-          inset 0 -3px 6px rgba(0,0,0,0.45),
-          inset 0 2px 4px rgba(255,255,255,0.18),
-          0 0 0 1px rgba(255,255,255,0.07),
-          0 0 18px var(--cov-glow),
-          0 0 38px var(--cov-glow);
+          inset 0 -2px 5px rgba(0,0,0,0.40),
+          inset 0 2px 3px rgba(255,255,255,0.14),
+          0 0 0 1px rgba(255,255,255,0.06),
+          0 0 12px var(--cov-glow),
+          0 0 24px var(--cov-glow);
         animation: cov-bob 6.5s ease-in-out infinite;
         animation-delay: var(--cov-delay);
         transition: box-shadow 300ms ease, background 300ms ease;
       }
-      /* Tight specular — the single detail that makes a disc read as a sphere */
       .cov-orb::after {
         content: '';
         position: absolute;
@@ -609,61 +541,58 @@ function CoverageMapStyles() {
         width: 30%; height: 24%;
         border-radius: 50%;
         background: radial-gradient(circle,
-          rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.35) 45%, rgba(255,255,255,0) 72%);
+          rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.28) 45%, rgba(255,255,255,0) 72%);
         filter: blur(0.4px);
       }
-      /* Unlit nodes are matte: no emission, receding, visibly "off" */
       .cov-node:not([data-lit]) .cov-orb {
         box-shadow:
-          inset 0 -3px 6px rgba(0,0,0,0.55),
-          inset 0 2px 3px rgba(255,255,255,0.10),
-          0 0 0 1px rgba(255,255,255,0.09);
-        transform: translateZ(8px) scale(0.86);
+          inset 0 -2px 5px rgba(0,0,0,0.50),
+          inset 0 2px 3px rgba(255,255,255,0.08),
+          0 0 0 1px rgba(255,255,255,0.07);
+        transform: translateZ(6px) scale(0.88);
       }
-      /* Halo ring — only on lit nodes, breathes with the flow animation */
       .cov-node[data-lit] .cov-orb-wrap::after {
         content: '';
         position: absolute;
-        inset: -7px;
+        inset: -6px;
         border-radius: 50%;
         border: 1px solid var(--cov-ring);
-        opacity: 0.22;
-        transform: translateZ(14px);
+        opacity: 0.18;
+        transform: translateZ(10px);
         animation: cov-halo 4.2s ease-in-out infinite;
         animation-delay: var(--cov-delay);
       }
       @keyframes cov-halo {
-        0%, 100% { opacity: 0.16; transform: translateZ(14px) scale(1);    }
-        50%      { opacity: 0.34; transform: translateZ(14px) scale(1.10); }
+        0%, 100% { opacity: 0.12; transform: translateZ(10px) scale(1);    }
+        50%      { opacity: 0.26; transform: translateZ(10px) scale(1.08); }
       }
       @keyframes cov-bob {
-        0%, 100% { translate: 0 -2px; }
-        50%      { translate: 0  2px; }
+        0%, 100% { translate: 0 -1.5px; }
+        50%      { translate: 0  1.5px; }
       }
-      /* Cast shadow on the floor — sells that the orb is above the plane */
       .cov-orb-shadow {
         position: absolute;
         left: 50%;
-        bottom: -13px;
-        width: 26px;
-        height: 7px;
+        bottom: -10px;
+        width: 22px;
+        height: 6px;
         transform: translateX(-50%) translateZ(-4px) rotateX(72deg);
         border-radius: 50%;
-        background: radial-gradient(circle, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 72%);
+        background: radial-gradient(circle, rgba(0,0,0,0.40) 0%, rgba(0,0,0,0) 72%);
         pointer-events: none;
       }
 
       .cov-node[data-selected] .cov-orb {
         box-shadow:
-          inset 0 -3px 6px rgba(0,0,0,0.42),
-          inset 0 2px 4px rgba(255,255,255,0.22),
+          inset 0 -2px 5px rgba(0,0,0,0.38),
+          inset 0 2px 3px rgba(255,255,255,0.20),
           0 0 0 2px var(--cov-ring),
-          0 0 26px var(--cov-glow),
-          0 0 54px var(--cov-glow);
+          0 0 18px var(--cov-glow),
+          0 0 36px var(--cov-glow);
       }
-      .cov-node[data-selected] { transform: translateY(calc(var(--cov-lift) - 3px)) translateZ(30px); }
+      .cov-node[data-selected] { transform: translateY(calc(var(--cov-lift) - 3px)) translateZ(22px); }
 
-      /* ── Label — fixed px type, never scales with the container ── */
+      /* ── Label ── */
       .cov-label {
         display: block;
         max-width: 15ch;
@@ -674,20 +603,14 @@ function CoverageMapStyles() {
         letter-spacing: 0.04em;
         text-align: center;
         color: var(--cov-label);
-        text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);
-        /* break-word, not anywhere: a long word only splits when nothing else
-           works. The container queries below make sure that almost never
-           happens — type shrinks with the sidebar, so "Condicionantes" and
-           "Herramientas y sistemas" stay whole. */
         overflow-wrap: break-word;
         transform: translateZ(12px);
         transition: color 240ms ease;
         user-select: none;
       }
       .cov-node:hover .cov-label,
-      .cov-node[data-selected] .cov-label { color: #fff; }
+      .cov-node[data-selected] .cov-label { color: var(--text-primary); }
 
-      /* Sized against the sidebar, which is never the viewport width */
       @container cov (max-width: 430px) {
         .cov-label       { font-size: 10px; max-width: 14ch; }
         .cov-node        { min-height: 80px; padding-left: 2px; padding-right: 2px; }
@@ -700,7 +623,7 @@ function CoverageMapStyles() {
 
       @media (prefers-reduced-motion: reduce) {
         .cov-scene { transition: none; }
-        .cov-floor, .cov-orb, .cov-wire-flow,
+        .cov-orb, .cov-wire-flow,
         .cov-node[data-lit] .cov-orb-wrap::after { animation: none; }
       }
     `}</style>
