@@ -8,11 +8,11 @@ export const maxDuration = 60;
 // Called by the End-conversation button AND navigator.sendBeacon (pagehide).
 // Beacon sends a Blob with type application/json, so request.json() works for both.
 export async function POST(request: NextRequest) {
-  let body: { sessionId?: string; recruiterName?: string; recruiterEmail?: string };
+  let body: { sessionId?: string; explicit?: boolean; recruiterName?: string; recruiterEmail?: string };
   try { body = await request.json(); }
   catch { return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 }); }
 
-  const { sessionId, recruiterName, recruiterEmail } = body;
+  const { sessionId, explicit, recruiterName, recruiterEmail } = body;
   if (!sessionId) return NextResponse.json({ error: 'sessionId is required' }, { status: 400 });
 
   const supabase = createServerSupabaseClient();
@@ -27,8 +27,11 @@ export async function POST(request: NextRequest) {
   }
 
   // Persist optional visitor-supplied fields; never blank an existing value.
+  // ended_at is only set on an explicit End action (modal submit/skip). The
+  // sendBeacon path omits `explicit` so a tab switch or unload never locks the
+  // session — the recruiter can keep chatting if they come back.
   const patch: Record<string, string> = {};
-  if (!session.ended_at) patch.ended_at = new Date().toISOString();
+  if (explicit && !session.ended_at) patch.ended_at = new Date().toISOString();
   if (recruiterName?.trim()) patch.recruiter_name = recruiterName.trim();
   if (recruiterEmail?.trim()) patch.recruiter_email = recruiterEmail.trim();
   if (Object.keys(patch).length > 0) {

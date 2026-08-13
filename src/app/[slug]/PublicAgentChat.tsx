@@ -144,6 +144,12 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   }, []);
 
   // ── Best-effort end on tab close ───────────────────────────────────────────
+  // Only pagehide — not visibilitychange. visibilitychange fires on every tab
+  // switch and would both send the report email mid-conversation and lock the
+  // chat via ended_at. pagehide fires on real page unloads (close/navigate away).
+  // The beacon body omits `explicit` so the server saves data and triggers the
+  // report without setting ended_at; the recruiter can keep chatting if they
+  // come back (e.g. bfcache restore).
   useEffect(() => {
     const fire = () => {
       const id = sessionRef.current;
@@ -151,10 +157,8 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
       const blob = new Blob([JSON.stringify({ sessionId: id })], { type: 'application/json' });
       navigator.sendBeacon('/api/public/session/end', blob);
     };
-    const onVis = () => { if (document.visibilityState === 'hidden') fire(); };
     window.addEventListener('pagehide', fire);
-    document.addEventListener('visibilitychange', onVis);
-    return () => { window.removeEventListener('pagehide', fire); document.removeEventListener('visibilitychange', onVis); };
+    return () => window.removeEventListener('pagehide', fire);
   }, []);
 
   // ── One streaming turn ─────────────────────────────────────────────────────
@@ -313,6 +317,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sessionId,
+          explicit: true,
           recruiterName:  share ? (recruiterName.trim()  || undefined) : undefined,
           recruiterEmail: share ? (recruiterEmail.trim() || undefined) : undefined,
         }),
