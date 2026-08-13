@@ -4,6 +4,9 @@ import { useEffect } from 'react';
 import { ToastMessage } from '@/lib/types';
 import { TOAST_DURATION_MS } from '@/lib/constants';
 
+// NOTE: Nothing design uses inline [STATUS] text instead of toast popups.
+// This component is kept for back-compat but is considered a deprecated pattern.
+
 interface ToastProps {
   toasts: ToastMessage[];
   onDismiss: (id: string) => void;
@@ -21,32 +24,31 @@ export default function Toast({ toasts, onDismiss }: ToastProps) {
   );
 }
 
-function ToastItem({
-  toast,
-  onDismiss,
-}: {
-  toast: ToastMessage;
-  onDismiss: (id: string) => void;
-}) {
+function ToastItem({ toast, onDismiss }: { toast: ToastMessage; onDismiss: (id: string) => void }) {
   useEffect(() => {
     const timer = setTimeout(() => onDismiss(toast.id), TOAST_DURATION_MS);
     return () => clearTimeout(timer);
   }, [toast.id, onDismiss]);
 
-  const colorClass = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
+  const borderColor = {
+    success: 'var(--success)',
+    error:   'var(--accent)',
+    info:    'var(--interactive)',
   }[toast.type];
+
+  const textColor = borderColor;
 
   return (
     <div
-      className={`${colorClass} text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 max-w-sm`}
+      className="bg-[var(--surface-raised)] px-4 py-3 rounded-[var(--radius-sm)] flex items-center gap-3 max-w-sm"
+      style={{ border: `1px solid ${borderColor}` }}
     >
-      <span className="text-sm flex-1 leading-snug">{toast.message}</span>
+      <span className="font-sans text-[14px] flex-1 leading-snug" style={{ color: textColor }}>
+        {toast.message}
+      </span>
       <button
         onClick={() => onDismiss(toast.id)}
-        className="text-white/80 hover:text-white text-xl leading-none flex-shrink-0"
+        className="font-mono text-[var(--text-disabled)] hover:text-[var(--text-primary)] text-lg leading-none flex-shrink-0 transition-colors duration-[180ms]"
         aria-label="Dismiss"
       >
         ×

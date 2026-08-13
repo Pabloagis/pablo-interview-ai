@@ -448,13 +448,11 @@ export function HowItWorksCard() {
       `}</style>
 
       <div style={{
-        background: 'var(--modal-bg)',
-        border: '0.5px solid var(--modal-border)',
-        borderRadius: 22,
-        boxShadow: collapsed ? 'none' : 'var(--modal-shadow)',
+        background: 'var(--surface)',
+        border: '1px solid var(--border-visible)',
+        borderRadius: 16,
         overflow: 'hidden',
         width: '100%',
-        transition: 'box-shadow 300ms ease',
       }}>
 
         {/* ── Collapse toggle header ── */}
@@ -467,12 +465,12 @@ export function HowItWorksCard() {
             width: '100%', padding: '11px 14px 11px 16px',
             background: 'none', border: 'none', cursor: 'pointer',
             textAlign: 'left',
-            borderBottom: collapsed ? 'none' : '0.5px solid var(--modal-border)',
+            borderBottom: collapsed ? 'none' : '1px solid var(--border-visible)',
           }}
         >
           {/* Info icon */}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-            stroke="var(--accent-primary)" strokeWidth={1.8}
+            stroke="var(--interactive)" strokeWidth={1.8}
             strokeLinecap="round" strokeLinejoin="round"
             style={{ flexShrink: 0, opacity: 0.75 }}
           >
@@ -481,7 +479,7 @@ export function HowItWorksCard() {
             <line x1="12" y1="8" x2="12.01" y2="8" />
           </svg>
 
-          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--modal-title)', letterSpacing: '0.01em' }}>
+          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: 'var(--text-display)', letterSpacing: '0.01em' }}>
             {t.howItWorksTitle}
           </span>
 
@@ -491,7 +489,7 @@ export function HowItWorksCard() {
               {Array.from({ length: TOTAL_STEPS }, (_, i) => (
                 <span key={i} style={{
                   width: i === step ? 14 : 5, height: 5, borderRadius: 3,
-                  background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                  background: i === step ? 'var(--text-display)' : 'var(--border-visible)',
                   display: 'inline-block',
                   transition: 'width 260ms ease',
                 }} />
@@ -502,7 +500,7 @@ export function HowItWorksCard() {
           {/* Chevron */}
           <svg
             width="14" height="14" viewBox="0 0 24 24" fill="none"
-            stroke="var(--text-tertiary)" strokeWidth={2}
+            stroke="var(--text-secondary)" strokeWidth={2}
             strokeLinecap="round" strokeLinejoin="round"
             style={{
               flexShrink: 0,
@@ -556,10 +554,10 @@ export function HowItWorksCard() {
 
           {/* Content */}
           <div style={{ padding: '18px 22px 22px' }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 6 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-display)', marginBottom: 6 }}>
               {titles[step]}
             </h3>
-            <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 18 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, marginBottom: 18 }}>
               {descs[step]}
             </p>
 
@@ -574,7 +572,7 @@ export function HowItWorksCard() {
                     style={{
                       width: i === step ? 18 : 6,
                       height: 6, borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
-                      background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                      background: i === step ? 'var(--text-display)' : 'var(--border-visible)',
                       transition: 'width 260ms cubic-bezier(.25,1,.5,1), background 260ms ease',
                     }}
                   />
@@ -586,8 +584,10 @@ export function HowItWorksCard() {
                   <button
                     type="button"
                     onClick={prev}
-                    className="theme-modal-cancel"
-                    style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
+                    style={{ padding: '8px 14px', fontSize: 12, fontWeight: 400, borderRadius: 999, cursor: 'pointer',
+                      background: 'transparent', border: '1px solid var(--border-visible)',
+                      color: 'var(--text-secondary)', fontFamily: 'var(--font-space-mono, monospace)',
+                      textTransform: 'uppercase', letterSpacing: '0.06em' }}
                   >
                     ←
                   </button>
@@ -596,10 +596,11 @@ export function HowItWorksCard() {
                   type="button"
                   onClick={next}
                   style={{
-                    padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
-                    background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                    border: 'none', color: '#fff', cursor: 'pointer',
-                    boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
+                    padding: '8px 20px', fontSize: 12, fontWeight: 400, borderRadius: 999,
+                    background: 'var(--text-display)', border: 'none',
+                    color: 'var(--black)', cursor: 'pointer',
+                    fontFamily: 'var(--font-space-mono, monospace)',
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
                   }}
                 >
                   {t.hiwNext}
@@ -681,19 +682,17 @@ export default function HowItWorksModal({ onClose }: Props) {
       <div
         className="fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto"
         style={{
-          background: mounted ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
-          backdropFilter: 'blur(14px)',
-          WebkitBackdropFilter: 'blur(14px)',
-          transition: 'background 400ms ease',
+          background: mounted ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0)',
+          transition: 'background 300ms var(--ease-out)',
         }}
         onClick={close}
       >
         <div
           className="relative w-full max-w-[360px] my-auto"
           style={{
-            transform: mounted ? 'translateY(0) scale(1)' : 'translateY(28px) scale(0.95)',
+            transform: mounted ? 'translateY(0)' : 'translateY(20px)',
             opacity: mounted ? 1 : 0,
-            transition: 'transform 430ms cubic-bezier(.25,1,.5,1), opacity 380ms ease',
+            transition: 'transform 300ms var(--ease-out), opacity 250ms var(--ease-out)',
           }}
           onClick={(e) => e.stopPropagation()}
         >
@@ -701,23 +700,16 @@ export default function HowItWorksModal({ onClose }: Props) {
           <button
             onClick={close}
             aria-label="Close"
-            style={{
-              position: 'absolute', top: 12, right: 12, zIndex: 2,
-              width: 28, height: 28, borderRadius: '50%',
-              background: th.closeBg, border: 'none',
-              color: th.closeText, fontSize: 18, lineHeight: 1,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}
+            className="absolute top-3 right-3 z-10 font-mono text-[14px] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] w-7 h-7 flex items-center justify-center border border-[var(--border-visible)] rounded-[var(--radius-sm)] bg-[var(--surface)]"
           >
             ×
           </button>
 
           {/* Card */}
           <div style={{
-            background: 'var(--modal-bg)',
-            border: '0.5px solid var(--modal-border)',
-            borderRadius: 22,
-            boxShadow: 'var(--modal-shadow)',
+            background: 'var(--surface)',
+            border: '1px solid var(--border-visible)',
+            borderRadius: 'var(--radius-lg)',
             overflow: 'hidden',
           }}>
 
@@ -759,10 +751,10 @@ export default function HowItWorksModal({ onClose }: Props) {
 
             {/* Content */}
             <div style={{ padding: '18px 22px 22px' }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--modal-title)', marginBottom: 6 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: 'var(--text-display)', marginBottom: 6 }}>
                 {titles[step]}
               </h3>
-              <p style={{ fontSize: 13, color: 'var(--modal-body)', lineHeight: 1.6, marginBottom: 18 }}>
+              <p style={{ fontSize: 13, color: 'var(--text-primary)', lineHeight: 1.6, marginBottom: 18 }}>
                 {descs[step]}
               </p>
 
@@ -777,7 +769,7 @@ export default function HowItWorksModal({ onClose }: Props) {
                       style={{
                         width: i === step ? 18 : 6,
                         height: 6, borderRadius: 3, border: 'none', padding: 0, cursor: 'pointer',
-                        background: i === step ? 'var(--accent-primary)' : 'var(--glass-border)',
+                        background: i === step ? 'var(--text-display)' : 'var(--border-visible)',
                         transition: 'width 260ms cubic-bezier(.25,1,.5,1), background 260ms ease',
                       }}
                     />
@@ -788,8 +780,10 @@ export default function HowItWorksModal({ onClose }: Props) {
                   {step > 0 && (
                     <button
                       onClick={prev}
-                      className="theme-modal-cancel"
-                      style={{ padding: '8px 14px', fontSize: 13, fontWeight: 500, borderRadius: 10, cursor: 'pointer' }}
+                      style={{ padding: '8px 14px', fontSize: 12, fontWeight: 400, borderRadius: 999, cursor: 'pointer',
+                        background: 'transparent', border: '1px solid var(--border-visible)',
+                        color: 'var(--text-secondary)', fontFamily: 'var(--font-space-mono, monospace)',
+                        textTransform: 'uppercase', letterSpacing: '0.06em' }}
                     >
                       ←
                     </button>
@@ -797,10 +791,11 @@ export default function HowItWorksModal({ onClose }: Props) {
                   <button
                     onClick={next}
                     style={{
-                      padding: '8px 20px', fontSize: 13, fontWeight: 600, borderRadius: 10,
-                      background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                      border: 'none', color: '#fff', cursor: 'pointer',
-                      boxShadow: '0 3px 12px rgba(64,96,208,0.35)',
+                      padding: '8px 20px', fontSize: 12, fontWeight: 400, borderRadius: 999,
+                      background: 'var(--text-display)', border: 'none',
+                      color: 'var(--black)', cursor: 'pointer',
+                      fontFamily: 'var(--font-space-mono, monospace)',
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
                     }}
                   >
                     {step === TOTAL_STEPS - 1 ? t.hiwStep5Cta : t.hiwNext}
