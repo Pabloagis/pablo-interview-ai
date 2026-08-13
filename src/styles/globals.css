@@ -72,8 +72,16 @@
 
 /* ── Resets ─────────────────────────────────────────────────── */
 *,*::before,*::after { box-sizing: border-box; }
-html { width:100%; max-width:100%; overflow-x:clip; }
-body { width:100%; max-width:100%; overflow-x:hidden; position:relative; }
+html {
+  width:100%; max-width:100%; overflow-x:clip;
+  background: var(--black);
+  color: var(--text-primary);
+}
+body {
+  width:100%; max-width:100%; overflow-x:hidden; position:relative;
+  background: var(--black);
+  color: var(--text-primary);
+}
 
 next-route-announcer {
   position:absolute!important; inset:0!important;
@@ -89,6 +97,34 @@ next-route-announcer {
     background-color 400ms cubic-bezier(0.25,1,0.5,1),
     border-color     400ms cubic-bezier(0.25,1,0.5,1),
     color            300ms cubic-bezier(0.25,1,0.5,1) !important;
+}
+
+/* ── Type scale (base layer) ────────────────────────────────── */
+h1 {
+  font-size: var(--display-md);
+  font-family: var(--font-space-grotesk), system-ui, sans-serif;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--text-display);
+}
+h2 {
+  font-size: var(--heading);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--text-display);
+}
+h3 {
+  font-size: var(--subheading);
+  font-weight: 400;
+  line-height: 1.3;
+  color: var(--text-primary);
+}
+p {
+  font-size: var(--body);
+  line-height: 1.5;
+  color: var(--text-primary);
 }
 
 /* ── Dot grid ──────────────────────────────────────────────── */
