@@ -135,6 +135,13 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, candidate.slug]);
 
+  // ── Lock body scroll for the duration of the chat ─────────────────────────
+  useEffect(() => {
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, []);
+
   // ── Best-effort end on tab close ───────────────────────────────────────────
   useEffect(() => {
     const fire = () => {
