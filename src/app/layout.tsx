@@ -1,10 +1,28 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Doto, Space_Grotesk, Space_Mono } from 'next/font/google';
 import { LanguageProvider } from '@/context/LanguageContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 import '../styles/globals.css';
 
-const inter = Inter({ subsets: ['latin'] });
+const doto = Doto({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-doto',
+});
+
+const spaceGrotesk = Space_Grotesk({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+  weight: ['300', '400', '500', '700'],
+});
+
+const spaceMono = Space_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-mono',
+  weight: ['400', '700'],
+});
 
 export const metadata: Metadata = {
   title: 'InterviewMind — Talk to Pablo',
@@ -25,7 +43,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`${doto.variable} ${spaceGrotesk.variable} ${spaceMono.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         <script
           dangerouslySetInnerHTML={{
@@ -51,7 +73,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           }}
         />
       </head>
-      <body className={inter.className}>
+      <body className={spaceGrotesk.className}>
         <noscript>
           <iframe
             src="https://www.googletagmanager.com/ns.html?id=GTM-WW8R3LJ8"
