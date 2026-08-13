@@ -48,7 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=new Date().getHours()*60+new Date().getMinutes();document.documentElement.setAttribute('data-theme',t>=480&&t<1140?'day':'night')})()`,
+            __html: `document.documentElement.setAttribute('data-theme','day')`,
           }}
         />
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-GF8DPHQC5E" />

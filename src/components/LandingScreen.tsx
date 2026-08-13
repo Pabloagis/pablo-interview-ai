@@ -9,7 +9,7 @@ export default function LandingScreen() {
   const t = usePlatformT();
 
   return (
-    <main className="min-h-screen flex flex-col bg-[var(--black)] px-4">
+    <main className="relative min-h-screen flex flex-col chat-bg px-4">
       {/* Top bar */}
       <div className="w-full max-w-4xl mx-auto pt-5 flex items-center justify-between">
         <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--text-disabled)]">

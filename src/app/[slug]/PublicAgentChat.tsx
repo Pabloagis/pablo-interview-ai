@@ -335,7 +335,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     return (
       <div
         className="fixed inset-0 flex flex-col items-center justify-center px-4 text-center chat-bg"
-        data-theme="day"
       >
         <Header candidate={candidate} initials={initials} />
         <p className="mt-6 text-sm text-[rgba(0,0,0,0.55)] max-w-sm">{t.pub_unavailable}</p>
@@ -347,7 +346,6 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
     <>
       <div
         className="fixed inset-0 flex flex-col overflow-hidden chat-bg"
-        data-theme="day"
       >
         {/* ── Header ─────────────────────────────────────────────────── */}
         <div className="shrink-0 px-5 pt-6 pb-4 border-b border-black/[0.07]">

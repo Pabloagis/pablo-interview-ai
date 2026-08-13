@@ -242,7 +242,7 @@ export default function TrainerShell({
 
   return (
     // Root: fixed inset-0 — this IS the viewport. w-full, not w-screen.
-    <div className="fixed inset-0 flex flex-col bg-[var(--black)]">
+    <div className="fixed inset-0 flex flex-col chat-bg">
 
       {/* ── Mobile top bar (hidden ≥ lg) ───────────────────────────────────── */}
       <div className="lg:hidden shrink-0 h-12 flex items-center px-4 gap-3 border-b border-[var(--border-visible)]">
