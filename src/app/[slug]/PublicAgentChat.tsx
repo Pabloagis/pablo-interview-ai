@@ -326,7 +326,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   if (!enabled || startError === 'unavailable') {
     return (
       <div
-        className="fixed inset-0 flex flex-col items-center justify-center px-4 text-center bg-[#0d0f14]"
+        className="fixed inset-0 flex flex-col items-center justify-center px-4 text-center chat-bg"
         style={{ height: '100dvh' }}
       >
         <Header candidate={candidate} initials={initials} />
@@ -338,7 +338,7 @@ export default function PublicAgentChat({ candidate, enabled }: Props) {
   return (
     <>
       <div
-        className="fixed inset-0 flex flex-col overflow-hidden bg-[#0d0f14]"
+        className="fixed inset-0 flex flex-col overflow-hidden chat-bg"
         style={{ height: '100dvh', contain: 'layout' }}
       >
         {/* ── Header ─────────────────────────────────────────────────── */}

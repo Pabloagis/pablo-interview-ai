@@ -153,12 +153,6 @@ export default function RegisterCandidatePage() {
           </Link>
         </p>
 
-        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] text-center">
-          {t.reg_wrong_path_recruiter}{' '}
-          <Link href="/register/recruiter" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
-            {t.reg_go_recruiter}
-          </Link>
-        </p>
 
       </div>
     </main>

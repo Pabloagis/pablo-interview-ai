@@ -143,6 +143,30 @@ p {
   outline-offset: 2px;
 }
 
+/* ── Chat background — animated gradient orbs ───────────────── */
+.chat-bg {
+  background: #07090e;
+  isolation: isolate;
+}
+.chat-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 65% 50% at 20% 10%,  rgba(64, 96, 208, 0.11) 0%, transparent 100%),
+    radial-gradient(ellipse 55% 65% at 85% 85%,  rgba(64, 96, 208, 0.08) 0%, transparent 100%),
+    radial-gradient(ellipse 40% 35% at 60% 45%,  rgba(80, 40, 140, 0.05) 0%, transparent 100%);
+  animation: chat-orbs-drift 22s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes chat-orbs-drift {
+  0%   { transform: translate(0,    0)    scale(1);    }
+  33%  { transform: translate(2%,  -3%)   scale(1.04); }
+  66%  { transform: translate(-2%,  2%)   scale(0.97); }
+  100% { transform: translate(3%,   4%)   scale(1.05); }
+}
+
 /* ── Keyframes ──────────────────────────────────────────────── */
 @keyframes ring-spin { to { transform: rotate(360deg); } }
 

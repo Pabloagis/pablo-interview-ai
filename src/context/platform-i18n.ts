@@ -304,45 +304,6 @@ export interface PlatformStrings {
   // ── Landing (/platform) ────────────────────────────────────────
   land_tagline: string;
   land_candidate: string;
-  land_candidate_sub: string;
-  land_recruiter: string;
-  land_recruiter_sub: string;
-  land_have_account: string;
-  land_signin: string;
-
-  // ── Recruiter sign-up ──────────────────────────────────────────
-  regr_title: string;
-  regr_subtitle: string;
-  regr_name_ph: string;
-  regr_company: string;
-  regr_company_ph: string;
-  regr_email_ph: string;
-  // Cross-links between the two sign-up paths — a recruiter who lands on the
-  // candidate form had no way across without editing the URL.
-  reg_wrong_path_recruiter: string;
-  reg_wrong_path_candidate: string;
-  reg_go_recruiter: string;
-  reg_go_candidate: string;
-
-  // ── Recruiter dashboard ────────────────────────────────────────
-  rec_title: string;
-  rec_tab_candidates: string;
-  rec_tab_history: string;
-  rec_search_ph: string;
-  rec_loading_candidates: string;
-  rec_loading_history: string;
-  rec_no_results: (search: string) => string;
-  rec_no_results_hint: string;
-  rec_none_published: string;
-  rec_none_published_hint: string;
-  rec_twin_confidence: string;
-  rec_years_exp: (years: number) => string;
-  rec_interview: string;
-  rec_no_link: string;
-  rec_no_interviews: string;
-  rec_no_interviews_hint: string;
-  rec_interview_count: (n: number) => string;
-  rec_load_failed: string;
 
   // ── Shared navigation chrome ───────────────────────────────────
   nav_signout: string;
@@ -655,8 +616,8 @@ const EN: PlatformStrings = {
   login_failed: 'Sign in failed. Please try again.',
   login_no_account: "Don't have an account?",
   login_get_started: 'Get started',
-  reg_title: 'Create candidate account',
-  reg_subtitle: 'Showcase your skills to recruiters.',
+  reg_title: 'Create account',
+  reg_subtitle: 'Train your AI agent to answer interview questions.',
   reg_full_name: 'Full name',
   reg_name_ph: 'Jane Smith',
   reg_email_ph: 'jane@example.com',
@@ -699,43 +660,8 @@ const EN: PlatformStrings = {
   pub_end_confirm: 'End conversation',
   pub_ending: 'Ending…',
 
-  land_tagline: 'Build an AI agent that answers for you in interviews — trained only on your verified experience. Recruiters talk to it at your own link; you get a report on every conversation.',
-  land_candidate: "I'm a candidate",
-  land_candidate_sub: 'Train your agent and share your link',
-  land_recruiter: "I'm a recruiter",
-  land_recruiter_sub: 'Interview published candidates',
-  land_have_account: 'Already have an account?',
-  land_signin: 'Sign in',
-
-  regr_title: 'Create recruiter account',
-  regr_subtitle: 'Discover top talent through AI-powered interviews.',
-  regr_name_ph: 'Alex Johnson',
-  regr_company: 'Company name',
-  regr_company_ph: 'Acme Corp',
-  regr_email_ph: 'alex@acmecorp.com',
-  reg_wrong_path_recruiter: 'Hiring, not job hunting?',
-  reg_wrong_path_candidate: 'Job hunting, not hiring?',
-  reg_go_recruiter: 'Create a recruiter account',
-  reg_go_candidate: 'Create a candidate account',
-
-  rec_title: 'Find your next hire',
-  rec_tab_candidates: 'Candidate Directory',
-  rec_tab_history: 'Interview History',
-  rec_search_ph: 'Search by name, role, or skill…',
-  rec_loading_candidates: 'Loading candidates…',
-  rec_loading_history: 'Loading history…',
-  rec_no_results: (search: string) => `No results for "${search}"`,
-  rec_no_results_hint: 'Try a different name, role, or skill.',
-  rec_none_published: 'No candidates published yet',
-  rec_none_published_hint: "Candidates appear here once they've published their agent — Basic, Solid, or Sharp.",
-  rec_twin_confidence: 'Twin Confidence',
-  rec_years_exp: (years: number) => `${years}y exp`,
-  rec_interview: 'Interview',
-  rec_no_link: 'No public link',
-  rec_no_interviews: 'No interviews yet',
-  rec_no_interviews_hint: 'Start an interview from the Candidate Directory — it will appear here.',
-  rec_interview_count: (n: number) => `${n} interview${n !== 1 ? 's' : ''}`,
-  rec_load_failed: 'Failed to load candidates',
+  land_tagline: 'Build an AI agent that answers for you in interviews — trained only on your verified experience. Share your link; interviewers get a consistent, grounded version of your career story.',
+  land_candidate: 'Register',
 
   nav_signout: 'Sign out',
   nav_home: 'Home',
@@ -1028,8 +954,8 @@ const ES: PlatformStrings = {
   login_failed: 'No se pudo iniciar sesión. Inténtalo de nuevo.',
   login_no_account: '¿No tienes cuenta?',
   login_get_started: 'Empezar',
-  reg_title: 'Crear cuenta de candidato',
-  reg_subtitle: 'Muestra tu talento a los reclutadores.',
+  reg_title: 'Crear cuenta',
+  reg_subtitle: 'Entrena tu agente de IA para responder preguntas de entrevista.',
   reg_full_name: 'Nombre completo',
   reg_name_ph: 'Ana García',
   reg_email_ph: 'ana@ejemplo.com',
@@ -1072,43 +998,8 @@ const ES: PlatformStrings = {
   pub_end_confirm: 'Terminar conversación',
   pub_ending: 'Terminando…',
 
-  land_tagline: 'Crea un agente de IA que responda por ti en las entrevistas — entrenado solo con tu experiencia verificada. Los reclutadores hablan con él en tu propio enlace; tú recibes un informe de cada conversación.',
-  land_candidate: 'Soy candidato',
-  land_candidate_sub: 'Entrena tu agente y comparte tu enlace',
-  land_recruiter: 'Soy reclutador',
-  land_recruiter_sub: 'Entrevista a candidatos publicados',
-  land_have_account: '¿Ya tienes cuenta?',
-  land_signin: 'Iniciar sesión',
-
-  regr_title: 'Crear cuenta de reclutador',
-  regr_subtitle: 'Descubre talento con entrevistas potenciadas por IA.',
-  regr_name_ph: 'Alejandro Ruiz',
-  regr_company: 'Nombre de la empresa',
-  regr_company_ph: 'Acme Corp',
-  regr_email_ph: 'alejandro@acmecorp.com',
-  reg_wrong_path_recruiter: '¿Buscas contratar, no empleo?',
-  reg_wrong_path_candidate: '¿Buscas empleo, no contratar?',
-  reg_go_recruiter: 'Crear cuenta de reclutador',
-  reg_go_candidate: 'Crear cuenta de candidato',
-
-  rec_title: 'Encuentra tu próxima contratación',
-  rec_tab_candidates: 'Directorio de candidatos',
-  rec_tab_history: 'Historial de entrevistas',
-  rec_search_ph: 'Busca por nombre, puesto o habilidad…',
-  rec_loading_candidates: 'Cargando candidatos…',
-  rec_loading_history: 'Cargando historial…',
-  rec_no_results: (search: string) => `Sin resultados para "${search}"`,
-  rec_no_results_hint: 'Prueba con otro nombre, puesto o habilidad.',
-  rec_none_published: 'Aún no hay candidatos publicados',
-  rec_none_published_hint: 'Los candidatos aparecen aquí cuando publican su agente — Básico, Sólido o Afinado.',
-  rec_twin_confidence: 'Confianza del gemelo',
-  rec_years_exp: (years: number) => `${years} años exp.`,
-  rec_interview: 'Entrevistar',
-  rec_no_link: 'Sin enlace público',
-  rec_no_interviews: 'Aún no hay entrevistas',
-  rec_no_interviews_hint: 'Inicia una entrevista desde el directorio de candidatos — aparecerá aquí.',
-  rec_interview_count: (n: number) => `${n} entrevista${n !== 1 ? 's' : ''}`,
-  rec_load_failed: 'No se pudieron cargar los candidatos',
+  land_tagline: 'Crea un agente de IA que responda por ti en las entrevistas — entrenado solo con tu experiencia verificada. Comparte tu enlace; el entrevistador recibe una versión consistente y fundamentada de tu trayectoria.',
+  land_candidate: 'Registrarse',
 
   nav_signout: 'Cerrar sesión',
   nav_home: 'Inicio',
@@ -1401,8 +1292,8 @@ const IT: PlatformStrings = {
   login_failed: 'Accesso non riuscito. Riprova.',
   login_no_account: 'Non hai un account?',
   login_get_started: 'Inizia',
-  reg_title: 'Crea account candidato',
-  reg_subtitle: 'Mostra il tuo talento ai recruiter.',
+  reg_title: 'Crea account',
+  reg_subtitle: 'Addestra il tuo agente IA per rispondere alle domande dei colloqui.',
   reg_full_name: 'Nome completo',
   reg_name_ph: 'Marco Rossi',
   reg_email_ph: 'marco@esempio.com',
@@ -1445,43 +1336,8 @@ const IT: PlatformStrings = {
   pub_end_confirm: 'Termina conversazione',
   pub_ending: 'Chiusura…',
 
-  land_tagline: 'Crea un agente IA che risponde per te ai colloqui — addestrato solo sulla tua esperienza verificata. I recruiter ci parlano dal tuo link personale; tu ricevi un report di ogni conversazione.',
-  land_candidate: 'Sono un candidato',
-  land_candidate_sub: 'Addestra il tuo agente e condividi il link',
-  land_recruiter: 'Sono un recruiter',
-  land_recruiter_sub: 'Intervista i candidati pubblicati',
-  land_have_account: 'Hai già un account?',
-  land_signin: 'Accedi',
-
-  regr_title: 'Crea account recruiter',
-  regr_subtitle: 'Scopri i migliori talenti con colloqui basati sull’IA.',
-  regr_name_ph: 'Alessandro Rossi',
-  regr_company: 'Nome azienda',
-  regr_company_ph: 'Acme Corp',
-  regr_email_ph: 'alessandro@acmecorp.com',
-  reg_wrong_path_recruiter: 'Stai assumendo, non cercando lavoro?',
-  reg_wrong_path_candidate: 'Cerchi lavoro, non stai assumendo?',
-  reg_go_recruiter: 'Crea un account recruiter',
-  reg_go_candidate: 'Crea un account candidato',
-
-  rec_title: 'Trova la tua prossima assunzione',
-  rec_tab_candidates: 'Directory candidati',
-  rec_tab_history: 'Storico colloqui',
-  rec_search_ph: 'Cerca per nome, ruolo o competenza…',
-  rec_loading_candidates: 'Caricamento candidati…',
-  rec_loading_history: 'Caricamento storico…',
-  rec_no_results: (search: string) => `Nessun risultato per "${search}"`,
-  rec_no_results_hint: 'Prova con un altro nome, ruolo o competenza.',
-  rec_none_published: 'Nessun candidato pubblicato',
-  rec_none_published_hint: 'I candidati compaiono qui una volta pubblicato il loro agente — Base, Solido o Affilato.',
-  rec_twin_confidence: 'Affidabilità del gemello',
-  rec_years_exp: (years: number) => `${years} anni esp.`,
-  rec_interview: 'Intervista',
-  rec_no_link: 'Nessun link pubblico',
-  rec_no_interviews: 'Ancora nessun colloquio',
-  rec_no_interviews_hint: 'Avvia un colloquio dalla directory candidati — comparirà qui.',
-  rec_interview_count: (n: number) => `${n} colloqu${n !== 1 ? 'i' : 'io'}`,
-  rec_load_failed: 'Impossibile caricare i candidati',
+  land_tagline: 'Crea un agente IA che risponde per te ai colloqui — addestrato solo sulla tua esperienza verificata. Condividi il tuo link; chi ti intervista riceve una versione coerente e fondata della tua storia professionale.',
+  land_candidate: 'Registrati',
 
   nav_signout: 'Esci',
   nav_home: 'Home',
@@ -1774,8 +1630,8 @@ const PT: PlatformStrings = {
   login_failed: 'Não foi possível entrar. Tenta de novo.',
   login_no_account: 'Não tens conta?',
   login_get_started: 'Começar',
-  reg_title: 'Criar conta de candidato',
-  reg_subtitle: 'Mostra o teu talento aos recrutadores.',
+  reg_title: 'Criar conta',
+  reg_subtitle: 'Treina o teu agente de IA para responder a perguntas de entrevista.',
   reg_full_name: 'Nome completo',
   reg_name_ph: 'João Silva',
   reg_email_ph: 'joao@exemplo.com',
@@ -1818,43 +1674,8 @@ const PT: PlatformStrings = {
   pub_end_confirm: 'Terminar conversa',
   pub_ending: 'A terminar…',
 
-  land_tagline: 'Cria um agente de IA que responde por ti nas entrevistas — treinado apenas com a tua experiência verificada. Os recrutadores falam com ele no teu próprio link; tu recebes um relatório de cada conversa.',
-  land_candidate: 'Sou candidato',
-  land_candidate_sub: 'Treina o teu agente e partilha o teu link',
-  land_recruiter: 'Sou recrutador',
-  land_recruiter_sub: 'Entrevista candidatos publicados',
-  land_have_account: 'Já tens conta?',
-  land_signin: 'Entrar',
-
-  regr_title: 'Criar conta de recrutador',
-  regr_subtitle: 'Descobre os melhores talentos com entrevistas com IA.',
-  regr_name_ph: 'Alexandre Costa',
-  regr_company: 'Nome da empresa',
-  regr_company_ph: 'Acme Corp',
-  regr_email_ph: 'alexandre@acmecorp.com',
-  reg_wrong_path_recruiter: 'Estás a contratar, não à procura de emprego?',
-  reg_wrong_path_candidate: 'Procuras emprego, não estás a contratar?',
-  reg_go_recruiter: 'Criar conta de recrutador',
-  reg_go_candidate: 'Criar conta de candidato',
-
-  rec_title: 'Encontra a tua próxima contratação',
-  rec_tab_candidates: 'Diretório de candidatos',
-  rec_tab_history: 'Histórico de entrevistas',
-  rec_search_ph: 'Procura por nome, função ou competência…',
-  rec_loading_candidates: 'A carregar candidatos…',
-  rec_loading_history: 'A carregar histórico…',
-  rec_no_results: (search: string) => `Sem resultados para "${search}"`,
-  rec_no_results_hint: 'Tenta outro nome, função ou competência.',
-  rec_none_published: 'Ainda não há candidatos publicados',
-  rec_none_published_hint: 'Os candidatos aparecem aqui assim que publicam o seu agente — Básico, Sólido ou Afiado.',
-  rec_twin_confidence: 'Confiança do gémeo',
-  rec_years_exp: (years: number) => `${years} anos exp.`,
-  rec_interview: 'Entrevistar',
-  rec_no_link: 'Sem link público',
-  rec_no_interviews: 'Ainda não há entrevistas',
-  rec_no_interviews_hint: 'Inicia uma entrevista a partir do diretório de candidatos — aparecerá aqui.',
-  rec_interview_count: (n: number) => `${n} entrevista${n !== 1 ? 's' : ''}`,
-  rec_load_failed: 'Não foi possível carregar os candidatos',
+  land_tagline: 'Cria um agente de IA que responde por ti nas entrevistas — treinado apenas com a tua experiência verificada. Partilha o teu link; quem te entrevistar recebe uma versão consistente e fundamentada da tua história profissional.',
+  land_candidate: 'Registar',
 
   nav_signout: 'Terminar sessão',
   nav_home: 'Início',

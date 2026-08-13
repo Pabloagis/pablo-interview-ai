@@ -359,12 +359,14 @@ export default function CoverageMap({ nodes, onTrainNode }: Props) {
 
       {/* ── Node detail panel ────────────────────────────────────────────── */}
       {selectedConfig && selectedData && (
-        <NodePanel
-          config={selectedConfig}
-          data={selectedData}
-          onClose={() => setSelected(null)}
-          onTrain={handleTrain}
-        />
+        <div className="mt-3">
+          <NodePanel
+            config={selectedConfig}
+            data={selectedData}
+            onClose={() => setSelected(null)}
+            onTrain={handleTrain}
+          />
+        </div>
       )}
     </div>
   );
@@ -729,105 +731,125 @@ function NodePanel({
     : (t[AGENT_TEXT_KEY[data.state as Exclude<NodeState, 'dark'>]] as string);
 
   return (
-    <div className="border-t border-[var(--border)] mt-4 pt-5 flex flex-col gap-5">
+    <div
+      className="rounded-[var(--radius-md)] border bg-[var(--surface)] overflow-hidden"
+      style={{ borderColor: `${vis.stateColor}30` }}
+    >
+      {/* Colour bleed from the node state — mirrors the orb glow */}
+      <div
+        className="h-px w-full"
+        style={{ background: `linear-gradient(90deg, transparent 0%, ${vis.stateColor}60 50%, transparent 100%)` }}
+        aria-hidden
+      />
 
-      {/* ── Header ─────────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="text-[var(--body-sm)] font-medium text-[var(--text-display)] leading-none">
-            {node.label}
-          </span>
-          <span
-            className="self-start font-mono text-[10px] uppercase tracking-[0.08em] px-2 py-0.5 rounded-[var(--radius-sm)]"
-            style={{
-              color: vis.stateColor,
-              background: `${vis.stateColor}18`,
-              border: `1px solid ${vis.stateColor}35`,
-            }}
-          >
-            {t[STATE_LABEL_KEY[data.state]] as string}
-          </span>
-        </div>
-        <button
-          onClick={onClose}
-          className="shrink-0 text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] text-lg leading-none mt-0.5"
-          aria-label={t.conv_close}
-        >
-          ×
-        </button>
-      </div>
+      <div className="px-4 py-4 flex flex-col gap-4">
 
-      {/* ── What this node covers ───────────────────────────────────────── */}
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
-          {t.cov_what_covers}
-        </p>
-        <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed">
-          {node.description}
-        </p>
-      </div>
-
-      {/* ── Recruiter questions ─────────────────────────────────────────── */}
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
-          {t.cov_unlocks}
-        </p>
-        <ul className="flex flex-col gap-1">
-          {questions.map(q => (
-            <li key={q} className="flex items-start gap-2">
-              <span className="shrink-0 text-[var(--text-disabled)] mt-px select-none">·</span>
-              <span className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-snug">{q}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* ── What the agent says right now ──────────────────────────────── */}
-      <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
-          {t.cov_agent_says_now}
-        </p>
-
-        {isDark ? (
-          <div className="flex flex-col gap-2">
-            <blockquote className="border-l-2 border-[var(--border-visible)] pl-3">
-              <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed italic">
-                "{agentText}"
-              </p>
-            </blockquote>
-            <p className="text-[11px] text-[var(--text-disabled)]">
-              {t.cov_no_data_recruiters}
-            </p>
+        {/* ── Header ─────────────────────────────────────────────────────── */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1.5 min-w-0">
+            <span className="font-mono text-[12px] font-medium text-[var(--text-display)] leading-none tracking-[0.02em]">
+              {node.label}
+            </span>
+            <span
+              className="self-start font-mono text-[9px] uppercase tracking-[0.10em] px-2 py-0.5 rounded-[var(--radius-sm)]"
+              style={{
+                color:      vis.stateColor,
+                background: `${vis.stateColor}18`,
+                border:     `1px solid ${vis.stateColor}35`,
+              }}
+            >
+              {t[STATE_LABEL_KEY[data.state]] as string}
+            </span>
           </div>
-        ) : (
-          <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed">
-            {agentText}
+          <button
+            onClick={onClose}
+            className="shrink-0 text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] text-lg leading-none mt-0.5"
+            aria-label={t.conv_close}
+          >
+            ×
+          </button>
+        </div>
+
+        {/* ── What this node covers ───────────────────────────────────────── */}
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.10em] text-[var(--text-disabled)] mb-1.5">
+            {t.cov_what_covers}
           </p>
-        )}
+          <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">
+            {node.description}
+          </p>
+        </div>
+
+        {/* ── Recruiter questions ─────────────────────────────────────────── */}
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.10em] text-[var(--text-disabled)] mb-1.5">
+            {t.cov_unlocks}
+          </p>
+          <ul className="flex flex-col gap-1">
+            {questions.map(q => (
+              <li key={q} className="flex items-start gap-2">
+                <span
+                  className="shrink-0 mt-px select-none text-[10px]"
+                  style={{ color: `${vis.stateColor}80` }}
+                >
+                  ·
+                </span>
+                <span className="text-[12px] text-[var(--text-secondary)] leading-snug">{q}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── What the agent says right now ──────────────────────────────── */}
+        <div>
+          <p className="font-mono text-[9px] uppercase tracking-[0.10em] text-[var(--text-disabled)] mb-1.5">
+            {t.cov_agent_says_now}
+          </p>
+
+          {isDark ? (
+            <div className="flex flex-col gap-2">
+              <blockquote
+                className="pl-3"
+                style={{ borderLeft: `2px solid ${vis.stateColor}40` }}
+              >
+                <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed italic">
+                  "{agentText}"
+                </p>
+              </blockquote>
+              <p className="text-[11px] text-[var(--text-disabled)]">
+                {t.cov_no_data_recruiters}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[12px] text-[var(--text-secondary)] leading-relaxed">
+              {agentText}
+            </p>
+          )}
+        </div>
+
+        {/* ── Train this button ───────────────────────────────────────────── */}
+        <button
+          onClick={onTrain}
+          className="self-start flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors duration-[180ms]"
+          style={{
+            color:      vis.stateColor,
+            background: `${vis.stateColor}14`,
+            border:     `1px solid ${vis.stateColor}35`,
+          }}
+          onMouseEnter={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}22`;
+          }}
+          onMouseLeave={e => {
+            (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}14`;
+          }}
+        >
+          {t.cov_train_this}
+          <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
+            <path d="M2 9L9 2M9 2H4M9 2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </button>
+
       </div>
-
-      {/* ── Train this button ───────────────────────────────────────────── */}
-      <button
-        onClick={onTrain}
-        className="self-start flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors duration-[180ms]"
-        style={{
-          color: vis.stateColor,
-          background: `${vis.stateColor}14`,
-          border: `1px solid ${vis.stateColor}35`,
-        }}
-        onMouseEnter={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}22`;
-        }}
-        onMouseLeave={e => {
-          (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}14`;
-        }}
-      >
-        {t.cov_train_this}
-        <svg width="11" height="11" viewBox="0 0 11 11" fill="none" aria-hidden>
-          <path d="M2 9L9 2M9 2H4M9 2V7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-        </svg>
-      </button>
-
     </div>
   );
 }

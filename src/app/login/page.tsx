@@ -52,7 +52,7 @@ export default function LoginPage() {
         return;
       }
 
-      router.push(profile.role === 'recruiter' ? '/dashboard/recruiter' : '/dashboard/candidate/trainer');
+      router.push('/dashboard/candidate/trainer');
     } catch {
       setError(t.auth_generic_error);
     } finally {
@@ -124,21 +124,6 @@ export default function LoginPage() {
           </Link>
         </p>
 
-        {/* Both sign-up paths, one click away */}
-        <div className="mt-3 flex items-center justify-center gap-2">
-          <Link
-            href="/register/candidate"
-            className="flex-1 text-center py-2 px-3 rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors"
-          >
-            {t.land_candidate}
-          </Link>
-          <Link
-            href="/register/recruiter"
-            className="flex-1 text-center py-2 px-3 rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] hover:bg-[var(--surface-raised)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors"
-          >
-            {t.land_recruiter}
-          </Link>
-        </div>
 
       </div>
     </main>
