@@ -6,36 +6,25 @@ interface StreamingResponseProps {
 export default function StreamingResponse({ text, thinkingPhrase }: StreamingResponseProps) {
   return (
     <div className="flex justify-start mb-5 overflow-hidden">
-      <div
-        className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0"
-        style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
-      >
+      {/* Avatar */}
+      <div className="w-8 h-8 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0 border border-[var(--border-visible)]">
         <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
       </div>
-      <div className="max-w-[75%] flex flex-col items-start">
-        <div
-          className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
-          style={{
-            background: 'var(--bubble-pablo-bg)',
-            border: '0.5px solid var(--bubble-pablo-border)',
-            color: 'var(--bubble-pablo-text)',
-            borderRadius: '4px 16px 16px 16px',
-            boxShadow: 'var(--bubble-pablo-shadow)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-          }}
-        >
+
+      <div className="max-w-[75%] flex flex-col items-start pt-1">
+        <div className="text-[16px] leading-relaxed whitespace-pre-wrap break-words text-[var(--text-primary)]">
           {text ? (
             <>
               {text}
+              {/* Blinking cursor while streaming */}
               <span
-                className="inline-block w-0.5 h-4 ml-0.5 align-middle animate-pulse"
-                style={{ background: 'var(--bubble-pablo-text)', opacity: 0.5 }}
+                className="inline-block w-[2px] h-[1em] ml-0.5 align-middle animate-pulse"
+                style={{ background: 'var(--text-disabled)', verticalAlign: '-0.1em' }}
               />
             </>
           ) : (
-            <span className="italic" style={{ color: 'var(--text-tertiary)' }}>
-              {thinkingPhrase || 'Thinking…'}
+            <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">
+              {thinkingPhrase ?? '[thinking...]'}
             </span>
           )}
         </div>

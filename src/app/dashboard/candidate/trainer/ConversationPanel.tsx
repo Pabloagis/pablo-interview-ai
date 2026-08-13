@@ -6,6 +6,7 @@ import CvUpload from '../modules/CvUpload';
 import CareerGoalPicker from '../modules/CareerGoalPicker';
 import DocumentUpload from '../modules/DocumentUpload';
 import { usePlatformT } from '@/context/platform-i18n';
+import { Button } from '@/components/ui';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,7 +64,6 @@ export default function ConversationPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when a new complete message arrives
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
@@ -76,7 +76,6 @@ export default function ConversationPanel({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    // Send on Enter (not Shift+Enter)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -86,7 +85,6 @@ export default function ConversationPanel({
   const canSend = draft.trim().length > 0 && !isStreaming;
 
   return (
-    // flex-1 min-w-0 comes from parent (TrainerShell conversation slot)
     <div className="flex flex-col h-full">
 
       {/* ── Message list ─────────────────────────────────────────────── */}
@@ -95,7 +93,7 @@ export default function ConversationPanel({
         {/* Empty state */}
         {messages.length === 0 && !isStreaming && (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 py-12">
-            <p className="text-sm text-[rgba(255,255,255,0.25)] text-center max-w-xs">
+            <p className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--text-disabled)] text-center max-w-xs">
               {t.conv_empty}
             </p>
           </div>
@@ -107,7 +105,7 @@ export default function ConversationPanel({
             <MessageBubble message={msg} />
 
             {msg.action === 'cv_upload' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] px-4 py-3">
                 <CvUpload
                   cvLoaded={cvLoaded}
                   onSaved={() => onCvUploaded?.()}
@@ -116,7 +114,7 @@ export default function ConversationPanel({
             )}
 
             {msg.action === 'career_goal' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] px-4 py-3">
                 <CareerGoalPicker
                   currentGoal={careerGoal}
                   moduleOptions={null}
@@ -126,7 +124,7 @@ export default function ConversationPanel({
             )}
 
             {msg.action === 'document_upload' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] px-4 py-3">
                 <DocumentUpload compact onSaved={msg => onDocumentUploaded?.(msg)} />
               </div>
             )}
@@ -141,38 +139,35 @@ export default function ConversationPanel({
           />
         )}
 
-        {/* Typing indicator — shown while stream starts (before first token) */}
+        {/* Typing indicator — before first token */}
         {isStreaming && !streamingText && (
-          <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] self-start max-w-[80px]">
-            <Dot delay={0}   />
-            <Dot delay={160} />
-            <Dot delay={320} />
-          </div>
+          <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--text-disabled)] self-start px-0 py-2">
+            [...]
+          </span>
         )}
 
         {/* Extraction indicator */}
         {isExtracting && (
-          <div className="self-center text-[10px] text-[rgba(255,255,255,0.25)] flex items-center gap-1.5 mt-1">
-            <div className="w-2 h-2 rounded-full border border-t-[rgba(255,255,255,0.3)] border-[rgba(255,255,255,0.08)] animate-spin" />
+          <div className="self-center font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] flex items-center gap-1.5 mt-1">
+            <div className="w-2 h-2 rounded-full border border-t-[var(--text-secondary)] border-[var(--border-visible)] animate-spin" />
             {t.conv_extracting}
           </div>
         )}
 
-        {/* Scroll anchor */}
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Document panel (toggled by the composer paperclip) ───────────── */}
+      {/* ── Document panel ───────────────────────────────────────────── */}
       {docPanelOpen && (
-        <div className="shrink-0 border-t border-white/[0.06] px-4 py-3">
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
-            <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-wider">
+        <div className="shrink-0 border-t border-[var(--border-visible)] px-4 py-3">
+          <div className="rounded-[var(--radius-md)] border border-[var(--border-visible)] bg-[var(--surface)] px-4 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-secondary)]">
                 {t.conv_add_document}
               </span>
               <button
                 onClick={() => setDocPanelOpen(false)}
-                className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
+                className="text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors"
                 aria-label={t.conv_close}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -190,23 +185,29 @@ export default function ConversationPanel({
       )}
 
       {/* ── Input area ───────────────────────────────────────────────── */}
-      <div className="shrink-0 border-t border-white/[0.06] px-4 py-3 flex items-end gap-3">
+      <div className="shrink-0 border-t border-[var(--border-visible)] px-4 py-3 flex items-end gap-3">
 
-        {/* Attach a document — always available */}
+        {/* Attach a document */}
         <button
           onClick={() => setDocPanelOpen(o => !o)}
-          className="shrink-0 self-end p-3 rounded-xl border border-white/[0.09] bg-white/[0.05] text-[rgba(255,255,255,0.45)] hover:text-white transition-colors"
-          style={docPanelOpen ? { color: '#8098f0', borderColor: 'rgba(64,96,208,0.5)' } : undefined}
+          className={[
+            'shrink-0 self-end p-2.5 rounded-[var(--radius-sm)]',
+            'border transition-colors duration-[180ms]',
+            docPanelOpen
+              ? 'border-[var(--interactive)] text-[var(--interactive)]'
+              : 'border-[var(--border-visible)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]',
+          ].join(' ')}
           aria-label={t.conv_attach_document}
           title={t.conv_attach_document}
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
           </svg>
         </button>
 
-        <div className="flex-1 min-w-0 rounded-xl bg-white/[0.05] border border-white/[0.09] px-4 py-3 flex flex-col gap-2">
+        {/* Composer */}
+        <div className="flex-1 min-w-0 rounded-[var(--radius-sm)] bg-[var(--surface)] border border-[var(--border-visible)] px-4 py-3 flex flex-col gap-2">
           <textarea
             ref={textareaRef}
             value={draft}
@@ -215,30 +216,28 @@ export default function ConversationPanel({
             rows={2}
             placeholder={t.conv_placeholder}
             disabled={isStreaming}
-            className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.20)] leading-relaxed disabled:opacity-50"
+            className="w-full bg-transparent font-sans text-[16px] text-[var(--text-primary)] resize-none focus:outline-none placeholder:text-[var(--text-disabled)] leading-relaxed disabled:opacity-50"
           />
           <div className="flex items-center justify-between">
             <VoiceRecorder
               onTranscript={t => setDraft(prev => prev ? `${prev} ${t}` : t)}
             />
-            <span className="text-[10px] text-[rgba(255,255,255,0.18)] select-none">
+            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] select-none">
               {t.conv_enter_to_send}
             </span>
           </div>
         </div>
 
-        <button
-          onClick={handleSend}
+        {/* Send */}
+        <Button
+          variant="primary"
+          size="sm"
           disabled={!canSend}
-          className="shrink-0 self-end px-5 py-3 rounded-xl text-sm font-medium transition-colors disabled:opacity-30"
-          style={{
-            background: canSend ? '#4060d0' : 'rgba(64,96,208,0.35)',
-            color: 'white',
-          }}
+          onClick={handleSend}
           aria-label={t.conv_send}
         >
           {t.conv_send}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -259,29 +258,18 @@ function MessageBubble({
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
         className={[
-          'max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
+          'max-w-[82%] text-[16px] leading-relaxed',
           isUser
-            ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
-            : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.78)]',
-          isStreaming ? 'opacity-85' : '',
+            ? 'bg-[var(--surface-raised)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-3 text-[var(--text-primary)]'
+            : 'py-1 text-[var(--text-primary)]',
+          isStreaming ? 'opacity-80' : '',
         ].join(' ')}
       >
         {message.content}
         {isStreaming && (
-          <span className="inline-block w-0.5 h-3.5 bg-[rgba(255,255,255,0.5)] ml-0.5 animate-pulse" />
+          <span className="inline-block w-[2px] h-[1em] bg-[var(--text-disabled)] ml-0.5 align-middle animate-pulse" style={{ verticalAlign: '-0.1em' }} />
         )}
       </div>
     </div>
-  );
-}
-
-// ── Typing dot ────────────────────────────────────────────────────────────────
-
-function Dot({ delay }: { delay: number }) {
-  return (
-    <div
-      className="w-1.5 h-1.5 rounded-full bg-[rgba(255,255,255,0.4)]"
-      style={{ animation: `pulse 1s ${delay}ms ease-in-out infinite` }}
-    />
   );
 }

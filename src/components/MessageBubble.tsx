@@ -30,102 +30,96 @@ export default function MessageBubble({ message, recruiterName, onPlay, isPlayin
   return (
     <>
       <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5 overflow-x-hidden w-full`}>
+
+        {/* Agent avatar */}
         {!isUser && (
           <button
             onClick={() => setAvatarOpen(true)}
-            className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
-            style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
+            aria-label="View avatar"
+            className="w-8 h-8 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-opacity hover:opacity-75 active:opacity-50 border border-[var(--border-visible)]"
           >
             <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
           </button>
         )}
 
         <div className={`max-w-[70%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
+          {/* Bubble */}
           <div
-            className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
-            style={isUser ? {
-              background: 'var(--accent-primary)',
-              color: '#ffffff',
-              borderRadius: '16px 16px 4px 16px',
-              boxShadow: '0 2px 12px var(--accent-glow)',
-            } : {
-              background: 'var(--bubble-pablo-bg)',
-              border: '0.5px solid var(--bubble-pablo-border)',
-              color: 'var(--bubble-pablo-text)',
-              borderRadius: '4px 16px 16px 16px',
-              boxShadow: 'var(--bubble-pablo-shadow)',
-              backdropFilter: 'blur(12px)',
-              WebkitBackdropFilter: 'blur(12px)',
-            }}
+            className={[
+              'text-[16px] leading-relaxed whitespace-pre-wrap break-words',
+              isUser
+                ? 'bg-[var(--surface-raised)] border border-[var(--border)] rounded-[var(--radius-md)] px-4 py-3 text-[var(--text-primary)]'
+                : 'px-0 py-1 text-[var(--text-primary)]',
+            ].join(' ')}
           >
             {message.content}
           </div>
-          <span className="text-xs mt-1 px-1 flex items-center gap-1.5" style={{ color: 'var(--timestamp)' }}>
-            {isUser ? 'You' : 'Pablo'} · {formatTimestamp(message.createdAt)}
+
+          {/* Timestamp row */}
+          <div className="mt-1.5 px-0.5 flex items-center gap-2">
+            <span className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">
+              {isUser ? 'You' : 'Pablo'} · {formatTimestamp(message.createdAt)}
+            </span>
+
+            {/* Audio control — agent messages only */}
             {!isUser && onPlay && (
               <Tooltip text={isPlaying ? t.playingIndicator : t.playMessage} position="top">
                 <button
                   onClick={isPlaying ? onStop : onPlay}
                   aria-label={isPlaying ? 'Stop audio' : 'Play audio'}
-                  className="flex items-center justify-center rounded-full transition-all active:scale-90"
-                  style={{
-                    width: 22, height: 22,
-                    background: isPlaying ? 'var(--accent-primary)' : 'var(--bubble-pablo-border)',
-                    color: isPlaying ? '#fff' : 'var(--accent-mid)',
-                    boxShadow: isPlaying ? '0 0 0 3px var(--accent-glow)' : 'none',
-                  }}
+                  className={[
+                    'flex items-center justify-center rounded-full w-5 h-5',
+                    'border transition-colors duration-[180ms]',
+                    isPlaying
+                      ? 'border-[var(--interactive)] text-[var(--interactive)]'
+                      : 'border-[var(--border-visible)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]',
+                  ].join(' ')}
                 >
                   {isPlaying ? (
-                    <svg width="9" height="9" fill="currentColor" viewBox="0 0 24 24">
-                      <rect x="5" y="4" width="5" height="16" rx="1.5" />
-                      <rect x="14" y="4" width="5" height="16" rx="1.5" />
+                    <svg width="8" height="8" fill="currentColor" viewBox="0 0 24 24">
+                      <rect x="5" y="4" width="5" height="16" rx="1" />
+                      <rect x="14" y="4" width="5" height="16" rx="1" />
                     </svg>
                   ) : (
-                    <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg width="9" height="9" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.536 8.464a5 5 0 010 7.072M12 6a7 7 0 010 12m-3.536-9.536a5 5 0 000 7.072" />
                     </svg>
                   )}
                 </button>
               </Tooltip>
             )}
-          </span>
+          </div>
         </div>
 
+        {/* User avatar (initials) */}
         {isUser && (
           <button
             onClick={() => setAvatarOpen(true)}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[13px] ml-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-              boxShadow: '0 2px 8px rgba(64,96,208,0.3)',
-            }}
+            aria-label="View avatar"
+            className="w-8 h-8 rounded-full flex items-center justify-center ml-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-opacity hover:opacity-75 active:opacity-50 border border-[var(--border-visible)] bg-[var(--surface-raised)]"
           >
-            {getInitials(recruiterName)}
+            <span className="font-mono text-[11px] text-[var(--text-secondary)]">
+              {getInitials(recruiterName)}
+            </span>
           </button>
         )}
       </div>
 
+      {/* Avatar zoom overlay — no blur */}
       {avatarOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
-          style={{ background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center cursor-zoom-out"
+          style={{ background: 'rgba(0,0,0,0.85)' }}
           onClick={() => setAvatarOpen(false)}
         >
           {isUser ? (
-            <div
-              className="w-32 h-32 rounded-full flex items-center justify-center text-white font-bold text-5xl animate-scale-in"
-              style={{
-                background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
-                boxShadow: '0 0 0 4px rgba(255,255,255,0.12), 0 24px 80px rgba(0,0,0,0.56)',
-              }}
-            >
-              {getInitials(recruiterName)}
+            <div className="w-32 h-32 rounded-full flex items-center justify-center border border-[var(--border-visible)] bg-[var(--surface-raised)] animate-scale-in">
+              <span className="font-mono text-[36px] text-[var(--text-primary)]">
+                {getInitials(recruiterName)}
+              </span>
             </div>
           ) : (
-            <div
-              className="w-32 h-32 rounded-full overflow-hidden animate-scale-in"
-              style={{ border: '3px solid rgba(255,255,255,0.18)', boxShadow: '0 24px 80px rgba(0,0,0,0.56)' }}
-            >
+            <div className="w-32 h-32 rounded-full overflow-hidden border border-[var(--border-visible)] animate-scale-in">
               <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
             </div>
           )}
