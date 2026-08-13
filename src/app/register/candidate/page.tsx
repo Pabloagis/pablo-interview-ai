@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { createBrowserSupabaseClient } from '@/lib/supabase-auth-browser';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { usePlatformT } from '@/context/platform-i18n';
+import { Button, Input } from '@/components/ui';
 
 export default function RegisterCandidatePage() {
   const router = useRouter();
@@ -46,13 +47,11 @@ export default function RegisterCandidatePage() {
         return;
       }
 
-      // If email confirmation is required, session is null
       if (!data.session) {
         setInfo(t.reg_confirm_email);
         return;
       }
 
-      // Immediate session — insert profile and redirect
       const { error: profileError } = await supabase.from('profiles').insert({
         id: user.id,
         role: 'candidate',
@@ -73,104 +72,94 @@ export default function RegisterCandidatePage() {
   }
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-[#0d0f14] px-4">
+    <main className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <div className="mb-6">
-          <div className="flex items-center justify-between">
-            <Link href="/platform" className="text-sm text-[rgba(255,255,255,0.38)] hover:text-white transition-colors">
-              {t.auth_back}
-            </Link>
-            <LanguageSwitcher />
-          </div>
-          <h1 className="text-2xl font-bold text-white mt-4 mb-1">{t.reg_title}</h1>
-          <p className="text-sm text-[rgba(255,255,255,0.5)]">{t.reg_subtitle}</p>
+
+        {/* Nav row */}
+        <div className="flex items-center justify-between mb-8">
+          <Link
+            href="/platform"
+            className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
+          >
+            {t.auth_back}
+          </Link>
+          <LanguageSwitcher />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="fullName" className="text-sm font-medium text-[rgba(255,255,255,0.7)]">
-              {t.reg_full_name}
-            </label>
-            <input
-              id="fullName"
-              type="text"
-              required
-              autoComplete="name"
-              value={fullName}
-              onChange={e => setFullName(e.target.value)}
-              placeholder={t.reg_name_ph}
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
-            />
-          </div>
+        {/* Heading */}
+        <div className="mb-8">
+          <h1 className="text-[var(--heading)] font-medium leading-tight tracking-[-0.01em] text-[var(--text-display)] mb-1">
+            {t.reg_title}
+          </h1>
+          <p className="text-[var(--body-sm)] text-[var(--text-secondary)]">{t.reg_subtitle}</p>
+        </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-sm font-medium text-[rgba(255,255,255,0.7)]">
-              {t.auth_email}
-            </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder={t.reg_email_ph}
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <Input
+            label={t.reg_full_name}
+            variant="outline"
+            type="text"
+            required
+            autoComplete="name"
+            value={fullName}
+            onChange={e => setFullName(e.target.value)}
+            placeholder={t.reg_name_ph}
+          />
 
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="password" className="text-sm font-medium text-[rgba(255,255,255,0.7)]">
-              {t.auth_password}
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              autoComplete="new-password"
-              minLength={6}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder={t.reg_password_ph}
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
-            />
-          </div>
+          <Input
+            label={t.auth_email}
+            variant="outline"
+            type="email"
+            required
+            autoComplete="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder={t.reg_email_ph}
+          />
+
+          <Input
+            label={t.auth_password}
+            variant="outline"
+            type="password"
+            required
+            autoComplete="new-password"
+            minLength={6}
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder={t.reg_password_ph}
+          />
 
           {error && (
-            <p className="text-sm text-red-400 bg-red-950/30 border border-red-800/40 rounded-lg px-3 py-2">
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--accent)]">
               {error}
             </p>
           )}
 
           {info && (
-            <p className="text-sm text-blue-300 bg-blue-950/30 border border-blue-700/40 rounded-lg px-3 py-2">
+            <p className="font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--interactive)]">
               {info}
             </p>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2.5 px-6 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-colors duration-150 mt-1"
-          >
+          <Button type="submit" variant="primary" disabled={loading} className="w-full mt-1">
             {loading ? t.reg_creating : t.reg_create}
-          </button>
+          </Button>
         </form>
 
-        <p className="mt-5 text-sm text-center text-[rgba(255,255,255,0.38)]">
+        <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] text-center">
           {t.reg_have_account}{' '}
-          <Link href="/login" className="text-[#4060d0] hover:text-[#6080f0] transition-colors">
+          <Link href="/login" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
             {t.reg_signin}
           </Link>
         </p>
 
-        {/* Crossing between the two sign-up paths used to mean editing the URL */}
-        <p className="mt-2 text-sm text-center text-[rgba(255,255,255,0.38)]">
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] text-center">
           {t.reg_wrong_path_recruiter}{' '}
-          <Link href="/register/recruiter" className="text-[#4060d0] hover:text-[#6080f0] transition-colors">
+          <Link href="/register/recruiter" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
             {t.reg_go_recruiter}
           </Link>
         </p>
+
       </div>
     </main>
   );

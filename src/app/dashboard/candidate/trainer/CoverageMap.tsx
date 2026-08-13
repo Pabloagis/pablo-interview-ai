@@ -87,32 +87,32 @@ const NODE_VISUAL: Record<NodeState, {
   stateColor: string;
 }> = {
   dark: {
-    core:       '#2a3140',
-    rim:        '#0e1119',
+    core:       '#222222',               // --border
+    rim:        '#111111',               // --surface
     glow:       'rgba(255,255,255,0)',
-    label:      'rgba(255,255,255,0.38)',
-    stateColor: 'rgba(255,255,255,0.30)',
+    label:      '#767676',               // --text-disabled
+    stateColor: '#767676',
   },
   weak: {
-    core:       '#e8b365',
-    rim:        '#7a4d13',
-    glow:       'rgba(216,154,60,0.55)',
-    label:      '#e3b273',
-    stateColor: '#c08840',
+    core:       '#D4A843',               // --warning
+    rim:        '#7A5A20',
+    glow:       'rgba(212,168,67,0.50)',
+    label:      '#D4A843',
+    stateColor: '#D4A843',
   },
   solid: {
-    core:       '#7ea2ff',
-    rim:        '#1c3486',
-    glow:       'rgba(85,128,240,0.55)',
-    label:      '#9db6fb',
-    stateColor: '#5580f0',
+    core:       '#5B9BF6',               // --interactive
+    rim:        '#1A3A80',
+    glow:       'rgba(91,155,246,0.50)',
+    label:      '#5B9BF6',
+    stateColor: '#5B9BF6',
   },
   verified: {
-    core:       '#6fe3a0',
-    rim:        '#136b3a',
-    glow:       'rgba(62,200,112,0.55)',
-    label:      '#7fe0a6',
-    stateColor: '#3ec870',
+    core:       '#4A9E5C',               // --success
+    rim:        '#1A5A30',
+    glow:       'rgba(74,158,92,0.50)',
+    label:      '#4A9E5C',
+    stateColor: '#4A9E5C',
   },
 };
 
@@ -386,7 +386,7 @@ function CoverageMapStyles() {
         position: relative;
         width: 100%;
         border-radius: 16px;
-        border: 1px solid rgba(255,255,255,0.06);
+        border: 1px solid var(--border);
         background:
           radial-gradient(120% 80% at 50% 0%, rgba(40,60,110,0.28) 0%, rgba(10,12,18,0) 62%),
           linear-gradient(180deg, #0b0e15 0%, #090b11 100%);
@@ -475,7 +475,7 @@ function CoverageMapStyles() {
       }
       .cov-wire {
         fill: none;
-        stroke: rgba(255,255,255,0.12);
+        stroke: rgba(51,51,51,0.9);   /* --border-visible at near-full opacity */
         stroke-width: 1;
       }
       .cov-wire-flow {
@@ -530,10 +530,11 @@ function CoverageMapStyles() {
           rgba(140,180,255,0) 0%, rgba(140,180,255,0.16) 50%, rgba(140,180,255,0) 100%);
       }
       .cov-panel-title {
+        font-family: var(--font-space-mono, monospace);
         font-size: 9px;
-        font-weight: 600;
-        letter-spacing: 0.16em;
-        color: rgba(160,190,255,0.42);
+        font-weight: 400;
+        letter-spacing: 0.12em;
+        color: rgba(91,155,246,0.40);   /* --interactive at 40% */
         text-align: center;
         user-select: none;
         transform: translateZ(4px);
@@ -664,10 +665,11 @@ function CoverageMapStyles() {
       .cov-label {
         display: block;
         max-width: 15ch;
-        font-size: 11px;
+        font-family: var(--font-space-mono, monospace);
+        font-size: 10px;
         line-height: 1.25;
-        font-weight: 500;
-        letter-spacing: 0.005em;
+        font-weight: 400;
+        letter-spacing: 0.04em;
         text-align: center;
         color: var(--cov-label);
         text-shadow: 0 1px 4px rgba(0,0,0,0.95), 0 0 12px rgba(0,0,0,0.7);
@@ -727,20 +729,20 @@ function NodePanel({
     : (t[AGENT_TEXT_KEY[data.state as Exclude<NodeState, 'dark'>]] as string);
 
   return (
-    <div className="border-t border-white/[0.07] mt-4 pt-5 flex flex-col gap-5">
+    <div className="border-t border-[var(--border)] mt-4 pt-5 flex flex-col gap-5">
 
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5 min-w-0">
-          <span className="text-sm font-semibold text-white leading-none">
+          <span className="text-[var(--body-sm)] font-medium text-[var(--text-display)] leading-none">
             {node.label}
           </span>
           <span
-            className="self-start text-[10px] font-semibold uppercase tracking-widest px-2 py-0.5 rounded-sm"
+            className="self-start font-mono text-[10px] uppercase tracking-[0.08em] px-2 py-0.5 rounded-[var(--radius-sm)]"
             style={{
               color: vis.stateColor,
               background: `${vis.stateColor}18`,
-              border: `1px solid ${vis.stateColor}28`,
+              border: `1px solid ${vis.stateColor}35`,
             }}
           >
             {t[STATE_LABEL_KEY[data.state]] as string}
@@ -748,7 +750,7 @@ function NodePanel({
         </div>
         <button
           onClick={onClose}
-          className="shrink-0 text-[rgba(255,255,255,0.30)] hover:text-white transition-colors text-lg leading-none mt-0.5"
+          className="shrink-0 text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms] text-lg leading-none mt-0.5"
           aria-label={t.conv_close}
         >
           ×
@@ -757,24 +759,24 @@ function NodePanel({
 
       {/* ── What this node covers ───────────────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
           {t.cov_what_covers}
         </p>
-        <p className="text-xs text-[rgba(255,255,255,0.50)] leading-relaxed">
+        <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed">
           {node.description}
         </p>
       </div>
 
       {/* ── Recruiter questions ─────────────────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
           {t.cov_unlocks}
         </p>
         <ul className="flex flex-col gap-1">
           {questions.map(q => (
             <li key={q} className="flex items-start gap-2">
-              <span className="shrink-0 text-[rgba(255,255,255,0.18)] mt-px select-none">·</span>
-              <span className="text-xs text-[rgba(255,255,255,0.45)] leading-snug">{q}</span>
+              <span className="shrink-0 text-[var(--text-disabled)] mt-px select-none">·</span>
+              <span className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-snug">{q}</span>
             </li>
           ))}
         </ul>
@@ -782,24 +784,23 @@ function NodePanel({
 
       {/* ── What the agent says right now ──────────────────────────────── */}
       <div>
-        <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-wider mb-1.5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-disabled)] mb-1.5">
           {t.cov_agent_says_now}
         </p>
 
         {isDark ? (
           <div className="flex flex-col gap-2">
-            {/* Verbatim refusal — quoted */}
-            <blockquote className="border-l-2 border-[rgba(255,255,255,0.12)] pl-3">
-              <p className="text-xs text-[rgba(255,255,255,0.38)] leading-relaxed italic">
+            <blockquote className="border-l-2 border-[var(--border-visible)] pl-3">
+              <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed italic">
                 "{agentText}"
               </p>
             </blockquote>
-            <p className="text-[11px] text-[rgba(255,255,255,0.28)]">
+            <p className="text-[11px] text-[var(--text-disabled)]">
               {t.cov_no_data_recruiters}
             </p>
           </div>
         ) : (
-          <p className="text-xs text-[rgba(255,255,255,0.50)] leading-relaxed">
+          <p className="text-[var(--body-sm)] text-[var(--text-secondary)] leading-relaxed">
             {agentText}
           </p>
         )}
@@ -808,11 +809,11 @@ function NodePanel({
       {/* ── Train this button ───────────────────────────────────────────── */}
       <button
         onClick={onTrain}
-        className="self-start flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-medium transition-colors"
+        className="self-start flex items-center gap-2 px-4 py-2 rounded-[var(--radius-sm)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors duration-[180ms]"
         style={{
           color: vis.stateColor,
           background: `${vis.stateColor}14`,
-          border: `1px solid ${vis.stateColor}30`,
+          border: `1px solid ${vis.stateColor}35`,
         }}
         onMouseEnter={e => {
           (e.currentTarget as HTMLButtonElement).style.background = `${vis.stateColor}22`;

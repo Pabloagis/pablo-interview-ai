@@ -9,10 +9,26 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        display: ['var(--font-doto)', '"Space Mono"', 'monospace'],
+        sans: ['var(--font-space-grotesk)', '"DM Sans"', 'system-ui', 'sans-serif'],
+        mono: ['var(--font-space-mono)', '"JetBrains Mono"', '"SF Mono"', 'monospace'],
       },
       colors: {
         primary: '#3B82F6',
+        'nd-black':          'var(--black)',
+        'nd-surface':        'var(--surface)',
+        'nd-surface-raised': 'var(--surface-raised)',
+        'nd-border':         'var(--border)',
+        'nd-border-visible': 'var(--border-visible)',
+        'nd-text-disabled':  'var(--text-disabled)',
+        'nd-text-secondary': 'var(--text-secondary)',
+        'nd-text-primary':   'var(--text-primary)',
+        'nd-text-display':   'var(--text-display)',
+        'nd-accent':         'var(--accent)',
+        'nd-accent-subtle':  'var(--accent-subtle)',
+        'nd-success':        'var(--success)',
+        'nd-warning':        'var(--warning)',
+        'nd-interactive':    'var(--interactive)',
       },
     },
   },

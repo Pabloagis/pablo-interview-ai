@@ -10,34 +10,16 @@ import { usePlatformT } from '@/context/platform-i18n';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-// Some onboarding steps need real UI (a file picker, a chip select) — chat can't
-// "receive" a CV as text. An assistant message can therefore carry an inline
-// control, rendered directly under its bubble. The controls are the SAME components
-// the wizard uses and hit the SAME API routes; this is UI relocation, not a second
-// implementation.
-//
-// 'document_upload' is not a blocking onboarding gate like cv_upload / career_goal —
-// it's an invitation the agent can attach when a document would strengthen a node.
-// The same control is always reachable from the composer paperclip regardless.
-//
-// 'role_update' is likewise not onboarding: it appears LONG after setup, when a
-// confirmed correction has moved the agent ahead of the CV the recruiter directory
-// reads. Despite the type name, these actions are simply controls a message can
-// carry — the profile keeps changing after onboarding ends.
 export type OnboardingAction =
   | 'cv_upload'
   | 'career_goal'
   | 'document_upload'
   | 'role_update';
 
-// An anticipated question the trainer raised on its own initiative (the invitation
-// when onboarding completes, or a later reminder about a still-unanswered priority
-// question). It is an OFFER: the candidate accepts before the composer is pointed
-// at it, so a reminder can never swallow a message meant for the conversation.
 export interface AnticipatedOffer {
-  topic:        string;   // canonical English topic — what gets persisted
+  topic:        string;
   trigger_hint: string;
-  question:     string;   // translated question, already spoken in the message
+  question:     string;
 }
 
 export interface TrainerMessage {
@@ -46,28 +28,22 @@ export interface TrainerMessage {
   content: string;
   action?: OnboardingAction;
   anticipated?: AnticipatedOffer;
-  anticipatedResolved?: boolean;   // accepted or declined — hides the buttons
+  anticipatedResolved?: boolean;
 }
 
 interface Props {
   messages: TrainerMessage[];
-  streamingText: string;   // partial assistant text while streaming
+  streamingText: string;
   isStreaming: boolean;
   isExtracting: boolean;
-  isAssessing?: boolean;   // checking an anticipated answer, not extracting evidence
+  isAssessing?: boolean;
   onSend: (text: string) => void;
-  // Inline onboarding controls (omitted once the candidate is past onboarding)
   cvLoaded?: boolean;
   careerGoal?: string | null;
   onCvUploaded?: () => void;
   onCareerGoalSaved?: (goal?: string) => void;
-  // Supporting-document upload — reachable any time from the composer, and also
-  // rendered inline when an assistant message carries the 'document_upload' action.
   onDocumentUploaded?: (message?: string) => void;
-  // Work history added without a CV re-upload — see the 'role_update' action.
   onRoleUpdated?: (message?: string) => void;
-  // Anticipated questions. `answeringQuestion` is set while the next message the
-  // candidate sends is an answer to that question rather than ordinary conversation.
   answeringQuestion?: string | null;
   onCancelAnswering?: () => void;
   onAcceptAnticipated?: (messageId: string, offer: AnticipatedOffer) => void;
@@ -100,7 +76,6 @@ export default function ConversationPanel({
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Auto-scroll to bottom when a new complete message arrives
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length]);
@@ -113,7 +88,6 @@ export default function ConversationPanel({
   }
 
   function handleKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
-    // Send on Enter (not Shift+Enter)
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -123,66 +97,57 @@ export default function ConversationPanel({
   const canSend = draft.trim().length > 0 && !isStreaming;
 
   return (
-    // flex-1 min-w-0 comes from parent (TrainerShell conversation slot)
     <div className="flex flex-col h-full">
 
       {/* ── Message list ─────────────────────────────────────────────── */}
       <div className="flex-1 min-w-0 overflow-y-auto px-5 py-5 flex flex-col gap-3">
 
-        {/* Empty state */}
         {messages.length === 0 && !isStreaming && (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 py-12">
-            <p className="text-sm text-[rgba(255,255,255,0.25)] text-center max-w-xs">
+            <p className="text-[var(--body-sm)] text-[var(--text-disabled)] text-center max-w-xs">
               {t.conv_empty}
             </p>
           </div>
         )}
 
-        {/* Message bubbles — an assistant message may carry an inline control */}
         {messages.map(msg => (
           <div key={msg.id} className="flex flex-col gap-2">
             <MessageBubble message={msg} />
 
             {msg.action === 'cv_upload' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
-                <CvUpload
-                  cvLoaded={cvLoaded}
-                  onSaved={() => onCvUploaded?.()}
-                />
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
+                <CvUpload cvLoaded={cvLoaded} onSaved={() => onCvUploaded?.()} />
               </div>
             )}
 
             {msg.action === 'career_goal' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <CareerGoalPicker
                   currentGoal={careerGoal}
                   moduleOptions={null}
-                  // Forward the saved value: the picker can reopen later to revise
-                  // the goal, and it must reopen showing what was actually saved.
                   onSaved={goal => onCareerGoalSaved?.(goal)}
                 />
               </div>
             )}
 
             {msg.action === 'role_update' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <RoleUpdate onSaved={msg => onRoleUpdated?.(msg)} />
               </div>
             )}
 
-            {/* Trainer-initiated anticipated question — accept before answering */}
             {msg.anticipated && !msg.anticipatedResolved && (
               <div className="self-start flex items-center gap-2">
                 <button
                   onClick={() => onAcceptAnticipated?.(msg.id, msg.anticipated!)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-                  style={{ background: '#c0884022', color: '#e0a860', border: '1px solid #c0884055' }}
+                  className="px-3 py-1.5 rounded-[var(--radius-sm)] font-mono text-[11px] uppercase tracking-[0.06em] transition-colors duration-[180ms]"
+                  style={{ background: 'rgba(212,168,67,0.15)', color: 'var(--warning)', border: '1px solid rgba(212,168,67,0.4)' }}
                 >
                   {t.ant_answer_now}
                 </button>
                 <button
                   onClick={() => onDeclineAnticipated?.(msg.id)}
-                  className="px-2 py-1.5 rounded-lg text-xs text-white/35 hover:text-white/70 transition-colors"
+                  className="px-2 py-1.5 rounded-[var(--radius-sm)] font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
                 >
                   {t.ant_answering_cancel}
                 </button>
@@ -190,14 +155,13 @@ export default function ConversationPanel({
             )}
 
             {msg.action === 'document_upload' && (
-              <div className="self-start w-full max-w-[82%] rounded-2xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+              <div className="self-start w-full max-w-[82%] rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
                 <DocumentUpload compact onSaved={msg => onDocumentUploaded?.(msg)} />
               </div>
             )}
           </div>
         ))}
 
-        {/* Streaming bubble — assistant text being built token by token */}
         {isStreaming && streamingText && (
           <MessageBubble
             message={{ id: '__streaming__', role: 'assistant', content: streamingText }}
@@ -205,38 +169,34 @@ export default function ConversationPanel({
           />
         )}
 
-        {/* Typing indicator — shown while stream starts (before first token) */}
+        {/* Typing indicator — bracket text, no bouncing dots */}
         {isStreaming && !streamingText && (
-          <div className="flex items-center gap-1.5 px-4 py-3 rounded-2xl bg-white/[0.04] border border-white/[0.07] self-start max-w-[80px]">
-            <Dot delay={0}   />
-            <Dot delay={160} />
-            <Dot delay={320} />
+          <div className="self-start px-1 py-1">
+            <span className="font-mono text-[13px] text-[var(--text-disabled)]">[...]</span>
           </div>
         )}
 
-        {/* Extraction / assessment indicator */}
         {(isExtracting || isAssessing) && (
-          <div className="self-center text-[10px] text-[rgba(255,255,255,0.25)] flex items-center gap-1.5 mt-1">
-            <div className="w-2 h-2 rounded-full border border-t-[rgba(255,255,255,0.3)] border-[rgba(255,255,255,0.08)] animate-spin" />
+          <div className="self-center font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] flex items-center gap-1.5 mt-1">
+            <div className="w-2 h-2 rounded-full border border-t-[var(--text-secondary)] border-[var(--border)] animate-spin" />
             {isAssessing ? t.ant_checking : t.conv_extracting}
           </div>
         )}
 
-        {/* Scroll anchor */}
         <div ref={bottomRef} />
       </div>
 
-      {/* ── Document panel (toggled by the composer paperclip) ───────────── */}
+      {/* ── Document panel ───────────────────────────────────────────────── */}
       {docPanelOpen && (
-        <div className="shrink-0 border-t border-white/[0.06] px-4 py-3">
-          <div className="rounded-xl border border-white/[0.08] bg-white/[0.03] px-4 py-3">
+        <div className="shrink-0 border-t border-[var(--border)] px-4 py-3">
+          <div className="rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] px-4 py-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.4)] uppercase tracking-wider">
+              <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-[var(--text-secondary)]">
                 {t.conv_add_document}
               </span>
               <button
                 onClick={() => setDocPanelOpen(false)}
-                className="text-[rgba(255,255,255,0.3)] hover:text-white transition-colors"
+                className="text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
                 aria-label={t.conv_close}
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
@@ -254,20 +214,17 @@ export default function ConversationPanel({
       )}
 
       {/* ── Answering an anticipated question ───────────────────────────── */}
-      {/* Visible for exactly as long as the composer is pointed at that question,
-          and always escapable — otherwise a stray message would be filed as an
-          answer to something the candidate had stopped thinking about. */}
       {answeringQuestion && (
         <div
-          className="shrink-0 mx-4 mb-0 mt-3 rounded-xl border px-3 py-2 flex items-center gap-2"
-          style={{ borderColor: '#c0884055', background: '#c0884012' }}
+          className="shrink-0 mx-4 mb-0 mt-3 rounded-[var(--radius-md)] border px-3 py-2 flex items-center gap-2"
+          style={{ borderColor: 'rgba(212,168,67,0.40)', background: 'rgba(212,168,67,0.08)' }}
         >
-          <span className="text-[11px] leading-snug flex-1 min-w-0" style={{ color: '#e0a860' }}>
+          <span className="text-[11px] leading-snug flex-1 min-w-0" style={{ color: 'var(--warning)' }}>
             {t.ant_answering(answeringQuestion)}
           </span>
           <button
             onClick={() => onCancelAnswering?.()}
-            className="shrink-0 text-[10px] text-white/35 hover:text-white/80 transition-colors"
+            className="shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]"
           >
             {t.ant_answering_cancel}
           </button>
@@ -275,13 +232,12 @@ export default function ConversationPanel({
       )}
 
       {/* ── Input area ───────────────────────────────────────────────── */}
-      <div className="shrink-0 border-t border-white/[0.06] px-4 py-3 flex items-end gap-3">
+      <div className="shrink-0 border-t border-[var(--border)] px-4 py-3 flex items-end gap-3">
 
-        {/* Attach a document — always available */}
         <button
           onClick={() => setDocPanelOpen(o => !o)}
-          className="shrink-0 self-end p-3 rounded-xl border border-white/[0.09] bg-white/[0.05] text-[rgba(255,255,255,0.45)] hover:text-white transition-colors"
-          style={docPanelOpen ? { color: '#8098f0', borderColor: 'rgba(64,96,208,0.5)' } : undefined}
+          className="shrink-0 self-end p-3 rounded-[var(--radius-md)] border border-[var(--border)] bg-[var(--surface)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-visible)] transition-colors duration-[180ms]"
+          style={docPanelOpen ? { color: 'var(--interactive)', borderColor: 'rgba(91,155,246,0.5)' } : undefined}
           aria-label={t.conv_attach_document}
           title={t.conv_attach_document}
         >
@@ -291,7 +247,7 @@ export default function ConversationPanel({
           </svg>
         </button>
 
-        <div className="flex-1 min-w-0 rounded-xl bg-white/[0.05] border border-white/[0.09] px-4 py-3 flex flex-col gap-2">
+        <div className="flex-1 min-w-0 rounded-[var(--radius-md)] bg-[var(--surface)] border border-[var(--border-visible)] px-4 py-3 flex flex-col gap-2">
           <textarea
             ref={textareaRef}
             value={draft}
@@ -300,13 +256,13 @@ export default function ConversationPanel({
             rows={2}
             placeholder={t.conv_placeholder}
             disabled={isStreaming}
-            className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.20)] leading-relaxed disabled:opacity-50"
+            className="w-full bg-transparent text-[var(--body)] text-[var(--text-primary)] resize-none focus:outline-none placeholder-[var(--text-disabled)] leading-relaxed disabled:opacity-50"
           />
           <div className="flex items-center justify-between">
             <VoiceRecorder
               onTranscript={t => setDraft(prev => prev ? `${prev} ${t}` : t)}
             />
-            <span className="text-[10px] text-[rgba(255,255,255,0.18)] select-none">
+            <span className="font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] select-none">
               {t.conv_enter_to_send}
             </span>
           </div>
@@ -315,10 +271,10 @@ export default function ConversationPanel({
         <button
           onClick={handleSend}
           disabled={!canSend}
-          className="shrink-0 self-end px-5 py-3 rounded-xl text-sm font-medium transition-colors disabled:opacity-30"
+          className="shrink-0 self-end px-5 py-3 rounded-full font-mono text-[13px] uppercase tracking-[0.06em] transition-colors duration-[180ms] disabled:opacity-30"
           style={{
-            background: canSend ? '#4060d0' : 'rgba(64,96,208,0.35)',
-            color: 'white',
+            background: canSend ? 'var(--text-display)' : 'var(--surface-raised)',
+            color: canSend ? 'var(--black)' : 'var(--text-disabled)',
           }}
           aria-label={t.conv_send}
         >
@@ -344,29 +300,18 @@ function MessageBubble({
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
         className={[
-          'max-w-[82%] px-4 py-3 rounded-2xl text-sm leading-relaxed',
+          'max-w-[82%] px-4 py-3 rounded-[var(--radius-md)] text-[var(--body)] leading-relaxed',
           isUser
-            ? 'bg-[#4060d0]/25 border border-[#4060d0]/35 text-white'
-            : 'bg-white/[0.04] border border-white/[0.08] text-[rgba(255,255,255,0.78)]',
+            ? 'bg-[var(--surface-raised)] border border-[var(--border-visible)] text-[var(--text-primary)]'
+            : 'text-[var(--text-primary)]',
           isStreaming ? 'opacity-85' : '',
         ].join(' ')}
       >
         {message.content}
         {isStreaming && (
-          <span className="inline-block w-0.5 h-3.5 bg-[rgba(255,255,255,0.5)] ml-0.5 animate-pulse" />
+          <span className="inline-block w-0.5 h-3.5 bg-[var(--text-secondary)] ml-0.5 animate-pulse" />
         )}
       </div>
     </div>
-  );
-}
-
-// ── Typing dot ────────────────────────────────────────────────────────────────
-
-function Dot({ delay }: { delay: number }) {
-  return (
-    <div
-      className="w-1.5 h-1.5 rounded-full bg-[rgba(255,255,255,0.4)]"
-      style={{ animation: `pulse 1s ${delay}ms ease-in-out infinite` }}
-    />
   );
 }

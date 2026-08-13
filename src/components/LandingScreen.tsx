@@ -3,17 +3,16 @@
 import Link from 'next/link';
 import LanguageSwitcher from './LanguageSwitcher';
 import { usePlatformT } from '@/context/platform-i18n';
+import { Button } from '@/components/ui';
 
-// Minimal product landing. Shared by /platform now; root will switch to it later as a
-// one-line change (root currently redirects to Pablo's agent, per live outreach).
 export default function LandingScreen() {
   const t = usePlatformT();
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#0d0f14] px-4">
-      {/* Top bar — the language dropdown is reachable before signing up, not only after */}
+    <main className="min-h-screen flex flex-col bg-[var(--black)] px-4">
+      {/* Top bar */}
       <div className="w-full max-w-4xl mx-auto pt-5 flex items-center justify-between">
-        <span className="text-[10px] font-semibold text-[rgba(255,255,255,0.28)] uppercase tracking-widest">
+        <span className="font-mono text-[11px] uppercase tracking-[0.08em] text-[var(--text-disabled)]">
           InterviewMind
         </span>
         <LanguageSwitcher showLabel />
@@ -22,36 +21,36 @@ export default function LandingScreen() {
       <div className="flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-md text-center py-10">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-white mb-3">InterviewMind</h1>
-            <p className="text-[rgba(255,255,255,0.6)] text-base leading-relaxed">
+            <h1 className="font-mono text-[var(--display-md)] uppercase tracking-[0.04em] text-[var(--text-display)] mb-4 leading-none">
+              InterviewMind
+            </h1>
+            <p className="text-[var(--body)] text-[var(--text-primary)] leading-relaxed">
               {t.land_tagline}
             </p>
           </div>
 
           <div className="flex flex-col gap-3">
-            <Link
-              href="/register/candidate"
-              className="w-full py-3 px-6 rounded-xl bg-[#4060d0] hover:bg-[#3050c0] text-white font-medium text-sm transition-colors duration-150"
-            >
-              <span className="block">{t.land_candidate}</span>
-              <span className="block text-[11px] font-normal text-[rgba(255,255,255,0.65)] mt-0.5">
-                {t.land_candidate_sub}
-              </span>
+            <Link href="/register/candidate" className="block">
+              <Button variant="primary" className="w-full">
+                <span className="block">{t.land_candidate}</span>
+                <span className="block font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-secondary)] mt-0.5 normal-case">
+                  {t.land_candidate_sub}
+                </span>
+              </Button>
             </Link>
-            <Link
-              href="/register/recruiter"
-              className="w-full py-3 px-6 rounded-xl bg-[rgba(255,255,255,0.07)] hover:bg-[rgba(255,255,255,0.12)] border border-[rgba(255,255,255,0.10)] text-white font-medium text-sm transition-colors duration-150"
-            >
-              <span className="block">{t.land_recruiter}</span>
-              <span className="block text-[11px] font-normal text-[rgba(255,255,255,0.5)] mt-0.5">
-                {t.land_recruiter_sub}
-              </span>
+            <Link href="/register/recruiter" className="block">
+              <Button variant="secondary" className="w-full">
+                <span className="block">{t.land_recruiter}</span>
+                <span className="block font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)] mt-0.5 normal-case">
+                  {t.land_recruiter_sub}
+                </span>
+              </Button>
             </Link>
           </div>
 
-          <p className="mt-6 text-sm text-[rgba(255,255,255,0.38)]">
+          <p className="mt-6 font-mono text-[11px] uppercase tracking-[0.06em] text-[var(--text-disabled)]">
             {t.land_have_account}{' '}
-            <Link href="/login" className="text-[#4060d0] hover:text-[#6080f0] transition-colors">
+            <Link href="/login" className="text-[var(--interactive)] hover:text-[var(--text-primary)] transition-colors duration-[180ms]">
               {t.land_signin}
             </Link>
           </p>

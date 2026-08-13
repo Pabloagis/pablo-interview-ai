@@ -121,7 +121,7 @@ export default function DashboardContent({
       {/* Evidence log — appears as extraction runs */}
       {evidenceCards.length > 0 && (
         <div className="w-full flex flex-col gap-2">
-          <p className="text-[10px] font-semibold text-[rgba(255,255,255,0.25)] uppercase tracking-wider">
+          <p className="text-[10px] font-semibold text-[var(--text-disabled)] uppercase tracking-wider">
             {t.dash_evidence_log}
           </p>
           {evidenceCards.map(item => (

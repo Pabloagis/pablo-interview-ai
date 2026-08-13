@@ -32,10 +32,10 @@ interface Props {
 // ── Level colours (single source of truth) ────────────────────────────────────
 
 const LEVEL_COLOR: Record<PublishLevel, string> = {
-  sharp:       '#60c080',
-  solid:       '#5080f0',
-  basic:       '#4060d0',
-  unpublished: '#6080a0',
+  sharp:       '#4A9E5C', // --success
+  solid:       '#5B9BF6', // --interactive
+  basic:       '#999999', // --text-secondary
+  unpublished: '#767676', // --text-disabled
 };
 
 // ── Readiness ring SVG ────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ function ReadinessRing({
         cy={cx}
         r={r}
         fill="none"
-        stroke="rgba(255,255,255,0.08)"
+        stroke="var(--border)"
         strokeWidth={strokeWidth}
       />
       {/* Progress — starts at 12 o'clock */}
@@ -107,11 +107,11 @@ function ReadinessWidget({
   return (
     <div className="flex items-center gap-2">
       <ReadinessRing readiness={readiness} publishLevel={publishLevel} size={size} />
-      <span className="text-xs font-medium tabular-nums" style={{ color }}>
+      <span className="font-mono text-[12px] tabular-nums" style={{ color }}>
         {readiness}
       </span>
       <span
-        className="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded"
+        className="font-mono text-[10px] uppercase tracking-[0.08em] px-1.5 py-0.5 rounded-[var(--radius-sm)]"
         style={{ color, background: `${color}1a` }}
       >
         {t[LEVEL_LABEL_KEY[publishLevel]] as string}
@@ -163,10 +163,10 @@ function AccountMenu({
         aria-haspopup="menu"
         aria-expanded={open}
         className={[
-          'w-7 h-7 rounded-full border text-[11px] font-semibold transition-colors',
+          'w-7 h-7 rounded-full border font-mono text-[11px] uppercase transition-colors',
           open
-            ? 'bg-white/[0.12] border-white/[0.25] text-white'
-            : 'bg-white/[0.05] border-white/[0.12] text-[rgba(255,255,255,0.6)] hover:text-white hover:border-white/[0.25]',
+            ? 'bg-[var(--surface-raised)] border-[var(--text-primary)] text-[var(--text-display)]'
+            : 'bg-[var(--surface)] border-[var(--border-visible)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--text-primary)]',
         ].join(' ')}
       >
         {initial}
@@ -175,9 +175,9 @@ function AccountMenu({
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-xl py-1 border border-white/[0.12] bg-[#1c2135] shadow-[0_8px_32px_rgba(0,0,0,0.48)]"
+          className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-[var(--radius-md)] py-1 border border-[var(--border-visible)] bg-[var(--surface-raised)]"
         >
-          <p className="px-3 py-2 text-[11px] text-[rgba(255,255,255,0.35)] truncate border-b border-white/[0.07] mb-1">
+          <p className="px-3 py-2 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-disabled)] truncate border-b border-[var(--border)] mb-1">
             {candidateName}
           </p>
 
@@ -187,18 +187,18 @@ function AccountMenu({
               target="_blank"
               rel="noopener noreferrer"
               role="menuitem"
-              className="flex items-center justify-between gap-2 w-full px-3 py-2 text-[13px] text-[rgba(255,255,255,0.75)] hover:bg-white/[0.07] hover:text-white transition-colors"
+              className="flex items-center justify-between gap-2 w-full px-3 py-2 text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors"
             >
               {t.nav_my_agent}
-              <span className="text-[rgba(255,255,255,0.3)]">↗</span>
+              <span className="text-[var(--text-disabled)]">↗</span>
             </a>
           ) : (
-            <p className="px-3 py-2 text-[12px] leading-snug text-[rgba(255,255,255,0.32)]">
+            <p className="px-3 py-2 text-[12px] leading-snug text-[var(--text-disabled)]">
               {t.nav_my_agent_locked}
             </p>
           )}
 
-          <LogoutButton className="block w-full px-3 py-2 text-left text-[13px] text-[rgba(255,255,255,0.75)] hover:bg-white/[0.07] hover:text-white transition-colors cursor-pointer" />
+          <LogoutButton className="block w-full px-3 py-2 text-left text-[13px] text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)] transition-colors cursor-pointer" />
         </div>
       )}
     </div>
@@ -242,17 +242,17 @@ export default function TrainerShell({
 
   return (
     // Root: fixed inset-0 — this IS the viewport. w-full, not w-screen.
-    <div className="fixed inset-0 flex flex-col bg-[#0d0f14]">
+    <div className="fixed inset-0 flex flex-col bg-[var(--black)]">
 
       {/* ── Mobile top bar (hidden ≥ lg) ───────────────────────────────────── */}
-      <div className="lg:hidden shrink-0 h-12 flex items-center px-4 gap-3 border-b border-white/[0.08]">
+      <div className="lg:hidden shrink-0 h-12 flex items-center px-4 gap-3 border-b border-[var(--border-visible)]">
         <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={28} />
         <div className="flex-1 min-w-0" />
         <LanguageSwitcher />
         {onTestAgent && (
           <button
             onClick={onTestAgent}
-            className="text-[10px] font-semibold uppercase tracking-wider px-2 py-1 rounded border transition-colors"
+            className="font-mono text-[10px] uppercase tracking-[0.06em] px-2 py-1 rounded-[var(--radius-sm)] border transition-colors"
             style={{
               color:        LEVEL_COLOR[publishLevel],
               borderColor:  `${LEVEL_COLOR[publishLevel]}40`,
@@ -265,7 +265,7 @@ export default function TrainerShell({
         )}
         <button
           onClick={() => setSheetOpen(true)}
-          className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"
+          className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
           aria-label={t.shell_coverage}
         >
           {t.shell_coverage}
@@ -284,9 +284,9 @@ export default function TrainerShell({
         </div>
 
         {/* Dashboard sidebar — hidden on mobile, visible ≥ lg */}
-        <div className="hidden lg:flex w-[45%] shrink-0 flex-col border-l border-white/[0.08] overflow-y-auto">
+        <div className="hidden lg:flex w-[45%] shrink-0 flex-col border-l border-[var(--border-visible)] overflow-y-auto">
           {/* Desktop header with readiness widget */}
-          <div className="sticky top-0 z-10 bg-[#0d0f14] shrink-0 h-14 flex items-center px-5 border-b border-white/[0.08] gap-3">
+          <div className="sticky top-0 z-10 bg-[var(--black)] shrink-0 h-14 flex items-center px-5 border-b border-[var(--border-visible)] gap-3">
             <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={32} />
             <div className="flex-1 min-w-0" />
             <LanguageSwitcher />
@@ -294,7 +294,7 @@ export default function TrainerShell({
             {onTestAgent && (
               <button
                 onClick={onTestAgent}
-                className="shrink-0 text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded border transition-colors hover:opacity-80"
+                className="shrink-0 font-mono text-[10px] uppercase tracking-[0.06em] px-2.5 py-1 rounded-[var(--radius-sm)] border transition-colors hover:opacity-80"
                 style={{
                   color:       LEVEL_COLOR[publishLevel],
                   borderColor: `${LEVEL_COLOR[publishLevel]}40`,
@@ -317,21 +317,21 @@ export default function TrainerShell({
       <div
         ref={sheetRef}
         className={[
-          'lg:hidden fixed inset-0 z-50 flex flex-col bg-[#0d0f14]',
+          'lg:hidden fixed inset-0 z-50 flex flex-col bg-[var(--black)]',
           'transition-transform duration-300 ease-in-out',
           sheetOpen ? 'translate-x-0' : 'translate-x-full',
         ].join(' ')}
         aria-hidden={!sheetOpen}
       >
         {/* Sheet header */}
-        <div className="shrink-0 h-12 flex items-center px-4 gap-3 border-b border-white/[0.08]">
+        <div className="shrink-0 h-12 flex items-center px-4 gap-3 border-b border-[var(--border-visible)]">
           <ReadinessWidget readiness={readiness} publishLevel={publishLevel} size={28} />
           <div className="flex-1 min-w-0" />
           {/* Account lives in the sheet on mobile — the top bar is already full */}
           <AccountMenu candidateName={candidateName} publicSlug={publicSlug} published={published} />
           <button
             onClick={() => setSheetOpen(false)}
-            className="flex items-center gap-1.5 text-[rgba(255,255,255,0.45)] hover:text-white transition-colors text-xs"
+            className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
             aria-label={t.shell_back}
           >
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none">

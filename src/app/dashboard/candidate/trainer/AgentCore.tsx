@@ -6,10 +6,10 @@ import { usePlatformT, type PlatformStrings } from '@/context/platform-i18n';
 
 // Level colours — single source of truth (matches TrainerShell)
 const LEVEL_COLOR: Record<PublishLevel, string> = {
-  sharp:       '#60c080',
-  solid:       '#5080f0',
-  basic:       '#4060d0',
-  unpublished: '#6080a0',
+  sharp:       '#4A9E5C', // --success
+  solid:       '#5B9BF6', // --interactive
+  basic:       '#999999', // --text-secondary
+  unpublished: '#767676', // --text-disabled
 };
 
 // unpublished shows NO badge, so it maps to no key (empty label handled below)
@@ -168,7 +168,7 @@ export default function AgentCore({ readiness, publishLevel, size = 200 }: Props
             <circle
               cx={cx} cy={cx} r={ringR}
               fill="none"
-              stroke="rgba(255,255,255,0.06)"
+              stroke="var(--border)"
               strokeWidth={ringW}
             />
 
@@ -331,7 +331,7 @@ function AgentCoreStyles() {
       }
       .ac-orbit-c {
         inset: 9%;    /* r = 0.41 x size, compound tilt -> z extent 0.38 */
-        border: 1px solid rgba(255, 255, 255, 0.10);
+        border: 1px solid var(--border-visible);
         animation: ac-orbit-c 34s linear infinite;
       }
       @keyframes ac-orbit-a {
@@ -435,10 +435,10 @@ function AgentCoreStyles() {
         transform: translateZ(${(SLICE_Z * 0.6).toFixed(1)}px);
       }
       .ac-num {
-        font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+        font-family: var(--font-space-mono, 'SF Mono', monospace);
         font-size: calc(var(--ac-size) * 0.155);
         line-height: 1;
-        font-weight: 600;
+        font-weight: 700;
         letter-spacing: 0.01em;
         font-variant-numeric: tabular-nums;
         color: #fff;
@@ -447,12 +447,11 @@ function AgentCoreStyles() {
           0 0 16px rgba(var(--ac-rgb), 0.65);
       }
       .ac-den {
-        font-family: 'SF Mono', 'Fira Mono', 'Consolas', monospace;
+        font-family: var(--font-space-mono, 'SF Mono', monospace);
         font-size: calc(var(--ac-size) * 0.046);
         line-height: 1.4;
         letter-spacing: 0.14em;
         color: rgba(255, 255, 255, 0.5);
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
       }
 
       /* Spring, approximated: overshoot, settle, smaller overshoot, settle */

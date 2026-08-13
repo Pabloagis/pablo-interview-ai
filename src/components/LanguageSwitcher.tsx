@@ -4,17 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import { useLanguage, LANG_FLAGS, LANG_LABELS, LANG_ORDER } from '@/context/LanguageContext';
 
 interface Props {
-  /** Show the language name next to the flag on the trigger. Off by default so the
-   *  compact chat/trainer headers keep their footprint. */
   showLabel?: boolean;
-  /** Which edge the dropdown aligns to. Right by default (the switcher usually sits
-   *  in the top-right corner); use 'left' when it sits on the left of its row. */
   align?: 'left' | 'right';
 }
 
-// Styling is the platform's dark palette, not the day/night theme variables. Every
-// live surface is dark (#0d0f14), and the day-mode `--lang-trigger` colour is near
-// black — on those pages it rendered the control invisible for half the day.
 export default function LanguageSwitcher({ showLabel = false, align = 'right' }: Props) {
   const { lang, setLang } = useLanguage();
   const [open, setOpen] = useState(false);
@@ -44,21 +37,19 @@ export default function LanguageSwitcher({ showLabel = false, align = 'right' }:
         aria-haspopup="listbox"
         aria-expanded={open}
         className={[
-          'flex items-center gap-1.5 px-2 py-1.5 rounded-lg border transition-colors',
+          'flex items-center gap-1.5 px-2 py-1.5 rounded-[var(--radius-sm)] border transition-colors duration-[180ms]',
           open
-            ? 'text-white border-white/[0.18] bg-white/[0.08]'
-            : 'text-[rgba(255,255,255,0.55)] border-white/[0.10] bg-white/[0.04] hover:text-white hover:border-white/[0.18]',
+            ? 'text-[var(--text-display)] border-[var(--border-visible)] bg-[var(--surface-raised)]'
+            : 'text-[var(--text-secondary)] border-[var(--border)] bg-transparent hover:text-[var(--text-primary)] hover:border-[var(--border-visible)]',
         ].join(' ')}
       >
-        {/* The globe steps aside on phones — the trainer's top bar has no room to spare */}
         <svg className="hidden sm:block w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <circle cx="12" cy="12" r="10" strokeWidth={2} />
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z" />
         </svg>
-        {/* The current language, readable without opening the menu */}
         <span className="text-sm leading-none">{LANG_FLAGS[lang]}</span>
         {showLabel && (
-          <span className="hidden sm:inline text-xs font-medium leading-none">{LANG_LABELS[lang]}</span>
+          <span className="hidden sm:inline font-mono text-[11px] uppercase tracking-[0.06em] leading-none">{LANG_LABELS[lang]}</span>
         )}
         <svg
           className={`w-2.5 h-2.5 shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
@@ -75,8 +66,8 @@ export default function LanguageSwitcher({ showLabel = false, align = 'right' }:
           role="listbox"
           aria-label="Language"
           className={[
-            'absolute top-full mt-1.5 z-50 min-w-[150px] rounded-xl py-1',
-            'border border-white/[0.12] bg-[#1c2135] shadow-[0_8px_32px_rgba(0,0,0,0.48)]',
+            'absolute top-full mt-1.5 z-50 min-w-[150px] rounded-[var(--radius-md)] py-1',
+            'border border-[var(--border-visible)] bg-[var(--surface-raised)]',
             align === 'right' ? 'right-0' : 'left-0',
           ].join(' ')}
         >
@@ -87,16 +78,16 @@ export default function LanguageSwitcher({ showLabel = false, align = 'right' }:
               aria-selected={lang === l}
               onClick={() => { setLang(l); setOpen(false); }}
               className={[
-                'flex items-center gap-2.5 w-full px-3 py-2 text-left transition-colors',
+                'flex items-center gap-2.5 w-full px-3 py-2 text-left transition-colors duration-[180ms]',
                 lang === l
-                  ? 'bg-[rgba(64,96,208,0.22)] text-white'
-                  : 'text-[rgba(255,255,255,0.7)] hover:bg-white/[0.07] hover:text-white',
+                  ? 'bg-[var(--surface)] text-[var(--text-display)]'
+                  : 'text-[var(--text-secondary)] hover:bg-[var(--surface)] hover:text-[var(--text-primary)]',
               ].join(' ')}
             >
               <span className="text-base leading-none">{LANG_FLAGS[l]}</span>
-              <span className="flex-1 min-w-0 text-[13px] leading-none">{LANG_LABELS[l]}</span>
+              <span className="flex-1 min-w-0 font-mono text-[11px] uppercase tracking-[0.06em] leading-none">{LANG_LABELS[l]}</span>
               {lang === l && (
-                <svg className="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 shrink-0 text-[var(--interactive)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                 </svg>
               )}
