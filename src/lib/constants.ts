@@ -17,4 +17,4 @@ export const MEMORY_MIN_HISTORY = 12;
 
 // UI
 export const TOAST_DURATION_MS = 5000;
-export const MAX_MESSAGE_LENGTH = 2000;
+export const MAX_MESSAGE_LENGTH = Infinity;

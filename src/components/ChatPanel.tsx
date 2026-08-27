@@ -835,7 +835,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     dismissPersistentReminderRef.current?.();
-    const newVal = e.target.value.slice(0, MAX_MESSAGE_LENGTH);
+    const newVal = e.target.value;
     setInputText(newVal);
     inputTextRef.current = newVal;
     const el = e.target;
@@ -1194,9 +1194,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
 
           {/* Bottom utility row */}
           <div className="flex items-center justify-between mt-2 px-1">
-            <span className="text-xs" style={{ color: 'var(--char-count)' }}>
-              {inputText.length > 0 ? `${inputText.length} / ${MAX_MESSAGE_LENGTH}` : ''}
-            </span>
+            <span />
             <div className="flex gap-3 items-center">
               <Tooltip text={t.downloadTranscript}>
                 <button
