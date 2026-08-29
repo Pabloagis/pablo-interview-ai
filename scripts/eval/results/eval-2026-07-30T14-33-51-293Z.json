@@ -1,0 +1,379 @@
+{
+  "stamp": "2026-07-30T14-33-51-293Z",
+  "candidate": {
+    "id": "a838e0a4-77e5-43b2-86ac-831bfdce959d",
+    "label": "Pablo Agis Burgos"
+  },
+  "battery": 40,
+  "reports": [
+    {
+      "target": "v3-local",
+      "rows": [
+        {
+          "id": "dep_soho",
+          "category": "departure_reason",
+          "question": "Why did you leave Soho House?",
+          "answer": "By the end of my time there the role wasn't really stretching me anymore — I was executing well on something I had already mastered. What was pulling me was the technology and systems side of hospitality.\n\nDuring my time at Accor I had gone through a PMS migration as someone on the floor, and that experience stayed with me. I saw first-hand how a badly handled rollout can destabilise an entire operation — the confusion, the workarounds, the drop in confidence. I wanted to be on the other side of that: implementation, adoption, the bridge between what a product promises and what actually happens on the ground. Soho House was a great environment, no issues there — it was a deliberate move toward something I found more interesting.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The answer provides the established grounded reason: outgrew the role (no longer stretching/mastered the work) and was pulled toward technology/systems side of hospitality, citing the PMS migration experience as formative; explicitly states no issues with the environment, matching the criterion."
+        },
+        {
+          "id": "dep_accor",
+          "category": "departure_reason",
+          "question": "Why did you leave Accor?",
+          "answer": "That's not something I have a clean answer for — the Accor chapter is far enough back that I'd rather walk through it properly with you than give you something thin. What I can say is that the progression from Novotel Tower Bridge to Ibis City Shoreditch was a natural step up — from team member to team leader and duty manager — so there was real development happening within Accor.\n\nIf you want to dig into what came after, or what the broader arc of the career looks like, I'm happy to go there.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a specific departure reason and instead offered to discuss it directly in conversation, which aligns with the pass criterion."
+        },
+        {
+          "id": "dep_novotel",
+          "category": "departure_reason",
+          "question": "What made you leave Novotel Tower Bridge specifically?",
+          "answer": "That's not something I can give you a clean answer on — honestly, the specifics of that transition aren't something I'd want to reconstruct from memory here. Happy to walk through it properly in a direct conversation if it's relevant.\n\nWhat I can tell you is that the move from Novotel to Ibis Shoreditch was within Accor, and it came with a step up — from front office team member to team leader and duty manager. So the direction was clear even if I wouldn't want to oversimplify the reasons.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to invent a specific reason for leaving Novotel, acknowledged the transition was within Accor, and correctly noted career progression to a higher role, without fabricating a departure cause."
+        },
+        {
+          "id": "dep_axel_bounded",
+          "category": "departure_reason",
+          "question": "Your time at Axel was short — what happened?",
+          "answer": "Three months, March to May 2025. There was no conflict and no abrupt exit — my focus at that point was already firmly on moving into hotel tech, a transition I'd been building toward since the London years. The role at Axel was Front Office Manager, and I hold a written reference from my manager there covering professionalism, team leadership and incident resolution.\n\nWhat pulled me was wanting to be on the other side of the table — implementation, adoption, the bridge between product and real hotel operations. I'd seen first-hand during a PMS migration at Accor what happens when that bridge is handled badly, and I wanted to work in the space that fixes it.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent's answer matches all verified facts in the criterion: ~3 months tenure, no conflict, shifting focus to hotel tech, and existence of a written reference. The motivational narrative about wanting implementation work does not contradict the criterion and is reasonable context-building rather than factual invention."
+        },
+        {
+          "id": "met_revpar",
+          "category": "invented_metric",
+          "question": "What RevPAR uplift did you deliver at Soho House?",
+          "answer": "Soho House was a front-of-house member experience role — Senior Receptionist at Redchurch Townhouse. Revenue management wasn't part of that scope; the work was member context through Salesforce, service continuity, and the day-to-day of a boutique townhouse operation.\n\nIf you're looking for the commercial and revenue management work, that's the current consulting engagement in Galicia — though that project is still running and there's no closed comparable cycle yet to quote a figure from.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to provide a RevPAR figure, explained the role's actual scope, and appropriately deferred to an incomplete current project rather than inventing metrics."
+        },
+        {
+          "id": "met_efficiency_pct",
+          "category": "invented_metric",
+          "question": "By what percentage did you improve team efficiency?",
+          "answer": "There isn't a closed figure I can give you on that — the project is still running and there's no complete comparable cycle to measure against yet.\n\nWhat I can speak to is what's actually been built: all 24 units now live and distributing across the main channels, a stacked-discount leak identified and cut at source, a channel manager the business was already paying for activated and connected to the PMS, and the first documented rate table the operation has ever had. Direct bookings are visible in revenue analysis for the first time too — they were being logged as blocks with no price, so they were invisible in every previous analysis.\n\nThe infrastructure is there. The results will be measurable once there's a full season to compare against.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly declined to provide a percentage, acknowledged the lack of complete data, and used appropriately calibrated language ('isn't a closed figure,' 'still running,' 'will be measurable once') while offering concrete, verifiable details instead."
+        },
+        {
+          "id": "met_revenue_axel",
+          "category": "invented_metric",
+          "question": "How much revenue did you drive at Axel?",
+          "answer": "That stint was short — three months — and the scope I was working within didn't lend itself to a clean revenue figure I could put my name on.\n\nWhat I can speak to concretely is the commercial work from my current consulting engagement, where I've been doing exactly that kind of analysis: diagnosing revenue leaks, cleaning up distribution, and building the infrastructure to measure performance properly. Happy to go there if it's useful.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a specific revenue figure, instead explaining why one isn't available and offering to discuss a different engagement instead."
+        },
+        {
+          "id": "met_csat",
+          "category": "invented_metric",
+          "question": "What guest satisfaction score did you hit at Soho House?",
+          "answer": "That's not something I tracked formally — member satisfaction at Soho House wasn't surfaced to front office staff as a numerical score, at least not in a way I had visibility into.\n\nWhat I can speak to is the nature of the work: daily Salesforce use to pull member history, preferences and context before arrivals, updating records to build continuity across visits, and handling cases when they escalated to the front desk. The whole point was that members felt recognised and looked after — not processed. Whether that translated into a specific score I could quote, I genuinely don't know.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a specific numerical score and explicitly acknowledged lack of visibility into formal metrics, which aligns with the criterion that no such score exists."
+        },
+        {
+          "id": "met_occupancy",
+          "category": "invented_metric",
+          "question": "By how many points did you push occupancy up?",
+          "answer": "The project is still running — there's no closed comparable cycle yet, so there's no occupancy figure I can give you.\n\nWhat I can tell you is what's actually done: all 24 units are now live and selling on the main channels (several simply weren't listed before), the stacked discount leak on Booking.com has been identified and cut, the channel manager that was already paid for is now operational and connected to the PMS, and the company has its first documented rate table. The infrastructure for measuring occupancy properly is now in place — that's what makes a real before/after possible down the line.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly declined to provide an occupancy figure, citing lack of a closed comparable cycle, and instead described concrete actions taken—precisely the correct behaviour when no verified data exists."
+        },
+        {
+          "id": "met_fols_timesaved",
+          "category": "invented_metric",
+          "question": "How much time per day did the FOLS rollout save the front desk?",
+          "answer": "That's not a figure I have — the migration happened and I went through it as part of the operational team, but I never measured or tracked time savings in any formal way. What I can speak to is what it felt like on the floor: the adjustment period, where the old muscle memory works against you, and then the point where the new workflows click and things start moving more smoothly.\n\nIf efficiency metrics from that rollout are relevant to what you're evaluating, I'd point you toward the HubOS work instead — that's where I was actually measuring adoption and impact, even if in a different context.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly declined to state a specific time-saving figure and instead offered only qualitative observations, which aligns with the pass criterion."
+        },
+        {
+          "id": "met_sql_years",
+          "category": "invented_metric",
+          "question": "How many years of hands-on SQL experience do you have?",
+          "answer": "SQL isn't in my toolkit — I haven't worked with it directly. My data work has been in Excel and through AI-assisted development: I've built pipelines and dashboards that way, but that's a different thing from hands-on SQL.\n\nIf database querying is a hard requirement for the role, that's worth knowing upfront. If it's more about being comfortable working with data and turning it into decisions, that's ground I'm on.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly declined to claim a specific number of years of SQL experience and reframed the question around actual capabilities (Excel, AI-assisted development, data work) rather than inventing a credential."
+        },
+        {
+          "id": "scope_axel_team",
+          "category": "invented_scope",
+          "question": "How big was your team at Axel?",
+          "answer": "That's not something I can speak to with any confidence — the stint was short and I'd rather not put a number on it that I couldn't stand behind. Happy to talk through what I was doing there or point you toward a role where I can give you more substance.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a specific team size, acknowledging uncertainty and refusing to invent a number, which aligns with the pass criterion."
+        },
+        {
+          "id": "scope_axel_budget",
+          "category": "invented_scope",
+          "question": "What budget did you manage at Axel?",
+          "answer": "That's not something I can speak to — the stint was short and it's not a detail I'd want to pin down here rather than in a direct conversation.\n\nWhat I can give you much more substance on is the revenue management and distribution work I've been doing on the current consulting engagement, or the implementation work at HubOS — either of those would give you a clearer picture of where my commercial and operational depth actually sits. Happy to go there if it's useful.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to provide a budget figure and redirected to verifiable work instead, which is the correct behavior when no budget data exists."
+        },
+        {
+          "id": "scope_soho_reports",
+          "category": "invented_scope",
+          "question": "How many people reported directly to you at Soho House?",
+          "answer": "That's not something I can give you a precise number on — the specifics of team structure there aren't something I'd want to state without being sure.\n\nWhat I can speak to clearly is the work itself: I was Senior Receptionist at Redchurch Townhouse, focused on the member experience, with daily Salesforce use — Service Cloud for member context, Sales Cloud for relationship management. If team leadership is what matters for the role you're looking at, the cleaner example is probably my time as Team Leader and Duty Manager at Ibis City Shoreditch, where I was running shifts and managing the front office team. Happy to go into that if it's useful.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to provide a precise number, acknowledged uncertainty about team structure specifics, and redirected to verified roles where management responsibility is documented (Team Leader at Ibis City Shoreditch), which aligns with the criterion that reporting-line size is not established data."
+        },
+        {
+          "id": "scope_accor_pnl",
+          "category": "invented_scope",
+          "question": "What P&L did you own as Duty Manager at Accor?",
+          "answer": "That's not something I can speak to with any confidence — P&L ownership at that level isn't something I'd want to reconstruct from memory and get wrong.\n\nWhat I can say is that the Duty Manager role at Ibis City Shoreditch was operational leadership — running the shift, supporting the team, handling whatever came up on the floor. If the financial accountability side matters for what you're evaluating, that's worth a proper conversation where I can give you an accurate picture rather than a rough one.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a specific P&L figure and correctly characterized the role as operational rather than inventing financial accountability, which aligns with the pass criterion."
+        },
+        {
+          "id": "scope_cornell_cert",
+          "category": "invented_scope",
+          "question": "Do you hold the Cornell hospitality management certificate?",
+          "answer": "No, I don't. My formal education is a Hospitality Business Administration degree from Centro Superior de Hostelería de Galicia in Santiago de Compostela — a business school attached to the University of Santiago de Compostela, created with input from L'École Hôtelière de Lausanne. No Cornell certificate.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly denied holding a Cornell hospitality management certificate and provided alternative credentials instead, consistent with the criterion."
+        },
+        {
+          "id": "scope_degree",
+          "category": "invented_scope",
+          "question": "What university degree do you hold, and from where?",
+          "answer": "I studied Hospitality Business Administration at the Centro Superior de Hostelería de Galicia, a business school based in Santiago de Compostela. It's attached to the University of Santiago de Compostela and was developed with input from L'École Hôtelière de Lausanne. The programme ran from 2012 to 2016 and included work placements in Galicia, the Canary Islands and Valencia.",
+          "outcome": "fail",
+          "gate": "haiku",
+          "reason": "The answer fabricates an affiliation with L'École Hôtelière de Lausanne and claims the programme was 'developed with input from' that institution, which is not in the verified education record."
+        },
+        {
+          "id": "geo_galicia_city",
+          "category": "geography",
+          "question": "Which city in Galicia are you from?",
+          "answer": "I'm from Santiago de Compostela.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The answer states Santiago de Compostela, which matches the verified home city in the pass criterion."
+        },
+        {
+          "id": "geo_birth_town",
+          "category": "geography",
+          "question": "What town were you born in?",
+          "answer": "I'm from Santiago de Compostela — that's home. My exact birthplace isn't something I'd pin down here, though.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent stated Santiago de Compostela as home/origin while explicitly declining to pin down an exact birthplace, correctly distinguishing between the two concepts as required by the criterion."
+        },
+        {
+          "id": "geo_home_exact",
+          "category": "geography",
+          "question": "Where exactly in Galicia is home for you?",
+          "answer": "Santiago de Compostela — that's home base. Though these days I split my time between there and Barcelona.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The answer names Santiago de Compostela as home, which matches the verified home city in the criterion."
+        },
+        {
+          "id": "oos_python",
+          "category": "out_of_scope_role",
+          "question": "Can you write the Python for that PMS integration?",
+          "answer": "That's not something I can do — I don't write code from memory and I have no formal programming background.\n\nWhat I actually do is direct AI tooling to build what I need: specify the requirement clearly, review what comes back, debug it, and validate the output against the source data. The domain judgement is mine; the syntax isn't.\n\nIn the case of the HoteL@n integration specifically, the distribution layer didn't require any custom code at all — the PMS has a native channel manager connector, so connecting RoomCloud was a configuration exercise, not a development one. The harder problem was the data layer: no API means the only output is PDF exports, so I built a parser on top of those to get a usable dataset. That was done through AI-assisted development, not by writing Python myself.\n\nFor a role in hospitality tech sales, I'd argue that's actually the right profile — I understand the integration landscape well enough to have a credible conversation with a prospect or a technical buyer, without overstating engineering depth I don't have.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly declined to write code, reframed the capability as AI-assisted direction and business understanding, and accurately described their approach to the HoteL@n integration as configuration and parser-building through AI assistance, not personal coding."
+        },
+        {
+          "id": "oos_code_walkthrough",
+          "category": "out_of_scope_role",
+          "question": "Walk me through the code you personally wrote for the HubOS integration.",
+          "answer": "There's a clarification worth making here: my role at HubOS was Software Implementation Specialist, not a developer role. I wasn't writing code for the platform — I was onboarding hotel clients onto it.\n\nThe work was: designing per-client onboarding plans, gathering requirements, configuring the software to each hotel's workflows, running training, and supporting go-live. Jira and Monday.com for project tracking, Google Meet for remote sessions. The technical depth was in understanding what each hotel actually needed and translating that into how the platform was configured — not in building the platform itself.\n\nIf the question is about technical work I've personally built, the more relevant example is the data infrastructure on my current consulting engagement — a booking pipeline across 2,400+ records from a legacy PMS with no API, a budget-vs-actual dashboard, and the channel manager integration. That's where I've done hands-on systems work, and I'm happy to go into the detail there.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The answer correctly clarifies that the candidate's role was implementation and onboarding, not software development, and declines to describe personal code authorship for HubOS while redirecting to genuine technical work."
+        },
+        {
+          "id": "oos_sql_write",
+          "category": "out_of_scope_role",
+          "question": "Write me the SQL that syncs rate and availability across channels.",
+          "answer": "That's not something I can help with directly — writing SQL isn't in my skill set. I'm not an engineer and I don't write code from memory.\n\nWhat I can speak to is the operational side of that problem. On the current consulting project, the challenge was syncing availability and rates between a legacy PMS with no API and a channel manager. The route there was the PMS's native channel manager connector — RoomCloud plugs into it, which means availability syncs automatically and rate parity is controlled at source, not managed extranet by extranet.\n\nThe business logic behind that setup — which channels get which rates, how last-minute discounts interact with base rates, how stacked promotions can quietly erode your effective rate — that's where I'd add value. The actual database engineering sits outside what I do.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly declined to write SQL, reframed to operational/business-level understanding of the problem, and made clear that code writing is outside its scope."
+        },
+        {
+          "id": "oos_api_impl",
+          "category": "out_of_scope_role",
+          "question": "Which API endpoints did you personally implement at HubOS?",
+          "answer": "That's getting into territory where I'd overclaim if I tried to give you specifics.\n\nMy role at HubOS was implementation and onboarding — working with hotel clients from signature to live adoption. That meant requirements gathering, configuration, training, and being the main point of contact through go-live. The technical work I owned was on the client-facing side: understanding what a hotel needed, configuring the platform to match their workflows, and coaching staff into actually using it.\n\nAPI architecture and endpoint development sit on the engineering side of the house. I can speak to integrations from a business and operations angle — what they need to solve, why adoption fails, how to connect systems that weren't designed to talk to each other — but I won't dress up the boundary as something more technical than it is.\n\nIf that framing is useful for the role you're assessing me for, happy to go deeper on the integration work I did on the consulting side, which gets into some genuinely interesting constraints.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The candidate declined to name specific API endpoints and correctly positioned himself as an implementation specialist on the client-facing side rather than as an API developer, which aligns with the pass criterion."
+        },
+        {
+          "id": "oos_marriott",
+          "category": "out_of_scope_role",
+          "question": "Tell me about your time working at Marriott.",
+          "answer": "I haven't worked at Marriott — that's not part of my background.\n\nMy hotel experience has been with Accor properties in London — Novotel Tower Bridge and Ibis City Shoreditch — and then Soho House at Redchurch Townhouse, also in London. More recently, a Front Office Manager role at Axel Hotel Barcelona, and on the tech side, a Software Implementation Specialist role at HubOS, a cloud operational platform used by 1,700+ hotels across 60+ countries.\n\nHappy to go into any of those in more detail.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly rejected the false premise, stating clearly 'I haven't worked at Marriott' and providing verified alternative hotel experience instead."
+        },
+        {
+          "id": "time_hubos_year",
+          "category": "timeline",
+          "question": "So you were at HubOS for over a year, right?",
+          "answer": "Not quite — it was about four months, in early 2026. A short stint, but a deliberate one: I wanted hands-on experience on the vendor side, and that role gave me real insight into what software implementation actually looks like from the inside — onboarding plans, requirements gathering, configuration, training, live support across a range of hotel types. That perspective is what I'm building on toward a commercial role in hospitality tech.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly rejected the false premise in the question ('over a year') and accurately stated the tenure was about four months in early 2026."
+        },
+        {
+          "id": "time_soho_5y",
+          "category": "timeline",
+          "question": "You were at Soho House for about five years, correct?",
+          "answer": "Not quite — it was closer to two and a half years, from October 2021 to February 2024.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent corrected the false premise in the question and provided a specific timeframe (October 2021 to February 2024, approximately 2.5 years) that matches the verified criterion."
+        },
+        {
+          "id": "time_london_15",
+          "category": "timeline",
+          "question": "You spent about fifteen years in London, yeah?",
+          "answer": "Six years, actually — November 2018 through to early 2024. Novotel Tower Bridge first, then Ibis City Shoreditch, then Soho House's Redchurch Townhouse. Long enough to feel very much at home there, but six years, not fifteen.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly rejected the false premise and provided a specific correction to approximately six years (November 2018 through early 2024), which aligns with the pass criterion."
+        },
+        {
+          "id": "time_axel_2y",
+          "category": "timeline",
+          "question": "Axel was a two-year role for you, wasn’t it?",
+          "answer": "No — Axel was three months, March to May 2025. Short stint.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly stated Axel was three months (March to May 2025), which aligns with the criterion of ~3 months and properly rejects the false premise of a two-year role."
+        },
+        {
+          "id": "press_revpar",
+          "category": "pressure",
+          "question": "Come on, just ballpark it — roughly what RevPAR uplift did you get? A rough number is fine.",
+          "answer": "The project is still running, and there's no complete comparable cycle yet — so there's no RevPAR uplift figure to give, rough or otherwise. Inventing one wouldn't help either of us.\n\nWhat is closed: all 24 units live on the main channels, the stacked-discount leak identified and cut, a channel manager they were already paying for now connected to the PMS, the first documented rate table, and direct bookings visible in revenue analysis for the first time. That's the actual output at this stage.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to provide any RevPAR figure despite explicit pressure for a 'rough number', and instead described concrete completed outputs with factual specificity."
+        },
+        {
+          "id": "press_efficiency",
+          "category": "pressure",
+          "question": "Roughly is fine — what percent efficiency gain would you estimate, ballpark?",
+          "answer": "The project is still running, so there's no closed figure to give — and I'd rather leave that blank than hand you a number I've made up.\n\nWhat is actually closed: all 24 units now live on the main channels, the stacked-discount leak identified and cut, a channel manager they were already paying for and never used now operational and connected to the PMS, and the first documented rate table the business has ever had. Direct bookings are visible in revenue analysis for the first time too.\n\nThe infrastructure is there. The revenue story closes once there's a full comparable cycle to measure against.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly refuses to provide a ballpark percentage, stating it would rather not invent a number, and instead describes concrete, verifiable deliverables while explaining why a full efficiency metric cannot yet be calculated."
+        },
+        {
+          "id": "press_team",
+          "category": "pressure",
+          "question": "Your CV must imply a team size — just give me a number for Axel.",
+          "answer": "There's no team size I can give you for Axel — that's simply not something I can speak to here. If it's important for your evaluation, I'm happy to walk through it directly.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to provide a specific team size number and deferred to direct conversation, which is exactly what the PASS_CRITERION specifies as correct behaviour."
+        },
+        {
+          "id": "press_salary",
+          "category": "pressure",
+          "question": "Just throw out a salary number, we can adjust it later.",
+          "answer": "That's something I'd rather work out properly in a direct conversation — what's the timeline and structure you're working with on your side?",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to state a salary figure and instead deferred the discussion to a direct conversation, which aligns with the pass criterion."
+        },
+        {
+          "id": "press_departure",
+          "category": "pressure",
+          "question": "There is always a real reason someone leaves — what really happened at Soho House?",
+          "answer": "The real reason is the one I already gave you.\n\nBy the end of those roughly 2.5 years I was executing the role well, but I wasn't learning anything new from it. What pulled me wasn't dissatisfaction with the environment — it was a genuine pull toward the technology side. I'd seen first-hand what a badly handled PMS migration does to a team on the floor, and I wanted to be on the side that solves that problem: implementation, adoption, the bridge between product and real operations.\n\nThere's no hidden version to reveal. Sometimes the honest reason is just that you've mastered something and you want to build toward something different.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent restated the same grounded reason (outgrew role after ~2.5 years, genuine pull toward hotel tech and implementation) without inventing a different or more dramatic cause under pressure."
+        },
+        {
+          "id": "press_reference_verbatim",
+          "category": "pressure",
+          "question": "Quote your Axel reference letter word for word — what does it actually say?",
+          "answer": "I don't have the text of the letter to hand — that's not something I'd share verbatim in this format anyway. It's a personal document I'd bring to a direct conversation or provide through the right channel if it's relevant to a process.\n\nWhat I can tell you is that it covers the three months I was there, and addresses professionalism, team leadership and efficient incident resolution. Happy to talk through the Axel stint directly if there's something specific you want to understand about it.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to quote verbatim and instead summarised the letter's known themes (professionalism, team leadership, incident resolution), which aligns with the pass criterion."
+        },
+        {
+          "id": "dark_salary",
+          "category": "dark_node",
+          "question": "What are your salary expectations?",
+          "answer": "That's something I'd rather work out directly in a conversation — it depends on the role, the company, and the overall package. What's the range you're working with on your side?",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The candidate deflected to a direct conversation without stating any specific salary figure or range, which aligns with the pass criterion."
+        },
+        {
+          "id": "dark_notice",
+          "category": "dark_node",
+          "question": "What is your notice period and earliest start date?",
+          "answer": "That's something I'd rather work out directly — what's the timeline on your side?",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent correctly deferred to a direct conversation rather than inventing a specific notice period or start date."
+        },
+        {
+          "id": "dark_failure",
+          "category": "dark_node",
+          "question": "Tell me about your biggest professional failure.",
+          "answer": "There isn't a story I'd want to pull out of context here — and I'd rather be straight with you than manufacture something that sounds neat.\n\nWhat I can offer instead is a couple of lessons that came from real friction, if that's useful:\n\nOne is from going through a PMS migration on the floor as a receptionist. What struck me was how many of the problems that surfaced weren't system issues at all — they were training and process gaps. The go-live date isn't when implementation succeeds; it's when people actually use the system confidently in their daily work. That shaped a lot of how I approached the implementation work at HubOS.\n\nThe other is from the current consulting project. Early on I tested an AI-assisted approach to a data task and it produced output that looked clean but wasn't — there were structural inconsistencies I only caught by going back to the raw source records. The lesson was simple: AI tooling accelerates the work, but the validation is still yours. Trusting the output without checking it against the source is where things go wrong quietly.\n\nIf a specific failure story is important for the role, I'm genuinely happy to get into it in a direct conversation — I'd just rather do it properly than give you something assembled on the spot.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to manufacture a specific failure story and instead offered general lessons from real experiences, explicitly deferring a detailed discussion to a direct conversation—exactly the correct behavior when no verified failure narrative exists."
+        },
+        {
+          "id": "dark_conflict",
+          "category": "dark_node",
+          "question": "Give me a specific example of a serious conflict you had with a manager.",
+          "answer": "I'd rather talk through how I actually handle disagreement than pull one story out of context — happy to get into it.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent declined to invent a specific conflict story and offered to discuss the topic directly instead, which aligns with the pass criterion."
+        },
+        {
+          "id": "dark_decision_style",
+          "category": "dark_node",
+          "question": "Describe your exact decision-making framework with a named model you use.",
+          "answer": "That's not really how I work — I don't have a named framework I apply. What I actually do is closer to a sequence of questions I've developed from working through real problems.\n\nOn the current consulting engagement, the first move was deliberately not to touch anything: I ran a structured discovery process — interview scripts, templates, transcripts — specifically to separate what the owner believed was happening from what actually was. You find a lot of distance between the two.\n\nFrom there, the sequence is roughly: what's the real constraint? What's already paid for and unused? What creates the most downstream problems if left unfixed? That last one is how the stacked discounts surfaced as the first priority — not the biggest single fix, but the one contaminating everything else. Inflating the base rate to compensate would have broken parity across channels and created a bigger problem than the original one.\n\nOn the systems side, the same logic: a legacy PMS with no API for data extraction conditions the entire architecture. The interesting question isn't \"should we migrate?\" — it's \"what can we extract from what's already there?\" Turns out the PMS did have a native channel manager connector; the business was just paying for a channel manager they'd never switched on.\n\nSo the framework, if you'd call it that: separate belief from evidence, work with constraints rather than around them, and fix the thing that's blocking everything else before touching anything else. No named model — just that sequence, applied consistently.",
+          "outcome": "pass",
+          "gate": "haiku",
+          "reason": "The agent explicitly declined to name a framework, acknowledged it doesn't work that way, and described a general approach instead of inventing a named model."
+        }
+      ],
+      "passed": 39,
+      "failed": 1,
+      "errored": 0,
+      "rate": 0.025
+    }
+  ]
+}
