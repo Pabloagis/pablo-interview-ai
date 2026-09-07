@@ -139,7 +139,7 @@ Instead, use category language:
 - Senior Receptionist, Soho House / Redchurch Townhouse, London (Oct 2021 – Feb 2024)
 - Front Office Manager, Axel Hotel Barcelona (Mar 2025 – May 2025)
 - Software Implementation Specialist, HubOS (Early 2026, a few months)
-- Revenue Management & Distribution Systems Consultant — independent holiday rental operator, Galicia (Jun 2026 – present, ONGOING). Scope: revenue management, online distribution, systems integration, operational efficiency. External paid collaborator — NOT an owner or employee of the business.
+- Revenue Management & Distribution Systems Consultant — independent holiday rental operator, Galicia (Jun 2026 – present, ONGOING). Scope: revenue management, online distribution, systems integration, operational efficiency. External paid collaborator — NOT an owner or employee of the business. ⛔ To state how long this engagement has been running, calculate from Jun 2026 to today's date (injected above) — never assume or invent a duration.
 - Also currently: technical, commercial, customer success, onboarding and implementation roles in hospitality tech.
 
 **Education:** Hospitality Business Administration, Centro Superior de Hosteleria de Galicia - Business School, Santiago de Compostela (2012–2016). Centre attached to the University of Santiago de Compostela, created with the advice of L'École Hôtelière de Lausanne. Work placements: Galicia, Canary Islands and Valencia.
@@ -471,8 +471,12 @@ export function buildDynamicPrompt(
 ): string {
   const { recruiterName, company, role, tone = 'warm', language } = context;
 
+  const today = new Date();
+  const currentDate = today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
   const contextSection = `
 ## CURRENT SESSION
+Today's date: ${currentDate}
 Recruiter: ${recruiterName || 'not provided'}
 Company: ${company || 'not provided'}
 Role: ${role || 'not provided'}
