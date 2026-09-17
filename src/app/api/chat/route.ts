@@ -3,6 +3,7 @@ import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 import { createServerSupabaseClient } from '@/lib/supabase';
 import { getAnthropicClient } from '@/lib/anthropic';
+import { notifyNewSession } from '@/lib/notify';
 import { CORE_SYSTEM_PROMPT, buildDynamicPrompt } from '@/lib/prompts';
 import { retrieveKnowledge, detectTone, logRetrieval } from '@/lib/retrieval';
 import { buildCandidateSystemPrompt } from '@/lib/candidate-prompt';
@@ -268,6 +269,18 @@ export async function POST(request: NextRequest) {
           if (updateError) console.error('Session update failed (non-critical):', updateError);
 
           send({ type: 'done' });
+
+          // Notify Pablo on the first real recruiter turn (not auto-triggers).
+          // rawHistory is the history BEFORE this turn, so length 0 means this
+          // is the recruiter's first message — the true "started chatting" event.
+          if (!autoIntro && !autoCheckIn && rawHistory.filter(m => m.role === 'user').length === 0) {
+            notifyNewSession(
+              session.recruiter_name || context?.recruiterName || null,
+              session.email || null,
+              session.company || context?.company || null,
+              session.role || context?.role || null,
+            );
+          }
 
           // Store both messages in memory with embeddings — fully non-blocking
           // Skip user memory for auto-triggers (no real user message to store)
