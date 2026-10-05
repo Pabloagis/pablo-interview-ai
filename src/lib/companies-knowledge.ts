@@ -1,8 +1,8 @@
 // ──────────────────────────────────────────────────────────────────
 // COMPANIES KNOWLEDGE BASE — InterviewMind v2
-// Target companies. Deep context for Mews/HubOS/Axel. Compact for others.
+// Hospitality-tech company context. Deep for Mews/HubOS/Axel. Compact for others.
 // Loaded dynamically by retrieval based on recruiter company.
-// Updated: May 15, 2026
+// Updated: Oct 5, 2026
 // ──────────────────────────────────────────────────────────────────
 
 export interface CompanyContext {
@@ -15,7 +15,7 @@ export interface CompanyContext {
 
 export const COMPANIES: CompanyContext[] = [
   // ────────────────────────────────────────────────────────────
-  // MEWS — DEEP CONTEXT (Pablo had active SDR process)
+  // MEWS — DEEP CONTEXT
   // ────────────────────────────────────────────────────────────
   {
     id: 'COMPANY_MEWS',
@@ -43,21 +43,17 @@ Why this matters for Pablo:
 - He understands operational pain of legacy PMS — can speak to the value of Mews authentically
 - Multilingual coverage (ES, EN, IT, PT) aligns with pan-European + LATAM expansion
 
-Pablo's history with Mews:
-- Active SDR process (GenMews Program) in Sep–Oct 2025
-- Phone interview with Jordan Pitts (02 Oct 2025) for International Business Development Representative role
-- Video interview with Kathi Rudolf & Xabier Garcés (07 Oct 2025) for same role
-- Received candidate survey feedback (Sep 2025)
-- **Critical recruiter feedback received:** Pablo's answers were "too general." Recruiters explicitly asked for STAR framework + measurable results. The original feedback noted: "we are looking for structure and purpose behind your story. This will give your experience depth and makes it easy for us to follow how you think, how you solve problems, and what kind of results you generate."
+Pablo and Mews:
+- ⛔ Pablo has NO hands-on operational experience with Mews PMS — general knowledge only. Never claim he has used it.
+- ⛔ Never mention any past or current hiring process, interview, application or contact at Mews (see NO HIRING PROCESSES).
 
 How to handle Mews conversations:
-- Always use STAR framework with measurable results
+- Always use STAR structure — situation, task, action, result — and lead with the result where one is verified
 - Lead with specific examples where possible
 - Show systems thinking — how PMS connects to broader stack
 - Demonstrate genuine product curiosity, not generic sales pitch
-- If asked about previous feedback: be honest and reflective. "I took that feedback seriously — it's one of the reasons I've sharpened how I tell stories. I now always lead with situation and result, not just description."
 
-Smart questions Pablo can ask in a Mews interview:
+Smart questions Pablo can ask a Mews recruiter:
 - "What does the typical SDR-to-AE path look like at Mews?"
 - "How is the SDR team segmented — by geography, segment, or product?"
 - "What's the typical prospect profile in the territories you're hiring for?"
@@ -100,23 +96,20 @@ Modules:
 
 Pablo's role:
 - Title: Software Implementation Specialist
-- Dates: Early 2026, ~4 months
+- Dates: Jan–Apr 2026, 4 months (fixed-term contract, completed)
 - Setting: Hybrid + travel (on-site implementations)
 - Tools daily: Jira, Monday.com, ReadAI, Notion, OKticket, Excel, Google Meet, Calendar
 
 Specific implementations:
+- Meliá Madeira Mare — housekeeping and maintenance modules; 5 days on-site, 2 weeks hands-on support, then handover to support. See the Meliá story.
 - Gran Hotel Vienna — property transitioning from IHG brand to Eurostars; HubOS platform deployment. This is where the Vienna AI feedback aggregation story took place.
-- Multiple other property onboardings
+- 6–7 go-lives in 4 months in total, mostly on-site, while keeping configuration and onboarding moving for other accounts in parallel
 
-Why Pablo left:
-- Short-term role aligned with strategic move toward commercial / SDR / AE roles
-- HubOS gave him exactly what he needed: SaaS implementation credibility, hands-on experience with hotel SaaS adoption, exposure to the consultative side
-- Frame: "HubOS was the bridge I needed — direct SaaS implementation exposure that confirmed I want to move earlier into the customer journey."
+Why Pablo left (fixed answer — say only this): "It was a fixed-term contract, and I completed it." No other reason, no strategic framing, no elaboration.
 
 How to discuss HubOS:
 - Most recent and relevant role — use richly
 - The Vienna AI story and general onboarding story both belong here
-- Discuss as the inflection point that confirmed the commercial direction
 - Reference real tools (Jira, Monday, Notion) when asked about workflow`,
   },
 
@@ -143,7 +136,7 @@ The specific property:
 
 Pablo's role:
 - Title: Front Office Manager
-- Dates: March 2025 – May 2025 (3 months, short-term operational role)
+- Dates: March 2025 – May 2025 (3 months)
 - Responsibilities:
   - Led front office operations, focus on guest satisfaction and revenue
   - Handled guest requests, negotiated solutions for satisfaction and commercial outcomes
@@ -156,73 +149,72 @@ Reference letter (dated 25 June 2025, signed by Fernando Alcalá Rico):
 - Specifically praises: leadership of reception team, efficient incident resolution, fluid cross-department communication
 
 How to handle Axel-related questions:
-- Short-term operational return after London (Soho House ended Feb 2024)
+- Operational role back in Spain after London (Soho House ended Feb 2024)
 - Frame honestly: Pablo took FOM role at Axel while exploring his next strategic move into hospitality tech
 - Reinforced operational credibility + fresh Spanish-market exposure
 - Reference is strong, available on request
 
-If asked "Why only 3 months?":
-- "It was a defined short-term role. I took it while positioning toward hospitality SaaS — which crystallized into the HubOS opportunity in early 2026. Axel gave me fresh Spanish-market exposure and a clean reference, and the months after let me focus on the transition I really wanted."`,
+If asked "Why only 3 months?": use the verified Axel answer in the core prompt (WHO PABLO IS). ⛔ Never say it was a "defined short-term role" or planned as short-term.`,
   },
 
   // ────────────────────────────────────────────────────────────
-  // OTHER TARGET COMPANIES — COMPACT
+  // OTHER COMPANIES — COMPACT
   // ────────────────────────────────────────────────────────────
   {
     id: 'COMPANY_CLOUDBEDS',
     name: 'Cloudbeds',
     aliases: ['cloudbeds'],
     depth: 'compact',
-    content: `**CLOUDBEDS** — All-in-one PMS. Cloud-native, targets independent and small chain hotels globally. Direct Mews competitor. Pablo applied for Sales Manager role.`,
+    content: `**CLOUDBEDS** — All-in-one PMS. Cloud-native, targets independent and small chain hotels globally. Direct Mews competitor.`,
   },
   {
     id: 'COMPANY_SHIJI',
     name: 'Shiji Group',
     aliases: ['shiji', 'shiji group'],
     depth: 'compact',
-    content: `**SHIJI GROUP** — Hospitality tech platform, PMS implementation. Pablo interviewed for PMS Implementation Consultant role (Jul 2025, contact: Milla Moiseitseva).`,
+    content: `**SHIJI GROUP** — Hospitality tech platform, PMS implementation.`,
   },
   {
     id: 'COMPANY_SU',
     name: 'SU / The Access Group',
-    aliases: ['su', 'staah', 'the access group', 'access group'],
+    aliases: [' su ', ' su,', ' su.', ' su?', 'staah', 'the access group', 'access group'], // bare 'su' matched inside 'results', 'summer'
     depth: 'compact',
-    content: `**SU (STAAH / The Access Group)** — Hospitality connectivity infrastructure. White-label API connectivity, OTA integrations. Competes with SiteMinder, D-EDGE, DerbySoft. Pablo was in active process.`,
+    content: `**SU (STAAH / The Access Group)** — Hospitality connectivity infrastructure. White-label API connectivity, OTA integrations. Competes with SiteMinder, D-EDGE, DerbySoft.`,
   },
   {
     id: 'COMPANY_LIGHTHOUSE',
     name: 'Lighthouse',
     aliases: ['lighthouse'],
     depth: 'compact',
-    content: `**LIGHTHOUSE** — Revenue intelligence platform for hospitality. Pablo reached out to AE contact (Andrés Benito, May 2026).`,
+    content: `**LIGHTHOUSE** — Revenue intelligence platform for hospitality.`,
   },
   {
     id: 'COMPANY_HUBSPOT',
     name: 'HubSpot',
     aliases: ['hubspot', 'hub spot'],
     depth: 'compact',
-    content: `**HUBSPOT** — CRM/inbound sales platform. Mid-Market AE role in Spain explored. Requires Spanish + English (Portuguese valued). Pablo's multilingual profile fits well.`,
+    content: `**HUBSPOT** — CRM/inbound sales platform.`,
   },
   {
     id: 'COMPANY_VENUU',
     name: 'Venuu',
     aliases: ['venuu'],
     depth: 'compact',
-    content: `**VENUU** — Event venue marketplace. B2B Sales & Onboarding Specialist (Spanish-speaking), Barcelona. Pablo interviewed Sep 2025 with Jaakko Salonen (COO).`,
+    content: `**VENUU** — Event venue marketplace.`,
   },
   {
     id: 'COMPANY_GUESTY',
     name: 'Guesty',
     aliases: ['guesty'],
     depth: 'compact',
-    content: `**GUESTY** — Property management + guest experience. Pablo applied for Sales Growth Specialist role.`,
+    content: `**GUESTY** — Property management + guest experience.`,
   },
   {
     id: 'COMPANY_EISI',
     name: 'EISI HOTEL',
     aliases: ['eisi', 'eisi hotel'],
     depth: 'compact',
-    content: `**EISI HOTEL** — Operational compliance SaaS for hotels (housekeeping, maintenance, health & safety). Junior Implementation Consultant role explored.`,
+    content: `**EISI HOTEL** — Operational compliance SaaS for hotels (housekeeping, maintenance, health & safety).`,
   },
   {
     id: 'COMPANY_CANARY',
