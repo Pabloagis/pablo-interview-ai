@@ -75,7 +75,7 @@ export default function ModuleShell({
           <div className="flex flex-wrap items-center gap-2 mb-0.5">
             <span className="text-sm font-semibold text-white">{title}</span>
             <span
-              className="text-[10px] px-1.5 py-0.5 rounded font-medium"
+              className="text-[10px] px-1.5 py-0.5 rounded-sm font-medium"
               style={{
                 background: isHighValue ? 'rgba(64,96,208,0.2)' : 'rgba(255,255,255,0.06)',
                 color: isHighValue ? '#8090f0' : 'rgba(255,255,255,0.4)',

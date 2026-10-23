@@ -118,7 +118,7 @@ export default function UploadModule({
           <select
             value={artifactType}
             onChange={e => setArtifactType(e.target.value)}
-            className="rounded-lg text-xs outline-none"
+            className="rounded-lg text-xs outline-hidden"
             style={{
               background: 'rgba(255,255,255,0.05)',
               border: '0.5px solid rgba(255,255,255,0.12)',
@@ -145,7 +145,7 @@ export default function UploadModule({
           value={pasteText}
           onChange={e => { setPasteText(e.target.value); setError(''); }}
           placeholder="Paste content here…"
-          className="w-full resize-y rounded-lg text-xs leading-relaxed outline-none"
+          className="w-full resize-y rounded-lg text-xs leading-relaxed outline-hidden"
           style={{
             background: 'rgba(255,255,255,0.04)',
             border: '0.5px solid rgba(255,255,255,0.1)',

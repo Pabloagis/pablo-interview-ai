@@ -236,7 +236,7 @@ export default function Step6CareerNarrative({ data, moduleOptions, onSaved, onA
               onChange={e => handleDraftChange(e.target.value)}
               autoFocus
               rows={8}
-              className="w-full bg-transparent text-[15px] text-white leading-[1.75] resize-none focus:outline-none placeholder-[rgba(255,255,255,0.2)]"
+              className="w-full bg-transparent text-[15px] text-white leading-[1.75] resize-none focus:outline-hidden placeholder-[rgba(255,255,255,0.2)]"
               placeholder="Write your career narrative here…"
             />
             <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">

@@ -118,7 +118,7 @@ function SingleStoryEditor({
           value={fields[currentField.key]}
           onChange={e => handleChange(currentField.key, e.target.value)}
           placeholder="Your exact words matter more than polished prose…"
-          className="w-full bg-transparent text-sm text-[rgba(255,255,255,0.85)] resize-none focus:outline-none placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
+          className="w-full bg-transparent text-sm text-[rgba(255,255,255,0.85)] resize-none focus:outline-hidden placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
         />
         <p className="text-[10px] text-[rgba(255,255,255,0.18)] italic mt-2">Auto-saves as you type.</p>
       </div>
@@ -215,7 +215,7 @@ export default function Step7StoryEvidence({ data, moduleOptions, onSaved, onAdv
 
       {generating && !generatedOpts && (
         <div className="flex items-center gap-2 mb-5 text-xs text-[rgba(255,255,255,0.35)]">
-          <div className="w-3.5 h-3.5 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          <div className="w-3.5 h-3.5 rounded-full border-2 border-t-[#4060d0] animate-spin shrink-0" />
           Personalising your next step…
         </div>
       )}

@@ -33,7 +33,7 @@ export default function MessageBubble({ message, recruiterName, onPlay, isPlayin
         {!isUser && (
           <button
             onClick={() => setAvatarOpen(true)}
-            className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
+            className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
             style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
           >
             <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
@@ -42,7 +42,7 @@ export default function MessageBubble({ message, recruiterName, onPlay, isPlayin
 
         <div className={`max-w-[70%] flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
           <div
-            className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
+            className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap wrap-break-word"
             style={isUser ? {
               background: 'var(--accent-primary)',
               color: '#ffffff',
@@ -94,7 +94,7 @@ export default function MessageBubble({ message, recruiterName, onPlay, isPlayin
         {isUser && (
           <button
             onClick={() => setAvatarOpen(true)}
-            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[13px] ml-3 mt-0.5 flex-shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-[13px] ml-3 mt-0.5 shrink-0 cursor-zoom-in transition-transform hover:scale-110 active:scale-95"
             style={{
               background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-purple))',
               boxShadow: '0 2px 8px rgba(64,96,208,0.3)',

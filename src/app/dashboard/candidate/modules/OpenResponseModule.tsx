@@ -83,7 +83,7 @@ function QuestionBlock({
         value={value}
         onChange={e => handleChange(e.target.value)}
         placeholder="Answer exactly as you would in a real interview. Don't edit for perfection — authenticity is more valuable."
-        className="w-full resize-y rounded-lg text-xs leading-relaxed outline-none"
+        className="w-full resize-y rounded-lg text-xs leading-relaxed outline-hidden"
         style={{
           background: 'rgba(255,255,255,0.04)',
           border: '0.5px solid rgba(255,255,255,0.1)',

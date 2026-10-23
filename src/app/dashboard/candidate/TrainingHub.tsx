@@ -525,7 +525,7 @@ function CareerGoalStep({
   if (generating && !options) {
     return (
       <div className="flex items-center gap-3 py-8 text-sm text-[rgba(255,255,255,0.4)]">
-        <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+        <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin shrink-0" />
         Analysing your CV…
       </div>
     );
@@ -557,7 +557,7 @@ function CareerGoalStep({
                 saving ? 'opacity-50 cursor-not-allowed' : 'hover:border-[rgba(255,255,255,0.20)] hover:text-white',
               ].join(' ')}
             >
-              <span className={`w-4 h-4 rounded mt-0.5 flex-shrink-0 flex items-center justify-center text-[10px] border transition-all ${
+              <span className={`w-4 h-4 rounded mt-0.5 shrink-0 flex items-center justify-center text-[10px] border transition-all ${
                 isSelected ? 'bg-[#4060d0] border-[#4060d0] text-white' : 'border-[rgba(255,255,255,0.25)]'
               }`}>
                 {isSelected ? '✓' : ''}
@@ -584,7 +584,7 @@ function CareerGoalStep({
           placeholder="Add your own context if needed..."
           rows={2}
           disabled={saving}
-          className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.22)] disabled:opacity-50"
+          className="w-full bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.10)] rounded-xl px-4 py-2.5 text-sm text-white resize-none focus:outline-hidden focus:border-[rgba(64,96,208,0.5)] transition-colors placeholder-[rgba(255,255,255,0.22)] disabled:opacity-50"
         />
         {saveStatus !== 'idle' && (
           <p className="text-[10px] text-[rgba(255,255,255,0.28)] mt-1 flex items-center gap-1">

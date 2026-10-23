@@ -44,7 +44,7 @@ export default function JourneyMap({
       {/* Sidebar — fixed overlay on mobile, relative column on desktop */}
       <aside
         className={[
-          'fixed inset-y-0 left-0 z-40 flex flex-col w-64 flex-shrink-0',
+          'fixed inset-y-0 left-0 z-40 flex flex-col w-64 shrink-0',
           'bg-[#0d0f14] border-r border-[rgba(255,255,255,0.07)]',
           'transition-transform duration-200 ease-in-out',
           mobileOpen ? 'translate-x-0' : '-translate-x-full',
@@ -74,7 +74,7 @@ export default function JourneyMap({
                   ].join(' ')}
                 >
                   <span
-                    className={`w-4 flex-shrink-0 font-mono text-xs text-center leading-none ${ICON_COLOR[step.state]}`}
+                    className={`w-4 shrink-0 font-mono text-xs text-center leading-none ${ICON_COLOR[step.state]}`}
                     aria-label={step.state}
                   >
                     {ICON[step.state]}
@@ -112,7 +112,7 @@ export default function JourneyMap({
       {/* Mobile backdrop */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-xs"
           onClick={onMobileToggle}
           aria-hidden
         />

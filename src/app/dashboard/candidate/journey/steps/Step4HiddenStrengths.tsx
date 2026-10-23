@@ -112,7 +112,7 @@ export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack 
           What your AI spotted in your background.
         </h1>
         <div className="flex items-center gap-3 py-6 text-sm text-[rgba(255,255,255,0.4)]">
-          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin shrink-0" />
           Personalising your next step…
         </div>
       </div>
@@ -196,7 +196,7 @@ export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack 
                 value={item.draftLabel}
                 onChange={e => updateCurrent({ draftLabel: e.target.value })}
                 autoFocus
-                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(64,96,208,0.35)] rounded-xl px-4 py-2.5 text-sm font-medium text-white focus:outline-none focus:border-[rgba(64,96,208,0.65)] transition-colors"
+                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(64,96,208,0.35)] rounded-xl px-4 py-2.5 text-sm font-medium text-white focus:outline-hidden focus:border-[rgba(64,96,208,0.65)] transition-colors"
               />
             </div>
             <div className="flex-1">
@@ -207,7 +207,7 @@ export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack 
                 value={item.draftWhy}
                 onChange={e => updateCurrent({ draftWhy: e.target.value })}
                 rows={4}
-                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(64,96,208,0.35)] rounded-xl px-4 py-2.5 text-sm text-[rgba(255,255,255,0.8)] resize-none focus:outline-none focus:border-[rgba(64,96,208,0.65)] transition-colors leading-relaxed"
+                className="w-full bg-[rgba(255,255,255,0.05)] border border-[rgba(64,96,208,0.35)] rounded-xl px-4 py-2.5 text-sm text-[rgba(255,255,255,0.8)] resize-none focus:outline-hidden focus:border-[rgba(64,96,208,0.65)] transition-colors leading-relaxed"
               />
             </div>
             <div className="flex gap-2 pt-1">
@@ -236,7 +236,7 @@ export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack 
               <button
                 onClick={() => setEditing(true)}
                 aria-label="Edit"
-                className="flex-shrink-0 p-1.5 rounded-lg text-[rgba(255,255,255,0.22)] hover:text-[rgba(255,255,255,0.7)] hover:bg-[rgba(255,255,255,0.06)] transition-colors"
+                className="shrink-0 p-1.5 rounded-lg text-[rgba(255,255,255,0.22)] hover:text-[rgba(255,255,255,0.7)] hover:bg-[rgba(255,255,255,0.06)] transition-colors"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -253,7 +253,7 @@ export default function Step4HiddenStrengths({ moduleOptions, onAdvance, onBack 
             <div className="flex items-center gap-2.5 mt-5 pt-4 border-t border-[rgba(255,255,255,0.06)]">
               <button
                 onClick={() => updateCurrent({ included: !item.included })}
-                className={`w-4 h-4 rounded flex-shrink-0 flex items-center justify-center border transition-all ${
+                className={`w-4 h-4 rounded shrink-0 flex items-center justify-center border transition-all ${
                   item.included
                     ? 'bg-[#4060d0] border-[#4060d0]'
                     : 'border-[rgba(255,255,255,0.25)] bg-transparent'

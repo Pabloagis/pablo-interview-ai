@@ -95,7 +95,7 @@ export default function RegisterRecruiterPage() {
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Alex Johnson"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
@@ -110,7 +110,7 @@ export default function RegisterRecruiterPage() {
               value={companyName}
               onChange={e => setCompanyName(e.target.value)}
               placeholder="Acme Corp"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function RegisterRecruiterPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="alex@acmecorp.com"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
@@ -143,7 +143,7 @@ export default function RegisterRecruiterPage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="At least 6 characters"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 

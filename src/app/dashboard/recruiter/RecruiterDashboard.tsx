@@ -309,7 +309,7 @@ export default function RecruiterDashboard({ recruiterName }: Props) {
                   placeholder="Search by name, role, or skill…"
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-white placeholder-[rgba(255,255,255,0.25)] focus:outline-none focus:border-[rgba(64,96,208,0.5)] transition-colors"
+                  className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-sm text-white placeholder-[rgba(255,255,255,0.25)] focus:outline-hidden focus:border-[rgba(64,96,208,0.5)] transition-colors"
                 />
               </div>
             </div>

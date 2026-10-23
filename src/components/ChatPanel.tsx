@@ -319,8 +319,8 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
   const contextRef = useRef(context);
   const langRef = useRef(lang);
   const inputTextRef = useRef('');
-  const sendCheckInRef = useRef<() => Promise<void>>();
-  const dismissPersistentReminderRef = useRef<() => void>();
+  const sendCheckInRef = useRef<(() => Promise<void>) | undefined>(undefined);
+  const dismissPersistentReminderRef = useRef<(() => void) | undefined>(undefined);
   const usedTopicsRef = useRef<Set<string>>(new Set());
   const interviewEndedRef = useRef(false);
   // Load recruiter context from sessionStorage
@@ -1137,7 +1137,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
                 placeholder={t.inputPlaceholder}
                 rows={1}
                 disabled={isStreaming}
-                className="flex-1 min-w-0 resize-none bg-transparent focus:outline-none leading-relaxed disabled:opacity-50 placeholder:text-white/30"
+                className="flex-1 min-w-0 resize-none bg-transparent focus:outline-hidden leading-relaxed disabled:opacity-50 placeholder:text-white/30"
                 style={{ color: 'var(--input-text)', maxHeight: '120px', fontSize: 16 }}
               />
             </div>
@@ -1240,7 +1240,7 @@ export default function ChatPanel({ sessionId }: ChatPanelProps) {
               }}
             >
               <div
-                className="absolute -top-[5px] right-4 w-2.5 h-2.5 rotate-45"
+                className="absolute top-[-5px] right-4 w-2.5 h-2.5 rotate-45"
                 style={{
                   background: 'var(--reminder-bg)',
                   borderLeft: '0.5px solid var(--reminder-border)',

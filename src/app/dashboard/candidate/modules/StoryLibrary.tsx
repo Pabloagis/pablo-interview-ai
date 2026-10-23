@@ -95,7 +95,7 @@ function StoryField({
         value={value}
         onChange={e => { setSelected(null); onChange(e.target.value); }}
         placeholder="Edit freely — your exact words matter more than polished prose…"
-        className="w-full resize-y rounded-lg text-xs leading-relaxed outline-none transition-colors"
+        className="w-full resize-y rounded-lg text-xs leading-relaxed outline-hidden transition-colors"
         style={{
           background: 'rgba(255,255,255,0.04)',
           border: '0.5px solid rgba(255,255,255,0.1)',

@@ -93,7 +93,7 @@ export default function RegisterCandidatePage() {
               value={fullName}
               onChange={e => setFullName(e.target.value)}
               placeholder="Jane Smith"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
@@ -109,7 +109,7 @@ export default function RegisterCandidatePage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="jane@example.com"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 
@@ -126,7 +126,7 @@ export default function RegisterCandidatePage() {
               value={password}
               onChange={e => setPassword(e.target.value)}
               placeholder="At least 6 characters"
-              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-none focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.10)] text-white placeholder-[rgba(255,255,255,0.25)] text-sm focus:outline-hidden focus:border-[#4060d0] focus:ring-1 focus:ring-[#4060d0] transition-colors"
             />
           </div>
 

@@ -142,7 +142,7 @@ export default function VoiceRecorder({ onTranscript, disabled }: Props) {
               animation: 'pulse 1.5s ease-in-out infinite',
             }}
           >
-            <span className="w-2 h-2 rounded-sm bg-[rgba(240,80,80,0.9)]" />
+            <span className="w-2 h-2 rounded-xs bg-[rgba(240,80,80,0.9)]" />
             Stop recording
           </button>
         ) : (

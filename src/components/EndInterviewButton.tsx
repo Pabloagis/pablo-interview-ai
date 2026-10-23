@@ -168,7 +168,7 @@ export default function EndInterviewButton({
       {/* Insights modal — portal to escape stacking context */}
       {modalOpen && portalRoot && createPortal(
         <div
-          className="fixed inset-0 z-[200] flex items-center justify-center p-4 overflow-y-auto"
+          className="fixed inset-0 z-200 flex items-center justify-center p-4 overflow-y-auto"
           style={{
             background: panelReady ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
             backdropFilter: 'blur(8px)',

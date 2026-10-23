@@ -679,7 +679,7 @@ export default function HowItWorksModal({ onClose }: Props) {
       `}</style>
 
       <div
-        className="fixed inset-0 z-[70] flex items-center justify-center p-4 overflow-y-auto"
+        className="fixed inset-0 z-70 flex items-center justify-center p-4 overflow-y-auto"
         style={{
           background: mounted ? 'rgba(0,0,0,0.72)' : 'rgba(0,0,0,0)',
           backdropFilter: 'blur(14px)',

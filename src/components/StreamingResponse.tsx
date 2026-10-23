@@ -7,14 +7,14 @@ export default function StreamingResponse({ text, thinkingPhrase }: StreamingRes
   return (
     <div className="flex justify-start mb-5 overflow-hidden">
       <div
-        className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 flex-shrink-0"
+        className="w-9 h-9 rounded-full overflow-hidden mr-3 mt-0.5 shrink-0"
         style={{ border: '1.5px solid var(--avatar-border)', boxShadow: 'var(--avatar-shadow)' }}
       >
         <img src="/assets/pablo-avatar.jpg" alt="Pablo" className="w-full h-full object-cover object-top" />
       </div>
       <div className="max-w-[75%] flex flex-col items-start">
         <div
-          className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap break-words"
+          className="px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap wrap-break-word"
           style={{
             background: 'var(--bubble-pablo-bg)',
             border: '0.5px solid var(--bubble-pablo-border)',

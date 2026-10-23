@@ -120,7 +120,7 @@ export default function Step8CommunicationStyle({ data, moduleOptions, onSaved, 
         <StepLabel />
         <h1 className="text-xl font-bold text-white mt-1 mb-8">How you think and work.</h1>
         <div className="flex items-center gap-3 py-6 text-sm text-[rgba(255,255,255,0.4)]">
-          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin flex-shrink-0" />
+          <div className="w-4 h-4 rounded-full border-2 border-t-[#4060d0] animate-spin shrink-0" />
           Personalising your next step…
         </div>
       </div>
@@ -170,7 +170,7 @@ export default function Step8CommunicationStyle({ data, moduleOptions, onSaved, 
           onChange={e => handleAnswerChange(e.target.value)}
           rows={5}
           placeholder="Your honest answer…"
-          className="w-full bg-transparent text-sm text-white resize-none focus:outline-none placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
+          className="w-full bg-transparent text-sm text-white resize-none focus:outline-hidden placeholder-[rgba(255,255,255,0.2)] leading-relaxed"
         />
         <div className="mt-3 pt-3 border-t border-[rgba(255,255,255,0.06)] flex items-center justify-between">
           <VoiceRecorder

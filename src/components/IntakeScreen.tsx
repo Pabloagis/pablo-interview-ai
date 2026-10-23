@@ -387,7 +387,7 @@ export default function IntakeScreen() {
 
       {/* ── Avatar zoom overlay ── */}
       {avatarOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm" style={{ background:'rgba(0,0,0,0.6)' }} onClick={() => setAvatarOpen(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs" style={{ background:'rgba(0,0,0,0.6)' }} onClick={() => setAvatarOpen(false)}>
           <div className="w-64 h-64 rounded-full overflow-hidden border-4 border-white/20 shadow-2xl animate-scale-in">
             <img src="/assets/pablo-avatar.jpg" alt="Pablo Agis" className="w-full h-full object-cover" style={{ objectPosition: 'center 15%' }} />
           </div>
