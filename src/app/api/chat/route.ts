@@ -270,10 +270,9 @@ export async function POST(request: NextRequest) {
 
           send({ type: 'done' });
 
-          // Notify Pablo on the first real recruiter turn (not auto-triggers).
-          // rawHistory is the history BEFORE this turn, so length 0 means this
-          // is the recruiter's first message — the true "started chatting" event.
-          if (!autoIntro && !autoCheckIn && rawHistory.filter(m => m.role === 'user').length === 0) {
+          // Notify Pablo when someone opens the chat for the first time (auto-intro fires
+          // on a fresh session with no history yet).
+          if (autoIntro && rawHistory.length === 0) {
             notifyNewSession(
               session.recruiter_name || context?.recruiterName || null,
               session.email || null,

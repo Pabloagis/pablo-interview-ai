@@ -27,5 +27,10 @@ export function notifyNewSession(
       ${company ? `<tr><td style="padding:4px 12px 4px 0;color:#94a3b8;font-size:13px;">Company</td><td style="color:#0f172a;">${company}</td></tr>` : ''}
       ${role ? `<tr><td style="padding:4px 12px 4px 0;color:#94a3b8;font-size:13px;">Role</td><td style="color:#0f172a;">${role}</td></tr>` : ''}
     </table>`,
-  }).catch(() => {});
+  }).then((result) => {
+    if (result.error) console.error('[notify] Resend error:', result.error);
+    else console.log('[notify] Email sent:', result.data?.id);
+  }).catch((err) => {
+    console.error('[notify] Resend threw:', err);
+  });
 }
