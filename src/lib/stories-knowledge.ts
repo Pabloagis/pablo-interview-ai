@@ -1,7 +1,7 @@
 // ──────────────────────────────────────────────────────────────────
 // STORIES KNOWLEDGE BASE — InterviewMind v2
 // STAR stories. Loaded by retrieval logic based on question intent.
-// Updated: Oct 5, 2026
+// Updated: Nov 14, 2026
 // ──────────────────────────────────────────────────────────────────
 
 export interface Story {
@@ -70,18 +70,64 @@ Use only one framing per answer unless the recruiter asks for both angles.
 [T] Get value out of what they were already paying for, before adding anything new.
 [A] Pablo ran discovery first: a conversation with the owner, a review of the systems in place, and a look at the historical booking data. Then, instead of adding new tools, he activated the channel manager and integrated it with the PMS via API.
 [R] Availability went from manual to automatic and real-time.
-[Learning] A contracted tool nobody uses is a value risk and a retention risk — for the client and for the vendor. Fix adoption first, then optimise.
+[Learning] A contracted tool nobody uses is a value risk and a retention risk — for the client and for the vendor. Fix adoption first, then optimise. The same pattern comes up repeatedly in hotel tech — Pablo sees it now from the vendor side at Septeo too.
 
 ── FRAMING B: Revenue / Channel ──
 [S] Inventory was being distributed by hand and badly — apartments were sitting empty that could have been sold.
 [T] Get the unsold inventory back on the market.
 [A] Activated the dormant channel manager and integrated it with the PMS via API, so availability flowed to the channels automatically and in real time.
-[R] The integration returned unsold inventory to the market. The season has closed and the owner's season target was met. Attribution is deliberately limited: what Pablo owns is the inventory recovery — the destination is highly seasonal, so he does not claim the whole season result.
+[R] The integration returned unsold inventory to the market. By end of July, bookings on the books had already reached the owner's season target — the destination is highly seasonal, so Pablo does not claim the whole result. His contribution: putting unsold inventory back on the market.
 
 STORY BOUNDARIES:
-  CAN SAY: Everything above. The season target was met. The part he owns is putting unsold inventory back on the market.
+  CAN SAY: Everything above. By end of July, bookings on the books had already reached the owner's season target. The part he owns is putting unsold inventory back on the market.
   CANNOT SAY: Any percentage, revenue, ADR, RevPAR, occupancy, night count, booking count or multiplier. The town. The owner's name. That the engagement is ongoing.
-  IF PUSHED FOR NUMBERS: "The season has closed and results are measured. The owner's season target was met. I don't share a client's figures, but the part I own is putting unsold inventory back on the market by connecting the channel manager to the PMS."`,
+  IF PUSHED FOR NUMBERS: "The season has closed and results are measured. By end of July, bookings on the books had already reached the owner's target for the whole season. I don't share a client's figures, but the part I own is putting unsold inventory back on the market by connecting the channel manager to the PMS."`,
+  },
+
+  // ────────────────────────────────────────────────────────────
+  {
+    id: 'STORY_SEPTEO_CURRENT_ROLE',
+    title: 'Current Role — Implementation & Training Specialist at Septeo (Oct 2026–present)',
+    useFor: [
+      'septeo',
+      'ulyses',
+      'ulyses cloud',
+      'current role',
+      'current job',
+      'working now',
+      'right now',
+      'what are you doing',
+      'what do you do',
+      'most recent',
+      'newest',
+      'based in barcelona',
+      'hotel chain',
+      'november 2026',
+      'october 2026',
+    ],
+    ownership: 'led',
+    content: `**STORY: Current Role — Septeo, Implementation & Training Specialist (Oct 2026–present)**
+
+Role: Implementation & Training Specialist at Septeo's hospitality software division, working on the Ulyses Cloud PMS. Barcelona office. Started October 2026.
+
+What the work involves:
+- Installs and configures Ulyses Cloud for hotel clients — independent hotels and hotel chains
+- Trains hotel teams on the PMS after each implementation
+- Includes on-site implementation work at client properties
+- Has completed Septeo's internal product training on Ulyses Cloud; organises the learning into a personal structured knowledge base to answer client questions faster
+
+November 2026: completed an on-site implementation week at a hotel chain client. ⛔ NEVER name the client — "a hotel chain" only, even if pressed.
+
+TONE: Pablo is genuinely invested in this role. He's not "looking to leave" — he's doing real implementation work. He built this profile to stay visible. If the right opportunity comes along — clearly a step up in scope, company and culture — he'd have a conversation. If asked "why would you leave after one month?":
+"I'm not planning to leave — I'm invested in the work and there's a lot to learn. I find it useful to stay visible to the right conversations. If something is a clear step up in scope, product and company, I'd hear it out. But I'm not looking to jump."
+
+No metrics yet — it's early. If asked for results:
+"It's early days — I've been here about a month. I'd rather point you to the HubOS track record — 6 or 7 go-lives in four months — as the more concrete data. At Septeo I'm building toward the same kind of delivery rhythm."
+
+STORY BOUNDARIES:
+  CAN SAY: Role title, company, start date, Barcelona office. On-site implementation work. Internal product training and personal knowledge base. One on-site week at a hotel chain in November 2026.
+  CANNOT SAY: The name of the hotel chain client. Any metrics, go-live counts, or results for Septeo. Any specific incidents or anecdotes from client work (too early, none verified).
+  IF ASKED WHY HE'D LEAVE AFTER ONE MONTH: use the tone guidance above — not planning to leave, open to the right step.`,
   },
 
   // ────────────────────────────────────────────────────────────
@@ -355,20 +401,20 @@ STORY BOUNDARIES:
     ownership: 'narrative',
     content: `**NARRATIVE: Career Progression**
 
-The progression: Hotel operations (understanding customer pain) → SaaS implementation at HubOS (understanding product and adoption) → Commercial roles (driving growth with credibility on both sides).
+The progression: Hotel operations (understanding customer pain) → SaaS implementation at HubOS and now Septeo (understanding product and adoption at scale) → Commercial roles (driving growth with credibility on both sides).
 
 Key framing: "I'm not running away from operations — I'm leveraging it toward business impact."
 
 The natural arc: years in hotel operations (over six years of professional experience in total) gave Pablo deep understanding of what hoteliers actually struggle with day to day — PMS adoption gaps, the difference between what a system promises and what happens on the floor during pick times.
 
-At HubOS, Pablo saw the other side — how technology addresses those problems. What he genuinely enjoyed most wasn't the configuration or technical setup. It was the consultative conversations: understanding a client's specific situation, finding the real pain, helping them see how the product could change their day-to-day.
+At HubOS and now at Septeo — where he's installing and training clients on the Ulyses Cloud PMS — Pablo sees how technology addresses those problems from the inside. What he genuinely enjoys most isn't the configuration or technical setup. It's the consultative conversations: understanding a client's specific situation, finding the real pain, helping them see how the product could change their day-to-day.
 
 Pablo sits in the rare middle ground between hospitality and technology— credibility on both sides.
 
-[LinkedIn framing] "Building on my foundation in hospitality, I've gained hands-on experience with SaaS solutions, particularly through PMS and operational tools. I'm now looking to combine this technical understanding with a growing focus on sales, helping the industry adopt solutions that drive efficiency and measurable business impact."
+[LinkedIn framing] "Building on my foundation in hospitality, I've gained hands-on experience with SaaS solutions — first at HubOS and now as an Implementation & Training Specialist at Septeo, working on the Ulyses Cloud PMS. I'm growing toward commercial roles, bringing operational depth to conversations about adoption and business impact."
 
 STORY BOUNDARIES:
-  CAN SAY: Moved from hotel operations (Accor) → senior front-of-house (Soho House London) → management-level (Front Office Manager, Axel Hotel Barcelona) → first SaaS-adjacent role (HubOS). This shows deliberate upward progression.
+  CAN SAY: Moved from hotel operations (Accor) → senior front-of-house (Soho House London) → management-level (Front Office Manager, Axel Hotel Barcelona) → SaaS implementation roles (HubOS, now Septeo). This shows deliberate upward progression.
   CANNOT SAY: That Pablo managed large teams, had P&L responsibility, or held any title not listed in the verified work history.
   IF PUSHED: Acknowledge the honest arc and connect it to future ambitions in SDR/AE roles.`,
   },
@@ -522,7 +568,7 @@ Single nights stranded between bookings, unsold, with no policy at all to fill t
 Built a reference rate table by month and season — the company's first explicit pricing document. This wasn't paperwork: without a rate table there is no revenue management, only improvisation, and no automation is possible on top of it. It was also a continuity risk — all the pricing logic lived in one person's memory.
 
 [R — state only these]
-- The season has closed and results are measured. The owner's season target was met.
+- The season has closed and results are measured. By end of July, bookings on the books had already reached the owner's season target.
 - All units live on the main channels (several were missing before).
 - The rate leak from stacked discounts: identified and cut.
 - A channel manager they had been paying for and never used: operational and connected to the PMS — the part Pablo owns is putting unsold inventory back on the market.
@@ -530,9 +576,9 @@ Built a reference rate table by month and season — the company's first explici
 - Direct bookings visible in revenue analysis for the first time.
 
 🛑 HARD STOP ON METRICS — NON-NEGOTIABLE (see GALICIA RESULTS in the core prompt):
-If asked for the impact, give the fixed answer: "The season has closed and results are measured. The owner's season target was met. I don't share a client's figures, but the part I own is putting unsold inventory back on the market by connecting the channel manager to the PMS."
+If asked for the impact, give the fixed answer: "The season has closed and results are measured. By end of July, bookings on the books had already reached the owner's target for the whole season. I don't share a client's figures, but the part I own is putting unsold inventory back on the market by connecting the channel manager to the PMS."
 NEVER give percentages, revenue, ADR, RevPAR, occupancy, cancellation rates, night counts or multipliers. NEVER estimate one. NEVER say "roughly" or "around" a figure. If pushed hard, hold the line.
-If asked whether he still works with them: "No. It was a summer-season engagement and it's complete. My focus now is joining a hospitality-tech company."
+If asked whether he still works with them: "No. It was a summer-season engagement and it's complete."
 
 [Learning] The small, systematic leaks — stacked discounts, single orphan nights — add up to more than the big one-off decisions. And an underused asset you're already paying for usually returns more than buying a new tool.`,
   },
@@ -611,7 +657,7 @@ Extra, because it affected conversion. A small image-processing pipeline (again,
 - Its first budget vs. actual dashboard.
 - Automation roadmap opened with the PMS vendor.
 - First documented rate table.
-- The season has closed and results are measured; the owner's season target was met.
+- The season has closed and results are measured. By end of July, bookings on the books had already reached the owner's season target.
 
 🛑 HARD STOP: give NO efficiency gain, NO hours-saved figure, NO revenue, occupancy, ADR, RevPAR or percentage — those are the client's figures. If asked for impact, use the GALICIA RESULTS fixed answer from the core prompt.
 
